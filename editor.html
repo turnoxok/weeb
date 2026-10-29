@@ -1229,7 +1229,7 @@ function useScrollProgress() {
 /* Modo "?poses": barra fija abajo para ir pose por pose (también en celular). Sirve para revisar cada pose y marcar qué ajustar.
    Se activa agregando ?poses a la dirección (…/index.html?poses). Sin ese parámetro no hace nada. */
 function installPosesViewer() {
-  if (typeof window === "undefined" || !/[?&]poses(=|&|$)/.test(window.location.search) || document.getElementById("ws-poses")) return;
+  if (typeof window === "undefined" || !(/[?&]poses(=|&|$)/.test(window.location.search) || /poses\.html$/.test(window.location.pathname)) || document.getElementById("ws-poses")) return;
   const marks = scenes.map((s, i) => ({ i, p: s.progress, label: s.label || ("Pose " + (i + 1)) }));
   const css = document.createElement("style");
   css.textContent = "#ws-poses{position:fixed;left:0;right:0;bottom:0;z-index:99999;display:flex;align-items:center;gap:8px;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));background:rgba(20,12,32,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;font:600 13px/1.2 system-ui,sans-serif;touch-action:manipulation}"
