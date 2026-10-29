@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Demo de invitación online — casa de cumpleaños infantiles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#4c3470;--fg:#fbf9ff;--ac:#e8693a;--cy:#5bd0e7;--li:#9977b7;--off:#ebebef}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--fg);font-family:'Montserrat',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:clamp(20px,4vw,48px) clamp(16px,4vw,40px)}
+  .wrap{max-width:1100px;margin:0 auto}
+  .eyebrow{font-size:.78rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--ac);margin-bottom:12px}
+  h1{font-size:clamp(1.7rem,4.6vw,2.9rem);line-height:1.08;letter-spacing:-.02em;font-weight:800;margin-bottom:12px}
+  .lead{max-width:44em;opacity:.85;line-height:1.6;margin-bottom:28px;font-size:clamp(.95rem,1.9vw,1.1rem)}
+  .grid{display:grid;grid-template-columns:1fr 380px;gap:32px;align-items:start}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  form{display:grid;gap:16px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  label{display:grid;gap:7px;font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--cy)}
+  input[type=text],input[type=number],input[type=date],input[type=time]{
+    width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid rgba(235,235,239,.28);background:rgba(235,235,239,.09);color:var(--fg);
+    font:600 1rem 'Montserrat',system-ui,sans-serif;outline:none;transition:.2s;min-height:50px}
+  input:focus{border-color:var(--cy);background:rgba(235,235,239,.14)}
+  input::placeholder{color:rgba(251,249,255,.45)}
+  input[type=date],input[type=time]{color-scheme:dark}
+  .file{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;border:1.5px dashed rgba(235,235,239,.4);background:rgba(235,235,239,.06);cursor:pointer;text-transform:none;letter-spacing:0;font-size:.95rem;color:var(--fg)}
+  .file:hover{border-color:var(--cy)}
+  .file input{display:none}
+  .file .ico{width:46px;height:46px;border-radius:50%;background:var(--li);display:grid;place-items:center;font-size:1.3rem;flex:none;overflow:hidden}
+  .file .ico img{width:100%;height:100%;object-fit:cover}
+  .file small{display:block;opacity:.65;font-weight:500;margin-top:2px}
+  .btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
+  button{font:700 1rem 'Montserrat',system-ui,sans-serif;padding:15px 24px;border-radius:999px;border:2px solid var(--ac);background:var(--ac);color:#fff;cursor:pointer;transition:.2s;min-height:52px}
+  button:hover{transform:translateY(-2px);filter:brightness(1.07)}
+  button.sec{background:transparent;border-color:var(--off);color:var(--off)}
+  button:disabled{opacity:.55;cursor:wait;transform:none}
+  .prev{position:sticky;top:16px}
+  .frame{border-radius:22px;overflow:hidden;box-shadow:0 30px 70px -25px rgba(10,5,30,.8);background:#2e1f47;aspect-ratio:9/16;width:100%}
+  canvas#pv{display:block;width:100%;height:100%}
+  .note{font-size:.8rem;opacity:.65;line-height:1.5;margin-top:12px}
+  #msg{font-size:.9rem;min-height:1.3em;color:var(--cy);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Demo</div>
+  <h1>Demo de invitación online para casa de cumpleaños infantiles</h1>
+  <p class="lead">Así podría funcionar el sistema de una casa de cumpleaños infantiles: cargás la foto del cumpleañero, el nombre, la edad, la fecha y la hora, y descargás la invitación lista para compartir, en imagen (JPG) o en video.</p>
+
+  <div class="grid">
+    <form id="f" autocomplete="off" onsubmit="return false">
+      <label>Foto del cumpleañero
+        <span class="file" id="drop">
+          <span class="ico" id="ico">📷</span>
+          <span><span id="fname">Elegir o sacar una foto</span><small>JPG o PNG</small></span>
+          <input type="file" id="foto" accept="image/*" />
+        </span>
+      </label>
+      <label>Nombre
+        <input type="text" id="nombre" maxlength="24" placeholder="Sofía" value="Sofía" />
+      </label>
+      <div class="row2">
+        <label>Cumple años
+          <input type="number" id="edad" min="1" max="99" inputmode="numeric" value="7" />
+        </label>
+        <label>Hora
+          <input type="time" id="hora" value="16:00" />
+        </label>
+      </div>
+      <label>Fecha
+        <input type="date" id="fecha" />
+      </label>
+      <label>¿Dónde es?
+        <input type="text" id="lugar" maxlength="60" placeholder="Dirección o nombre del salón" value="Salón tuloogo · Av. Siempre Viva 123" />
+      </label>
+      <div class="btns">
+        <button type="button" id="bjpg">Descargar JPG</button>
+        <button type="button" id="bmp4" class="sec">Descargar video</button>
+        <button type="button" id="bplay" class="sec">▶ Ver animación</button>
+      </div>
+      <div id="msg" role="status"></div>
+    </form>
+
+    <div class="prev">
+      <div class="frame"><canvas id="pv" width="540" height="960"></canvas></div>
+      <p class="note">Vista previa. El logo "tuloogo" es un ejemplo: en tu sitio va el logo de tu salón.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var W = 1080, H = 1920, DUR = 8;
+  var $ = function (id) { return document.getElementById(id); };
+  var BG = ['fondo1.jpg', 'fondo2.jpg', 'fondo3.jpg'].map(function (n) { var i = new Image(); i.src = './assets/inv/' + n; i.onload = rerender; return i; });
+  var SHEEP = new Image(); SHEEP.src = './assets/inv/oveja.svg'; SHEEP.onload = rerender;
+  var photo = null;
+
+  // fecha por defecto: el próximo sábado
+  (function () { var d = new Date(); d.setDate(d.getDate() + ((6 - d.getDay() + 7) % 7 || 7)); $('fecha').value = d.toISOString().slice(0, 10); })();
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function prog(t, a, b) { return clamp((t - a) / (b - a), 0, 1); }
+  function outBack(x) { var c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); }
+  function outCubic(x) { return 1 - Math.pow(1 - x, 3); }
+  function rng(seed) { var s = seed; return function () { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; }
+
+  function fechaTxt(v) {
+    if (!v) return '';
+    var p = v.split('-'); var d = new Date(+p[0], +p[1] - 1, +p[2]);
+    var t = d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+  function state() {
+    return {
+      nombre: ($('nombre').value || 'Nombre').trim(),
+      edad: ($('edad').value || '').trim(),
+      fecha: fechaTxt($('fecha').value),
+      hora: $('hora').value ? $('hora').value + ' hs' : '',
+      lugar: ($('lugar').value || '').trim()
+    };
+  }
+
+  function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+  function star(c, cx, cy, R, r, rot) {
+    c.beginPath();
+    for (var i = 0; i < 10; i++) { var a = rot + Math.PI / 2 * -1 + i * Math.PI / 5, rr = i % 2 ? r : R; c.lineTo(cx + rr * Math.cos(a), cy + rr * Math.sin(a)); }
+    c.closePath();
+  }
+  function cover(c, img, x, y, w, h, zoom) {
+    var s = Math.max(w / img.width, h / img.height) * (zoom || 1);
+    var dw = img.width * s, dh = img.height * s;
+    c.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+  }
+  function fit(c, txt, maxW, size, weight) {
+    var s = size; c.font = weight + ' ' + s + 'px Montserrat, system-ui, sans-serif';
+    while (c.measureText(txt).width > maxW && s > 28) { s -= 4; c.font = weight + ' ' + s + 'px Montserrat, system-ui, sans-serif'; }
+    return s;
+  }
+  function wrap(c, txt, maxW) {
+    var words = txt.split(/\s+/), lines = [], cur = '';
+    words.forEach(function (w) { var test = cur ? cur + ' ' + w : w; if (c.measureText(test).width > maxW && cur) { lines.push(cur); cur = w; } else cur = test; });
+    if (cur) lines.push(cur);
+    return lines.slice(0, 2);
+  }
+
+  // Dibuja un cuadro de la invitación. c: contexto, k: escala (ancho / 1080), t: segundos
+  function draw(c, k, t) {
+    var S = state();
+    c.save(); c.scale(k, k);
+    c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+
+    // fondo: imágenes de la escena de tuweeb, con cambio suave y zoom lento
+    var seg = 2.7, n = BG.length, idx = Math.floor(t / seg) % n, ph = (t % seg);
+    function bg(i, a, z) { var im = BG[i]; if (!im || !im.complete || !im.naturalWidth) return; c.globalAlpha = a; cover(c, im, 0, 0, W, H, z); c.globalAlpha = 1; }
+    c.fillStyle = '#4c3470'; c.fillRect(0, 0, W, H);
+    bg(idx, 1, 1 + ph * 0.035);
+    if (ph < 0.6 && t > seg * 0.99) { var prev = (idx + n - 1) % n; bg(prev, 1 - ph / 0.6, 1 + (seg + ph) * 0.035); bg(idx, ph / 0.6, 1 + ph * 0.035); }
+    var g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, 'rgba(60,38,96,.66)'); g.addColorStop(.4, 'rgba(76,52,112,.50)'); g.addColorStop(.72, 'rgba(60,40,96,.62)'); g.addColorStop(1, 'rgba(40,27,64,.92)');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+
+    // confeti
+    var R = rng(11), cols = ['#e66937', '#5bd0e7', '#ebebef', '#9977b7', '#ffcf5a'];
+    for (var i = 0; i < 46; i++) {
+      var x0 = R() * W, sp = 60 + R() * 120, ph0 = R() * H, sz = 10 + R() * 16, col = cols[i % 5], rot0 = R() * 6, sw = 20 + R() * 40;
+      var y = ((ph0 + t * sp) % (H + 60)) - 30, x = x0 + Math.sin(t * 1.2 + i) * sw;
+      c.save(); c.translate(x, y); c.rotate(rot0 + t * 1.5); c.fillStyle = col; c.globalAlpha = .85;
+      if (i % 3 === 0) { c.beginPath(); c.arc(0, 0, sz * .5, 0, 7); c.fill(); } else { c.fillRect(-sz / 2, -sz / 4, sz, sz / 2); }
+      c.restore();
+    }
+    c.globalAlpha = 1;
+
+    // logo: cabeza de oveja + "tuloogo"
+    var a1 = outCubic(prog(t, 0, .7));
+    c.save(); c.globalAlpha = a1; c.translate(0, (1 - a1) * -40);
+    if (SHEEP.complete && SHEEP.naturalWidth) { var lw = 190, lh = lw * SHEEP.naturalHeight / SHEEP.naturalWidth; c.drawImage(SHEEP, W / 2 - lw / 2, 90, lw, lh); }
+    c.fillStyle = '#ebebef'; c.font = '700 54px Montserrat, system-ui, sans-serif'; c.fillText('tuloogo', W / 2, 90 + 190 + 74);
+    c.restore();
+
+    // "¡Estás invitado!"
+    var a2 = outCubic(prog(t, .35, 1));
+    c.save(); c.globalAlpha = a2; c.fillStyle = '#e66937'; c.font = '800 46px Montserrat, system-ui, sans-serif';
+    if (c.letterSpacing !== undefined) c.letterSpacing = '8px';
+    c.fillText('¡ESTÁS INVITADO!', W / 2, 430); if (c.letterSpacing !== undefined) c.letterSpacing = '0px'; c.restore();
+
+    // foto en círculo
+    var pc = outBack(prog(t, .5, 1.3)), cx = W / 2, cy = 770, r = 270 * Math.max(pc, 0.001);
+    c.save();
+    c.beginPath(); c.arc(cx, cy, r + 26, 0, 7); c.fillStyle = '#5bd0e7'; c.fill();
+    c.beginPath(); c.arc(cx, cy, r + 12, 0, 7); c.fillStyle = '#ebebef'; c.fill();
+    c.beginPath(); c.arc(cx, cy, r, 0, 7); c.clip();
+    if (photo) { cover(c, photo, cx - r, cy - r, r * 2, r * 2, 1); }
+    else { c.fillStyle = '#9977b7'; c.fillRect(cx - r, cy - r, r * 2, r * 2); if (SHEEP.complete && SHEEP.naturalWidth) { var sw2 = r * 1.25; c.drawImage(SHEEP, cx - sw2 / 2, cy - sw2 * .5, sw2, sw2 * SHEEP.naturalHeight / SHEEP.naturalWidth); } }
+    c.restore();
+    // estrellas alrededor
+    var tw = [[-340, -190, 44, .3], [350, -120, 36, 1.1], [-310, 230, 30, 2], [330, 250, 48, .7], [-390, 40, 30, 1.6]];
+    tw.forEach(function (s, i) {
+      var sc = outBack(prog(t, 1 + i * .12, 1.6 + i * .12)) * (1 + .12 * Math.sin(t * 3 + i));
+      c.save(); c.translate(cx + s[0], cy + s[1]); c.rotate(Math.sin(t * 1.4 + i) * .25); c.scale(Math.max(sc, 0.001), Math.max(sc, 0.001));
+      star(c, 0, 0, s[2], s[2] * .45, 0); c.fillStyle = ['#ffcf5a', '#e66937', '#5bd0e7', '#ebebef', '#ffcf5a'][i]; c.fill(); c.restore();
+    });
+    // globos
+    [[110, 1010, '#e66937', 0], [970, 980, '#5bd0e7', 1.4], [160, 1120, '#9977b7', 2.6], [925, 1100, '#ebebef', 3.7]].forEach(function (b, i) {
+      var ap = outCubic(prog(t, 1.2 + i * .15, 2 + i * .15)), by = b[1] + (1 - ap) * 500 + Math.sin(t * 1.6 + b[3]) * 14;
+      c.save(); c.globalAlpha = ap;
+      c.strokeStyle = 'rgba(235,235,239,.6)'; c.lineWidth = 3; c.beginPath(); c.moveTo(b[0], by + 62); c.quadraticCurveTo(b[0] + 14 * Math.sin(t + i), by + 110, b[0], by + 170); c.stroke();
+      c.beginPath(); c.ellipse(b[0], by, 48, 62, 0, 0, 7); c.fillStyle = b[2]; c.fill();
+      c.beginPath(); c.ellipse(b[0] - 16, by - 22, 10, 18, -.5, 0, 7); c.fillStyle = 'rgba(255,255,255,.45)'; c.fill();
+      c.restore();
+    });
+
+    // nombre
+    var a3 = outCubic(prog(t, 1.1, 1.8));
+    c.save(); c.globalAlpha = a3; c.translate(0, (1 - a3) * 50); c.fillStyle = '#fbf9ff';
+    fit(c, S.nombre, 880, 150, 800); c.fillText(S.nombre, W / 2, 1195); c.restore();
+
+    // cumple + edad
+    if (S.edad) {
+      var a4 = prog(t, 1.6, 2.4), sc4 = outBack(a4);
+      c.save(); c.globalAlpha = clamp(a4 * 2, 0, 1);
+      c.fillStyle = '#5bd0e7'; c.font = '700 50px Montserrat, system-ui, sans-serif'; if (c.letterSpacing !== undefined) c.letterSpacing = '10px';
+      c.fillText('CUMPLE', W / 2, 1268); if (c.letterSpacing !== undefined) c.letterSpacing = '0px';
+      c.translate(W / 2, 1400); c.scale(Math.max(sc4, 0.001), Math.max(sc4, 0.001));
+      c.fillStyle = '#e66937'; c.font = '800 210px Montserrat, system-ui, sans-serif'; c.fillText(S.edad, 0, 80);
+      c.restore();
+      c.save(); c.globalAlpha = clamp(prog(t, 1.9, 2.5), 0, 1); c.fillStyle = '#fbf9ff'; c.font = '700 58px Montserrat, system-ui, sans-serif';
+      c.fillText(+S.edad === 1 ? 'año' : 'años', W / 2, 1552); c.restore();
+    }
+
+    // fecha y hora
+    var a5 = outCubic(prog(t, 2.2, 3)); c.save(); c.globalAlpha = a5; c.translate(0, (1 - a5) * 40);
+    rrect(c, 110, 1595, 860, 128, 36); c.fillStyle = 'rgba(235,235,239,.95)'; c.fill();
+    c.fillStyle = '#4c3470'; var fs = fit(c, S.fecha, 780, 50, 800); c.fillText(S.fecha, W / 2, 1659);
+    c.fillStyle = '#e66937'; c.font = '800 42px Montserrat, system-ui, sans-serif'; c.fillText(S.hora, W / 2, 1704);
+    c.restore();
+
+    // dónde es
+    var a6 = outCubic(prog(t, 2.8, 3.6)); c.save(); c.globalAlpha = a6; c.translate(0, (1 - a6) * 40);
+    c.fillStyle = '#5bd0e7'; c.font = '800 36px Montserrat, system-ui, sans-serif'; if (c.letterSpacing !== undefined) c.letterSpacing = '6px';
+    c.fillText('¿DÓNDE ES?', W / 2, 1788); if (c.letterSpacing !== undefined) c.letterSpacing = '0px';
+    c.fillStyle = '#fbf9ff'; c.font = '600 40px Montserrat, system-ui, sans-serif';
+    wrap(c, S.lugar, 900).forEach(function (l, i) { c.fillText(l, W / 2, 1838 + i * 50); });
+    c.restore();
+    c.restore();
+  }
+
+  var pv = $('pv'), pctx = pv.getContext('2d');
+  var playing = false, t0 = 0;
+  function rerender() { if (!playing) { pctx.clearRect(0, 0, pv.width, pv.height); draw(pctx, pv.width / W, 9); } }
+  function loop(ts) {
+    if (!playing) return;
+    var t = (ts - t0) / 1000; if (t > DUR) { playing = false; rerender(); return; }
+    pctx.clearRect(0, 0, pv.width, pv.height); draw(pctx, pv.width / W, t); requestAnimationFrame(loop);
+  }
+  $('bplay').onclick = function () { playing = true; t0 = performance.now(); requestAnimationFrame(loop); };
+
+  ['nombre', 'edad', 'fecha', 'hora', 'lugar'].forEach(function (id) { $(id).addEventListener('input', function () { rerender(); }); });
+  $('foto').addEventListener('change', function (e) {
+    var f = e.target.files && e.target.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      var im = new Image();
+      im.onload = function () {
+        // se reduce para que la animación sea fluida en celulares
+        var m = 1400, s = Math.min(1, m / Math.max(im.width, im.height)), cv = document.createElement('canvas');
+        cv.width = Math.round(im.width * s); cv.height = Math.round(im.height * s); cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height);
+        photo = cv; $('fname').textContent = f.name; $('ico').innerHTML = ''; var th = new Image(); th.src = cv.toDataURL('image/jpeg', .6); $('ico').appendChild(th);
+        rerender(); resize();
+      };
+      im.src = rd.result;
+    };
+    rd.readAsDataURL(f);
+  });
+
+  function slug() { return (state().nombre || 'invitacion').toLowerCase().replace(/[^a-z0-9áéíóúñü]+/gi, '-').replace(/^-|-$/g, '') || 'invitacion'; }
+  function save(blob, name) { var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000); }
+  function msg(t) { $('msg').textContent = t || ''; }
+
+  $('bjpg').onclick = function () {
+    var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    draw(cv.getContext('2d'), 1, 9);
+    cv.toBlob(function (b) { if (b) { save(b, 'invitacion-' + slug() + '.jpg'); msg('Listo: se descargó la imagen.'); } else msg('No se pudo generar la imagen.'); }, 'image/jpeg', .92);
+  };
+
+  $('bmp4').onclick = function () {
+    if (!window.MediaRecorder) { msg('Este navegador no puede grabar video. Probá con Chrome o Safari actualizados.'); return; }
+    var types = ['video/mp4;codecs=avc1.42E01E', 'video/mp4;codecs=avc1.4D401E', 'video/mp4;codecs=avc1.64001F', 'video/mp4;codecs=avc1', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+    var mime = types.filter(function (t) { return MediaRecorder.isTypeSupported(t); })[0];
+    if (!mime) { msg('Este navegador no puede grabar video.'); return; }
+    var ext = mime.indexOf('mp4') >= 0 ? 'mp4' : 'webm';
+    var cv = document.createElement('canvas'); cv.width = 720; cv.height = 1280; var cx = cv.getContext('2d');
+    var stream = cv.captureStream(30), rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 5000000 }), chunks = [];
+    rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+    rec.onstop = function () {
+      $('bmp4').disabled = false; $('bmp4').textContent = 'Descargar video';
+      save(new Blob(chunks, { type: mime.split(';')[0] }), 'invitacion-' + slug() + '.' + ext);
+      msg(ext === 'mp4' ? 'Listo: se descargó el video MP4.' : 'Listo: se descargó el video (formato WebM, porque este navegador no graba MP4).');
+    };
+    $('bmp4').disabled = true; msg('Generando el video… son unos 8 segundos.');
+    var s0 = performance.now(); rec.start(250);
+    (function tick(ts) {
+      var t = (ts - s0) / 1000;
+      if (t >= DUR) { rec.stop(); return; }
+      $('bmp4').textContent = 'Grabando ' + Math.round(t / DUR * 100) + '%';
+      cx.clearRect(0, 0, 720, 1280); draw(cx, 720 / W, t); requestAnimationFrame(tick);
+    })(s0);
+  };
+
+  function resize() { try { parent.postMessage({ invH: document.documentElement.scrollHeight + 8 }, '*'); } catch (e) {} }
+  window.addEventListener('resize', resize); window.addEventListener('load', function () { resize(); setTimeout(resize, 600); });
+  if (document.fonts && document.fonts.load) { Promise.all([document.fonts.load('800 40px Montserrat'), document.fonts.load('700 40px Montserrat'), document.fonts.load('600 40px Montserrat')]).then(rerender, rerender); }
+  rerender();
+})();
+</script>
+</body>
+</html>
