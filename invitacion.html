@@ -43,38 +43,76 @@
   canvas#pv{display:block;width:100%;height:100%}
   .note{font-size:.8rem;opacity:.65;line-height:1.5;margin-top:12px}
   #msg{font-size:.9rem;min-height:1.3em;color:var(--cy);font-weight:600}
+
+  /* ---- diseño extra (el fondo no cambia) ---- */
+  body{position:relative;overflow-x:hidden}
+  body:before,body:after{content:"";position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+  body:before{width:340px;height:340px;right:-120px;top:-90px;background:radial-gradient(circle,rgba(91,208,231,.22),transparent 68%)}
+  body:after{width:380px;height:380px;left:-140px;bottom:-120px;background:radial-gradient(circle,rgba(232,105,58,.20),transparent 68%)}
+  .wrap{position:relative;z-index:1}
+  .brand{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .brand img{height:44px;width:auto;display:block}
+  .brand b{font-size:1.25rem;font-weight:800;letter-spacing:-.01em}
+  .brand span{font-size:.7rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;background:var(--cy);color:#2a1a46;padding:5px 10px;border-radius:999px}
+  .eyebrow{display:inline-block;background:rgba(232,105,58,.16);padding:6px 12px;border-radius:999px}
+  h1 em{font-style:normal;color:var(--cy)}
+  form{background:linear-gradient(160deg,rgba(235,235,239,.10),rgba(235,235,239,.04));border:1.5px solid rgba(235,235,239,.16);border-radius:26px;padding:clamp(16px,3vw,28px);box-shadow:0 24px 50px -28px rgba(10,5,30,.8)}
+  label .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--ac);color:#fff;font-size:.72rem;font-style:normal;margin-right:8px;letter-spacing:0;vertical-align:middle}
+  button#bjpg{background:linear-gradient(135deg,#f08a54,#e8693a);box-shadow:0 12px 24px -10px rgba(232,105,58,.8)}
+  button.sec{background:rgba(235,235,239,.08)}
+  .btns button{flex:1 1 150px}
+  .frame{box-shadow:0 30px 70px -25px rgba(10,5,30,.8),0 0 0 3px rgba(91,208,231,.4)}
+  .badge{position:absolute;right:-8px;top:-10px;background:var(--ac);color:#fff;font-weight:800;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:7px 12px;border-radius:999px;transform:rotate(6deg);z-index:2;box-shadow:0 8px 18px -8px rgba(0,0,0,.6)}
+  .prevbox{position:relative}
+  /* celular: vista previa fija arriba, el formulario se desplaza debajo (todo en una pantalla) */
+  @media (max-width:900px){
+    html,body{height:100%}
+    body{padding:0;overflow:hidden}
+    .wrap{height:100%;max-width:none}
+    .scroller{height:100%;display:flex;flex-direction:column}
+    .grid{display:flex;flex-direction:column;flex:1;min-height:0;gap:0;overflow:hidden}
+    .prev{position:static;order:-1;flex:none;height:42%;padding:10px 0 10px;display:flex;justify-content:center;background:var(--bg);z-index:3}
+    .prevbox{height:100%;aspect-ratio:9/16;margin:0 auto}
+    .frame{height:100%;width:100%;border-radius:16px}
+    .note,.badge{display:none}
+    form{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;min-height:0;margin:0 14px 14px;border-radius:20px;padding:14px;align-content:start}
+    .hd{display:none}
+    .brand{padding:10px 14px 0;margin:0}.brand img{height:30px}.brand b{font-size:1.05rem}
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="eyebrow">Demo</div>
-  <h1>Demo de invitación online para casa de cumpleaños infantiles</h1>
-  <p class="lead">Así podría funcionar el sistema de una casa de cumpleaños infantiles: cargás la foto del cumpleañero, el nombre, la edad, la fecha y la hora, y descargás la invitación lista para compartir, en imagen (JPG) o en video.</p>
+  <div class="scroller">
+  <div class="brand"><img src="./assets/inv/oveja.svg" alt="" /><b>tuloogo</b><span>Demo</span></div>
+  <div class="hd"><div class="eyebrow">Invitaciones online</div>
+  <h1>Demo de invitación online para <em>casa de cumpleaños infantiles</em></h1>
+  <p class="lead">Así podría funcionar el sistema de una casa de cumpleaños infantiles: cargás la foto del cumpleañero, el nombre, la edad, la fecha y la hora, y descargás la invitación lista para compartir, en imagen JPG y en video MP4 animado.</p></div>
 
   <div class="grid">
     <form id="f" autocomplete="off" onsubmit="return false">
-      <label>Foto del cumpleañero
+      <label><span><i class="n">1</i>Foto del cumpleañero</span>
         <span class="file" id="drop">
           <span class="ico" id="ico">📷</span>
           <span><span id="fname">Elegir o sacar una foto</span><small>JPG o PNG</small></span>
           <input type="file" id="foto" accept="image/*" />
         </span>
       </label>
-      <label>Nombre
+      <label><span><i class="n">2</i>Nombre</span>
         <input type="text" id="nombre" maxlength="24" placeholder="Sofía" value="Sofía" />
       </label>
       <div class="row2">
-        <label>Cumple años
+        <label><span><i class="n">3</i>Cumple años</span>
           <input type="number" id="edad" min="1" max="99" inputmode="numeric" value="7" />
         </label>
-        <label>Hora
+        <label><span><i class="n">4</i>Hora</span>
           <input type="time" id="hora" value="16:00" />
         </label>
       </div>
-      <label>Fecha
+      <label><span><i class="n">5</i>Fecha</span>
         <input type="date" id="fecha" />
       </label>
-      <label>¿Dónde es?
+      <label><span><i class="n">6</i>¿Dónde es?</span>
         <input type="text" id="lugar" maxlength="60" placeholder="Dirección o nombre del salón" value="Salón tuloogo · Av. Siempre Viva 123" />
       </label>
       <div class="btns">
@@ -86,9 +124,10 @@
     </form>
 
     <div class="prev">
-      <div class="frame"><canvas id="pv" width="540" height="960"></canvas></div>
+      <div class="prevbox"><span class="badge">Vista previa</span><div class="frame"><canvas id="pv" width="540" height="960"></canvas></div></div>
       <p class="note">Vista previa. El logo "tuloogo" es un ejemplo: en tu sitio va el logo de tu salón.</p>
     </div>
+  </div>
   </div>
 </div>
 
@@ -311,7 +350,13 @@
     })(s0);
   };
 
-  function resize() { try { parent.postMessage({ invH: document.documentElement.scrollHeight + 8 }, '*'); } catch (e) {} }
+  function resize() {
+    try {
+      var mob = window.matchMedia('(max-width:900px)').matches;
+      if (mob) parent.postMessage({ invM: 1 }, '*');
+      else { var w = document.querySelector('.scroller'); parent.postMessage({ invH: Math.ceil(w.getBoundingClientRect().height) + 100 }, '*'); }
+    } catch (e) {}
+  }
   window.addEventListener('resize', resize); window.addEventListener('load', function () { resize(); setTimeout(resize, 600); });
   if (document.fonts && document.fonts.load) { Promise.all([document.fonts.load('800 40px Montserrat'), document.fonts.load('700 40px Montserrat'), document.fonts.load('600 40px Montserrat')]).then(rerender, rerender); }
   rerender();
