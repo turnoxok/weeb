@@ -1366,7 +1366,7 @@ function ScrollSmoother() {
        La barra del visor ya marca el final, pero la escena va un poco atrás (suavizado): se espera a que la alcance. */
     try {
       const b = wsBlock(), top = window.__wsScrollTop, tot = window.__wsScrollTotal;
-      if (b && tot > 0 && next < b.mt - 0.004) {
+      if (b && tot > 0 && !window.__wsJump && next < b.mt - 0.004) {
         const end = top + tot, y = window.scrollY, vh = window.innerHeight || 800;
         if (y > end + 1 && y < end + vh * 1.5) {
           if (window.__lenis && window.__lenis.scrollTo) window.__lenis.scrollTo(end, { immediate: true, force: true });
@@ -5218,6 +5218,7 @@ function SiteMenu({ cfg, contained }) {
         const el = it.sec === "3d" ? document.querySelector(".ws-3d") : document.getElementById(it.sec || "");
         if (el) {
           const y = el.getBoundingClientRect().top + window.scrollY;
+          window.__wsJump = true; setTimeout(() => { window.__wsJump = false; window.__wsSnap = true; }, 2200);
           const l = window.__lenis;
           if (l && l.scrollTo) l.scrollTo(y, { duration: 1.6, easing: (t) => 1 - Math.pow(1 - t, 4) });
           else window.scrollTo({ top: y, behavior: "smooth" });
