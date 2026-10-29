@@ -367,7 +367,7 @@
   function rerender() { if (!playing) { pctx.clearRect(0, 0, pv.width, pv.height); draw(pctx, pv.width / W, 9); } }
   function loop(ts) {
     if (!playing) return;
-    var t = (ts - t0) / 1000; if (t > DUR) { playing = false; FAST = false; if (pv.width !== 720) { pv.width = 720; pv.height = 1280; } rerender(); return; }
+    var t = (performance.now() - t0) / 1000; if (t > DUR) { playing = false; FAST = false; if (pv.width !== 720) { pv.width = 720; pv.height = 1280; } rerender(); return; }
     pctx.clearRect(0, 0, pv.width, pv.height); draw(pctx, pv.width / W, t); requestAnimationFrame(loop);
   }
   var SMALL = function () { return Math.min(window.innerWidth, screen.width || 9999) < 900; };
@@ -421,7 +421,7 @@
     $('bmp4').disabled = true; msg('Generando el video… son unos 8 segundos.');
     var s0 = performance.now(); rec.start(250);
     (function tick(ts) {
-      var t = (ts - s0) / 1000;
+      var t = (performance.now() - s0) / 1000;
       if (t >= DUR) { rec.stop(); return; }
       $('bmp4').textContent = 'Grabando ' + Math.round(t / DUR * 100) + '%';
       cx.clearRect(0, 0, VW, VH); draw(cx, VW / W, t); requestAnimationFrame(tick);
