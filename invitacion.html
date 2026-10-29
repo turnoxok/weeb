@@ -60,22 +60,21 @@
   .fhint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;background:rgba(40,27,64,.82);color:#fff;font-weight:700;font-size:calc(var(--u)*38);padding:calc(var(--u)*16) calc(var(--u)*30);border-radius:999px;white-space:nowrap;font-family:'Montserrat',sans-serif}
   .fhint.off{display:none}
   .mobhint{display:none}
-  /* celular: todo en una pantalla, se edita tocando la invitación */
+  /* celular: mismo orden que en la compu, en una sola columna (título, vista previa, botones) */
   @media (max-width:900px){
-    html,body{height:100%}
-    body{padding:0;overflow:hidden}
-    .wrap{height:100%;max-width:none;display:flex;flex-direction:column}
-    .brand{margin:0;padding:8px 14px 0}.brand img{height:28px}.brand b{font-size:1rem}
-    .hd,.note,.badge{display:none}
-    .main{display:flex;flex-direction:column;flex:1;min-height:0;gap:0}
-    .stagewrap{flex:1;min-height:0;padding:8px 0;justify-content:center}
-    .box{width:auto;height:100%;max-width:100%}
-    .frame{border-radius:16px}
-    .mobhint{display:block;text-align:center;font-size:.78rem;font-weight:600;opacity:.8;padding:0 14px 6px}
-    .ctrl{flex:none;padding:0 14px 12px}
-    .btns{flex-wrap:nowrap;gap:8px}
-    button{padding:12px 8px;font-size:.84rem;min-height:46px;flex:1 1 0}
-    #msg{margin-top:6px;font-size:.8rem;min-height:1.1em;text-align:center}
+    body{padding:16px 16px 20px}
+    .main{display:flex;flex-direction:column;gap:18px;align-items:stretch}
+    .side{display:contents}
+    .hd{order:1}
+    .stagewrap{order:2;padding:6px 0 4px}
+    .ctrl{order:3}
+    .box{width:min(100%,340px);margin:0 auto}
+    .steps{display:none}
+    .lead{margin-bottom:6px;font-size:.95rem}
+    h1{font-size:1.75rem}
+    .mobhint{display:block;text-align:center;font-size:.85rem;font-weight:600;opacity:.85;margin:0 0 12px}
+    .btns{gap:10px}
+    button{flex:1 1 140px}
   }
 </style>
 </head>
@@ -431,11 +430,7 @@
   function units() { var b = $('box'); if (b) document.documentElement.style.setProperty('--u', (b.clientWidth / W) + 'px'); }
   function resize() {
     units();
-    try {
-      var mob = window.matchMedia('(max-width:900px)').matches;
-      if (mob) parent.postMessage({ invM: 1 }, '*');
-      else { var w = document.querySelector('.wrap'); parent.postMessage({ invH: Math.ceil(w.getBoundingClientRect().height) + 100 }, '*'); }
-    } catch (e) {}
+    try { var w = document.querySelector('.wrap'); parent.postMessage({ invH: Math.ceil(w.getBoundingClientRect().height) + 40 + (window.innerWidth > 900 ? 60 : 0) }, '*'); } catch (e) {}
   }
   window.addEventListener('resize', resize); window.addEventListener('load', function () { resize(); setTimeout(resize, 600); });
   if (window.ResizeObserver) new ResizeObserver(units).observe($('box'));

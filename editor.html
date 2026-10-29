@@ -1374,7 +1374,6 @@ function ScrollSmoother() {
         }
       }
     } catch (e) { /* sin tope */ }
-    setSmoothProgress(next);
   });
   return null;
 }
@@ -6064,7 +6063,7 @@ function App() {
     const els = Array.from(document.querySelectorAll(".ws-3d"));
     if (!els.length || typeof IntersectionObserver === "undefined") return undefined;
     const vis = new Set();
-    const io = new IntersectionObserver((es) => { es.forEach((e) => { if (e.isIntersecting) vis.add(e.target); else vis.delete(e.target); }); setInView(vis.size > 0); }, { rootMargin: IS_TOUCH_DEVICE ? "900px 0px" : "240px 0px" });
+    const io = new IntersectionObserver((es) => { es.forEach((e) => { if (e.isIntersecting) vis.add(e.target); else vis.delete(e.target); }); setInView(vis.size > 0); }, { rootMargin: IS_TOUCH_DEVICE ? "250px 0px" : "240px 0px" });
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
   }, []);
