@@ -1215,6 +1215,45 @@ function useScrollProgress() {
 
 /* Celular: cada deslizamiento lleva exactamente a la pose siguiente (o la anterior) y la animación se ve completa.
    Los gestos horizontales (por ejemplo los días del turnero) y los toques en botones quedan como siempre. */
+/* Modo "?poses": barra fija abajo para ir pose por pose (también en celular). Sirve para revisar cada pose y marcar qué ajustar.
+   Se activa agregando ?poses a la dirección (…/index.html?poses). Sin ese parámetro no hace nada. */
+function installPosesViewer() {
+  if (typeof window === "undefined" || !/[?&]poses(=|&|$)/.test(window.location.search) || document.getElementById("ws-poses")) return;
+  const marks = scenes.map((s, i) => ({ i, p: s.progress, label: s.label || ("Pose " + (i + 1)) }));
+  const css = document.createElement("style");
+  css.textContent = "#ws-poses{position:fixed;left:0;right:0;bottom:0;z-index:99999;display:flex;align-items:center;gap:8px;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));background:rgba(20,12,32,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;font:600 13px/1.2 system-ui,sans-serif;touch-action:manipulation}"
+    + "#ws-poses button{flex:none;width:46px;height:46px;border:0;border-radius:12px;background:#e66937;color:#fff;font:700 20px/1 system-ui;cursor:pointer}"
+    + "#ws-poses button:active{transform:scale(.94)}#ws-poses .wp-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}"
+    + "#ws-poses .wp-t{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#ws-poses select{width:100%;font:500 12px system-ui;padding:4px;border-radius:6px;border:0;background:#fff;color:#111}"
+    + "#ws-poses.wp-min .wp-mid,#ws-poses.wp-min .wp-nx,#ws-poses.wp-min .wp-pv{display:none}#ws-poses.wp-min{left:auto;background:transparent;padding:8px}#ws-poses .wp-hide{background:rgba(255,255,255,.25);width:38px;height:38px;font-size:16px}";
+  document.head.appendChild(css);
+  const bar = document.createElement("div"); bar.id = "ws-poses";
+  bar.innerHTML = '<button class="wp-pv" aria-label="Pose anterior">‹</button><div class="wp-mid"><div class="wp-t"></div><select></select></div><button class="wp-nx" aria-label="Pose siguiente">›</button><button class="wp-hide" aria-label="Ocultar">–</button>';
+  document.body.appendChild(bar);
+  const sel = bar.querySelector("select"), tt = bar.querySelector(".wp-t");
+  marks.forEach((m) => { const o = document.createElement("option"); o.value = m.i; o.textContent = (m.i + 1) + " · " + m.label; sel.appendChild(o); });
+  const B = () => wsBlock() || { mf: 0, mt: 1 };
+  const curIdx = () => {
+    const b = B(), span = Math.max(1e-6, b.mt - b.mf), cur = (useScrollStore.getState().progress - b.mf) / span;
+    let bi = 0, bd = 1e9; marks.forEach((m) => { const d = Math.abs((m.p - b.mf) / span - cur); if (d < bd) { bd = d; bi = m.i; } }); return bi;
+  };
+  const go = (i) => {
+    i = Math.max(0, Math.min(marks.length - 1, i));
+    const b = B(), span = Math.max(1e-6, b.mt - b.mf), total = window.__wsScrollTotal || 0;
+    const target = (window.__wsScrollTop || 0) + ((marks[i].p - b.mf) / span) * total;
+    if (window.__lenis && window.__lenis.scrollTo) window.__lenis.scrollTo(target, { duration: 1.0, force: true });
+    else window.scrollTo({ top: target, behavior: "smooth" });
+  };
+  let last = -1;
+  const upd = () => { const i = curIdx(); if (i !== last) { last = i; tt.textContent = (i + 1) + " / " + marks.length + " · " + marks[i].label; sel.value = String(i); } };
+  setInterval(upd, 120); upd();
+  bar.querySelector(".wp-pv").onclick = () => go(curIdx() - 1);
+  bar.querySelector(".wp-nx").onclick = () => go(curIdx() + 1);
+  sel.onchange = () => go(parseInt(sel.value, 10));
+  bar.querySelector(".wp-hide").onclick = () => { bar.classList.toggle("wp-min"); };
+}
+if (typeof window !== "undefined") window.addEventListener("load", () => setTimeout(installPosesViewer, 1200));
+
 function useMobileSnap() {
   useEffect(() => {
     if (!MOBILE_SNAP || !IS_TOUCH_DEVICE) return;
@@ -7711,6 +7750,7 @@ function generateScenesArrayCode(camsByKf, fxByKf, stages, easings) {
     const easing = idx === 0 ? "smooth" : (easings[idx - 1] || "smooth");
     return `  {
     id: "${kf.id}",
+    label: ${JSON.stringify(kf.label || "")},
     progress: ${roundProgress(kf.progress)},
     easing: "${easing}",
     camera: { position: ${fmtVec(cam.position)}, lookAt: ${fmtVec(cam.lookAt)}, fov: ${fmtNum(cam.fov)}, roll: ${fmtNum(cam.roll || 0)}${cam.arc ? ", arc: true" : ""} },
