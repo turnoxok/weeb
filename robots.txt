@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /editorhibrido.html
+Disallow: /editor.html
+Disallow: /poses.html
+
+Sitemap: https://www.tuweeb.com/sitemap.xml
