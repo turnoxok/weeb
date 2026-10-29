@@ -8,138 +8,128 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
-  :root{--bg:#4c3470;--fg:#fbf9ff;--ac:#e8693a;--cy:#5bd0e7;--li:#9977b7;--off:#ebebef}
+  @font-face{font-family:'Baloo 2';font-weight:700;src:url(./assets/inv/baloo2-700.woff2) format('woff2')}
+  @font-face{font-family:'Baloo 2';font-weight:800;src:url(./assets/inv/baloo2-800.woff2) format('woff2')}
+  :root{--bg:#4c3470;--fg:#fbf9ff;--ac:#e8693a;--cy:#5bd0e7;--li:#9977b7;--off:#ebebef;--u:.3px}
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{background:var(--bg);color:var(--fg);font-family:'Montserrat',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-  body{padding:clamp(20px,4vw,48px) clamp(16px,4vw,40px)}
-  .wrap{max-width:1100px;margin:0 auto}
-  .eyebrow{font-size:.78rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--ac);margin-bottom:12px}
-  h1{font-size:clamp(1.7rem,4.6vw,2.9rem);line-height:1.08;letter-spacing:-.02em;font-weight:800;margin-bottom:12px}
-  .lead{max-width:44em;opacity:.85;line-height:1.6;margin-bottom:28px;font-size:clamp(.95rem,1.9vw,1.1rem)}
-  .grid{display:grid;grid-template-columns:1fr 380px;gap:32px;align-items:start}
-  @media (max-width:900px){.grid{grid-template-columns:1fr}}
-  form{display:grid;gap:16px}
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  label{display:grid;gap:7px;font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--cy)}
-  input[type=text],input[type=number],input[type=date],input[type=time]{
-    width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid rgba(235,235,239,.28);background:rgba(235,235,239,.09);color:var(--fg);
-    font:600 1rem 'Montserrat',system-ui,sans-serif;outline:none;transition:.2s;min-height:50px}
-  input:focus{border-color:var(--cy);background:rgba(235,235,239,.14)}
-  input::placeholder{color:rgba(251,249,255,.45)}
-  input[type=date],input[type=time]{color-scheme:dark}
-  .file{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;border:1.5px dashed rgba(235,235,239,.4);background:rgba(235,235,239,.06);cursor:pointer;text-transform:none;letter-spacing:0;font-size:.95rem;color:var(--fg)}
-  .file:hover{border-color:var(--cy)}
-  .file input{display:none}
-  .file .ico{width:46px;height:46px;border-radius:50%;background:var(--li);display:grid;place-items:center;font-size:1.3rem;flex:none;overflow:hidden}
-  .file .ico img{width:100%;height:100%;object-fit:cover}
-  .file small{display:block;opacity:.65;font-weight:500;margin-top:2px}
-  .btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
-  button{font:700 1rem 'Montserrat',system-ui,sans-serif;padding:15px 24px;border-radius:999px;border:2px solid var(--ac);background:var(--ac);color:#fff;cursor:pointer;transition:.2s;min-height:52px}
-  button:hover{transform:translateY(-2px);filter:brightness(1.07)}
-  button.sec{background:transparent;border-color:var(--off);color:var(--off)}
-  button:disabled{opacity:.55;cursor:wait;transform:none}
-  .prev{position:sticky;top:16px}
-  .frame{border-radius:22px;overflow:hidden;box-shadow:0 30px 70px -25px rgba(10,5,30,.8);background:#2e1f47;aspect-ratio:9/16;width:100%}
-  canvas#pv{display:block;width:100%;height:100%}
-  .note{font-size:.8rem;opacity:.65;line-height:1.5;margin-top:12px}
-  #msg{font-size:.9rem;min-height:1.3em;color:var(--cy);font-weight:600}
-
-  /* ---- diseño extra (el fondo no cambia) ---- */
-  body{position:relative;overflow-x:hidden}
+  body{padding:clamp(20px,4vw,48px) clamp(16px,4vw,40px);position:relative;overflow-x:hidden}
   body:before,body:after{content:"";position:fixed;border-radius:50%;pointer-events:none;z-index:0}
   body:before{width:340px;height:340px;right:-120px;top:-90px;background:radial-gradient(circle,rgba(91,208,231,.22),transparent 68%)}
   body:after{width:380px;height:380px;left:-140px;bottom:-120px;background:radial-gradient(circle,rgba(232,105,58,.20),transparent 68%)}
-  .wrap{position:relative;z-index:1}
+  .wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto}
   .brand{display:flex;align-items:center;gap:12px;margin-bottom:18px}
   .brand img{height:44px;width:auto;display:block}
   .brand b{font-size:1.25rem;font-weight:800;letter-spacing:-.01em}
   .brand span{font-size:.7rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;background:var(--cy);color:#2a1a46;padding:5px 10px;border-radius:999px}
-  .eyebrow{display:inline-block;background:rgba(232,105,58,.16);padding:6px 12px;border-radius:999px}
+  .eyebrow{display:inline-block;background:rgba(232,105,58,.16);color:var(--ac);font-size:.78rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;padding:6px 12px;border-radius:999px;margin-bottom:14px}
+  h1{font-size:clamp(1.7rem,4.6vw,2.9rem);line-height:1.08;letter-spacing:-.02em;font-weight:800;margin-bottom:12px}
   h1 em{font-style:normal;color:var(--cy)}
-  form{background:linear-gradient(160deg,rgba(235,235,239,.10),rgba(235,235,239,.04));border:1.5px solid rgba(235,235,239,.16);border-radius:26px;padding:clamp(16px,3vw,28px);box-shadow:0 24px 50px -28px rgba(10,5,30,.8)}
-  label .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--ac);color:#fff;font-size:.72rem;font-style:normal;margin-right:8px;letter-spacing:0;vertical-align:middle}
-  button#bjpg{background:linear-gradient(135deg,#f08a54,#e8693a);box-shadow:0 12px 24px -10px rgba(232,105,58,.8)}
-  button.sec{background:rgba(235,235,239,.08)}
-  .btns button{flex:1 1 150px}
-  .frame{box-shadow:0 30px 70px -25px rgba(10,5,30,.8),0 0 0 3px rgba(91,208,231,.4)}
-  .badge{position:absolute;right:-8px;top:-10px;background:var(--ac);color:#fff;font-weight:800;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:7px 12px;border-radius:999px;transform:rotate(6deg);z-index:2;box-shadow:0 8px 18px -8px rgba(0,0,0,.6)}
-  .prevbox{position:relative}
-  /* celular: vista previa fija arriba, el formulario se desplaza debajo (todo en una pantalla) */
+  .lead{max-width:36em;opacity:.85;line-height:1.6;margin-bottom:22px;font-size:clamp(.95rem,1.9vw,1.08rem)}
+  .main{display:grid;grid-template-columns:1fr minmax(300px,400px);gap:44px;align-items:center}
+  .steps{list-style:none;display:grid;gap:12px;margin-bottom:26px}
+  .steps li{display:flex;align-items:center;gap:14px;font-weight:600;font-size:1rem;background:rgba(235,235,239,.08);border:1.5px solid rgba(235,235,239,.14);border-radius:18px;padding:12px 16px}
+  .steps i{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--ac);color:#fff;font-style:normal;font-weight:800;font-size:.9rem}
+  .steps small{display:block;opacity:.65;font-weight:500;font-size:.82rem;margin-top:1px}
+  .btns{display:flex;flex-wrap:wrap;gap:12px}
+  button{font:700 1rem 'Montserrat',system-ui,sans-serif;padding:15px 24px;border-radius:999px;border:2px solid var(--ac);background:linear-gradient(135deg,#f08a54,#e8693a);color:#fff;cursor:pointer;transition:.2s;min-height:52px;flex:1 1 150px;box-shadow:0 12px 24px -10px rgba(232,105,58,.8)}
+  button:hover{transform:translateY(-2px);filter:brightness(1.07)}
+  button.sec{background:rgba(235,235,239,.08);border-color:var(--off);color:var(--off);box-shadow:none}
+  button:disabled{opacity:.55;cursor:wait;transform:none}
+  #msg{font-size:.9rem;min-height:1.3em;color:var(--cy);font-weight:600;margin-top:12px}
+  .note{font-size:.8rem;opacity:.6;line-height:1.5;margin-top:10px}
+  .stagewrap{display:flex;flex-direction:column;align-items:center}
+  .box{position:relative;width:100%;aspect-ratio:9/16}
+  .frame{position:absolute;inset:0;border-radius:22px;overflow:hidden;box-shadow:0 30px 70px -25px rgba(10,5,30,.8),0 0 0 3px rgba(91,208,231,.4);background:#2e1f47}
+  canvas#pv{display:block;width:100%;height:100%}
+  .badge{position:absolute;right:-8px;top:-10px;background:var(--ac);color:#fff;font-weight:800;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:7px 12px;border-radius:999px;transform:rotate(6deg);z-index:5;box-shadow:0 8px 18px -8px rgba(0,0,0,.6);pointer-events:none}
+  /* zonas editables sobre la vista previa */
+  .hs{position:absolute;border:2px dashed rgba(255,255,255,.55);border-radius:16px;background:transparent;z-index:3;cursor:pointer;animation:hsp 1.6s ease-in-out 3}
+  .hs:hover,.hs:focus-within{border-color:var(--cy);background:rgba(91,208,231,.10);animation:none}
+  @keyframes hsp{50%{border-color:rgba(91,208,231,1);background:rgba(91,208,231,.14)}}
+  .hs input{position:absolute;inset:0;width:100%;height:100%;background:transparent;border:0;outline:0;font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;text-align:center;color:transparent;caret-color:#fff;cursor:pointer}
+  .hs input[type=file],.hs input[type=date],.hs input[type=time]{opacity:0;font-size:16px}
+  .hs-foto{left:calc(522/1080*100% - 230/1080*100%);top:calc(745/1920*100% - 230/1920*100%);width:calc(460/1080*100%);height:calc(460/1920*100%);border-radius:50%}
+  .hs-nombre{left:calc(250/1080*100%);top:calc(925/1920*100%);width:calc(580/1080*100%);height:calc(205/1920*100%)}
+  .hs-nombre input{font-size:calc(var(--u)*150);line-height:1}
+  .hs-edad{left:calc(420/1080*100%);top:calc(1245/1920*100%);width:calc(240/1080*100%);height:calc(270/1920*100%)}
+  .hs-edad input{font-size:calc(var(--u)*230);line-height:1;-moz-appearance:textfield}
+  .hs-edad input::-webkit-outer-spin-button,.hs-edad input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .hs-fecha{left:calc(105/1080*100%);top:calc(1546/1920*100%);width:calc(590/1080*100%);height:calc(142/1920*100%);border-radius:999px 0 0 999px}
+  .hs-hora{left:calc(700/1080*100%);top:calc(1546/1920*100%);width:calc(280/1080*100%);height:calc(142/1920*100%);border-radius:0 999px 999px 0}
+  .fhint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;background:rgba(40,27,64,.82);color:#fff;font-weight:700;font-size:calc(var(--u)*38);padding:calc(var(--u)*16) calc(var(--u)*30);border-radius:999px;white-space:nowrap;font-family:'Montserrat',sans-serif}
+  .fhint.off{display:none}
+  .mobhint{display:none}
+  /* celular: todo en una pantalla, se edita tocando la invitación */
   @media (max-width:900px){
     html,body{height:100%}
     body{padding:0;overflow:hidden}
-    .wrap{height:100%;max-width:none}
-    .scroller{height:100%;display:flex;flex-direction:column}
-    .grid{display:flex;flex-direction:column;flex:1;min-height:0;gap:0;overflow:hidden}
-    .prev{position:static;order:-1;flex:none;height:42%;padding:10px 0 10px;display:flex;justify-content:center;background:var(--bg);z-index:3}
-    .prevbox{height:100%;aspect-ratio:9/16;margin:0 auto}
-    .frame{height:100%;width:100%;border-radius:16px}
-    .note,.badge{display:none}
-    form{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;min-height:0;margin:0 14px 14px;border-radius:20px;padding:14px;align-content:start}
-    .hd{display:none}
-    .brand{padding:10px 14px 0;margin:0}.brand img{height:30px}.brand b{font-size:1.05rem}
+    .wrap{height:100%;max-width:none;display:flex;flex-direction:column}
+    .brand{margin:0;padding:8px 14px 0}.brand img{height:28px}.brand b{font-size:1rem}
+    .hd,.note,.badge{display:none}
+    .main{display:flex;flex-direction:column;flex:1;min-height:0;gap:0}
+    .stagewrap{flex:1;min-height:0;padding:8px 0;justify-content:center}
+    .box{width:auto;height:100%;max-width:100%}
+    .frame{border-radius:16px}
+    .mobhint{display:block;text-align:center;font-size:.78rem;font-weight:600;opacity:.8;padding:0 14px 6px}
+    .ctrl{flex:none;padding:0 14px 12px}
+    .btns{flex-wrap:nowrap;gap:8px}
+    button{padding:12px 8px;font-size:.84rem;min-height:46px;flex:1 1 0}
+    #msg{margin-top:6px;font-size:.8rem;min-height:1.1em;text-align:center}
   }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="scroller">
   <div class="brand"><img src="./assets/inv/oveja.svg" alt="" /><b>tuloogo</b><span>Demo</span></div>
-  <div class="hd"><div class="eyebrow">Invitaciones online</div>
-  <h1>Demo de invitación online para <em>casa de cumpleaños infantiles</em></h1>
-  <p class="lead">Así podría funcionar el sistema de una casa de cumpleaños infantiles: cargás la foto del cumpleañero, el nombre, la edad, la fecha y la hora, y descargás la invitación lista para compartir, en imagen JPG y en video MP4 animado.</p></div>
-
-  <div class="grid">
-    <form id="f" autocomplete="off" onsubmit="return false">
-      <label><span><i class="n">1</i>Foto del cumpleañero</span>
-        <span class="file" id="drop">
-          <span class="ico" id="ico">📷</span>
-          <span><span id="fname">Elegir o sacar una foto</span><small>JPG o PNG</small></span>
-          <input type="file" id="foto" accept="image/*" />
-        </span>
-      </label>
-      <label><span><i class="n">2</i>Nombre</span>
-        <input type="text" id="nombre" maxlength="24" placeholder="Sofía" value="Sofía" />
-      </label>
-      <div class="row2">
-        <label><span><i class="n">3</i>Cumple años</span>
-          <input type="number" id="edad" min="1" max="99" inputmode="numeric" value="7" />
-        </label>
-        <label><span><i class="n">4</i>Hora</span>
-          <input type="time" id="hora" value="16:00" />
-        </label>
+  <div class="main">
+    <div class="side">
+      <div class="hd">
+        <div class="eyebrow">Invitaciones online</div>
+        <h1>Demo de invitación online para <em>casa de cumpleaños infantiles</em></h1>
+        <p class="lead">Así podría funcionar el sistema de una casa de cumpleaños infantiles: tocás la invitación, completás los datos y descargás la imagen JPG y el video animado.</p>
+        <ol class="steps">
+          <li><i>1</i><span>Tocá el círculo y subí la foto<small>La del cumpleañero</small></span></li>
+          <li><i>2</i><span>Escribí el nombre y la edad<small>Directo sobre la invitación</small></span></li>
+          <li><i>3</i><span>Elegí la fecha y la hora<small>Tocá el cartel de abajo</small></span></li>
+          <li><i>4</i><span>Descargá en JPG o en video<small>Listo para compartir por WhatsApp</small></span></li>
+        </ol>
       </div>
-      <label><span><i class="n">5</i>Fecha</span>
-        <input type="date" id="fecha" />
-      </label>
-      <label><span><i class="n">6</i>¿Dónde es?</span>
-        <input type="text" id="lugar" maxlength="60" placeholder="Dirección o nombre del salón" value="Salón tuloogo · Av. Siempre Viva 123" />
-      </label>
-      <div class="btns">
-        <button type="button" id="bjpg">Descargar JPG</button>
-        <button type="button" id="bmp4" class="sec">Descargar video</button>
-        <button type="button" id="bplay" class="sec">▶ Ver animación</button>
+      <div class="ctrl">
+        <div class="mobhint">Tocá la invitación para editarla</div>
+        <div class="btns">
+          <button type="button" id="bjpg">Descargar JPG</button>
+          <button type="button" id="bmp4" class="sec">Descargar video</button>
+          <button type="button" id="bplay" class="sec">▶ Animación</button>
+        </div>
+        <div id="msg" role="status"></div>
       </div>
-      <div id="msg" role="status"></div>
-    </form>
-
-    <div class="prev">
-      <div class="prevbox"><span class="badge">Vista previa</span><div class="frame"><canvas id="pv" width="540" height="960"></canvas></div></div>
-      <p class="note">Vista previa. El logo "tuloogo" es un ejemplo: en tu sitio va el logo de tu salón.</p>
+    </div>
+    <div class="stagewrap">
+      <div class="box" id="box">
+        <span class="badge">Vista previa</span>
+        <div class="frame"><canvas id="pv" width="720" height="1280"></canvas></div>
+        <label class="hs hs-foto"><input type="file" id="foto" accept="image/*" /><span class="fhint" id="fhint">📷 Subir foto</span></label>
+        <div class="hs hs-nombre"><input type="text" id="nombre" maxlength="16" value="Sofía" aria-label="Nombre" autocomplete="off" /></div>
+        <div class="hs hs-edad"><input type="number" id="edad" min="1" max="99" inputmode="numeric" value="7" aria-label="Edad que cumple" /></div>
+        <label class="hs hs-fecha"><input type="date" id="fecha" aria-label="Fecha" /></label>
+        <label class="hs hs-hora"><input type="time" id="hora" value="16:00" aria-label="Hora" /></label>
+      </div>
     </div>
   </div>
-  </div>
+  <p class="note" style="text-align:center">El logo "tuloogo" y la dirección del salón son de ejemplo: en tu sitio van los de tu salón.</p>
 </div>
 
 <script>
 (function () {
   var W = 1080, H = 1920, DUR = 8;
+  var F = '"Baloo 2","Fredoka","Arial Rounded MT Bold",system-ui,sans-serif';
+  var LUGAR = 'Salón tuloogo · Av. Siempre Viva 123';
   var $ = function (id) { return document.getElementById(id); };
   var BG = ['fondo1.jpg', 'fondo2.jpg', 'fondo3.jpg'].map(function (n) { var i = new Image(); i.src = './assets/inv/' + n; i.onload = rerender; return i; });
   var SHEEP = new Image(); SHEEP.src = './assets/inv/oveja.svg'; SHEEP.onload = rerender;
   var photo = null;
 
-  // fecha por defecto: el próximo sábado
   (function () { var d = new Date(); d.setDate(d.getDate() + ((6 - d.getDay() + 7) % 7 || 7)); $('fecha').value = d.toISOString().slice(0, 10); })();
 
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
@@ -156,28 +146,27 @@
   }
   function state() {
     return {
-      nombre: ($('nombre').value || 'Nombre').trim(),
+      nombre: ($('nombre').value || '').trim() || 'Nombre',
       edad: ($('edad').value || '').trim(),
       fecha: fechaTxt($('fecha').value),
-      hora: $('hora').value ? $('hora').value + ' hs' : '',
-      lugar: ($('lugar').value || '').trim()
+      hora: $('hora').value ? $('hora').value + ' hs' : ''
     };
   }
 
   function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
   function star(c, cx, cy, R, r, rot) {
     c.beginPath();
-    for (var i = 0; i < 10; i++) { var a = rot + Math.PI / 2 * -1 + i * Math.PI / 5, rr = i % 2 ? r : R; c.lineTo(cx + rr * Math.cos(a), cy + rr * Math.sin(a)); }
-    c.closePath();
+    for (var i = 0; i < 10; i++) { var a = rot - Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r : R; c.lineTo(cx + rr * Math.cos(a), cy + rr * Math.sin(a)); }
+    c.closePath(); c.lineJoin = 'round';
   }
   function cover(c, img, x, y, w, h, zoom) {
     var s = Math.max(w / img.width, h / img.height) * (zoom || 1);
     var dw = img.width * s, dh = img.height * s;
     c.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
   }
-  function fit(c, txt, maxW, size, weight) {
-    var s = size; c.font = weight + ' ' + s + 'px Montserrat, system-ui, sans-serif';
-    while (c.measureText(txt).width > maxW && s > 28) { s -= 4; c.font = weight + ' ' + s + 'px Montserrat, system-ui, sans-serif'; }
+  function fit(c, txt, maxW, size, weight, min) {
+    var s = size; c.font = weight + ' ' + s + 'px ' + F;
+    while (c.measureText(txt).width > maxW && s > (min || 28)) { s -= 4; c.font = weight + ' ' + s + 'px ' + F; }
     return s;
   }
   function wrap(c, txt, maxW) {
@@ -186,6 +175,57 @@
     if (cur) lines.push(cur);
     return lines.slice(0, 2);
   }
+  // texto con contorno grueso redondeado (estilo sticker)
+  function ptext(c, txt, x, y, fill, outline, lw, shadow) {
+    c.lineJoin = 'round'; c.miterLimit = 2;
+    if (shadow) { c.save(); c.shadowColor = shadow; c.shadowOffsetY = 10; c.shadowBlur = 14; c.strokeStyle = outline; c.lineWidth = lw; c.strokeText(txt, x, y); c.restore(); }
+    if (outline) { c.strokeStyle = outline; c.lineWidth = lw; c.strokeText(txt, x, y); }
+    c.fillStyle = fill; c.fillText(txt, x, y);
+  }
+  // abanico de 3 rayitas que salen de un punto
+  function burst(c, x, y, base, t, ph, cols) {
+    var angs = [-40, 0, 40];
+    for (var i = 0; i < 3; i++) {
+      var a = (base + angs[i]) * Math.PI / 180, r0 = 26, len = (i === 1 ? 54 : 44) * (1 + .14 * Math.sin(t * 5 + ph + i));
+      c.strokeStyle = cols[i % cols.length]; c.lineWidth = 13; c.lineCap = 'round';
+      c.beginPath(); c.moveTo(x + Math.cos(a) * r0, y + Math.sin(a) * r0); c.lineTo(x + Math.cos(a) * (r0 + len), y + Math.sin(a) * (r0 + len)); c.stroke();
+    }
+  }
+  function balloon(c, x, y, col, hi, t, ph, ap) {
+    var by = y + (1 - ap) * 600 + Math.sin(t * 1.6 + ph) * 12;
+    c.save(); c.globalAlpha = clamp(ap * 2, 0, 1);
+    c.strokeStyle = 'rgba(235,235,239,.8)'; c.lineWidth = 3.5; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(x, by + 86); c.bezierCurveTo(x + 24 * Math.sin(t + ph), by + 150, x - 20, by + 210, x + 10 * Math.sin(t + ph), by + 300); c.stroke();
+    c.beginPath(); c.ellipse(x, by, 66, 84, 0, 0, 7);
+    var g = c.createRadialGradient(x - 20, by - 30, 6, x, by, 90); g.addColorStop(0, hi); g.addColorStop(1, col);
+    c.fillStyle = g; c.fill();
+    c.beginPath(); c.moveTo(x, by + 80); c.lineTo(x - 12, by + 98); c.lineTo(x + 12, by + 98); c.closePath(); c.fillStyle = col; c.fill();
+    c.beginPath(); c.ellipse(x - 24, by - 36, 11, 22, -.5, 0, 7); c.fillStyle = 'rgba(255,255,255,.6)'; c.fill();
+    c.restore();
+  }
+  function calIcon(c, x, y, s) {
+    c.save(); c.translate(x, y);
+    c.fillStyle = '#35c4df'; rrect(c, 0, 8 * s, 70 * s, 62 * s, 12 * s); c.fill();
+    c.fillStyle = '#fff'; rrect(c, 7 * s, 26 * s, 56 * s, 38 * s, 6 * s); c.fill();
+    c.fillStyle = '#35c4df';
+    for (var r = 0; r < 2; r++) for (var q = 0; q < 4; q++) { c.beginPath(); c.arc((17 + q * 12) * s, (37 + r * 15) * s, 3.6 * s, 0, 7); c.fill(); }
+    c.strokeStyle = '#35c4df'; c.lineWidth = 7 * s; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(20 * s, 2 * s); c.lineTo(20 * s, 16 * s); c.moveTo(50 * s, 2 * s); c.lineTo(50 * s, 16 * s); c.stroke();
+    c.restore();
+  }
+  function clockIcon(c, x, y, s) {
+    c.save(); c.translate(x, y);
+    c.strokeStyle = '#f0762f'; c.lineWidth = 8 * s; c.lineCap = 'round';
+    c.beginPath(); c.arc(35 * s, 35 * s, 31 * s, 0, 7); c.stroke();
+    c.beginPath(); c.moveTo(35 * s, 17 * s); c.lineTo(35 * s, 36 * s); c.lineTo(48 * s, 44 * s); c.stroke();
+    c.restore();
+  }
+  function pin(c, x, y, s) {
+    c.save(); c.translate(x, y); c.fillStyle = '#35c4df';
+    c.beginPath(); c.arc(0, 0, 26 * s, Math.PI * .85, Math.PI * .15 + Math.PI * 2); c.lineTo(0, 44 * s); c.closePath(); c.fill();
+    c.fillStyle = '#4c3470'; c.beginPath(); c.arc(0, 0, 10 * s, 0, 7); c.fill();
+    c.restore();
+  }
 
   // Dibuja un cuadro de la invitación. c: contexto, k: escala (ancho / 1080), t: segundos
   function draw(c, k, t) {
@@ -193,7 +233,7 @@
     c.save(); c.scale(k, k);
     c.textAlign = 'center'; c.textBaseline = 'alphabetic';
 
-    // fondo: imágenes de la escena de tuweeb, con cambio suave y zoom lento
+    // fondo: imágenes de la escena de tuweeb (igual que antes)
     var seg = 2.7, n = BG.length, idx = Math.floor(t / seg) % n, ph = (t % seg);
     function bg(i, a, z) { var im = BG[i]; if (!im || !im.complete || !im.naturalWidth) return; c.globalAlpha = a; cover(c, im, 0, 0, W, H, z); c.globalAlpha = 1; }
     c.fillStyle = '#4c3470'; c.fillRect(0, 0, W, H);
@@ -203,12 +243,18 @@
     g.addColorStop(0, 'rgba(60,38,96,.66)'); g.addColorStop(.4, 'rgba(76,52,112,.50)'); g.addColorStop(.72, 'rgba(60,40,96,.62)'); g.addColorStop(1, 'rgba(40,27,64,.92)');
     c.fillStyle = g; c.fillRect(0, 0, W, H);
 
+    // manchas de color en las esquinas inferiores
+    c.fillStyle = '#35c4df'; c.beginPath(); c.arc(-30, 1960, 190, 0, 7); c.fill();
+    c.fillStyle = '#7a45c9'; c.beginPath(); c.arc(1110, 1975, 210, 0, 7); c.fill();
+    c.fillStyle = '#8d5ad6'; c.beginPath(); c.arc(190, 2010, 130, 0, 7); c.fill();
+    c.fillStyle = '#5a3a96'; c.beginPath(); c.arc(960, 2020, 130, 0, 7); c.fill();
+
     // confeti
     var R = rng(11), cols = ['#e66937', '#5bd0e7', '#ebebef', '#9977b7', '#ffcf5a'];
-    for (var i = 0; i < 46; i++) {
+    for (var i = 0; i < 30; i++) {
       var x0 = R() * W, sp = 60 + R() * 120, ph0 = R() * H, sz = 10 + R() * 16, col = cols[i % 5], rot0 = R() * 6, sw = 20 + R() * 40;
       var y = ((ph0 + t * sp) % (H + 60)) - 30, x = x0 + Math.sin(t * 1.2 + i) * sw;
-      c.save(); c.translate(x, y); c.rotate(rot0 + t * 1.5); c.fillStyle = col; c.globalAlpha = .85;
+      c.save(); c.translate(x, y); c.rotate(rot0 + t * 1.5); c.fillStyle = col; c.globalAlpha = .8;
       if (i % 3 === 0) { c.beginPath(); c.arc(0, 0, sz * .5, 0, 7); c.fill(); } else { c.fillRect(-sz / 2, -sz / 4, sz, sz / 2); }
       c.restore();
     }
@@ -217,73 +263,101 @@
     // logo: cabeza de oveja + "tuloogo"
     var a1 = outCubic(prog(t, 0, .7));
     c.save(); c.globalAlpha = a1; c.translate(0, (1 - a1) * -40);
-    if (SHEEP.complete && SHEEP.naturalWidth) { var lw = 190, lh = lw * SHEEP.naturalHeight / SHEEP.naturalWidth; c.drawImage(SHEEP, W / 2 - lw / 2, 90, lw, lh); }
-    c.fillStyle = '#ebebef'; c.font = '700 54px Montserrat, system-ui, sans-serif'; c.fillText('tuloogo', W / 2, 90 + 190 + 74);
+    var lw = 180, lh = 130;
+    if (SHEEP.complete && SHEEP.naturalWidth) { lh = lw * SHEEP.naturalHeight / SHEEP.naturalWidth; c.shadowColor = 'rgba(30,15,60,.45)'; c.shadowBlur = 18; c.shadowOffsetY = 8; c.drawImage(SHEEP, W / 2 - lw / 2, 38, lw, lh); c.shadowColor = 'transparent'; }
+    c.font = '800 88px ' + F; ptext(c, 'tuloogo', W / 2, 38 + lh + 70, '#fbf9ff', null, 0, null);
     c.restore();
+    burst(c, 392, 118, 205, t, 0, ['#ffcf5a', '#5bd0e7']); burst(c, 688, 118, -25, t, 1, ['#ffcf5a', '#5bd0e7']);
 
-    // "¡Estás invitado!"
-    var a2 = outCubic(prog(t, .35, 1));
-    c.save(); c.globalAlpha = a2; c.fillStyle = '#e66937'; c.font = '800 46px Montserrat, system-ui, sans-serif';
-    if (c.letterSpacing !== undefined) c.letterSpacing = '8px';
-    c.fillText('¡ESTÁS INVITADO!', W / 2, 430); if (c.letterSpacing !== undefined) c.letterSpacing = '0px'; c.restore();
+    // cinta naranja "¡Estás invitado!"
+    var a2 = outBack(prog(t, .35, 1.1)), ry = 392;
+    c.save(); c.translate(W / 2, ry); c.rotate(-.012); c.scale(Math.max(a2, .001), Math.max(a2, .001));
+    c.shadowColor = 'rgba(30,15,60,.45)'; c.shadowBlur = 24; c.shadowOffsetY = 12;
+    var rg = c.createLinearGradient(0, -62, 0, 62); rg.addColorStop(0, '#ff8a3d'); rg.addColorStop(1, '#ee5f1e');
+    rrect(c, -330, -62, 660, 124, 62); c.fillStyle = rg; c.fill(); c.shadowColor = 'transparent';
+    rrect(c, -330, -62, 660, 124, 62); c.strokeStyle = '#ffa766'; c.lineWidth = 4; c.stroke();
+    c.font = '800 72px ' + F; fit(c, '¡ESTÁS INVITADO!', 600, 72, 800); ptext(c, '¡ESTÁS INVITADO!', 0, 26, '#fff', '#c4430f', 12, null); c.fillStyle = '#fff'; c.fillText('¡ESTÁS INVITADO!', 0, 26);
+    c.restore();
+    burst(c, 250, 392, 180, t, 2, ['#ffcf5a', '#5bd0e7']); burst(c, 830, 392, 0, t, 3, ['#ffcf5a', '#5bd0e7']);
 
     // foto en círculo
-    var pc = outBack(prog(t, .5, 1.3)), cx = W / 2, cy = 770, r = 270 * Math.max(pc, 0.001);
+    var pc = outBack(prog(t, .5, 1.3)), cx = 522, cy = 745, r = 222 * Math.max(pc, 0.001);
     c.save();
-    c.beginPath(); c.arc(cx, cy, r + 26, 0, 7); c.fillStyle = '#5bd0e7'; c.fill();
-    c.beginPath(); c.arc(cx, cy, r + 12, 0, 7); c.fillStyle = '#ebebef'; c.fill();
+    c.shadowColor = 'rgba(25,10,60,.5)'; c.shadowBlur = 40; c.shadowOffsetY = 16;
+    c.beginPath(); c.arc(cx, cy, r + 34, 0, 7); c.fillStyle = '#3ccbe6'; c.fill(); c.shadowColor = 'transparent';
+    c.beginPath(); c.arc(cx, cy, r + 34, 0, 7); c.strokeStyle = '#7fe3f3'; c.lineWidth = 5; c.stroke();
+    c.beginPath(); c.arc(cx, cy, r + 8, 0, 7); c.fillStyle = '#fbf9ff'; c.fill();
     c.beginPath(); c.arc(cx, cy, r, 0, 7); c.clip();
     if (photo) { cover(c, photo, cx - r, cy - r, r * 2, r * 2, 1); }
     else { c.fillStyle = '#9977b7'; c.fillRect(cx - r, cy - r, r * 2, r * 2); if (SHEEP.complete && SHEEP.naturalWidth) { var sw2 = r * 1.25; c.drawImage(SHEEP, cx - sw2 / 2, cy - sw2 * .5, sw2, sw2 * SHEEP.naturalHeight / SHEEP.naturalWidth); } }
     c.restore();
-    // estrellas alrededor
-    var tw = [[-340, -190, 44, .3], [350, -120, 36, 1.1], [-310, 230, 30, 2], [330, 250, 48, .7], [-390, 40, 30, 1.6]];
-    tw.forEach(function (s, i) {
-      var sc = outBack(prog(t, 1 + i * .12, 1.6 + i * .12)) * (1 + .12 * Math.sin(t * 3 + i));
-      c.save(); c.translate(cx + s[0], cy + s[1]); c.rotate(Math.sin(t * 1.4 + i) * .25); c.scale(Math.max(sc, 0.001), Math.max(sc, 0.001));
-      star(c, 0, 0, s[2], s[2] * .45, 0); c.fillStyle = ['#ffcf5a', '#e66937', '#5bd0e7', '#ebebef', '#ffcf5a'][i]; c.fill(); c.restore();
+
+    // estrellas con borde blanco
+    [[-300, -40, 56, '#ffc93c', -.25, 0], [335, -30, 58, '#9977b7', .3, 1.2]].forEach(function (s, i) {
+      var sc = outBack(prog(t, 1 + i * .12, 1.6 + i * .12)) * (1 + .08 * Math.sin(t * 3 + i * 2));
+      c.save(); c.translate(cx + s[0], cy + s[1]); c.rotate(s[4] + Math.sin(t * 1.4 + i) * .15); c.scale(Math.max(sc, 0.001), Math.max(sc, 0.001));
+      star(c, 0, 0, s[2], s[2] * .5, 0); c.strokeStyle = '#fff'; c.lineWidth = s[2] * .3; c.stroke(); c.fillStyle = s[3]; c.fill(); c.restore();
     });
+
     // globos
-    [[110, 1010, '#e66937', 0], [970, 980, '#5bd0e7', 1.4], [160, 1120, '#9977b7', 2.6], [925, 1100, '#ebebef', 3.7]].forEach(function (b, i) {
-      var ap = outCubic(prog(t, 1.2 + i * .15, 2 + i * .15)), by = b[1] + (1 - ap) * 500 + Math.sin(t * 1.6 + b[3]) * 14;
-      c.save(); c.globalAlpha = ap;
-      c.strokeStyle = 'rgba(235,235,239,.6)'; c.lineWidth = 3; c.beginPath(); c.moveTo(b[0], by + 62); c.quadraticCurveTo(b[0] + 14 * Math.sin(t + i), by + 110, b[0], by + 170); c.stroke();
-      c.beginPath(); c.ellipse(b[0], by, 48, 62, 0, 0, 7); c.fillStyle = b[2]; c.fill();
-      c.beginPath(); c.ellipse(b[0] - 16, by - 22, 10, 18, -.5, 0, 7); c.fillStyle = 'rgba(255,255,255,.45)'; c.fill();
-      c.restore();
-    });
+    balloon(c, 118, 1215, '#8a4fd0', '#c49af0', t, 0, outCubic(prog(t, 1.2, 2.1)));
+    balloon(c, 205, 1300, '#2cc4de', '#8fe8f5', t, 1.4, outCubic(prog(t, 1.35, 2.25)));
+    balloon(c, 935, 1160, '#b68be6', '#e1c8fa', t, 2.6, outCubic(prog(t, 1.5, 2.4)));
+    balloon(c, 985, 1290, '#2cc4de', '#8fe8f5', t, 3.7, outCubic(prog(t, 1.65, 2.55)));
 
     // nombre
-    var a3 = outCubic(prog(t, 1.1, 1.8));
-    c.save(); c.globalAlpha = a3; c.translate(0, (1 - a3) * 50); c.fillStyle = '#fbf9ff';
-    fit(c, S.nombre, 880, 150, 800); c.fillText(S.nombre, W / 2, 1195); c.restore();
+    var a3 = outBack(prog(t, 1.1, 1.8));
+    c.save(); c.translate(W / 2, 1095); c.scale(Math.max(a3, .001), Math.max(a3, .001));
+    var fs0 = fit(c, S.nombre, 560, 190, 800, 60);
+    ptext(c, S.nombre, 0, 0, '#fff', '#4b2a86', 44, 'rgba(25,10,60,.45)'); c.fillStyle = '#fff'; c.fillText(S.nombre, 0, 0);
+    c.restore();
+    burst(c, 235, 1040, 180, t, 4, ['#ffcf5a', '#5bd0e7']); burst(c, 845, 1040, 0, t, 5, ['#ffcf5a', '#5bd0e7']);
 
-    // cumple + edad
+    // CUMPLE + edad
     if (S.edad) {
       var a4 = prog(t, 1.6, 2.4), sc4 = outBack(a4);
-      c.save(); c.globalAlpha = clamp(a4 * 2, 0, 1);
-      c.fillStyle = '#5bd0e7'; c.font = '700 50px Montserrat, system-ui, sans-serif'; if (c.letterSpacing !== undefined) c.letterSpacing = '10px';
-      c.fillText('CUMPLE', W / 2, 1268); if (c.letterSpacing !== undefined) c.letterSpacing = '0px';
-      c.translate(W / 2, 1400); c.scale(Math.max(sc4, 0.001), Math.max(sc4, 0.001));
-      c.fillStyle = '#e66937'; c.font = '800 210px Montserrat, system-ui, sans-serif'; c.fillText(S.edad, 0, 80);
+      c.save(); c.globalAlpha = clamp(a4 * 2, 0, 1); c.translate(W / 2, 1197); c.scale(Math.max(sc4, .001), Math.max(sc4, .001));
+      rrect(c, -190, -44, 380, 88, 44); c.fillStyle = '#2cc4de'; c.shadowColor = 'rgba(25,10,60,.4)'; c.shadowBlur = 16; c.shadowOffsetY = 8; c.fill(); c.shadowColor = 'transparent';
+      rrect(c, -190, -44, 380, 88, 44); c.strokeStyle = '#7fe3f3'; c.lineWidth = 4; c.stroke();
+      c.font = '800 60px ' + F; if (c.letterSpacing !== undefined) c.letterSpacing = '6px';
+      c.fillStyle = '#fff'; c.fillText('CUMPLE', 3, 21); if (c.letterSpacing !== undefined) c.letterSpacing = '0px';
       c.restore();
-      c.save(); c.globalAlpha = clamp(prog(t, 1.9, 2.5), 0, 1); c.fillStyle = '#fbf9ff'; c.font = '700 58px Montserrat, system-ui, sans-serif';
-      c.fillText(+S.edad === 1 ? 'año' : 'años', W / 2, 1552); c.restore();
+
+      var sc5 = outBack(prog(t, 1.9, 2.7));
+      c.save(); c.translate(W / 2, 1450); c.scale(Math.max(sc5, .001), Math.max(sc5, .001));
+      c.font = '800 330px ' + F; var s5 = fit(c, S.edad, 380, 330, 800, 120);
+      c.lineJoin = 'round'; c.miterLimit = 2;
+      c.save(); c.shadowColor = 'rgba(25,10,60,.5)'; c.shadowBlur = 18; c.shadowOffsetY = 12; c.strokeStyle = '#4b2a86'; c.lineWidth = 64; c.strokeText(S.edad, 0, 0); c.restore();
+      c.strokeStyle = '#fff'; c.lineWidth = 44; c.strokeText(S.edad, 0, 0);
+      var ag = c.createLinearGradient(0, -230, 0, 20); ag.addColorStop(0, '#ff9a4a'); ag.addColorStop(1, '#f2611d');
+      c.fillStyle = ag; c.fillText(S.edad, 0, 0);
+      c.restore();
+      c.save(); c.globalAlpha = clamp(prog(t, 2.1, 2.7), 0, 1);
+      c.font = '800 92px ' + F; ptext(c, +S.edad === 1 ? 'año' : 'años', W / 2, 1535, '#fff', '#4b2a86', 20, 'rgba(25,10,60,.4)'); c.fillStyle = '#fff'; c.fillText(+S.edad === 1 ? 'año' : 'años', W / 2, 1535);
+      c.restore();
+      burst(c, 440, 1350, 180, t, 6, ['#ffcf5a', '#5bd0e7']); burst(c, 640, 1350, 0, t, 7, ['#ffcf5a', '#5bd0e7']);
     }
 
-    // fecha y hora
+    // cartel fecha y hora
     var a5 = outCubic(prog(t, 2.2, 3)); c.save(); c.globalAlpha = a5; c.translate(0, (1 - a5) * 40);
-    rrect(c, 110, 1595, 860, 128, 36); c.fillStyle = 'rgba(235,235,239,.95)'; c.fill();
-    c.fillStyle = '#4c3470'; var fs = fit(c, S.fecha, 780, 50, 800); c.fillText(S.fecha, W / 2, 1659);
-    c.fillStyle = '#e66937'; c.font = '800 42px Montserrat, system-ui, sans-serif'; c.fillText(S.hora, W / 2, 1704);
+    c.shadowColor = 'rgba(25,10,60,.4)'; c.shadowBlur = 24; c.shadowOffsetY = 12;
+    rrect(c, 105, 1568, 870, 138, 69); c.fillStyle = 'rgba(251,249,255,.97)'; c.fill(); c.shadowColor = 'transparent';
+    rrect(c, 105, 1568, 870, 138, 69); c.strokeStyle = '#3ccbe6'; c.lineWidth = 9; c.stroke();
+    calIcon(c, 150, 1604, 1);
+    c.textAlign = 'left'; c.fillStyle = '#3d2470'; fit(c, S.fecha, 440, 64, 800, 36); c.fillText(S.fecha, 245, 1666);
+    c.fillStyle = '#35c4df'; c.fillRect(705, 1596, 4, 78);
+    clockIcon(c, 735, 1602, 1);
+    c.fillStyle = '#f0762f'; fit(c, S.hora, 190, 64, 800, 36); c.fillText(S.hora, 818, 1666);
+    c.textAlign = 'center';
     c.restore();
 
     // dónde es
     var a6 = outCubic(prog(t, 2.8, 3.6)); c.save(); c.globalAlpha = a6; c.translate(0, (1 - a6) * 40);
-    c.fillStyle = '#5bd0e7'; c.font = '800 36px Montserrat, system-ui, sans-serif'; if (c.letterSpacing !== undefined) c.letterSpacing = '6px';
-    c.fillText('¿DÓNDE ES?', W / 2, 1788); if (c.letterSpacing !== undefined) c.letterSpacing = '0px';
-    c.fillStyle = '#fbf9ff'; c.font = '600 40px Montserrat, system-ui, sans-serif';
-    wrap(c, S.lugar, 900).forEach(function (l, i) { c.fillText(l, W / 2, 1838 + i * 50); });
+    c.font = '800 58px ' + F; if (c.letterSpacing !== undefined) c.letterSpacing = '3px';
+    var tw0 = c.measureText('¿DÓNDE ES?').width; var px = W / 2 - tw0 / 2 - 38;
+    pin(c, px, 1788, .9); c.fillStyle = '#35c4df'; c.textAlign = 'left'; c.fillText('¿DÓNDE ES?', W / 2 - tw0 / 2 + 6, 1806); c.textAlign = 'center';
+    if (c.letterSpacing !== undefined) c.letterSpacing = '0px';
+    c.fillStyle = '#fbf9ff'; fit(c, LUGAR, 900, 56, 700, 30); c.fillText(LUGAR, W / 2, 1873);
     c.restore();
     c.restore();
   }
@@ -298,18 +372,17 @@
   }
   $('bplay').onclick = function () { playing = true; t0 = performance.now(); requestAnimationFrame(loop); };
 
-  ['nombre', 'edad', 'fecha', 'hora', 'lugar'].forEach(function (id) { $(id).addEventListener('input', function () { rerender(); }); });
+  ['nombre', 'edad', 'fecha', 'hora'].forEach(function (id) { $(id).addEventListener('input', rerender); $(id).addEventListener('change', rerender); });
+  ['fecha', 'hora'].forEach(function (id) { $(id).addEventListener('click', function () { try { this.showPicker && this.showPicker(); } catch (e) {} }); });
   $('foto').addEventListener('change', function (e) {
     var f = e.target.files && e.target.files[0]; if (!f) return;
     var rd = new FileReader();
     rd.onload = function () {
       var im = new Image();
       im.onload = function () {
-        // se reduce para que la animación sea fluida en celulares
         var m = 1400, s = Math.min(1, m / Math.max(im.width, im.height)), cv = document.createElement('canvas');
         cv.width = Math.round(im.width * s); cv.height = Math.round(im.height * s); cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height);
-        photo = cv; $('fname').textContent = f.name; $('ico').innerHTML = ''; var th = new Image(); th.src = cv.toDataURL('image/jpeg', .6); $('ico').appendChild(th);
-        rerender(); resize();
+        photo = cv; $('fhint').className = 'fhint off'; rerender();
       };
       im.src = rd.result;
     };
@@ -350,16 +423,19 @@
     })(s0);
   };
 
+  function units() { var b = $('box'); if (b) document.documentElement.style.setProperty('--u', (b.clientWidth / W) + 'px'); }
   function resize() {
+    units();
     try {
       var mob = window.matchMedia('(max-width:900px)').matches;
       if (mob) parent.postMessage({ invM: 1 }, '*');
-      else { var w = document.querySelector('.scroller'); parent.postMessage({ invH: Math.ceil(w.getBoundingClientRect().height) + 100 }, '*'); }
+      else { var w = document.querySelector('.wrap'); parent.postMessage({ invH: Math.ceil(w.getBoundingClientRect().height) + 100 }, '*'); }
     } catch (e) {}
   }
   window.addEventListener('resize', resize); window.addEventListener('load', function () { resize(); setTimeout(resize, 600); });
-  if (document.fonts && document.fonts.load) { Promise.all([document.fonts.load('800 40px Montserrat'), document.fonts.load('700 40px Montserrat'), document.fonts.load('600 40px Montserrat')]).then(rerender, rerender); }
-  rerender();
+  if (window.ResizeObserver) new ResizeObserver(units).observe($('box'));
+  if (document.fonts && document.fonts.load) { Promise.all([document.fonts.load('800 40px "Baloo 2"'), document.fonts.load('700 40px "Baloo 2"')]).then(rerender, rerender); }
+  units(); rerender();
 })();
 </script>
 </body>
