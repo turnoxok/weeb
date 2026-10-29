@@ -1362,6 +1362,19 @@ function ScrollSmoother() {
       next = smoothProgress + Math.max(-maxStep, Math.min(maxStep, next - smoothProgress));
     }
     setSmoothProgress(next);
+    /* Tope al final del 3D: mientras la imagen todavía no llegó a la última pose, el scroll no puede bajar a las secciones 2D.
+       La barra del visor ya marca el final, pero la escena va un poco atrás (suavizado): se espera a que la alcance. */
+    try {
+      const b = wsBlock(), top = window.__wsScrollTop, tot = window.__wsScrollTotal;
+      if (b && tot > 0 && next < b.mt - 0.004) {
+        const end = top + tot, y = window.scrollY, vh = window.innerHeight || 800;
+        if (y > end + 1 && y < end + vh * 1.5) {
+          if (window.__lenis && window.__lenis.scrollTo) window.__lenis.scrollTo(end, { immediate: true, force: true });
+          else window.scrollTo(0, end);
+        }
+      }
+    } catch (e) { /* sin tope */ }
+    setSmoothProgress(next);
   });
   return null;
 }
