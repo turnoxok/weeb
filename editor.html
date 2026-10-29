@@ -5585,6 +5585,8 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
 function s2dLines(text) {
   return String(text || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((l) => l.split("|").map((x) => x.trim()));
 }
+const S2D_ICONS = {"globe": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18\"/><path d=\"M12 3c3.2 3.2 3.2 14.8 0 18-3.2-3.2-3.2-14.8 0-18z\"/>", "cube": "<path d=\"M12 3l8 4.5v9L12 21l-8-4.5v-9z\"/><path d=\"M4 7.5l8 4.5 8-4.5\"/><path d=\"M12 12v9\"/>", "shapes": "<circle cx=\"7.5\" cy=\"7.5\" r=\"3.5\"/><rect x=\"13.5\" y=\"4\" width=\"7\" height=\"7\" rx=\"1.5\"/><path d=\"M8 14l4 6.5H4z\"/><circle cx=\"17\" cy=\"17\" r=\"3.5\"/>", "layout": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"2.5\"/><path d=\"M3 10h18\"/><path d=\"M9 10v10\"/>", "sliders": "<path d=\"M4 6h9\"/><path d=\"M17 6h3\"/><circle cx=\"15\" cy=\"6\" r=\"2\"/><path d=\"M4 12h3\"/><path d=\"M11 12h9\"/><circle cx=\"9\" cy=\"12\" r=\"2\"/><path d=\"M4 18h11\"/><path d=\"M19 18h1\"/><circle cx=\"17\" cy=\"18\" r=\"2\"/>", "link": "<path d=\"M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1\"/><path d=\"M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1\"/>", "search": "<circle cx=\"11\" cy=\"11\" r=\"6.5\"/><path d=\"M16 16l5 5\"/>", "play": "<rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2.5\"/><path d=\"M10 9l5 3-5 3z\"/>", "phone": "<rect x=\"7\" y=\"2.5\" width=\"10\" height=\"19\" rx=\"2.5\"/><path d=\"M11 18h2\"/>"};
+function s2dIcon(k) { const d = S2D_ICONS[k]; return d ? '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + "</svg>" : null; }
 function s2dResolveImg(u) {
   if (!u) return "";
   const m = typeof window !== "undefined" ? window.__wsBlobs : null;
@@ -5784,7 +5786,7 @@ function S2DBody({ s }) {
             const ico = two ? "" : r[0], ttl = two ? r[0] : r[1], txt = two ? r[1] : r[2];
             return (
               <div className="s2d-card" key={i} data-rv>
-                {ico && <span className="s2d-ico" aria-hidden="true">{ico}</span>}
+                {ico && (/^ico:/.test(ico) && s2dIcon(ico.slice(4)) ? <span className="s2d-ico" aria-hidden="true" dangerouslySetInnerHTML={{ __html: s2dIcon(ico.slice(4)) }} /> : <span className="s2d-ico" aria-hidden="true">{ico}</span>)}
                 {ttl && <h3>{ttl}</h3>}
                 {txt && <p>{txt}</p>}
               </div>
