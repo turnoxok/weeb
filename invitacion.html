@@ -159,8 +159,9 @@
     c.closePath(); c.lineJoin = 'round';
   }
   function cover(c, img, x, y, w, h, zoom) {
-    var s = Math.max(w / img.width, h / img.height) * (zoom || 1);
-    var dw = img.width * s, dh = img.height * s;
+    var iw = img.videoWidth || img.width, ih = img.videoHeight || img.height;
+    var s = Math.max(w / iw, h / ih) * (zoom || 1);
+    var dw = iw * s, dh = ih * s;
     c.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
   }
   function fit(c, txt, maxW, size, weight, min) {
@@ -294,35 +295,26 @@
     c.fillStyle = g; c.fillRect(x0, y0, x1 - x0, y1 - y0);
   }
 
-  // Fondo: escena 3D real. Cambia de pose con una transición de barrido de luz + glitch
-  var SEG = 2.1, TR = .7;
-  function bgOk(i) { var im = BG[i]; return im && im.complete && im.naturalWidth; }
-  function bgDraw(c, i, t, a0) {
-    var im = BG[i]; if (!bgOk(i)) { c.fillStyle = '#7a50cc'; c.fillRect(0, 0, W, H); return; }
-    var z = 1.04 + .08 * clamp((t - a0) / (SEG + 1), 0, 1); cover(c, im, 0, 0, W, H, z);
+  // Fondo: video de una toma recorriendo la escena 3D (una sola vez; al final queda el último cuadro)
+  var VID = document.createElement('video');
+  VID.muted = true; VID.defaultMuted = true; VID.playsInline = true; VID.setAttribute('playsinline', ''); VID.setAttribute('webkit-playsinline', ''); VID.preload = 'auto';
+  ['mp4', 'webm'].forEach(function (x) { var so = document.createElement('source'); so.src = './assets/inv/fondo.' + x; so.type = 'video/' + x; VID.appendChild(so); });
+  VID.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none'; document.body.appendChild(VID);
+  function vidOk() { return VID.readyState >= 2 && VID.videoWidth > 0; }
+  function vidEnd() { try { if (VID.duration) VID.currentTime = Math.max(0, VID.duration - .04); } catch (e) {} }
+  VID.addEventListener('loadeddata', vidEnd);
+  VID.addEventListener('seeked', function () { if (!playing) rerender(); });
+  function vidStart(cb) {       // vuelve al inicio, arranca y recién ahí avisa (para sincronizar con la animación)
+    var done = false, go = function () { if (done) return; done = true; cb(); };
+    if (!vidOk()) { go(); return; }
+    var onSeek = function () { VID.removeEventListener('seeked', onSeek); var pr = VID.play(); if (pr && pr.then) pr.then(go, go); else go(); };
+    VID.pause(); VID.addEventListener('seeked', onSeek); VID.currentTime = 0; setTimeout(go, 1500);
   }
   function drawBG(c, t) {
-    var n = BG.length, i = Math.min(n - 1, Math.floor(t / SEG)), tc = (i + 1) * SEG, k = (t - (tc - TR / 2)) / TR;
-    bgDraw(c, i, t, i * SEG);
-    if (i < n - 1 && k > 0 && k < 1) {
-      var e = k * k * (3 - 2 * k), ly = e * (H + 240) - 120, r = rng(Math.floor(t * 24) + 5);
-      c.save(); c.beginPath(); c.rect(0, 0, W, Math.max(0, ly)); c.clip(); bgDraw(c, i + 1, t, tc - TR / 2); c.restore();
-      // banda glitch: trozos desplazados alrededor de la línea
-      var bandH = 150, sl = FAST ? 5 : 9;
-      for (var j = 0; j < sl; j++) {
-        var yy = ly - bandH / 2 + j * (bandH / sl), sh = (r() - .5) * 90;
-        c.save(); c.beginPath(); c.rect(0, yy, W, bandH / sl + 1); c.clip(); c.translate(sh, 0);
-        bgDraw(c, yy < ly ? i + 1 : i, t, yy < ly ? tc - TR / 2 : i * SEG); c.restore();
-        if (r() > .55) { c.fillStyle = 'rgba(91,208,231,.22)'; c.fillRect(0, yy, W, bandH / sl); }
-      }
-      // línea de escaneo cian + cuadrícula tenue
-      var lg = c.createLinearGradient(0, ly - 70, 0, ly + 70); lg.addColorStop(0, 'rgba(91,208,231,0)'); lg.addColorStop(.5, 'rgba(160,240,255,.55)'); lg.addColorStop(1, 'rgba(91,208,231,0)');
-      c.fillStyle = lg; c.fillRect(0, ly - 70, W, 140);
-      c.fillStyle = 'rgba(235,252,255,.95)'; c.fillRect(0, ly - 3, W, 6);
-      c.fillStyle = 'rgba(91,208,231,.18)'; for (var gx = 0; gx < W; gx += 90) c.fillRect(gx, ly - 160, 2, 320);
-    }
-    // velo violeta para que el contenido se lea sobre la escena
-    var ov = c.createLinearGradient(0, 0, 0, H); ov.addColorStop(0, 'rgba(70,40,150,.30)'); ov.addColorStop(.5, 'rgba(80,48,160,.18)'); ov.addColorStop(1, 'rgba(50,28,120,.45)');
+    if (vidOk()) cover(c, VID, 0, 0, W, H, 1.02);
+    else if (BG[3] && BG[3].complete && BG[3].naturalWidth) cover(c, BG[3], 0, 0, W, H, 1.02);
+    else { c.fillStyle = '#7a50cc'; c.fillRect(0, 0, W, H); }
+    var ov = c.createLinearGradient(0, 0, 0, H); ov.addColorStop(0, 'rgba(70,40,150,.22)'); ov.addColorStop(.5, 'rgba(80,48,160,.10)'); ov.addColorStop(1, 'rgba(50,28,120,.40)');
     c.fillStyle = ov; c.fillRect(0, 0, W, H);
   }
   function drawScene(c, t) {
@@ -487,14 +479,14 @@
   function rerender() { if (!playing) { pctx.clearRect(0, 0, pv.width, pv.height); draw(pctx, pv.width / W, 9); } }
   function loop(ts) {
     if (!playing) return;
-    var t = (performance.now() - t0) / 1000; if (t > DUR) { playing = false; FAST = false; if (pv.width !== 720) { pv.width = 720; pv.height = 1280; } rerender(); return; }
+    var t = (performance.now() - t0) / 1000; if (t > DUR) { playing = false; FAST = false; if (pv.width !== 720) { pv.width = 720; pv.height = 1280; } vidEnd(); rerender(); return; }
     pctx.clearRect(0, 0, pv.width, pv.height); draw(pctx, pv.width / W, t); requestAnimationFrame(loop);
   }
   var SMALL = function () { return Math.min(window.innerWidth, screen.width || 9999) < 900; };
   $('bplay').onclick = function () {
     if (playing) return;
     FAST = true; if (SMALL()) { pv.width = 540; pv.height = 960; }
-    playing = true; t0 = performance.now(); requestAnimationFrame(loop);
+    playing = true; vidStart(function () { t0 = performance.now(); requestAnimationFrame(loop); });
   };
 
   ['nombre', 'edad', 'fecha', 'hora'].forEach(function (id) { $(id).addEventListener('input', rerender); $(id).addEventListener('change', rerender); });
@@ -539,13 +531,14 @@
       msg(ext === 'mp4' ? 'Listo: se descargó el video MP4.' : 'Listo: se descargó el video (formato WebM, porque este navegador no graba MP4).');
     };
     $('bmp4').disabled = true; msg('Generando el video… son unos 8 segundos.');
-    var s0 = performance.now(); rec.start(250);
-    (function tick(ts) {
+    var s0;
+    vidStart(function () { s0 = performance.now(); rec.start(250); tick(); });
+    function tick() {
       var t = (performance.now() - s0) / 1000;
-      if (t >= DUR) { rec.stop(); return; }
+      if (t >= DUR) { rec.stop(); vidEnd(); return; }
       $('bmp4').textContent = 'Grabando ' + Math.round(t / DUR * 100) + '%';
       cx.clearRect(0, 0, VW, VH); draw(cx, VW / W, t); requestAnimationFrame(tick);
-    })(s0);
+    }
   };
 
   function units() { var b = $('box'); if (b) document.documentElement.style.setProperty('--u', (b.clientWidth / W) + 'px'); }
