@@ -268,6 +268,17 @@
     if (sh !== false && fill !== '#ff8a4c' && fsz > 60) { c.globalAlpha = .5; c.lineWidth = 2; c.strokeStyle = 'rgba(255,255,255,.9)'; c.strokeText(txt, x, y - 1); }
     c.restore();
   }
+  var WCV = {};
+  function warp(c, x, y, w, h, sag, fn) {   // dibuja fn en un lienzo aparte y lo curva en columnas (centro más bajo)
+    var P = 70, cw = Math.ceil(w + 2 * P), ch = Math.ceil(h + 2 * P + sag), k = cw + 'x' + ch, cv = WCV[k];
+    if (!cv) { cv = WCV[k] = document.createElement('canvas'); cv.width = cw; cv.height = ch; }
+    var g = cv.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, cw, ch); g.save(); g.translate(P - x, P - y); fn(g); g.restore();
+    var step = FAST ? 4 : 2;
+    for (var i = 0; i < cw; i += step) {
+      var u = ((i + step / 2 - P) - w / 2) / (w / 2), dy = sag * (1 - Math.min(1, u * u));
+      c.drawImage(cv, i, 0, step, ch, x - P + i, y - P + dy, step + .6, ch);
+    }
+  }
   function ell(c, cx, cy, rx, ry, ca, cb, rim) {
     c.save(); c.beginPath(); c.ellipse(cx, cy, rx, ry, 0, 0, 7);
     var g = c.createLinearGradient(0, cy - ry, 0, cy + ry); g.addColorStop(0, ca); g.addColorStop(1, cb); c.fillStyle = g; c.fill();
@@ -336,7 +347,7 @@
     c.save(); c.scale(k, k);
     c.textAlign = 'center'; c.textBaseline = 'alphabetic';
     var CX = 540;
-    drawScene(c, t);
+    if (!window.__NOBG) drawScene(c, t);
 
     // confeti suave (colores de la marca)
     var R = rng(11), cols = ['#e66937', '#5bd0e7', '#ebebef', '#c8b0f0'];
@@ -372,60 +383,69 @@
     else { c.fillStyle = '#9977b7'; c.fillRect(cx - r, cy - r, r * 2, r * 2); if (SHEEP.complete && SHEEP.naturalWidth) { var sw2 = r * 1.25; c.drawImage(SHEEP, cx - sw2 / 2, cy - sw2 * .5, sw2, sw2 * SHEEP.naturalHeight / SHEEP.naturalWidth); } }
     c.restore();
 
-    // cartel "¡ESTÁS INVITADO!"
+    // cartel "¡ESTÁS INVITADO!" (cinta curva que abraza la torre)
     var a2 = outBack(prog(t, .35, 1.1));
     c.save(); c.translate(CX, Y(362)); c.scale(Math.max(a2, .001), Math.max(a2, .001));
-    plate(c, -L(320), -L(59), L(640), L(118), L(46), '#7b4fd2', '#4a2a9a', '#5bd0e7');
-    c.font = '800 80px ' + F; fit(c, '¡ESTÁS INVITADO!', L(563), 80, 800);
-    var w1 = c.measureText('¡ESTÁS ').width, w2 = c.measureText('INVITADO!').width, x0 = -(w1 + w2) / 2, fs1 = parseInt(c.font.match(/(\d+)px/)[1], 10);
-    c.textAlign = 'left'; stext(c, '¡ESTÁS ', x0, fs1 * .34, '#fbf9ff'); stext(c, 'INVITADO!', x0 + w1, fs1 * .34, '#ff8a4c'); c.textAlign = 'center';
+    warp(c, -L(320), -L(59), L(640), L(118), 20, function (c) {
+      plate(c, -L(320), -L(59), L(640), L(118), L(52), '#7b4fd2', '#4a2a9a', '#5bd0e7', 0);
+      c.font = '800 80px ' + F; fit(c, '¡ESTÁS INVITADO!', L(563), 80, 800);
+      var w1 = c.measureText('¡ESTÁS ').width, w2 = c.measureText('INVITADO!').width, x0 = -(w1 + w2) / 2, fs1 = parseInt(c.font.match(/(\d+)px/)[1], 10);
+      c.textAlign = 'left'; stext(c, '¡ESTÁS ', x0, fs1 * .3, '#fbf9ff'); stext(c, 'INVITADO!', x0 + w1, fs1 * .3, '#ff8a4c'); c.textAlign = 'center';
+    });
     c.restore();
 
-    // placa del nombre
+    // placa del nombre (curva)
     var a3 = outCubic(prog(t, 1.1, 1.8));
     c.save(); c.globalAlpha = a3; c.translate(0, (1 - a3) * 60);
-    plate(c, CX - L(224), Y(810), L(448), L(145), L(58), '#7b4fd2', '#4a2a9a', '#5bd0e7');
-    var fs0 = fit(c, S.nombre, L(345), 150, 800, 56);
-    stext(c, S.nombre, CX, Y(810) + L(145) / 2 + fs0 * .27, '#fff');
+    warp(c, CX - L(224), Y(810), L(448), L(145), 22, function (c) {
+      plate(c, CX - L(224), Y(810), L(448), L(145), L(62), '#7b4fd2', '#4a2a9a', '#5bd0e7', 0);
+      c.textAlign = 'center'; var fs0 = fit(c, S.nombre, L(345), 150, 800, 56);
+      stext(c, S.nombre, CX, Y(810) + L(145) / 2 + fs0 * .27, '#fff');
+    });
     c.restore();
 
-    // CUMPLE + edad sobre pedestal
     if (S.edad) {
+      // CUMPLE: pastilla turquesa curva
       var a4 = outCubic(prog(t, 1.5, 2.1));
       c.save(); c.globalAlpha = a4; c.translate(0, (1 - a4) * 50);
-      plate(c, CX - L(137), Y(955), L(274), L(62), L(31), '#47cfe8', '#1fa3c8', '#bff3fb');
-      c.font = '800 46px ' + F; if (c.letterSpacing !== undefined) c.letterSpacing = '7px';
-      stext(c, 'CUMPLE', CX + 4, Y(955) + L(31) + 16, '#fff', false); if (c.letterSpacing !== undefined) c.letterSpacing = '0px';
+      warp(c, CX - L(137), Y(955), L(274), L(62), 12, function (c) {
+        plate(c, CX - L(137), Y(955), L(274), L(62), L(31), '#47cfe8', '#1fa3c8', '#bff3fb', 0);
+        c.textAlign = 'center'; c.font = '800 46px ' + F; if (c.letterSpacing !== undefined) c.letterSpacing = '7px';
+        stext(c, 'CUMPLE', CX + 4, Y(955) + L(31) + 16, '#fff', false); if (c.letterSpacing !== undefined) c.letterSpacing = '0px';
+      });
       c.restore();
 
+      // 7 y "años": flotan delante del fondo, sin pedestal
       var a5 = outCubic(prog(t, 1.8, 2.6)); c.save(); c.globalAlpha = a5; c.translate(0, (1 - a5) * 60);
-      ell(c, CX, Y(1203), L(168), L(43), '#7b4fd2', '#3f2288', '#5bd0e7');
-      plate(c, CX - L(92), Y(1015), L(184), L(170), L(40), '#6b3fc2', '#3f2288', '#5bd0e7');
-      var sc5 = outBack(prog(t, 2.0, 2.8)); c.save(); c.translate(CX, Y(1160)); c.scale(Math.max(sc5, .001), Math.max(sc5, .001));
-      c.font = '800 200px ' + F; fit(c, S.edad, L(130), 200, 800, 80);
-      var ag = c.createLinearGradient(0, -150, 0, 20); ag.addColorStop(0, '#ff9a5a'); ag.addColorStop(1, '#f2631f');
-      c.save(); c.shadowColor = 'rgba(20,8,60,.5)'; c.shadowBlur = FAST ? 0 : 16; c.shadowOffsetY = 10; c.fillStyle = ag; c.fillText(S.edad, 0, 0); c.restore();
+      var sc5 = outBack(prog(t, 2.0, 2.8)); c.save(); c.translate(CX, Y(1178)); c.scale(Math.max(sc5, .001), Math.max(sc5, .001));
+      c.font = '800 230px ' + F; fit(c, S.edad, L(180), 230, 800, 90);
+      var ag = c.createLinearGradient(0, -160, 0, 10); ag.addColorStop(0, '#ffa466'); ag.addColorStop(1, '#f2631f');
+      c.save(); c.fillStyle = '#a63a0d'; for (var e = FAST ? 5 : 9; e >= 1; e--) c.fillText(S.edad, 0, e);
+      c.shadowColor = 'rgba(20,8,60,.55)'; c.shadowBlur = FAST ? 0 : 22; c.shadowOffsetY = FAST ? 14 : 20; c.fillText(S.edad, 0, 9); c.shadowColor = 'transparent';
+      c.fillStyle = ag; c.fillText(S.edad, 0, 0);
+      c.globalAlpha = .4; c.lineWidth = 3; c.strokeStyle = '#fff'; c.strokeText(S.edad, 0, -2); c.restore();
       c.restore();
-      c.font = '800 ' + Math.round(L(46)) + 'px ' + F; stext(c, +S.edad === 1 ? 'año' : 'años', CX, Y(1222), '#fff');
+      c.font = '800 ' + Math.round(L(52)) + 'px ' + F; stext(c, +S.edad === 1 ? 'año' : 'años', CX, Y(1240), '#fff');
       c.restore();
     }
 
-    // barra inferior: fecha / hora | dónde es
+    // barra inferior curva: fecha / hora | dónde es
     var a6 = outCubic(prog(t, 2.4, 3.2)); c.save(); c.globalAlpha = a6; c.translate(0, (1 - a6) * 60);
-    var by = Y(1262), bh = L(136);
-    plate(c, CX - L(461), by, L(922), bh, bh / 2, '#6b3fc2', '#3f2288', '#5bd0e7');
-    c.fillStyle = 'rgba(91,208,231,.7)'; c.fillRect(CX - 2, by + 22, 4, bh - 44);
-    var half = L(461);
-    var lf = fit(c, S.fecha, 330, 44, 800, 26), lwid = Math.max(c.measureText(S.fecha).width, c.measureText(S.hora).width);
-    var blockW = 70 + 26 + lwid, lx = CX - half + (half - blockW) / 2 + 8;
-    calIcon(c, lx, by + bh / 2 - 36, 1);
-    c.textAlign = 'left'; c.font = '800 ' + lf + 'px ' + F; stext(c, S.fecha, lx + 96, by + bh / 2 - 2, '#fbf9ff'); stext(c, S.hora, lx + 96, by + bh / 2 - 2 + lf * 1.15, '#ff8a4c'); c.textAlign = 'center';
-    c.font = '700 30px ' + F; var al = wrap(c, LUGAR, 330);
-    var rblock = 52 + 24 + 300, rx = CX + (half - rblock) / 2 - 4;
-    pin(c, rx + 22, by + bh / 2 - 8, 1);
-    c.textAlign = 'left'; c.font = '800 36px ' + F; stext(c, '¿DÓNDE ES?', rx + 76, by + bh / 2 - 12, '#5bd0e7', false);
-    c.font = '700 30px ' + F; al.forEach(function (l, i) { stext(c, l, rx + 76, by + bh / 2 + 28 + i * 34, '#fbf9ff', false); });
-    c.textAlign = 'center';
+    var by = Y(1262), bh = L(136), half = L(461);
+    warp(c, CX - half, by, half * 2, bh, 22, function (c) {
+      plate(c, CX - half, by, half * 2, bh, bh / 2, '#6b3fc2', '#3f2288', '#5bd0e7', 0);
+      c.fillStyle = 'rgba(91,208,231,.7)'; c.fillRect(CX - 2, by + 22, 4, bh - 44);
+      c.textAlign = 'center';
+      var lf = fit(c, S.fecha, 330, 44, 800, 26), lwid = Math.max(c.measureText(S.fecha).width, c.measureText(S.hora).width);
+      var blockW = 70 + 26 + lwid, lx = CX - half + (half - blockW) / 2 + 8;
+      calIcon(c, lx, by + bh / 2 - 36, 1);
+      c.textAlign = 'left'; c.font = '800 ' + lf + 'px ' + F; stext(c, S.fecha, lx + 96, by + bh / 2 - 2, '#fbf9ff'); stext(c, S.hora, lx + 96, by + bh / 2 - 2 + lf * 1.15, '#ff8a4c');
+      c.font = '700 30px ' + F; var al = wrap(c, LUGAR, 330);
+      var rblock = 52 + 24 + 300, rx = CX + (half - rblock) / 2 - 4;
+      pin(c, rx + 22, by + bh / 2 - 8, 1);
+      c.font = '800 36px ' + F; stext(c, '¿DÓNDE ES?', rx + 76, by + bh / 2 - 12, '#5bd0e7', false);
+      c.font = '700 30px ' + F; al.forEach(function (l, i) { stext(c, l, rx + 76, by + bh / 2 + 28 + i * 34, '#fbf9ff', false); });
+    });
     c.restore();
     c.restore();
   }
