@@ -301,7 +301,8 @@
   ['mp4', 'webm'].forEach(function (x) { var so = document.createElement('source'); so.src = './assets/inv/fondo.' + x; so.type = 'video/' + x; VID.appendChild(so); });
   VID.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none'; document.body.appendChild(VID);
   function vidOk() { return VID.readyState >= 2 && VID.videoWidth > 0; }
-  function vidEnd() { try { if (VID.duration) VID.currentTime = Math.max(0, VID.duration - .04); } catch (e) {} }
+  function vidEnd() { try { if (VID.duration && VID.currentTime < VID.duration - .3) VID.currentTime = Math.max(0, VID.duration - .04); } catch (e) {} }
+  var SNAP = null;   // último cuadro del recorrido, para no mostrar nada raro mientras el video busca
   VID.addEventListener('loadeddata', vidEnd);
   VID.addEventListener('seeked', function () { if (!playing) rerender(); });
   function vidStart(cb) {       // vuelve al inicio, arranca y recién ahí avisa (para sincronizar con la animación)
@@ -311,7 +312,10 @@
     VID.pause(); VID.addEventListener('seeked', onSeek); VID.currentTime = 0; setTimeout(go, 1500);
   }
   function drawBG(c, t) {
-    if (vidOk()) cover(c, VID, 0, 0, W, H, 1.02);
+    if (vidOk() && !VID.seeking) {
+      cover(c, VID, 0, 0, W, H, 1.02);
+      if (VID.duration && VID.currentTime > VID.duration - .25) { if (!SNAP) { SNAP = document.createElement('canvas'); SNAP.width = 540; SNAP.height = 960; } cover(SNAP.getContext('2d'), VID, 0, 0, 540, 960, 1.02); }
+    } else if (SNAP && VID.currentTime > 1) c.drawImage(SNAP, 0, 0, W, H);
     else if (BG[3] && BG[3].complete && BG[3].naturalWidth) cover(c, BG[3], 0, 0, W, H, 1.02);
     else { c.fillStyle = '#7a50cc'; c.fillRect(0, 0, W, H); }
     var ov = c.createLinearGradient(0, 0, 0, H); ov.addColorStop(0, 'rgba(70,40,150,.22)'); ov.addColorStop(.5, 'rgba(80,48,160,.10)'); ov.addColorStop(1, 'rgba(50,28,120,.40)');
