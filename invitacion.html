@@ -108,7 +108,7 @@
       <div class="box" id="box">
         <span class="badge">Vista previa</span>
         <div class="frame"><canvas id="pv" width="720" height="1280"></canvas></div>
-        <label class="hs hs-foto"><input type="file" id="foto" accept="image/*" /><span class="fhint" id="fhint">📷 Subir foto</span></label>
+        <label class="hs hs-foto"><input type="file" id="foto" accept="image/*" title="Cambiar foto" /><span class="fhint off" id="fhint">📷 Subir foto</span></label>
         <div class="hs hs-nombre"><input type="text" id="nombre" maxlength="16" value="Sofía" aria-label="Nombre" autocomplete="off" /></div>
         <div class="hs hs-edad"><input type="number" id="edad" min="1" max="99" inputmode="numeric" value="7" aria-label="Edad que cumple" /></div>
         <label class="hs hs-fecha"><input type="date" id="fecha" aria-label="Fecha" /></label>
@@ -128,6 +128,7 @@
   var BG = ['fondo1.jpg', 'fondo2.jpg', 'fondo3.jpg', 'fondo4.jpg'].map(function (n) { var i = new Image(); i.src = './assets/inv/' + n; i.onload = rerender; return i; });
   var SHEEP = new Image(); SHEEP.src = './assets/inv/oveja.svg'; SHEEP.onload = rerender;
   var photo = null, FAST = false;
+  var DEFOTO = new Image(); DEFOTO.onload = function () { if (!photo) { photo = DEFOTO; rerender(); } }; DEFOTO.src = './assets/inv/foto.jpg';
 
   (function () { var d = new Date(); d.setDate(d.getDate() + ((6 - d.getDay() + 7) % 7 || 7)); $('fecha').value = d.toISOString().slice(0, 10); })();
 
