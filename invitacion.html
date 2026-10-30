@@ -269,13 +269,13 @@
     c.restore();
   }
   var WCV = {};
-  function warp(c, x, y, w, h, sag, fn) {   // dibuja fn en un lienzo aparte y lo curva en columnas (centro más bajo)
+  function warp(c, x, y, w, h, sag, fn) {   // dibuja fn en un lienzo aparte y lo curva en columnas (extremos más bajos)
     var P = 70, cw = Math.ceil(w + 2 * P), ch = Math.ceil(h + 2 * P + sag), k = cw + 'x' + ch, cv = WCV[k];
     if (!cv) { cv = WCV[k] = document.createElement('canvas'); cv.width = cw; cv.height = ch; }
     var g = cv.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, cw, ch); g.save(); g.translate(P - x, P - y); fn(g); g.restore();
     var step = FAST ? 4 : 2;
     for (var i = 0; i < cw; i += step) {
-      var u = ((i + step / 2 - P) - w / 2) / (w / 2), dy = sag * (1 - Math.min(1, u * u));
+      var u = ((i + step / 2 - P) - w / 2) / (w / 2), dy = sag * Math.min(1, u * u);
       c.drawImage(cv, i, 0, step, ch, x - P + i, y - P + dy, step + .6, ch);
     }
   }
