@@ -49,14 +49,14 @@
   @keyframes hsp{50%{border-color:rgba(91,208,231,1);background:rgba(91,208,231,.14)}}
   .hs input{position:absolute;inset:0;width:100%;height:100%;background:transparent;border:0;outline:0;font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;text-align:center;color:transparent;caret-color:#fff;cursor:pointer}
   .hs input[type=file],.hs input[type=date],.hs input[type=time]{opacity:0;font-size:16px}
-  .hs-foto{left:28.809%;top:31.818%;width:40.039%;height:22.522%;border-radius:50%}
-  .hs-nombre{left:28.125%;top:53.680%;width:43.750%;height:7.965%}
+  .hs-foto{left:28.809%;top:26.870%;width:40.039%;height:22.522%;border-radius:50%}
+  .hs-nombre{left:28.125%;top:48.733%;width:43.750%;height:7.965%}
   .hs-nombre input{font-size:calc(var(--u)*150);line-height:1}
-  .hs-edad{left:41.016%;top:65.216%;width:17.969%;height:8.789%}
+  .hs-edad{left:39.815%;top:64.323%;width:20.370%;height:14.062%}
   .hs-edad input{font-size:calc(var(--u)*230);line-height:1;-moz-appearance:textfield}
   .hs-edad input::-webkit-outer-spin-button,.hs-edad input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-  .hs-fecha{left:13.889%;top:79.953%;width:34.259%;height:2.292%;border-radius:12px}
-  .hs-hora{left:13.889%;top:82.245%;width:34.259%;height:2.292%;border-radius:12px}
+  .hs-fecha{left:13.889%;top:84.100%;width:34.259%;height:2.292%;border-radius:12px}
+  .hs-hora{left:13.889%;top:86.392%;width:34.259%;height:2.292%;border-radius:12px}
   .fhint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;background:rgba(40,27,64,.82);color:#fff;font-weight:700;font-size:calc(var(--u)*38);padding:calc(var(--u)*16) calc(var(--u)*30);border-radius:999px;white-space:nowrap;font-family:'Montserrat',sans-serif}
   .fhint.off{display:none}
   .mobhint{display:none}
@@ -288,7 +288,7 @@
   }
 
   // Coordenadas de la referencia (1024 de ancho) -> lienzo 1080 x 1920, centrado en vertical
-  var K = 1080 / 1024, YO = 285 - 103 * K;
+  var K = 1080 / 1024, YO = 285 - 103 * K - 95;
   function X(x) { return x * K; } function Y(y) { return y * K + YO; } function L(v) { return v * K; }
 
   function cyl(c, x0, x1, y0, y1, ca, cb, rimTop) {      // cilindro / torre vista de frente
@@ -448,21 +448,21 @@
 
       // 7 y "años": flotan delante del fondo, sin pedestal
       var a5 = outCubic(prog(t, 1.8, 2.6)); c.save(); c.globalAlpha = a5; c.translate(0, (1 - a5) * 60);
-      var sc5 = outBack(prog(t, 2.0, 2.8)); c.save(); c.translate(CX, Y(1178)); c.scale(Math.max(sc5, .001), Math.max(sc5, .001));
-      c.font = '800 230px ' + F; fit(c, S.edad, L(180), 230, 800, 90);
-      var ag = c.createLinearGradient(0, -160, 0, 10); ag.addColorStop(0, '#ffa466'); ag.addColorStop(1, '#f2631f');
+      var sc5 = outBack(prog(t, 2.0, 2.8)); c.save(); c.translate(CX, 1435); c.scale(Math.max(sc5, .001), Math.max(sc5, .001));
+      c.font = '800 275px ' + F; fit(c, S.edad, L(200), 275, 800, 100);
+      var ag = c.createLinearGradient(0, -195, 0, 10); ag.addColorStop(0, '#ffa466'); ag.addColorStop(1, '#f2631f');
       c.save(); c.fillStyle = '#a63a0d'; for (var e = FAST ? 5 : 9; e >= 1; e--) c.fillText(S.edad, 0, e);
       c.shadowColor = 'rgba(20,8,60,.55)'; c.shadowBlur = FAST ? 0 : 22; c.shadowOffsetY = FAST ? 14 : 20; c.fillText(S.edad, 0, 9); c.shadowColor = 'transparent';
       c.fillStyle = ag; c.fillText(S.edad, 0, 0);
       c.globalAlpha = .4; c.lineWidth = 3; c.strokeStyle = '#fff'; c.strokeText(S.edad, 0, -2); c.restore();
       c.restore();
-      c.font = '800 ' + Math.round(L(52)) + 'px ' + F; stext(c, +S.edad === 1 ? 'año' : 'años', CX, Y(1240), '#fff');
+      c.font = '800 ' + Math.round(L(56)) + 'px ' + F; stext(c, +S.edad === 1 ? 'año' : 'años', CX, 1500, '#fff');
       c.restore();
     }
 
     // barra inferior curva: fecha / hora | dónde es
     var a6 = outCubic(prog(t, 2.4, 3.2)); c.save(); c.globalAlpha = a6; c.translate(0, (1 - a6) * 60);
-    var by = Y(1262), bh = L(136), half = L(461);
+    var by = 1587, bh = L(136), half = L(461);
     (function (c) {
       plate(c, CX - half, by, half * 2, bh, bh / 2, '#6b3fc2', '#3f2288', '#5bd0e7', 0);
       c.fillStyle = 'rgba(91,208,231,.7)'; c.fillRect(CX - 2, by + 22, 4, bh - 44);
