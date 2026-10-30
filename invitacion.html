@@ -226,22 +226,47 @@
     c.restore();
   }
 
-  function plate(c, x, y, w, h, r, ca, cb, rim) {
+  function bpath(c, x, y, w, h, r, sag) {   // placa con el borde inferior abombado hacia abajo
+    r = Math.min(r, h / 2, w / 2);
+    c.beginPath(); c.moveTo(x + r, y); c.lineTo(x + w - r, y); c.arcTo(x + w, y, x + w, y + r, r);
+    c.lineTo(x + w, y + h - r); c.arcTo(x + w, y + h, x + w - r, y + h, r);
+    c.quadraticCurveTo(x + w / 2, y + h + sag * 2, x + r, y + h);
+    c.arcTo(x, y + h, x, y + h - r, r); c.lineTo(x, y + r); c.arcTo(x, y, x + r, y, r); c.closePath();
+  }
+  function plate(c, x, y, w, h, r, ca, cb, rim, sag) {
+    if (sag === undefined) sag = Math.min(h * .07, 12);
     c.save();
-    c.shadowColor = 'rgba(20,8,60,.55)'; c.shadowBlur = FAST ? 0 : 36; c.shadowOffsetY = FAST ? 12 : 20;
-    var g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, ca); g.addColorStop(1, cb);
-    rrect(c, x, y, w, h, r); c.fillStyle = g; c.fill(); c.shadowColor = 'transparent';
-    c.save(); rrect(c, x, y, w, h, r); c.clip();
-    var gl = c.createLinearGradient(0, y, 0, y + h * .55); gl.addColorStop(0, 'rgba(255,255,255,.22)'); gl.addColorStop(1, 'rgba(255,255,255,0)');
-    c.fillStyle = gl; c.fillRect(x, y, w, h * .55); c.restore();
-    rrect(c, x + 2, y + 2, w - 4, h - 4, r - 2);
-    var rg = c.createLinearGradient(x, y, x + w, y + h); rg.addColorStop(0, 'rgba(255,255,255,.6)'); rg.addColorStop(.45, 'rgba(160,210,255,.18)'); rg.addColorStop(1, rim || '#5bd0e7');
-    c.lineWidth = 4; c.strokeStyle = rg; c.stroke();
+    c.shadowColor = 'rgba(20,8,60,.55)'; c.shadowBlur = FAST ? 0 : 36; c.shadowOffsetY = FAST ? 12 : 22;
+    bpath(c, x, y, w, h, r, sag);
+    var g = c.createLinearGradient(0, y, 0, y + h + sag); g.addColorStop(0, ca); g.addColorStop(1, cb);
+    c.globalAlpha = .93; c.fillStyle = g; c.fill(); c.globalAlpha = 1; c.shadowColor = 'transparent';
+    c.save(); bpath(c, x, y, w, h, r, sag); c.clip();
+    // brillo inferior (luz que atraviesa la placa)
+    var gb = c.createLinearGradient(0, y + h * .55, 0, y + h + sag); gb.addColorStop(0, 'rgba(120,225,255,0)'); gb.addColorStop(1, 'rgba(120,225,255,.5)');
+    c.fillStyle = gb; c.fillRect(x, y + h * .5, w, h * .6);
+    // brillo superior (vidrio)
+    var gl = c.createLinearGradient(0, y, 0, y + h * .5); gl.addColorStop(0, 'rgba(255,255,255,.5)'); gl.addColorStop(1, 'rgba(255,255,255,0)');
+    c.beginPath(); c.moveTo(x + r * .7, y + 5); c.lineTo(x + w - r * .7, y + 5); c.quadraticCurveTo(x + w - 4, y + 5, x + w - 5, y + h * .5); c.lineTo(x + 5, y + h * .5); c.quadraticCurveTo(x + 4, y + 5, x + r * .7, y + 5);
+    c.fillStyle = gl; c.fill();
+    c.restore();
+    // borde biselado: blanco arriba, cian abajo
+    bpath(c, x + 2.5, y + 2.5, w - 5, h - 5, r - 2, sag);
+    var rg = c.createLinearGradient(0, y, 0, y + h + sag); rg.addColorStop(0, 'rgba(255,255,255,.85)'); rg.addColorStop(.35, 'rgba(190,215,255,.35)'); rg.addColorStop(.75, 'rgba(120,225,255,.6)'); rg.addColorStop(1, rim || '#bff3fb');
+    c.lineWidth = 5; c.strokeStyle = rg; c.stroke();
     c.restore();
   }
-  function stext(c, txt, x, y, fill, sh) {
-    c.save(); if (sh !== false) { c.shadowColor = 'rgba(20,8,60,.55)'; c.shadowBlur = FAST ? 0 : 12; c.shadowOffsetY = FAST ? 5 : 7; }
-    c.fillStyle = fill; c.fillText(txt, x, y); c.restore();
+  function stext(c, txt, x, y, fill, sh) {   // texto inflado: extrusión + brillo
+    c.save();
+    if (sh !== false) {
+      var fsz0 = 0, dark = fill === '#5bd0e7' ? 'rgba(20,90,130,.9)' : (fill === '#ff8a4c' || fill.charAt(0) === '#' && fill.toLowerCase() === '#f2631f') ? 'rgba(150,50,10,.9)' : 'rgba(70,40,150,.85)';
+      var n = Math.max(2, Math.min(FAST ? 3 : 6, Math.round(parseInt((c.font.match(/(\d+)px/) || [0, 40])[1], 10) * .045))); c.fillStyle = dark;
+      for (var i = n; i >= 1; i--) c.fillText(txt, x, y + i);
+      c.shadowColor = 'rgba(20,8,60,.5)'; c.shadowBlur = FAST ? 0 : 14; c.shadowOffsetY = FAST ? 8 : 12; c.fillStyle = dark; c.fillText(txt, x, y + n); c.shadowColor = 'transparent';
+    }
+    var fsz = parseInt((c.font.match(/(\d+)px/) || [0, 40])[1], 10);
+    c.fillStyle = fill; c.fillText(txt, x, y);
+    if (sh !== false && fill !== '#ff8a4c' && fsz > 60) { c.globalAlpha = .5; c.lineWidth = 2; c.strokeStyle = 'rgba(255,255,255,.9)'; c.strokeText(txt, x, y - 1); }
+    c.restore();
   }
   function ell(c, cx, cy, rx, ry, ca, cb, rim) {
     c.save(); c.beginPath(); c.ellipse(cx, cy, rx, ry, 0, 0, 7);
