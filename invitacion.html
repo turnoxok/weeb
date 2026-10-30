@@ -121,9 +121,9 @@
 
 <script>
 (function () {
-  var W = 1080, H = 1920, DUR = 8;
+  var W = 1080, H = 1920, TOUR = 7.6, DUR = 13;
   var F = '"Baloo 2","Fredoka","Arial Rounded MT Bold",system-ui,sans-serif';
-  var LUGAR = 'Salón tuloogo · Av. Siempre Viva 123';
+  var LUGAR = 'Av. Siempre Viva 123';
   var $ = function (id) { return document.getElementById(id); };
   var BG = ['fondo1.jpg', 'fondo2.jpg', 'fondo3.jpg', 'fondo4.jpg'].map(function (n) { var i = new Image(); i.src = './assets/inv/' + n; i.onload = rerender; return i; });
   var SHEEP = new Image(); SHEEP.src = './assets/inv/oveja.svg'; SHEEP.onload = rerender;
@@ -366,12 +366,14 @@
   }
 
   // Dibuja un cuadro de la invitación. c: contexto, k: escala (ancho / 1080), t: segundos
-  function draw(c, k, t) {
+  function draw(c, k, tAbs) {
+    var t = tAbs >= 90 ? tAbs : tAbs - TOUR;   // el recorrido va primero; las placas entran después
     var S = state();
     c.save(); c.scale(k, k);
     c.textAlign = 'center'; c.textBaseline = 'alphabetic';
     var CX = 540;
-    if (!window.__NOBG) drawBG(c, t);
+    if (!window.__NOBG) drawBG(c, tAbs);
+    if (t < 0) { c.restore(); return; }
 
     // confeti suave (colores de la marca)
     var R = rng(11), cols = ['#e66937', '#5bd0e7', '#ebebef', '#c8b0f0'];
@@ -464,11 +466,11 @@
       var blockW = 70 + 26 + lwid, lx = CX - half + (half - blockW) / 2 + 8;
       calIcon(c, lx, by + bh / 2 - 36, 1);
       c.textAlign = 'left'; c.font = '800 ' + lf + 'px ' + F; stext(c, S.fecha, lx + 96, by + bh / 2 - 2, '#fbf9ff'); stext(c, S.hora, lx + 96, by + bh / 2 - 2 + lf * 1.15, '#ff8a4c');
-      c.font = '700 30px ' + F; var al = wrap(c, LUGAR, 330);
+      c.font = '700 34px ' + F; var al = [LUGAR];
       var rblock = 52 + 24 + 300, rx = CX + (half - rblock) / 2 - 4;
       pin(c, rx + 22, by + bh / 2 - 8, 1);
-      c.font = '800 36px ' + F; stext(c, '¿DÓNDE ES?', rx + 76, by + bh / 2 - 12, '#5bd0e7', false);
-      c.font = '700 30px ' + F; al.forEach(function (l, i) { stext(c, l, rx + 76, by + bh / 2 + 28 + i * 34, '#fbf9ff', false); });
+      c.font = '800 36px ' + F; stext(c, '¿DÓNDE ES?', rx + 76, by + bh / 2 - 4, '#5bd0e7', false);
+      c.font = '700 34px ' + F; al.forEach(function (l, i) { stext(c, l, rx + 76, by + bh / 2 + 40 + i * 36, '#fbf9ff', false); });
     });
     c.restore();
     c.restore();
@@ -476,7 +478,7 @@
 
   var pv = $('pv'), pctx = pv.getContext('2d');
   var playing = false, t0 = 0;
-  function rerender() { if (!playing) { pctx.clearRect(0, 0, pv.width, pv.height); draw(pctx, pv.width / W, 9); } }
+  function rerender() { if (!playing) { pctx.clearRect(0, 0, pv.width, pv.height); draw(pctx, pv.width / W, 99); } }
   function loop(ts) {
     if (!playing) return;
     var t = (performance.now() - t0) / 1000; if (t > DUR) { playing = false; FAST = false; if (pv.width !== 720) { pv.width = 720; pv.height = 1280; } vidEnd(); rerender(); return; }
@@ -512,7 +514,7 @@
 
   $('bjpg').onclick = function () {
     var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
-    var f0 = FAST; FAST = false; draw(cv.getContext('2d'), 1, 9); FAST = f0;
+    var f0 = FAST; FAST = false; draw(cv.getContext('2d'), 1, 99); FAST = f0;
     cv.toBlob(function (b) { if (b) { save(b, 'invitacion-' + slug() + '.jpg'); msg('Listo: se descargó la imagen.'); } else msg('No se pudo generar la imagen.'); }, 'image/jpeg', .92);
   };
 
@@ -530,7 +532,7 @@
       save(new Blob(chunks, { type: mime.split(';')[0] }), 'invitacion-' + slug() + '.' + ext);
       msg(ext === 'mp4' ? 'Listo: se descargó el video MP4.' : 'Listo: se descargó el video (formato WebM, porque este navegador no graba MP4).');
     };
-    $('bmp4').disabled = true; msg('Generando el video… son unos 8 segundos.');
+    $('bmp4').disabled = true; msg('Generando el video… son unos 13 segundos.');
     var s0;
     vidStart(function () { s0 = performance.now(); rec.start(250); tick(); });
     function tick() {
