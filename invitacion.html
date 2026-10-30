@@ -125,7 +125,7 @@
   var F = '"Baloo 2","Fredoka","Arial Rounded MT Bold",system-ui,sans-serif';
   var LUGAR = 'Salón tuloogo · Av. Siempre Viva 123';
   var $ = function (id) { return document.getElementById(id); };
-  var BG = ['fondo1.jpg', 'fondo2.jpg', 'fondo3.jpg'].map(function (n) { var i = new Image(); i.src = './assets/inv/' + n; i.onload = rerender; return i; });
+  var BG = ['fondo1.jpg', 'fondo2.jpg', 'fondo3.jpg', 'fondo4.jpg'].map(function (n) { var i = new Image(); i.src = './assets/inv/' + n; i.onload = rerender; return i; });
   var SHEEP = new Image(); SHEEP.src = './assets/inv/oveja.svg'; SHEEP.onload = rerender;
   var photo = null, FAST = false;
 
@@ -293,6 +293,38 @@
     var g = c.createLinearGradient(x0, 0, x1, 0); g.addColorStop(0, ca); g.addColorStop(.55, cb); g.addColorStop(1, 'rgba(50,28,110,1)');
     c.fillStyle = g; c.fillRect(x0, y0, x1 - x0, y1 - y0);
   }
+
+  // Fondo: escena 3D real. Cambia de pose con una transición de barrido de luz + glitch
+  var SEG = 2.1, TR = .7;
+  function bgOk(i) { var im = BG[i]; return im && im.complete && im.naturalWidth; }
+  function bgDraw(c, i, t, a0) {
+    var im = BG[i]; if (!bgOk(i)) { c.fillStyle = '#7a50cc'; c.fillRect(0, 0, W, H); return; }
+    var z = 1.04 + .08 * clamp((t - a0) / (SEG + 1), 0, 1); cover(c, im, 0, 0, W, H, z);
+  }
+  function drawBG(c, t) {
+    var n = BG.length, i = Math.min(n - 1, Math.floor(t / SEG)), tc = (i + 1) * SEG, k = (t - (tc - TR / 2)) / TR;
+    bgDraw(c, i, t, i * SEG);
+    if (i < n - 1 && k > 0 && k < 1) {
+      var e = k * k * (3 - 2 * k), ly = e * (H + 240) - 120, r = rng(Math.floor(t * 24) + 5);
+      c.save(); c.beginPath(); c.rect(0, 0, W, Math.max(0, ly)); c.clip(); bgDraw(c, i + 1, t, tc - TR / 2); c.restore();
+      // banda glitch: trozos desplazados alrededor de la línea
+      var bandH = 150, sl = FAST ? 5 : 9;
+      for (var j = 0; j < sl; j++) {
+        var yy = ly - bandH / 2 + j * (bandH / sl), sh = (r() - .5) * 90;
+        c.save(); c.beginPath(); c.rect(0, yy, W, bandH / sl + 1); c.clip(); c.translate(sh, 0);
+        bgDraw(c, yy < ly ? i + 1 : i, t, yy < ly ? tc - TR / 2 : i * SEG); c.restore();
+        if (r() > .55) { c.fillStyle = 'rgba(91,208,231,.22)'; c.fillRect(0, yy, W, bandH / sl); }
+      }
+      // línea de escaneo cian + cuadrícula tenue
+      var lg = c.createLinearGradient(0, ly - 70, 0, ly + 70); lg.addColorStop(0, 'rgba(91,208,231,0)'); lg.addColorStop(.5, 'rgba(160,240,255,.55)'); lg.addColorStop(1, 'rgba(91,208,231,0)');
+      c.fillStyle = lg; c.fillRect(0, ly - 70, W, 140);
+      c.fillStyle = 'rgba(235,252,255,.95)'; c.fillRect(0, ly - 3, W, 6);
+      c.fillStyle = 'rgba(91,208,231,.18)'; for (var gx = 0; gx < W; gx += 90) c.fillRect(gx, ly - 160, 2, 320);
+    }
+    // velo violeta para que el contenido se lea sobre la escena
+    var ov = c.createLinearGradient(0, 0, 0, H); ov.addColorStop(0, 'rgba(70,40,150,.30)'); ov.addColorStop(.5, 'rgba(80,48,160,.18)'); ov.addColorStop(1, 'rgba(50,28,120,.45)');
+    c.fillStyle = ov; c.fillRect(0, 0, W, H);
+  }
   function drawScene(c, t) {
     // cielo
     var g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#9166dc'); g.addColorStop(.55, '#7a50cc'); g.addColorStop(1, '#6a41bd');
@@ -347,7 +379,7 @@
     c.save(); c.scale(k, k);
     c.textAlign = 'center'; c.textBaseline = 'alphabetic';
     var CX = 540;
-    if (!window.__NOBG) drawScene(c, t);
+    if (!window.__NOBG) drawBG(c, t);
 
     // confeti suave (colores de la marca)
     var R = rng(11), cols = ['#e66937', '#5bd0e7', '#ebebef', '#c8b0f0'];
