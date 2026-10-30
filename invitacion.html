@@ -49,14 +49,14 @@
   @keyframes hsp{50%{border-color:rgba(91,208,231,1);background:rgba(91,208,231,.14)}}
   .hs input{position:absolute;inset:0;width:100%;height:100%;background:transparent;border:0;outline:0;font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;text-align:center;color:transparent;caret-color:#fff;cursor:pointer}
   .hs input[type=file],.hs input[type=date],.hs input[type=time]{opacity:0;font-size:16px}
-  .hs-foto{left:calc(540/1080*100% - 240/1080*100%);top:calc(770/1920*100% - 240/1920*100%);width:calc(480/1080*100%);height:calc(480/1920*100%);border-radius:50%}
-  .hs-nombre{left:calc(300/1080*100%);top:calc(1006/1920*100%);width:calc(480/1080*100%);height:calc(184/1920*100%)}
+  .hs-foto{left:28.809%;top:31.818%;width:40.039%;height:22.522%;border-radius:50%}
+  .hs-nombre{left:28.125%;top:53.680%;width:43.750%;height:7.965%}
   .hs-nombre input{font-size:calc(var(--u)*150);line-height:1}
-  .hs-edad{left:calc(440/1080*100%);top:calc(1290/1920*100%);width:calc(200/1080*100%);height:calc(190/1920*100%)}
+  .hs-edad{left:41.016%;top:65.216%;width:17.969%;height:8.789%}
   .hs-edad input{font-size:calc(var(--u)*230);line-height:1;-moz-appearance:textfield}
   .hs-edad input::-webkit-outer-spin-button,.hs-edad input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-  .hs-fecha{left:calc(150/1080*100%);top:calc(1622/1920*100%);width:calc(370/1080*100%);height:calc(46/1920*100%);border-radius:12px}
-  .hs-hora{left:calc(150/1080*100%);top:calc(1672/1920*100%);width:calc(370/1080*100%);height:calc(46/1920*100%);border-radius:12px}
+  .hs-fecha{left:13.889%;top:79.953%;width:34.259%;height:2.292%;border-radius:12px}
+  .hs-hora{left:13.889%;top:82.245%;width:34.259%;height:2.292%;border-radius:12px}
   .fhint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;background:rgba(40,27,64,.82);color:#fff;font-weight:700;font-size:calc(var(--u)*38);padding:calc(var(--u)*16) calc(var(--u)*30);border-radius:999px;white-space:nowrap;font-family:'Montserrat',sans-serif}
   .fhint.off{display:none}
   .mobhint{display:none}
@@ -249,29 +249,76 @@
     c.lineWidth = 4; c.strokeStyle = rim; c.stroke(); c.restore();
   }
 
+  // Coordenadas de la referencia (1024 de ancho) -> lienzo 1080 x 1920, centrado en vertical
+  var K = 1080 / 1024, YO = 285 - 103 * K;
+  function X(x) { return x * K; } function Y(y) { return y * K + YO; } function L(v) { return v * K; }
+
+  function cyl(c, x0, x1, y0, y1, ca, cb, rimTop) {      // cilindro / torre vista de frente
+    var g = c.createLinearGradient(x0, 0, x1, 0); g.addColorStop(0, ca); g.addColorStop(.55, cb); g.addColorStop(1, 'rgba(50,28,110,1)');
+    c.fillStyle = g; c.fillRect(x0, y0, x1 - x0, y1 - y0);
+  }
+  function drawScene(c, t) {
+    // cielo
+    var g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#9166dc'); g.addColorStop(.55, '#7a50cc'); g.addColorStop(1, '#6a41bd');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    var gl = c.createRadialGradient(W * .8, 0, 20, W * .8, 0, 900); gl.addColorStop(0, 'rgba(190,150,255,.45)'); gl.addColorStop(1, 'rgba(190,150,255,0)'); c.fillStyle = gl; c.fillRect(0, 0, W, H);
+
+    // plataformas traseras (derecha e izquierda)
+    function slab(x0, x1, yt, yb, top, side) {
+      var g1 = c.createLinearGradient(0, yt, 0, yb); g1.addColorStop(0, side); g1.addColorStop(1, '#5d38b4');
+      c.fillStyle = g1; rrect(c, x0, yt, x1 - x0, yb - yt, 30); c.fill();
+      c.beginPath(); c.ellipse((x0 + x1) / 2, yt + 6, (x1 - x0) / 2, 34, 0, 0, 7); c.fillStyle = top; c.fill();
+    }
+    slab(X(715), X(960), Y(900), Y(1050), '#a07ae8', '#7c52d0');
+    slab(X(-20), X(250), Y(1040), Y(1300), '#a07ae8', '#7c52d0');
+    // escalera + arco a la izquierda
+    for (var i = 0; i < 6; i++) { var yy = Y(840 - i * 28); c.fillStyle = i % 2 ? '#d9d4ee' : '#bdb3e4'; rrect(c, X(80 + i * 14), yy, X(190 - i * 6), L(22), 8); c.fill(); }
+    c.fillStyle = '#7c52d0'; c.beginPath(); c.arc(X(150), Y(640), L(60), Math.PI, 0); c.lineTo(X(210), Y(760)); c.lineTo(X(90), Y(760)); c.closePath(); c.fill();
+    c.fillStyle = '#9166dc'; c.beginPath(); c.arc(X(150), Y(655), L(36), Math.PI, 0); c.lineTo(X(186), Y(760)); c.lineTo(X(114), Y(760)); c.closePath(); c.fill();
+    // esfera gris
+    var sg = c.createRadialGradient(X(30), Y(550), 4, X(40), Y(575), L(46)); sg.addColorStop(0, '#f1f0f6'); sg.addColorStop(1, '#8e88a8');
+    c.fillStyle = sg; c.beginPath(); c.arc(X(38), Y(575), L(42), 0, 7); c.fill();
+    // chapa redonda con la oveja
+    c.beginPath(); c.arc(X(172), Y(505), L(60), 0, 7); c.fillStyle = '#35c4df'; c.fill();
+    c.beginPath(); c.arc(X(172), Y(505), L(49), 0, 7); c.fillStyle = '#6a41bd'; c.fill();
+    if (SHEEP.complete && SHEEP.naturalWidth) { var w0 = L(64); c.globalAlpha = .9; c.drawImage(SHEEP, X(172) - w0 / 2, Y(505) - w0 * .49, w0, w0 * SHEEP.naturalHeight / SHEEP.naturalWidth); c.globalAlpha = 1; }
+    // disco naranja izquierdo y derecho
+    function disc(cx, cy, rx, col) { c.fillStyle = '#c24a1a'; c.beginPath(); c.ellipse(cx, cy + 12, rx, rx * .3, 0, 0, 7); c.fill(); c.fillStyle = col; c.beginPath(); c.ellipse(cx, cy, rx, rx * .3, 0, 0, 7); c.fill(); }
+    disc(X(115), Y(768), L(36), '#f5782f'); disc(X(850), Y(868), L(50), '#f5782f');
+
+    // torre central + aro cian arriba
+    cyl(c, X(300), X(715), Y(0), Y(1010), '#8a5fda', '#6a40c4');
+    c.fillStyle = 'rgba(255,255,255,.07)'; c.fillRect(X(300), Y(0), X(30), Y(900));
+    c.beginPath(); c.ellipse(X(507), Y(5), L(262), L(70), 0, 0, 7); c.fillStyle = '#3cc3dc'; c.fill();
+    c.beginPath(); c.ellipse(X(507), Y(30), L(262), L(70), 0, 0, Math.PI); c.fillStyle = '#259fc0'; c.fill();
+    c.beginPath(); c.ellipse(X(507), Y(12), L(215), L(52), 0, 0, 7); c.fillStyle = '#6a41bd'; c.fill();
+    c.beginPath(); c.ellipse(X(507), Y(20), L(215), L(52), 0, 0, 7); c.fillStyle = '#7b52d0'; c.fill();
+
+    // escalón circular alrededor del pedestal + piso
+    var fg = c.createLinearGradient(0, Y(1100), 0, H); fg.addColorStop(0, '#9a72e0'); fg.addColorStop(1, '#7a4fcb');
+    c.fillStyle = fg; c.beginPath(); c.ellipse(X(512), Y(1330), L(620), L(230), 0, 0, 7); c.fill();
+    c.strokeStyle = 'rgba(91,208,231,.9)'; c.lineWidth = 5; c.beginPath(); c.ellipse(X(512), Y(1330), L(620), L(230), 0, Math.PI * 1.08, Math.PI * 1.38); c.stroke();
+    ell(c, X(512), Y(1130), L(330), L(52), '#8a5fda', '#5f39b4', '#5bd0e7');
+    ell(c, X(512), Y(1100), L(270), L(40), '#9a72e0', '#6a41bd', '#8fdcf0');
+    // esfera azul abajo a la derecha
+    var sg2 = c.createRadialGradient(X(985), Y(1200), 4, X(1000), Y(1235), L(60)); sg2.addColorStop(0, '#d7e3f5'); sg2.addColorStop(1, '#6f8fc0');
+    c.fillStyle = sg2; c.beginPath(); c.arc(X(1005), Y(1235), L(56), 0, 7); c.fill();
+  }
+
   // Dibuja un cuadro de la invitación. c: contexto, k: escala (ancho / 1080), t: segundos
   function draw(c, k, t) {
     var S = state();
     c.save(); c.scale(k, k);
     c.textAlign = 'center'; c.textBaseline = 'alphabetic';
     var CX = 540;
-
-    // fondo: escena de tuweeb
-    var seg = 2.7, n = BG.length, idx = Math.floor(t / seg) % n, ph = (t % seg);
-    function bg(i, a, z) { var im = BG[i]; if (!im || !im.complete || !im.naturalWidth) return; c.globalAlpha = a; cover(c, im, 0, 0, W, H, z); c.globalAlpha = 1; }
-    c.fillStyle = '#4c3470'; c.fillRect(0, 0, W, H);
-    bg(idx, 1, 1 + ph * 0.035);
-    if (ph < 0.6 && t > seg * 0.99) { var prev = (idx + n - 1) % n; bg(prev, 1 - ph / 0.6, 1 + (seg + ph) * 0.035); bg(idx, ph / 0.6, 1 + ph * 0.035); }
-    var g = c.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, 'rgba(90,55,170,.55)'); g.addColorStop(.5, 'rgba(100,62,180,.42)'); g.addColorStop(1, 'rgba(60,36,120,.72)');
-    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    drawScene(c, t);
 
     // confeti suave (colores de la marca)
-    var R = rng(11), cols = ['#e66937', '#5bd0e7', '#ebebef', '#b79be0'];
-    for (var i = 0, NC = FAST ? 10 : 18; i < NC; i++) {
+    var R = rng(11), cols = ['#e66937', '#5bd0e7', '#ebebef', '#c8b0f0'];
+    for (var i = 0, NC = FAST ? 8 : 14; i < NC; i++) {
       var x0 = R() * W, sp = 50 + R() * 90, ph0 = R() * H, sz = 10 + R() * 12, col = cols[i % 4], rot0 = R() * 6, sw = 20 + R() * 40;
       var y = ((ph0 + t * sp) % (H + 60)) - 30, x = x0 + Math.sin(t * 1.2 + i) * sw;
-      c.save(); c.translate(x, y); c.rotate(rot0 + t * 1.5); c.fillStyle = col; c.globalAlpha = .7;
+      c.save(); c.translate(x, y); c.rotate(rot0 + t * 1.5); c.fillStyle = col; c.globalAlpha = .65;
       if (i % 2 === 0) { c.beginPath(); c.arc(0, 0, sz * .5, 0, 7); c.fill(); } else { c.fillRect(-sz / 2, -sz / 4, sz, sz / 2); }
       c.restore();
     }
@@ -280,80 +327,79 @@
     // logo: oveja + "tuloogo"
     var a1 = outCubic(prog(t, 0, .7));
     c.save(); c.globalAlpha = a1; c.translate(0, (1 - a1) * -40);
-    var lw = 190, lh = 150;
-    if (SHEEP.complete && SHEEP.naturalWidth) { lh = lw * SHEEP.naturalHeight / SHEEP.naturalWidth; c.shadowColor = 'rgba(30,15,60,.45)'; c.shadowBlur = FAST ? 0 : 18; c.shadowOffsetY = 8; c.drawImage(SHEEP, CX - lw / 2, 96, lw, lh); c.shadowColor = 'transparent'; }
-    c.font = '800 84px ' + F; stext(c, 'tuloogo', CX, 96 + lh + 78, '#fbf9ff');
+    var lw = L(132), lh = lw * .98;
+    if (SHEEP.complete && SHEEP.naturalWidth) { lh = lw * SHEEP.naturalHeight / SHEEP.naturalWidth; c.shadowColor = 'rgba(30,15,60,.5)'; c.shadowBlur = FAST ? 0 : 14; c.shadowOffsetY = 6; c.drawImage(SHEEP, CX - lw / 2, Y(103), lw, lh); c.shadowColor = 'transparent'; }
+    c.font = '800 70px ' + F; fit(c, 'tuloogo', L(176), 70, 800, 30); stext(c, 'tuloogo', CX, Y(276), '#fbf9ff');
     c.restore();
 
-    // foto en aro cian (con "corona" lateral)
-    var pc = outBack(prog(t, .5, 1.3)), cx = CX, cy = 770, r = 222 * Math.max(pc, 0.001);
+    // foto en aro cian con corona
+    var pc = outBack(prog(t, .5, 1.3)), cx = X(500), cy = Y(617), rr = Math.max(pc, 0.001), r = L(203) * rr, ro = L(243) * rr;
     c.save();
     c.shadowColor = 'rgba(20,8,60,.55)'; c.shadowBlur = FAST ? 0 : 40; c.shadowOffsetY = FAST ? 14 : 22;
-    c.beginPath(); c.arc(cx, cy, r + 40, 0, 7);
-    var rg = c.createLinearGradient(cx - r, cy - r, cx + r, cy + r); rg.addColorStop(0, '#79e6f6'); rg.addColorStop(1, '#25b1d4');
+    c.beginPath(); c.arc(cx, cy, ro, 0, 7);
+    var rg = c.createLinearGradient(cx - ro, cy - ro, cx + ro, cy + ro); rg.addColorStop(0, '#7fe8f7'); rg.addColorStop(1, '#22a9cf');
     c.fillStyle = rg; c.fill(); c.shadowColor = 'transparent';
-    plate(c, cx + r + 22, cy - 38 * pc, 34, 76 * pc, 14, '#79e6f6', '#25b1d4', '#bff3fb');
-    c.beginPath(); c.arc(cx, cy, r + 40, 0, 7); c.lineWidth = 4; c.strokeStyle = 'rgba(255,255,255,.55)'; c.stroke();
-    c.beginPath(); c.arc(cx, cy, r + 10, 0, 7); c.fillStyle = 'rgba(40,20,110,.55)'; c.fill();
+    plate(c, cx + ro - L(8), cy - L(38) * rr, L(34) * rr + 2, L(76) * rr, L(14), '#7fe8f7', '#22a9cf', '#c8f5fc');
+    c.beginPath(); c.arc(cx, cy, ro, 0, 7); c.lineWidth = 4; c.strokeStyle = 'rgba(255,255,255,.55)'; c.stroke();
+    c.beginPath(); c.arc(cx, cy, r + L(10), 0, 7); c.fillStyle = 'rgba(40,20,110,.6)'; c.fill();
     c.beginPath(); c.arc(cx, cy, r, 0, 7); c.clip();
     if (photo) { cover(c, photo, cx - r, cy - r, r * 2, r * 2, 1); }
     else { c.fillStyle = '#9977b7'; c.fillRect(cx - r, cy - r, r * 2, r * 2); if (SHEEP.complete && SHEEP.naturalWidth) { var sw2 = r * 1.25; c.drawImage(SHEEP, cx - sw2 / 2, cy - sw2 * .5, sw2, sw2 * SHEEP.naturalHeight / SHEEP.naturalWidth); } }
     c.restore();
 
     // cartel "¡ESTÁS INVITADO!"
-    var a2 = outBack(prog(t, .35, 1.1)), ry = 453;
-    c.save(); c.translate(CX, ry); c.scale(Math.max(a2, .001), Math.max(a2, .001));
-    plate(c, -330, -72, 660, 144, 52, '#7b4fd2', '#4a2a9a', '#5bd0e7');
-    c.font = '800 80px ' + F; var f1 = fit(c, '¡ESTÁS INVITADO!', 600, 80, 800);
-    var w1 = c.measureText('¡ESTÁS ').width, w2 = c.measureText('INVITADO!').width, x0 = -(w1 + w2) / 2;
-    c.textAlign = 'left'; stext(c, '¡ESTÁS ', x0, 28, '#fbf9ff'); stext(c, 'INVITADO!', x0 + w1, 28, '#ff8a4c'); c.textAlign = 'center';
+    var a2 = outBack(prog(t, .35, 1.1));
+    c.save(); c.translate(CX, Y(362)); c.scale(Math.max(a2, .001), Math.max(a2, .001));
+    plate(c, -L(320), -L(59), L(640), L(118), L(46), '#7b4fd2', '#4a2a9a', '#5bd0e7');
+    c.font = '800 80px ' + F; fit(c, '¡ESTÁS INVITADO!', L(563), 80, 800);
+    var w1 = c.measureText('¡ESTÁS ').width, w2 = c.measureText('INVITADO!').width, x0 = -(w1 + w2) / 2, fs1 = parseInt(c.font.match(/(\d+)px/)[1], 10);
+    c.textAlign = 'left'; stext(c, '¡ESTÁS ', x0, fs1 * .34, '#fbf9ff'); stext(c, 'INVITADO!', x0 + w1, fs1 * .34, '#ff8a4c'); c.textAlign = 'center';
     c.restore();
 
     // placa del nombre
     var a3 = outCubic(prog(t, 1.1, 1.8));
     c.save(); c.globalAlpha = a3; c.translate(0, (1 - a3) * 60);
-    plate(c, 300, 1006, 480, 184, 64, '#7b4fd2', '#4a2a9a', '#5bd0e7');
-    var fs0 = fit(c, S.nombre, 410, 150, 800, 56);
-    stext(c, S.nombre, CX, 1006 + 92 + fs0 * .27, '#fff');
+    plate(c, CX - L(224), Y(810), L(448), L(145), L(58), '#7b4fd2', '#4a2a9a', '#5bd0e7');
+    var fs0 = fit(c, S.nombre, L(345), 150, 800, 56);
+    stext(c, S.nombre, CX, Y(810) + L(145) / 2 + fs0 * .27, '#fff');
     c.restore();
 
     // CUMPLE + edad sobre pedestal
     if (S.edad) {
       var a4 = outCubic(prog(t, 1.5, 2.1));
       c.save(); c.globalAlpha = a4; c.translate(0, (1 - a4) * 50);
-      plate(c, 390, 1198, 300, 76, 38, '#47cfe8', '#1fa3c8', '#bff3fb');
-      c.font = '800 50px ' + F; if (c.letterSpacing !== undefined) c.letterSpacing = '7px';
-      stext(c, 'CUMPLE', CX + 4, 1198 + 38 + 17, '#fff', false); if (c.letterSpacing !== undefined) c.letterSpacing = '0px';
+      plate(c, CX - L(137), Y(955), L(274), L(62), L(31), '#47cfe8', '#1fa3c8', '#bff3fb');
+      c.font = '800 46px ' + F; if (c.letterSpacing !== undefined) c.letterSpacing = '7px';
+      stext(c, 'CUMPLE', CX + 4, Y(955) + L(31) + 16, '#fff', false); if (c.letterSpacing !== undefined) c.letterSpacing = '0px';
       c.restore();
 
       var a5 = outCubic(prog(t, 1.8, 2.6)); c.save(); c.globalAlpha = a5; c.translate(0, (1 - a5) * 60);
-      // pedestal: base + columna
-      ell(c, CX, 1500, 205, 56, '#7b4fd2', '#3f2288', '#5bd0e7');
-      plate(c, 448, 1290, 184, 205, 46, '#6b3fc2', '#3f2288', '#5bd0e7');
-      var sc5 = outBack(prog(t, 2.0, 2.8)); c.save(); c.translate(CX, 1430); c.scale(Math.max(sc5, .001), Math.max(sc5, .001));
-      c.font = '800 250px ' + F; fit(c, S.edad, 150, 250, 800, 90);
-      var ag = c.createLinearGradient(0, -190, 0, 30); ag.addColorStop(0, '#ff9a5a'); ag.addColorStop(1, '#f2631f');
+      ell(c, CX, Y(1203), L(168), L(43), '#7b4fd2', '#3f2288', '#5bd0e7');
+      plate(c, CX - L(92), Y(1015), L(184), L(170), L(40), '#6b3fc2', '#3f2288', '#5bd0e7');
+      var sc5 = outBack(prog(t, 2.0, 2.8)); c.save(); c.translate(CX, Y(1160)); c.scale(Math.max(sc5, .001), Math.max(sc5, .001));
+      c.font = '800 200px ' + F; fit(c, S.edad, L(130), 200, 800, 80);
+      var ag = c.createLinearGradient(0, -150, 0, 20); ag.addColorStop(0, '#ff9a5a'); ag.addColorStop(1, '#f2631f');
       c.save(); c.shadowColor = 'rgba(20,8,60,.5)'; c.shadowBlur = FAST ? 0 : 16; c.shadowOffsetY = 10; c.fillStyle = ag; c.fillText(S.edad, 0, 0); c.restore();
       c.restore();
-      c.font = '800 64px ' + F; stext(c, +S.edad === 1 ? 'año' : 'años', CX, 1517, '#fff');
+      c.font = '800 ' + Math.round(L(46)) + 'px ' + F; stext(c, +S.edad === 1 ? 'año' : 'años', CX, Y(1222), '#fff');
       c.restore();
     }
 
     // barra inferior: fecha / hora | dónde es
     var a6 = outCubic(prog(t, 2.4, 3.2)); c.save(); c.globalAlpha = a6; c.translate(0, (1 - a6) * 60);
-    plate(c, 65, 1580, 950, 164, 82, '#6b3fc2', '#3f2288', '#5bd0e7');
-    c.fillStyle = 'rgba(91,208,231,.7)'; c.fillRect(CX - 2, 1608, 4, 108);
-    // izquierda: calendario + fecha y hora (bloque centrado en su mitad)
+    var by = Y(1262), bh = L(136);
+    plate(c, CX - L(461), by, L(922), bh, bh / 2, '#6b3fc2', '#3f2288', '#5bd0e7');
+    c.fillStyle = 'rgba(91,208,231,.7)'; c.fillRect(CX - 2, by + 22, 4, bh - 44);
+    var half = L(461);
     var lf = fit(c, S.fecha, 330, 44, 800, 26), lwid = Math.max(c.measureText(S.fecha).width, c.measureText(S.hora).width);
-    var blockW = 70 + 26 + lwid, lx = 65 + (475 - blockW) / 2 + 10;
-    calIcon(c, lx, 1632, 1);
-    c.textAlign = 'left'; c.font = '800 ' + lf + 'px ' + F; stext(c, S.fecha, lx + 96, 1660, '#fbf9ff'); stext(c, S.hora, lx + 96, 1660 + lf * 1.15, '#ff8a4c'); c.textAlign = 'center';
-    // derecha: pin + dónde es
-    c.font = '700 30px ' + F; var al = wrap(c, LUGAR, 330), rf = 30;
-    var rw = 330, rblock = 52 + 24 + Math.max(c.measureText('¿DÓNDE ES?').width * 1.2, rw * .8), rx = 540 + (475 - rblock) / 2;
-    pin(c, rx + 22, 1654, 1);
-    c.textAlign = 'left'; c.font = '800 36px ' + F; stext(c, '¿DÓNDE ES?', rx + 76, 1650, '#5bd0e7', false);
-    c.font = '700 30px ' + F; al.forEach(function (l, i) { stext(c, l, rx + 76, 1690 + i * 36, '#fbf9ff', false); });
+    var blockW = 70 + 26 + lwid, lx = CX - half + (half - blockW) / 2 + 8;
+    calIcon(c, lx, by + bh / 2 - 36, 1);
+    c.textAlign = 'left'; c.font = '800 ' + lf + 'px ' + F; stext(c, S.fecha, lx + 96, by + bh / 2 - 2, '#fbf9ff'); stext(c, S.hora, lx + 96, by + bh / 2 - 2 + lf * 1.15, '#ff8a4c'); c.textAlign = 'center';
+    c.font = '700 30px ' + F; var al = wrap(c, LUGAR, 330);
+    var rblock = 52 + 24 + 300, rx = CX + (half - rblock) / 2 - 4;
+    pin(c, rx + 22, by + bh / 2 - 8, 1);
+    c.textAlign = 'left'; c.font = '800 36px ' + F; stext(c, '¿DÓNDE ES?', rx + 76, by + bh / 2 - 12, '#5bd0e7', false);
+    c.font = '700 30px ' + F; al.forEach(function (l, i) { stext(c, l, rx + 76, by + bh / 2 + 28 + i * 34, '#fbf9ff', false); });
     c.textAlign = 'center';
     c.restore();
     c.restore();
