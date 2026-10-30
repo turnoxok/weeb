@@ -463,20 +463,23 @@
     // barra inferior curva: fecha / hora | dónde es
     var a6 = outCubic(prog(t, 2.4, 3.2)); c.save(); c.globalAlpha = a6; c.translate(0, (1 - a6) * 60);
     var by = Y(1262), bh = L(136), half = L(461);
-    warp(c, CX - half, by, half * 2, bh, 22, function (c) {
+    (function (c) {
       plate(c, CX - half, by, half * 2, bh, bh / 2, '#6b3fc2', '#3f2288', '#5bd0e7', 0);
       c.fillStyle = 'rgba(91,208,231,.7)'; c.fillRect(CX - 2, by + 22, 4, bh - 44);
-      c.textAlign = 'center';
-      var lf = fit(c, S.fecha, 330, 44, 800, 26), lwid = Math.max(c.measureText(S.fecha).width, c.measureText(S.hora).width);
-      var blockW = 70 + 26 + lwid, lx = CX - half + (half - blockW) / 2 + 8;
-      calIcon(c, lx, by + bh / 2 - 36, 1);
-      c.textAlign = 'left'; c.font = '800 ' + lf + 'px ' + F; stext(c, S.fecha, lx + 96, by + bh / 2 - 2, '#fbf9ff'); stext(c, S.hora, lx + 96, by + bh / 2 - 2 + lf * 1.15, '#ff8a4c');
-      c.font = '700 34px ' + F; var al = [LUGAR];
-      var rblock = 52 + 24 + 300, rx = CX + (half - rblock) / 2 - 4;
-      pin(c, rx + 22, by + bh / 2 - 8, 1);
-      c.font = '800 36px ' + F; stext(c, '¿DÓNDE ES?', rx + 76, by + bh / 2 - 4, '#5bd0e7', false);
-      c.font = '700 34px ' + F; al.forEach(function (l, i) { stext(c, l, rx + 76, by + bh / 2 + 40 + i * 36, '#fbf9ff', false); });
-    });
+      var mid = by + bh / 2;
+      // mitad izquierda: calendario + fecha y hora, texto centrado
+      var lf = fit(c, S.fecha, 330, 44, 800, 26), g = lf * 1.15, lwid = Math.max(c.measureText(S.fecha).width, c.measureText(S.hora).width);
+      var blockW = 70 + 26 + lwid, lx = CX - half + (half - blockW) / 2 + 8, tcx = lx + 96 + lwid / 2;
+      calIcon(c, lx, mid - 36, 1);
+      c.textAlign = 'center'; c.font = '800 ' + lf + 'px ' + F;
+      stext(c, S.fecha, tcx, mid - g / 2 + .35 * lf, '#fbf9ff'); stext(c, S.hora, tcx, mid + g / 2 + .35 * lf, '#ff8a4c');
+      // mitad derecha: pin + título y dirección, texto centrado
+      c.font = '800 36px ' + F; var tw = Math.max(c.measureText('¿DÓNDE ES?').width, (c.font = '700 34px ' + F, c.measureText(LUGAR).width));
+      var rblock = 52 + 24 + tw, rx = CX + (half - rblock) / 2, rcx = rx + 76 + tw / 2;
+      pin(c, rx + 22, mid - 8, 1);
+      c.font = '800 36px ' + F; stext(c, '¿DÓNDE ES?', rcx, mid - 22 + .35 * 36, '#5bd0e7', false);
+      c.font = '700 34px ' + F; stext(c, LUGAR, rcx, mid + 22 + .35 * 34, '#fbf9ff', false);
+    })(c);
     c.restore();
     c.restore();
   }
