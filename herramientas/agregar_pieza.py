@@ -16,6 +16,8 @@ cols=dict(c.split('=',1) for c in a.color)
 bad=[r for r in cols if r not in P['roles']]
 if bad: sys.exit(f"rol(es) desconocido(s): {bad}. Roles de {a.pieza}: {list(P['roles'])}")
 assets=a.assets or os.path.join(os.path.dirname(os.path.abspath(a.proyecto)),'assets','models'); os.makedirs(assets,exist_ok=True)
+falt=[p['objeto']['url'].split('/')[-1] for p in P['partes'] if not os.path.exists(f"{BIB}/{a.pieza}/svg/"+p['objeto']['url'].split('/')[-1])]
+if falt: sys.exit(f"faltan SVG en biblioteca/{a.pieza}/svg/: {falt}")
 base=int(time.time()*1000); ids={p['clave']:f'obj-{base}-{i}' for i,p in enumerate(P['partes'])}
 usados={o['label'] for o in proy['objects']}
 for i,p in enumerate(P['partes']):

@@ -1,0 +1,185 @@
+{
+ "nombre": "rayuela",
+ "titulo": "Rayuela",
+ "version": 1,
+ "origen": "lemadavami 2026-11-01",
+ "madre": "rayuela_00",
+ "nota": "Los SVG de la rayuela tienen varios colores propios (matColor vacío = color original del SVG). Para recolorear una parte entera se le pone color. Madre = contorno (plana, rx -90, escala 10).",
+ "roles": {
+  "contorno": "",
+  "base": "",
+  "fondo_numeros": "",
+  "numeros_color": "",
+  "numeros": ""
+ },
+ "partes": [
+  {
+   "clave": "rayuela_00",
+   "rol": "contorno",
+   "esMadre": true,
+   "objeto": {
+    "label": "Rayuela",
+    "type": "image",
+    "url": "./assets/models/Rayuela-contorno.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff5d73",
+    "ext": 0.025,
+    "bev": 0.02,
+    "seg": 0,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": ""
+   },
+   "pose": {
+    "position": [
+     0,
+     0,
+     0
+    ],
+    "scale": 10,
+    "rotationY": 0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "rx": -90
+   }
+  },
+  {
+   "clave": "rayuela_01",
+   "rol": "base",
+   "esMadre": false,
+   "objeto": {
+    "label": "Rayuela base",
+    "type": "image",
+    "url": "./assets/models/Rayuela-Base.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ffb454",
+    "ext": 0.005,
+    "bev": 0.02,
+    "seg": 0,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": ""
+   },
+   "pose": {
+    "position": [
+     0,
+     0,
+     0.007
+    ],
+    "scale": 0.962,
+    "rotationY": 0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "rx": 0,
+    "sx": 1,
+    "sy": 1
+   }
+  },
+  {
+   "clave": "rayuela_02",
+   "rol": "fondo_numeros",
+   "esMadre": false,
+   "objeto": {
+    "label": "Rayuela Fondo Número",
+    "type": "image",
+    "url": "./assets/models/Rayuela-fondo-numeros.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#f6e05e",
+    "ext": 0.005,
+    "bev": 0.02,
+    "seg": 0,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": ""
+   },
+   "pose": {
+    "position": [
+     0,
+     0,
+     0.01
+    ],
+    "scale": 0.85,
+    "rotationY": 0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "rx": 0,
+    "sx": 1,
+    "sy": 1
+   }
+  },
+  {
+   "clave": "rayuela_03",
+   "rol": "numeros_color",
+   "esMadre": false,
+   "objeto": {
+    "label": "Rayuela Fondo Número color",
+    "type": "image",
+    "url": "./assets/models/Rayuela-numeros-color.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#49d3ff",
+    "ext": 0.005,
+    "bev": 0.02,
+    "seg": 0,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": ""
+   },
+   "pose": {
+    "position": [
+     0,
+     0,
+     0.015
+    ],
+    "scale": 0.83,
+    "rotationY": 0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "rx": 0,
+    "sx": 1,
+    "sy": 1
+   }
+  },
+  {
+   "clave": "rayuela_04",
+   "rol": "numeros",
+   "esMadre": false,
+   "objeto": {
+    "label": "Rayuela numeros",
+    "type": "image",
+    "url": "./assets/models/Rayuela-numeros-2.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#7c8cff",
+    "ext": 0.001,
+    "bev": 0.02,
+    "seg": 0,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": ""
+   },
+   "pose": {
+    "position": [
+     0,
+     0,
+     0.02
+    ],
+    "scale": 0.78,
+    "rotationY": 0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "rx": 0,
+    "sx": 1,
+    "sy": 1
+   }
+  }
+ ]
+}

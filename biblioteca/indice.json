@@ -28,5 +28,26 @@
    "arco",
    "interno"
   ]
+ },
+ {
+  "nombre": "rayuela",
+  "titulo": "Rayuela",
+  "partes": 5,
+  "roles": [
+   "contorno",
+   "base",
+   "fondo_numeros",
+   "numeros_color",
+   "numeros"
+  ],
+  "nota": "faltan los SVG (subirlos a biblioteca/rayuela/svg/)"
+ },
+ {
+  "nombre": "esfera",
+  "titulo": "Esfera",
+  "partes": 1,
+  "roles": [
+   "esfera"
+  ]
  }
 ]
