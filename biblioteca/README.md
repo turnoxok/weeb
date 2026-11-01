@@ -7,7 +7,7 @@ Cada pieza = carpeta con `pieza.json` + `svg/` (las partes). Catálogo en `indic
 | tobogan | 7 | rampa, cuerpo, detalle |
 | puente | 9 | piso, estructura, zocalo, remaches |
 | arco (final del puente) | 2 | arco, interno |
-| rayuela | 5 | contorno, base, fondo_numeros, numeros_color, numeros (faltan los SVG) |
+| rayuela | 5 | contorno, base, fondo_numeros, numeros_color, numeros |
 | esfera | 1 | esfera (color y tamaño con --color / --escala) |
 
 ## Cómo funciona

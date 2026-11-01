@@ -4,7 +4,7 @@
  "version": 1,
  "origen": "lemadavami 2026-11-01",
  "madre": "rayuela_00",
- "nota": "Los SVG de la rayuela tienen varios colores propios (matColor vacío = color original del SVG). Para recolorear una parte entera se le pone color. Madre = contorno (plana, rx -90, escala 10).",
+ "nota": "Los SVG de la rayuela tienen varios colores propios (matColor vacío = color original del SVG). Para recolorear una parte entera se le pone color. Madre = contorno (plana, rx -90, escala 10). 'numeros_color' y 'numeros_2' llevan varios colores propios; recolorearlos con --color los deja de un solo color. Rayuela-numeros.svg (en svg/) es una variante con números blancos incluidos que hoy no se usa.",
  "roles": {
   "contorno": "",
   "base": "",

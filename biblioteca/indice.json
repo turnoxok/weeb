@@ -39,8 +39,7 @@
    "fondo_numeros",
    "numeros_color",
    "numeros"
-  ],
-  "nota": "faltan los SVG (subirlos a biblioteca/rayuela/svg/)"
+  ]
  },
  {
   "nombre": "esfera",
