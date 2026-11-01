@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Finanzas — Dra. Lili Bruzera</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+  <link rel="icon" href="https://i.ibb.co/hFyg48KD/Logo-Dra-Bruzera.png" type="image/png">
+  <style>
+    /* ── TOKENS (idénticos al panel) ── */
+    :root {
+      --rosa:    #C42685;
+      --rosa-s:  #F5E6F0;
+      --vio:     #362A6F;
+      --vio-s:   #EAE8F5;
+      --verde:   #1E9E5A;
+      --verde-s: #E3F5EB;
+      --crema:   #FAF6F0;
+      --txt:     #2A2235;
+      --txt-s:   #7A6E85;
+      --blanco:  #FFFFFF;
+      --borde:   rgba(54,42,111,.1);
+      --sombra:  0 12px 36px rgba(54,42,111,.10);
+      --nav-h:   62px;
+      --tab-h:   52px;
+      --r:       18px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--crema);
+      color: var(--txt);
+      min-height: 100svh;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    .nav {
+      position: fixed; top:0; left:0; right:0; z-index:100;
+      height: var(--nav-h);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      background: rgba(250,246,240,.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--borde);
+    }
+    .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .nav-brand img { width:34px; border-radius:6px; }
+    .nav-brand-text { font-family:'Playfair Display',serif; font-size:.9rem; color:var(--vio); line-height:1.15; }
+    .nav-brand-text small { display:block; font-family:'DM Sans',sans-serif; font-size:.68rem; color:var(--txt-s); font-weight:300; }
+    .nav-right { display:flex; align-items:center; gap:10px; }
+    .btn-logout {
+      background:var(--rosa); color:var(--blanco);
+      border:none; border-radius:999px;
+      padding:7px 16px; font-size:.8rem; font-weight:600;
+      cursor:pointer; transition:background .2s;
+    }
+    .btn-logout:hover { background:var(--vio); }
+    .btn-site {
+      background:transparent; color:var(--txt-s);
+      border:1.5px solid var(--borde); border-radius:999px;
+      padding:6px 14px; font-size:.8rem; font-weight:500;
+      text-decoration:none; transition:all .2s;
+    }
+    .btn-site:hover { border-color:var(--rosa); color:var(--rosa); }
+
+    /* ── LOGIN GATE (reusa sesión del panel) ── */
+    .login-wrap {
+      position:fixed; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      background: radial-gradient(circle at 70% 30%, rgba(196,38,133,.08), transparent 60%), var(--crema);
+      z-index:200;
+    }
+    .login-card {
+      background:var(--blanco); border:1px solid var(--borde);
+      border-radius:28px; box-shadow: var(--sombra);
+      padding:40px 36px; width:min(360px, 92vw); text-align:center;
+    }
+    .login-card img { width:60px; margin-bottom:18px; border-radius:10px; }
+    .login-card h2 { font-family:'Playfair Display',serif; color:var(--vio); font-size:1.4rem; margin-bottom:6px; }
+    .login-card p { color:var(--txt-s); font-size:.85rem; margin-bottom:22px; }
+    .login-btn {
+      display:inline-block; width:100%; padding:13px; background:var(--rosa); color:var(--blanco);
+      border:none; border-radius:999px; font-size:.95rem; font-weight:600;
+      cursor:pointer; text-decoration:none; transition:background .2s, transform .15s;
+    }
+    .login-btn:hover { background:var(--vio); transform:translateY(-1px); }
+
+    /* ── APP SHELL ── */
+    .app { display:none; padding-top:var(--nav-h); min-height:100svh; }
+    .tab-panel { padding:24px 20px 60px; max-width:1000px; margin:0 auto; }
+
+    /* ── HEADER + SELECTOR DE MES ── */
+    .fin-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+    .fin-header h2 { font-family:'Playfair Display',serif; color:var(--vio); font-size:1.4rem; }
+    .mes-select {
+      padding:9px 14px; border:1.5px solid var(--borde); border-radius:999px;
+      font-size:.85rem; font-family:inherit; background:var(--blanco); color:var(--vio);
+      font-weight:600; outline:none; cursor:pointer;
+    }
+
+    /* ── TOTALES ── */
+    .totales-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:20px; }
+    @media (max-width:560px) { .totales-grid { grid-template-columns:1fr; } }
+    .total-card {
+      background:var(--blanco); border:1px solid var(--borde); border-radius:var(--r);
+      padding:16px 18px;
+    }
+    .total-card span { display:block; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--txt-s); margin-bottom:6px; }
+    .total-card strong { font-family:'Playfair Display',serif; font-size:1.5rem; }
+    .total-card.ingresos strong { color:var(--verde); }
+    .total-card.egresos strong { color:var(--rosa); }
+    .total-card.balance strong { color:var(--vio); }
+
+    /* ── BOTÓN NUEVO MOVIMIENTO ── */
+    .fin-actions { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+    .btn-sm { padding:9px 18px; border:none; border-radius:999px; font-size:.82rem; font-weight:600; cursor:pointer; transition:background .2s, transform .15s; }
+    .btn-primary { background:var(--rosa); color:var(--blanco); }
+    .btn-primary:hover { background:var(--vio); transform:translateY(-1px); }
+    .btn-secondary { background:var(--vio-s); color:var(--vio); }
+    .btn-secondary:hover { background:var(--vio); color:var(--blanco); }
+
+    /* ── FORM NUEVO MOVIMIENTO ── */
+    .mov-form {
+      background:var(--blanco); border:1px solid var(--borde); border-radius:var(--r);
+      padding:20px; margin-bottom:22px; display:none;
+    }
+    .mov-form.open { display:block; }
+    .tipo-toggle { display:flex; gap:8px; margin-bottom:16px; }
+    .tipo-btn {
+      flex:1; padding:11px; border-radius:12px; border:1.5px solid var(--borde);
+      background:var(--blanco); font-size:.85rem; font-weight:700; cursor:pointer;
+      color:var(--txt-s); transition:all .15s;
+    }
+    .tipo-btn.sel-ingreso { background:var(--verde-s); color:var(--verde); border-color:var(--verde); }
+    .tipo-btn.sel-egreso  { background:var(--rosa-s);  color:var(--rosa);  border-color:var(--rosa); }
+
+    .mov-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+    @media (max-width:520px) { .mov-grid { grid-template-columns:1fr; } }
+    .mov-field.full { grid-column:1/-1; }
+    .mov-field label { display:block; font-size:.72rem; font-weight:600; color:var(--txt-s); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
+    .mov-field input, .mov-field select, .mov-field textarea {
+      width:100%; padding:10px 12px; border:1.5px solid var(--borde); border-radius:10px;
+      font-size:.88rem; font-family:inherit; background:var(--blanco); color:var(--txt);
+      outline:none; resize:vertical; transition:border .2s; -webkit-appearance:none;
+    }
+    .mov-field input:focus, .mov-field select:focus, .mov-field textarea:focus { border-color:var(--rosa); }
+    .campo-nuevo { display:flex; gap:6px; margin-top:6px; display:none; }
+    .campo-nuevo.open { display:flex; }
+    .campo-nuevo input { flex:1; }
+    .btn-mini { background:var(--vio); color:var(--blanco); border:none; border-radius:8px; padding:0 12px; font-size:.8rem; font-weight:700; cursor:pointer; }
+    .link-agregar { font-size:.72rem; color:var(--rosa); cursor:pointer; font-weight:600; margin-top:4px; display:inline-block; }
+
+    .mov-form-actions { display:flex; gap:8px; margin-top:6px; }
+    .btn-save { background:var(--rosa); color:var(--blanco); border:none; border-radius:999px; padding:11px 22px; font-size:.85rem; font-weight:700; cursor:pointer; transition:background .2s; }
+    .btn-save:hover { background:var(--vio); }
+    .btn-cancel-sm { background:var(--blanco); color:var(--txt-s); border:1.5px solid var(--borde); border-radius:999px; padding:10px 18px; font-size:.82rem; font-weight:500; cursor:pointer; }
+
+    /* ── LISTA DE MOVIMIENTOS ── */
+    .mov-group-title { font-family:'Playfair Display',serif; color:var(--vio); font-size:1rem; margin:22px 0 10px; }
+    .mov-card {
+      display:flex; align-items:center; gap:12px;
+      background:var(--blanco); border:1px solid var(--borde); border-radius:14px;
+      padding:12px 16px; margin-bottom:8px; transition:box-shadow .2s;
+    }
+    .mov-card:hover { box-shadow:var(--sombra); }
+    .mov-tag {
+      width:8px; height:38px; border-radius:6px; flex-shrink:0;
+    }
+    .mov-tag.ingreso { background:var(--verde); }
+    .mov-tag.egreso  { background:var(--rosa); }
+    .mov-info { flex:1; min-width:0; }
+    .mov-info strong { display:block; font-size:.88rem; color:var(--vio); }
+    .mov-info span { display:block; font-size:.76rem; color:var(--txt-s); margin-top:1px; }
+    .mov-monto { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; flex-shrink:0; }
+    .mov-monto.ingreso { color:var(--verde); }
+    .mov-monto.egreso  { color:var(--rosa); }
+    .mov-del {
+      background:var(--vio-s); border:none; border-radius:50%; width:28px; height:28px;
+      display:flex; align-items:center; justify-content:center; color:var(--vio);
+      cursor:pointer; flex-shrink:0; transition:background .2s;
+    }
+    .mov-del:hover { background:var(--rosa-s); color:var(--rosa); }
+    .mov-del svg { width:13px; height:13px; }
+    .mov-empty { text-align:center; padding:40px 0; color:var(--txt-s); font-size:.9rem; }
+
+    /* ── LOADER ── */
+    .loader-overlay {
+      position:fixed; inset:0; background:rgba(250,246,240,.8);
+      z-index:400; display:none; align-items:center; justify-content:center; flex-direction:column; gap:12px;
+    }
+    .loader-overlay.on { display:flex; }
+    .spinner { width:36px; height:36px; border:3px solid var(--borde); border-top-color:var(--rosa); border-radius:50%; animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loader-txt { font-size:.82rem; color:var(--txt-s); }
+  </style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div class="loader-overlay" id="loader">
+  <div class="spinner"></div>
+  <span class="loader-txt" id="loaderTxt">Cargando...</span>
+</div>
+
+<!-- LOGIN GATE: reusa la sesión iniciada en el panel principal -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <img src="https://i.ibb.co/hFyg48KD/Logo-Dra-Bruzera.png" alt="Logo"/>
+    <h2>Sesión requerida</h2>
+    <p>Iniciá sesión en el panel principal para ver Finanzas.</p>
+    <a class="login-btn" href="index.html">Ir al panel</a>
+  </div>
+</div>
+
+<!-- NAV -->
+<header class="nav" id="appNav" style="display:none">
+  <a class="nav-brand" href="../index.html">
+    <img src="https://i.ibb.co/hFyg48KD/Logo-Dra-Bruzera.png" alt="Logo"/>
+    <div class="nav-brand-text">Dra. Lili Bruzera <small>Finanzas</small></div>
+  </a>
+  <div class="nav-right">
+    <a class="btn-site" href="index.html">← Panel</a>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+</header>
+
+<!-- APP -->
+<div class="app" id="appShell">
+  <div class="tab-panel">
+
+    <div class="fin-header">
+      <h2>Ingresos y egresos</h2>
+      <select class="mes-select" id="mesSelect" onchange="cambiarMes()"></select>
+    </div>
+
+    <!-- TOTALES -->
+    <div class="totales-grid">
+      <div class="total-card ingresos"><span>Ingresos</span><strong id="totIngresos">$0</strong></div>
+      <div class="total-card egresos"><span>Egresos</span><strong id="totEgresos">$0</strong></div>
+      <div class="total-card balance"><span>Balance</span><strong id="totBalance">$0</strong></div>
+    </div>
+
+    <div class="fin-actions">
+      <button class="btn-sm btn-primary" onclick="toggleForm()">+ Nuevo movimiento</button>
+      <button class="btn-sm btn-secondary" onclick="cargarMes()">↻ Actualizar</button>
+    </div>
+
+    <!-- FORM NUEVO MOVIMIENTO -->
+    <div class="mov-form" id="movForm">
+      <div class="tipo-toggle">
+        <button type="button" class="tipo-btn sel-ingreso" id="btnTipoIngreso" onclick="setTipo('Ingreso')">↑ Ingreso</button>
+        <button type="button" class="tipo-btn" id="btnTipoEgreso" onclick="setTipo('Egreso')">↓ Egreso</button>
+      </div>
+
+      <div class="mov-grid">
+        <div class="mov-field">
+          <label>Fecha</label>
+          <input type="date" id="mFecha"/>
+        </div>
+        <div class="mov-field">
+          <label>Monto</label>
+          <input type="number" id="mMonto" min="0" step="0.01" placeholder="0.00"/>
+        </div>
+
+        <div class="mov-field full">
+          <label>Categoría</label>
+          <select id="mCategoria" onchange="onCategoriaChange()"></select>
+        </div>
+
+        <div class="mov-field full" id="wrapVeterinario" style="display:none">
+          <label>Veterinario</label>
+          <select id="mVeterinario"></select>
+          <span class="link-agregar" onclick="toggleCampoNuevo('nuevoVet')">+ Agregar veterinario nuevo</span>
+          <div class="campo-nuevo" id="nuevoVet">
+            <input type="text" id="nuevoVetInput" placeholder="Nombre del veterinario"/>
+            <button type="button" class="btn-mini" onclick="agregarVeterinario()">Agregar</button>
+          </div>
+        </div>
+
+        <div class="mov-field full">
+          <label>Prestación</label>
+          <select id="mPrestacion"></select>
+          <span class="link-agregar" onclick="toggleCampoNuevo('nuevaPrest')">+ Agregar prestación nueva</span>
+          <div class="campo-nuevo" id="nuevaPrest">
+            <input type="text" id="nuevaPrestInput" placeholder="Ej: Cirugía tipo X"/>
+            <button type="button" class="btn-mini" onclick="agregarPrestacion()">Agregar</button>
+          </div>
+        </div>
+
+        <div class="mov-field full">
+          <label>Descripción</label>
+          <textarea id="mDescripcion" rows="2" placeholder="Detalle de la prestación…"></textarea>
+        </div>
+      </div>
+
+      <div class="mov-form-actions">
+        <button class="btn-save" onclick="guardarMovimiento()">Guardar</button>
+        <button class="btn-cancel-sm" onclick="toggleForm()">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- LISTA -->
+    <div class="mov-group-title">Detalle del mes</div>
+    <div id="movList"><div class="mov-empty">Cargando movimientos…</div></div>
+
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// CONFIG — reemplazá por la URL del NUEVO Apps Script (Finanzas.gs)
+// ═══════════════════════════════════════
+const URL_SCRIPT_FINANZAS = "https://script.google.com/macros/s/AKfycbxMcQwFUfJoe4calNVWzRKpbfpVm8-QsvPS1X8Qi0zqc_iI7betQUyGuJSLkzqvgMVwsQ/exec";
+
+function showLoader(msg="Cargando…"){ document.getElementById("loader").classList.add("on"); document.getElementById("loaderTxt").textContent=msg; }
+function hideLoader(){ document.getElementById("loader").classList.remove("on"); }
+
+// ═══════════════════════════════════════
+// SESIÓN (reutiliza la del panel principal)
+// ═══════════════════════════════════════
+function doLogout(){
+  sessionStorage.removeItem("logueado");
+  sessionStorage.removeItem("usuario");
+  location.href="index.html";
+}
+window.addEventListener("load", () => {
+  if (sessionStorage.getItem("logueado") === "1") {
+    document.getElementById("loginWrap").style.display = "none";
+    document.getElementById("appNav").style.display = "flex";
+    document.getElementById("appShell").style.display = "block";
+    iniciar();
+  }
+});
+
+// ═══════════════════════════════════════
+// FORMATO
+// ═══════════════════════════════════════
+function fmtMoneda(n){
+  return "$" + Number(n||0).toLocaleString("es-AR", {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtFechaDDMMYYYY(iso){
+  if(!iso) return "";
+  const p = iso.split("-");
+  return `${p[2]}/${p[1]}/${p[0]}`;
+}
+function nombreMes(ym){
+  const [y,m] = ym.split("-");
+  const d = new Date(Number(y), Number(m)-1, 1);
+  const txt = d.toLocaleDateString("es-AR",{month:"long", year:"numeric"});
+  return txt.charAt(0).toUpperCase()+txt.slice(1);
+}
+
+// ═══════════════════════════════════════
+// INICIO
+// ═══════════════════════════════════════
+let categorias = [], veterinarios = [], prestaciones = [];
+
+async function iniciar(){
+  await Promise.all([cargarCategorias(), cargarVeterinarios(), cargarPrestaciones(), cargarMeses()]);
+  cargarMes();
+}
+
+async function cargarCategorias(){
+  try{
+    const r = await fetch(URL_SCRIPT_FINANZAS + "?accion=categorias");
+    const d = await r.json();
+    if(d.success){
+      categorias = d.categorias;
+      const sel = document.getElementById("mCategoria");
+      sel.innerHTML = categorias.map(c => `<option value="${c}">${c}</option>`).join("");
+      onCategoriaChange();
+    }
+  } catch(e){}
+}
+
+async function cargarVeterinarios(){
+  try{
+    const r = await fetch(URL_SCRIPT_FINANZAS + "?accion=veterinarios");
+    const d = await r.json();
+    if(d.success){
+      veterinarios = d.veterinarios;
+      document.getElementById("mVeterinario").innerHTML = veterinarios.map(v => `<option value="${v}">${v}</option>`).join("");
+    }
+  } catch(e){}
+}
+
+async function cargarPrestaciones(){
+  try{
+    const r = await fetch(URL_SCRIPT_FINANZAS + "?accion=prestaciones");
+    const d = await r.json();
+    if(d.success){
+      prestaciones = d.prestaciones;
+      document.getElementById("mPrestacion").innerHTML = prestaciones.map(p => `<option value="${p}">${p}</option>`).join("");
+    }
+  } catch(e){}
+}
+
+async function cargarMeses(){
+  try{
+    const r = await fetch(URL_SCRIPT_FINANZAS + "?accion=meses");
+    const d = await r.json();
+    if(d.success){
+      const sel = document.getElementById("mesSelect");
+      sel.innerHTML = d.meses.map(m => `<option value="${m}">${nombreMes(m)}</option>`).join("");
+    }
+  } catch(e){}
+}
+
+function onCategoriaChange(){
+  const cat = document.getElementById("mCategoria").value;
+  document.getElementById("wrapVeterinario").style.display = (cat === "Atención médica") ? "block" : "none";
+}
+
+function toggleCampoNuevo(id){
+  document.getElementById(id).classList.toggle("open");
+}
+
+// ═══════════════════════════════════════
+// MES ACTUAL / TOTALES / LISTA
+// ═══════════════════════════════════════
+function cambiarMes(){ cargarMes(); }
+
+async function cargarMes(){
+  const sel = document.getElementById("mesSelect");
+  const mes = sel.value || "";
+  document.getElementById("movList").innerHTML = '<div class="mov-empty">Cargando movimientos…</div>';
+  try{
+    const url = URL_SCRIPT_FINANZAS + "?" + (mes ? ("mes="+mes) : "");
+    const r = await fetch(url);
+    const d = await r.json();
+    if(!d.success){ document.getElementById("movList").innerHTML = '<div class="mov-empty">Error al cargar</div>'; return; }
+
+    if(!mes && sel.querySelector(`option[value="${d.mes}"]`)) sel.value = d.mes;
+
+    document.getElementById("totIngresos").textContent = fmtMoneda(d.totales.ingresos);
+    document.getElementById("totEgresos").textContent  = fmtMoneda(d.totales.egresos);
+    document.getElementById("totBalance").textContent  = fmtMoneda(d.totales.total);
+
+    renderMovimientos(d.movimientos);
+  } catch(e){
+    document.getElementById("movList").innerHTML = '<div class="mov-empty">Error de conexión</div>';
+  }
+}
+
+function renderMovimientos(lista){
+  const el = document.getElementById("movList");
+  if(!lista.length){ el.innerHTML = '<div class="mov-empty">Sin movimientos este mes</div>'; return; }
+  el.innerHTML = lista.map(m => {
+    const tipoClass = m.tipo === "Ingreso" ? "ingreso" : "egreso";
+    const detalle = [m.categoria, m.veterinario, m.prestacion].filter(Boolean).join(" · ");
+    return `
+    <div class="mov-card">
+      <div class="mov-tag ${tipoClass}"></div>
+      <div class="mov-info">
+        <strong>${detalle}</strong>
+        <span>${fmtFechaDDMMYYYY(m.fecha)}${m.descripcion ? " — " + m.descripcion : ""}</span>
+      </div>
+      <div class="mov-monto ${tipoClass}">${m.tipo === "Ingreso" ? "+" : "−"}${fmtMoneda(m.monto)}</div>
+      <button class="mov-del" onclick="eliminarMovimiento('${m.id}')" title="Eliminar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>`;
+  }).join("");
+}
+
+// ═══════════════════════════════════════
+// FORM NUEVO MOVIMIENTO
+// ═══════════════════════════════════════
+let tipoActual = "Ingreso";
+function toggleForm(){
+  const f = document.getElementById("movForm");
+  f.classList.toggle("open");
+  if(f.classList.contains("open")){
+    document.getElementById("mFecha").value = new Date().toISOString().split("T")[0];
+  }
+}
+function setTipo(t){
+  tipoActual = t;
+  document.getElementById("btnTipoIngreso").className = "tipo-btn" + (t==="Ingreso" ? " sel-ingreso" : "");
+  document.getElementById("btnTipoEgreso").className  = "tipo-btn" + (t==="Egreso"  ? " sel-egreso"  : "");
+}
+
+async function agregarVeterinario(){
+  const nombre = document.getElementById("nuevoVetInput").value.trim();
+  if(!nombre) return;
+  showLoader("Agregando veterinario…");
+  try{
+    const res = await fetch(URL_SCRIPT_FINANZAS, {method:"POST", body:new URLSearchParams({accion:"agregarVeterinario", nombre})});
+    const d = await res.json();
+    hideLoader();
+    if(d.success){
+      veterinarios = d.veterinarios;
+      document.getElementById("mVeterinario").innerHTML = veterinarios.map(v => `<option value="${v}">${v}</option>`).join("");
+      document.getElementById("mVeterinario").value = nombre;
+      document.getElementById("nuevoVetInput").value = "";
+      document.getElementById("nuevoVet").classList.remove("open");
+    } else { alert(d.error || "Error al agregar veterinario"); }
+  } catch(e){ hideLoader(); alert("Error de conexión"); }
+}
+
+async function agregarPrestacion(){
+  const nombre = document.getElementById("nuevaPrestInput").value.trim();
+  if(!nombre) return;
+  showLoader("Agregando prestación…");
+  try{
+    const res = await fetch(URL_SCRIPT_FINANZAS, {method:"POST", body:new URLSearchParams({accion:"agregarPrestacion", nombre})});
+    const d = await res.json();
+    hideLoader();
+    if(d.success){
+      prestaciones = d.prestaciones;
+      document.getElementById("mPrestacion").innerHTML = prestaciones.map(p => `<option value="${p}">${p}</option>`).join("");
+      document.getElementById("mPrestacion").value = nombre;
+      document.getElementById("nuevaPrestInput").value = "";
+      document.getElementById("nuevaPrest").classList.remove("open");
+    } else { alert(d.error || "Error al agregar prestación"); }
+  } catch(e){ hideLoader(); alert("Error de conexión"); }
+}
+
+async function guardarMovimiento(){
+  const fecha = document.getElementById("mFecha").value;
+  const monto = document.getElementById("mMonto").value;
+  const categoria = document.getElementById("mCategoria").value;
+  const veterinario = categoria === "Atención médica" ? document.getElementById("mVeterinario").value : "";
+  const prestacion = document.getElementById("mPrestacion").value;
+  const descripcion = document.getElementById("mDescripcion").value.trim();
+
+  if(!fecha){ alert("Falta la fecha"); return; }
+  if(!monto || Number(monto) <= 0){ alert("Ingresá un monto válido"); return; }
+
+  const datos = { fecha, tipo: tipoActual, categoria, veterinario, prestacion, descripcion, monto, usuario: sessionStorage.getItem("usuario")||"" };
+
+  showLoader("Guardando movimiento…");
+  try{
+    const res = await fetch(URL_SCRIPT_FINANZAS, {method:"POST", body:new URLSearchParams({accion:"agregar", datos:JSON.stringify(datos)})});
+    const d = await res.json();
+    hideLoader();
+    if(d.success){
+      document.getElementById("mMonto").value = "";
+      document.getElementById("mDescripcion").value = "";
+      document.getElementById("movForm").classList.remove("open");
+      await Promise.all([cargarVeterinarios(), cargarPrestaciones(), cargarMeses()]);
+      cargarMes();
+    } else { alert(d.error || "Error al guardar"); }
+  } catch(e){ hideLoader(); alert("Error de conexión"); }
+}
+
+async function eliminarMovimiento(id){
+  if(!confirm("¿Eliminar este movimiento?")) return;
+  showLoader("Eliminando…");
+  try{
+    const res = await fetch(URL_SCRIPT_FINANZAS, {method:"POST", body:new URLSearchParams({accion:"eliminar", id})});
+    const d = await res.json();
+    hideLoader();
+    if(d.success){ cargarMes(); } else { alert(d.error || "Error al eliminar"); }
+  } catch(e){ hideLoader(); alert("Error de conexión"); }
+}
+</script>
+</body>
+</html>

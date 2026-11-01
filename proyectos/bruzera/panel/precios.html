@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Precios — Dra. Lili Bruzera</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+  <link rel="icon" href="https://i.ibb.co/hFyg48KD/Logo-Dra-Bruzera.png" type="image/png">
+  <style>
+    :root {
+      --rosa:    #C42685;
+      --rosa-s:  #F5E6F0;
+      --vio:     #362A6F;
+      --vio-s:   #EAE8F5;
+      --verde:   #1E9E5A;
+      --verde-s: #E3F5EB;
+      --crema:   #FAF6F0;
+      --txt:     #2A2235;
+      --txt-s:   #7A6E85;
+      --blanco:  #FFFFFF;
+      --borde:   rgba(54,42,111,.1);
+      --sombra:  0 12px 36px rgba(54,42,111,.10);
+      --nav-h:   62px;
+      --r:       18px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+    html { scroll-behavior: smooth; }
+    body { font-family:'DM Sans', sans-serif; background:var(--crema); color:var(--txt); min-height:100svh; overflow-x:hidden; }
+
+    /* ── NAV (igual al resto del panel) ── */
+    .nav {
+      position: fixed; top:0; left:0; right:0; z-index:100;
+      height: var(--nav-h);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      background: rgba(250,246,240,.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--borde);
+    }
+    .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .nav-brand img { width:34px; border-radius:6px; }
+    .nav-brand-text { font-family:'Playfair Display',serif; font-size:.9rem; color:var(--vio); line-height:1.15; }
+    .nav-brand-text small { display:block; font-family:'DM Sans',sans-serif; font-size:.68rem; color:var(--txt-s); font-weight:300; }
+    .nav-right { display:flex; align-items:center; gap:10px; }
+    .btn-logout { background:var(--rosa); color:var(--blanco); border:none; border-radius:999px; padding:7px 16px; font-size:.8rem; font-weight:600; cursor:pointer; transition:background .2s; }
+    .btn-logout:hover { background:var(--vio); }
+    .btn-site { background:transparent; color:var(--txt-s); border:1.5px solid var(--borde); border-radius:999px; padding:6px 14px; font-size:.8rem; font-weight:500; text-decoration:none; transition:all .2s; }
+    .btn-site:hover { border-color:var(--rosa); color:var(--rosa); }
+
+    /* ── LOGIN GATE ── */
+    .login-wrap { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background: radial-gradient(circle at 70% 30%, rgba(196,38,133,.08), transparent 60%), var(--crema); z-index:200; }
+    .login-card { background:var(--blanco); border:1px solid var(--borde); border-radius:28px; box-shadow: var(--sombra); padding:40px 36px; width:min(360px, 92vw); text-align:center; }
+    .login-card img { width:60px; margin-bottom:18px; border-radius:10px; }
+    .login-card h2 { font-family:'Playfair Display',serif; color:var(--vio); font-size:1.4rem; margin-bottom:6px; }
+    .login-card p { color:var(--txt-s); font-size:.85rem; margin-bottom:22px; }
+    .login-btn { display:inline-block; width:100%; padding:13px; background:var(--rosa); color:var(--blanco); border:none; border-radius:999px; font-size:.95rem; font-weight:600; cursor:pointer; text-decoration:none; transition:background .2s, transform .15s; }
+    .login-btn:hover { background:var(--vio); transform:translateY(-1px); }
+
+    /* ── APP SHELL ── */
+    .app { display:none; padding-top:var(--nav-h); min-height:100svh; }
+    .tab-panel { padding:24px 20px 60px; max-width:900px; margin:0 auto; }
+
+    .fin-header { margin-bottom:6px; }
+    .fin-header h2 { font-family:'Playfair Display',serif; color:var(--vio); font-size:1.4rem; }
+    .fin-sub { color:var(--txt-s); font-size:.82rem; margin-bottom:18px; }
+
+    /* ── BUSCADOR ── */
+    .search-bar-wrap { position:relative; margin-bottom:14px; }
+    .search-bar-wrap svg { position:absolute; left:14px; top:50%; transform:translateY(-50%); width:16px; height:16px; color:var(--txt-s); pointer-events:none; }
+    .search-input { width:100%; padding:13px 16px 13px 40px; border:1.5px solid var(--borde); border-radius:999px; font-size:.92rem; font-family:inherit; background:var(--blanco); outline:none; transition:border .2s; }
+    .search-input:focus { border-color:var(--rosa); }
+
+    .fin-actions { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; align-items:center; }
+    .btn-sm { padding:8px 16px; border:none; border-radius:999px; font-size:.8rem; font-weight:600; cursor:pointer; transition:background .2s, transform .15s; }
+    .btn-secondary { background:var(--vio-s); color:var(--vio); }
+    .btn-secondary:hover { background:var(--vio); color:var(--blanco); }
+    .markup-pill { background:var(--rosa-s); color:var(--rosa); border-radius:999px; padding:6px 14px; font-size:.78rem; font-weight:700; }
+
+    /* ── LISTA DE PRODUCTOS ── */
+    .prod-list { display:flex; flex-direction:column; gap:8px; }
+    .prod-card {
+      background:var(--blanco); border:1px solid var(--borde); border-radius:14px;
+      padding:14px 16px; transition:box-shadow .2s;
+    }
+    .prod-card:hover { box-shadow:var(--sombra); }
+    .prod-top { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .prod-info { flex:1; min-width:0; }
+    .prod-info strong { display:block; font-size:.9rem; color:var(--vio); line-height:1.3; }
+    .prod-info span { font-size:.74rem; color:var(--txt-s); }
+    .prod-code { background:var(--vio-s); color:var(--vio); border-radius:999px; padding:2px 9px; font-size:.68rem; font-weight:700; flex-shrink:0; }
+
+    .prod-precios { display:flex; align-items:center; justify-content:space-between; margin-top:10px; gap:10px; flex-wrap:wrap; }
+    .prod-precio-prov { font-size:.78rem; color:var(--txt-s); }
+    .prod-precio-prov b { color:var(--txt); }
+    .prod-markup-wrap { display:flex; align-items:center; gap:6px; }
+    .markup-badge {
+      display:flex; align-items:center; gap:4px;
+      background:var(--vio-s); color:var(--vio);
+      border-radius:999px; padding:4px 10px; font-size:.76rem; font-weight:700;
+      cursor:pointer; border:1.5px solid transparent; transition:border .15s;
+    }
+    .markup-badge:hover { border-color:var(--rosa); }
+    .markup-badge.custom { background:var(--rosa-s); color:var(--rosa); }
+    .markup-badge svg { width:11px; height:11px; }
+    .markup-input {
+      width:60px; padding:4px 6px; border:1.5px solid var(--rosa); border-radius:8px;
+      font-size:.78rem; font-family:inherit; text-align:center; outline:none;
+    }
+    .prod-precio-publico { font-family:'Playfair Display',serif; font-size:1.15rem; font-weight:700; color:var(--verde); }
+
+    .prod-empty { text-align:center; padding:48px 0; color:var(--txt-s); font-size:.9rem; }
+    .prod-hint { text-align:center; padding:12px 0 4px; color:var(--txt-s); font-size:.76rem; }
+
+    /* ── LOADER ── */
+    .loader-overlay { position:fixed; inset:0; background:rgba(250,246,240,.8); z-index:400; display:none; align-items:center; justify-content:center; flex-direction:column; gap:12px; }
+    .loader-overlay.on { display:flex; }
+    .spinner { width:36px; height:36px; border:3px solid var(--borde); border-top-color:var(--rosa); border-radius:50%; animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loader-txt { font-size:.82rem; color:var(--txt-s); }
+  </style>
+</head>
+<body>
+
+<div class="loader-overlay" id="loader"><div class="spinner"></div><span class="loader-txt" id="loaderTxt">Cargando...</span></div>
+
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <img src="https://i.ibb.co/hFyg48KD/Logo-Dra-Bruzera.png" alt="Logo"/>
+    <h2>Sesión requerida</h2>
+    <p>Iniciá sesión en el panel principal para ver Precios.</p>
+    <a class="login-btn" href="index.html">Ir al panel</a>
+  </div>
+</div>
+
+<header class="nav" id="appNav" style="display:none">
+  <a class="nav-brand" href="../index.html">
+    <img src="https://i.ibb.co/hFyg48KD/Logo-Dra-Bruzera.png" alt="Logo"/>
+    <div class="nav-brand-text">Dra. Lili Bruzera <small>Precios</small></div>
+  </a>
+  <div class="nav-right">
+    <a class="btn-site" href="index.html">← Panel</a>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+</header>
+
+<div class="app" id="appShell">
+  <div class="tab-panel">
+
+    <div class="fin-header">
+      <h2>Buscador de precios</h2>
+    </div>
+    <p class="fin-sub">Precio proveedor + recargo = precio al público. Tocá el porcentaje para cambiarlo en un producto puntual.</p>
+
+    <div class="search-bar-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" id="searchInput" type="text" placeholder="Buscar por código o descripción…" oninput="onSearchInput()" autocomplete="off"/>
+    </div>
+
+    <div class="fin-actions">
+      <span class="markup-pill" id="markupPill">Recargo por defecto: —%</span>
+      <button class="btn-sm btn-secondary" onclick="cargarTodos()">Ver primeros 500</button>
+    </div>
+
+    <div class="prod-list" id="prodList">
+      <div class="prod-empty">Buscá un producto por código o nombre.</div>
+    </div>
+    <div class="prod-hint" id="prodHint"></div>
+
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// CONFIG — reemplazá por la URL del Apps Script (Precios.gs)
+// ═══════════════════════════════════════
+const URL_SCRIPT_PRECIOS = "https://script.google.com/macros/s/AKfycbx2OZwauyjKpICFrR44Yc9W8DAJ8BO9vKCly__T1rMbGvFBWNQU5KZF8tfPibYXmBbB/exec";
+
+function showLoader(msg="Cargando…"){ document.getElementById("loader").classList.add("on"); document.getElementById("loaderTxt").textContent=msg; }
+function hideLoader(){ document.getElementById("loader").classList.remove("on"); }
+
+function doLogout(){
+  sessionStorage.removeItem("logueado");
+  sessionStorage.removeItem("usuario");
+  location.href="index.html";
+}
+window.addEventListener("load", () => {
+  if (sessionStorage.getItem("logueado") === "1") {
+    document.getElementById("loginWrap").style.display = "none";
+    document.getElementById("appNav").style.display = "flex";
+    document.getElementById("appShell").style.display = "block";
+    cargarConfig();
+  }
+});
+
+let markupDefault = 80;
+
+async function cargarConfig(){
+  try{
+    const r = await fetch(URL_SCRIPT_PRECIOS + "?accion=config");
+    const d = await r.json();
+    if(d.success){
+      markupDefault = d.markupDefault;
+      document.getElementById("markupPill").textContent = "Recargo por defecto: " + markupDefault + "%";
+    }
+  } catch(e){}
+}
+
+function fmtMoneda(n){
+  return "$" + Number(n||0).toLocaleString("es-AR", {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// ═══════════════════════════════════════
+// BÚSQUEDA
+// ═══════════════════════════════════════
+let searchTimeout = null;
+function onSearchInput(){
+  clearTimeout(searchTimeout);
+  const q = document.getElementById("searchInput").value.trim();
+  if(!q){
+    document.getElementById("prodList").innerHTML = '<div class="prod-empty">Buscá un producto por código o nombre.</div>';
+    document.getElementById("prodHint").textContent = "";
+    return;
+  }
+  if(q.length < 2) return;
+  searchTimeout = setTimeout(() => buscar(q), 350);
+}
+
+async function buscar(q){
+  document.getElementById("prodList").innerHTML = '<div class="prod-empty">Buscando…</div>';
+  try{
+    const r = await fetch(URL_SCRIPT_PRECIOS + "?q=" + encodeURIComponent(q));
+    const d = await r.json();
+    if(!d.success){ document.getElementById("prodList").innerHTML = '<div class="prod-empty">Error al buscar</div>'; return; }
+    renderLista(d.resultados);
+    document.getElementById("prodHint").textContent = d.resultados.length === 100 ? "Mostrando los primeros 100 resultados — afiná la búsqueda para acotar." : "";
+  } catch(e){
+    document.getElementById("prodList").innerHTML = '<div class="prod-empty">Error de conexión</div>';
+  }
+}
+
+async function cargarTodos(){
+  showLoader("Cargando productos…");
+  try{
+    const r = await fetch(URL_SCRIPT_PRECIOS + "?accion=todos");
+    const d = await r.json();
+    hideLoader();
+    if(!d.success){ alert(d.error || "Error al cargar"); return; }
+    renderLista(d.resultados);
+    document.getElementById("prodHint").textContent = d.limitado ? `Mostrando 500 de ${d.total} productos — usá el buscador para encontrar el resto.` : "";
+  } catch(e){ hideLoader(); alert("Error de conexión"); }
+}
+
+function renderLista(lista){
+  const el = document.getElementById("prodList");
+  if(!lista.length){ el.innerHTML = '<div class="prod-empty">Sin resultados</div>'; return; }
+  el.innerHTML = lista.map(p => tarjetaProducto(p)).join("");
+}
+
+function tarjetaProducto(p){
+  const esCustom = p.porcentaje !== null;
+  return `
+  <div class="prod-card" data-codigo="${p.codigo}">
+    <div class="prod-top">
+      <div class="prod-info">
+        <strong>${p.descripcion}</strong>
+        <span>${p.codigo}</span>
+      </div>
+    </div>
+    <div class="prod-precios">
+      <div class="prod-precio-prov">Proveedor: <b>${fmtMoneda(p.precioFinal)}</b></div>
+      <div class="prod-markup-wrap">
+        <span class="markup-badge ${esCustom ? "custom" : ""}" onclick="editarMarkup(this, '${p.codigo}', ${p.porcentajeAplicado})">
+          ${esCustom ? "✏️" : ""} +${p.porcentajeAplicado}%
+        </span>
+      </div>
+      <div class="prod-precio-publico">${fmtMoneda(p.precioPublico)}</div>
+    </div>
+  </div>`;
+}
+
+function editarMarkup(el, codigo, actual){
+  const wrap = el.parentElement;
+  wrap.innerHTML = `<input type="number" class="markup-input" id="inputMarkup-${codigo}" value="${actual}" min="0" step="1"/>`;
+  const input = document.getElementById(`inputMarkup-${codigo}`);
+  input.focus();
+  input.select();
+  input.addEventListener("keydown", e => { if(e.key === "Enter") guardarMarkup(codigo, input.value); });
+  input.addEventListener("blur", () => guardarMarkup(codigo, input.value));
+}
+
+async function guardarMarkup(codigo, valor){
+  const porcentaje = valor.trim();
+  if(porcentaje !== "" && (isNaN(porcentaje) || Number(porcentaje) < 0)){
+    alert("Porcentaje inválido");
+    buscarActualEnPantalla();
+    return;
+  }
+  showLoader("Guardando…");
+  try{
+    const res = await fetch(URL_SCRIPT_PRECIOS, {method:"POST", body:new URLSearchParams({accion:"actualizarPorcentaje", codigo, porcentaje})});
+    const d = await res.json();
+    hideLoader();
+    if(d.success){
+      const card = document.querySelector(`.prod-card[data-codigo="${codigo}"]`);
+      if(card) card.outerHTML = tarjetaProducto(d.producto);
+    } else { alert(d.error || "Error al guardar"); }
+  } catch(e){ hideLoader(); alert("Error de conexión"); }
+}
+
+function buscarActualEnPantalla(){
+  const q = document.getElementById("searchInput").value.trim();
+  if(q.length >= 2) buscar(q);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel — Dra. Lili Bruzera</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+  <link rel="icon" href="https://i.ibb.co/hFyg48KD/Logo-Dra-Bruzera.png" type="image/png">
+  <style>
+    /* ── TOKENS ── */
+    :root {
+      --rosa:    #C42685;
+      --rosa-s:  #F5E6F0;
+      --vio:     #362A6F;
+      --vio-s:   #EAE8F5;
+      --crema:   #FAF6F0;
+      --txt:     #2A2235;
+      --txt-s:   #7A6E85;
+      --blanco:  #FFFFFF;
+      --borde:   rgba(54,42,111,.1);
+      --sombra:  0 12px 36px rgba(54,42,111,.10);
+      --nav-h:   62px;
+      --tab-h:   52px;
+      --r:       18px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--crema);
+      color: var(--txt);
+      min-height: 100svh;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    .nav {
+      position: fixed; top:0; left:0; right:0; z-index:100;
+      height: var(--nav-h);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      background: rgba(250,246,240,.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--borde);
+    }
+    .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .nav-brand img { width:34px; border-radius:6px; }
+    .nav-brand-text { font-family:'Playfair Display',serif; font-size:.9rem; color:var(--vio); line-height:1.15; }
+    .nav-brand-text small { display:block; font-family:'DM Sans',sans-serif; font-size:.68rem; color:var(--txt-s); font-weight:300; }
+    .nav-right { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+    .credits-pill {
+      display:flex; align-items:center; gap:6px;
+      background: var(--vio-s); color:var(--vio);
+      border:none; border-radius:999px;
+      padding:6px 14px; font-size:.8rem; font-weight:600;
+      cursor:pointer; transition:background .2s;
+    }
+    .credits-pill:hover { background: var(--rosa-s); color:var(--rosa); }
+    .btn-logout {
+      background:var(--rosa); color:var(--blanco);
+      border:none; border-radius:999px;
+      padding:7px 16px; font-size:.8rem; font-weight:600;
+      cursor:pointer; transition:background .2s;
+    }
+    .btn-logout:hover { background:var(--vio); }
+    .btn-site {
+      background:transparent; color:var(--txt-s);
+      border:1.5px solid var(--borde); border-radius:999px;
+      padding:6px 14px; font-size:.8rem; font-weight:500;
+      text-decoration:none; transition:all .2s;
+    }
+    .btn-site:hover { border-color:var(--rosa); color:var(--rosa); }
+
+    /* ── LOGIN ── */
+    .login-wrap {
+      position:fixed; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      background: radial-gradient(circle at 70% 30%, rgba(196,38,133,.08), transparent 60%), var(--crema);
+      z-index:200;
+    }
+    .login-card {
+      background:var(--blanco);
+      border:1px solid var(--borde);
+      border-radius:28px;
+      box-shadow: var(--sombra);
+      padding:40px 36px;
+      width:min(360px, 92vw);
+      text-align:center;
+    }
+    .login-card img { width:60px; margin-bottom:18px; border-radius:10px; }
+    .login-card h2 { font-family:'Playfair Display',serif; color:var(--vio); font-size:1.5rem; margin-bottom:6px; }
+    .login-card p { color:var(--txt-s); font-size:.85rem; margin-bottom:22px; }
+    .login-field {
+      width:100%; padding:12px 16px; margin-bottom:12px;
+      border:1.5px solid rgba(54,42,111,.15); border-radius:12px;
+      font-size:.9rem; font-family:inherit; background:#fafafa;
+      transition:border .2s; outline:none; text-align:left;
+    }
+    .login-field:focus { border-color:var(--rosa); background:var(--blanco); }
+    .login-btn {
+      width:100%; padding:13px; background:var(--rosa); color:var(--blanco);
+      border:none; border-radius:999px; font-size:.95rem; font-weight:600;
+      cursor:pointer; transition:background .2s, transform .15s;
+      margin-top:4px;
+    }
+    .login-btn:hover { background:var(--vio); transform:translateY(-1px); }
+    .login-error { color:var(--rosa); font-size:.82rem; margin-top:10px; display:none; }
+
+    /* ── APP SHELL ── */
+    .app { display:none; padding-top:var(--nav-h); min-height:100svh; }
+
+    /* ── TABS ── */
+    .tabs-bar {
+      position:sticky; top:var(--nav-h); z-index:90;
+      display:flex; gap:0;
+      background:rgba(250,246,240,.94);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--borde);
+      padding:0 20px;
+      height: var(--tab-h);
+    }
+    .tab-btn {
+      display:flex; align-items:center; gap:7px;
+      padding:0 18px; border:none; background:transparent;
+      font-family:inherit; font-size:.85rem; font-weight:600;
+      color:var(--txt-s); cursor:pointer;
+      border-bottom:2.5px solid transparent;
+      transition:color .2s, border-color .2s;
+      white-space:nowrap;
+    }
+    .tab-btn svg { width:16px; height:16px; }
+    .tab-btn.active { color:var(--rosa); border-bottom-color:var(--rosa); }
+    .tab-btn .badge {
+      background:var(--rosa); color:var(--blanco);
+      border-radius:999px; font-size:.68rem; font-weight:700;
+      padding:1px 7px; min-width:18px; text-align:center;
+    }
+
+    .tab-panel { display:none; padding:24px 20px 60px; max-width:1000px; margin:0 auto; }
+    .tab-panel.active { display:block; }
+
+    /* ── HOY ── */
+    .hoy-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .hoy-header h2 { font-family:'Playfair Display',serif; color:var(--vio); font-size:1.4rem; }
+    .hoy-date { color:var(--txt-s); font-size:.82rem; }
+    .hoy-empty { text-align:center; padding:48px 0; color:var(--txt-s); font-size:.9rem; }
+
+    .turno-card {
+      display:flex; align-items:center; gap:14px;
+      background:var(--blanco); border:1px solid var(--borde);
+      border-radius:var(--r); padding:14px 18px; margin-bottom:10px;
+      transition:box-shadow .2s, transform .2s;
+      cursor:pointer;
+    }
+    .turno-card:hover { box-shadow:var(--sombra); transform:translateY(-1px); }
+    .turno-hora {
+      background:var(--vio); color:var(--blanco);
+      border-radius:10px; padding:8px 12px;
+      font-family:'Playfair Display',serif; font-size:1rem; font-weight:700;
+      min-width:58px; text-align:center; flex-shrink:0;
+    }
+    .turno-info { flex:1; min-width:0; }
+    .turno-info strong { display:block; color:var(--vio); font-size:.92rem; }
+    .turno-info span { color:var(--txt-s); font-size:.8rem; }
+    .turno-id {
+      background:var(--vio-s); color:var(--vio);
+      border-radius:999px; padding:4px 10px;
+      font-size:.72rem; font-weight:700; flex-shrink:0;
+    }
+
+    /* ── PACIENTES ── */
+    .search-bar-wrap { position:relative; margin-bottom:16px; }
+    .search-bar-wrap svg {
+      position:absolute; left:14px; top:50%; transform:translateY(-50%);
+      width:16px; height:16px; color:var(--txt-s); pointer-events:none;
+    }
+    .search-input {
+      width:100%; padding:12px 16px 12px 40px;
+      border:1.5px solid var(--borde); border-radius:999px;
+      font-size:.9rem; font-family:inherit; background:var(--blanco);
+      outline:none; transition:border .2s;
+    }
+    .search-input:focus { border-color:var(--rosa); }
+
+    .pac-actions { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+    .btn-sm {
+      padding:8px 16px; border:none; border-radius:999px;
+      font-size:.8rem; font-weight:600; cursor:pointer;
+      transition:background .2s, transform .15s;
+    }
+    .btn-primary { background:var(--rosa); color:var(--blanco); }
+    .btn-primary:hover { background:var(--vio); transform:translateY(-1px); }
+    .btn-secondary { background:var(--vio-s); color:var(--vio); }
+    .btn-secondary:hover { background:var(--vio); color:var(--blanco); }
+
+    /* Lista pacientes */
+    .pac-list { display:flex; flex-direction:column; gap:8px; }
+    .pac-row {
+      display:flex; align-items:center; gap:12px;
+      background:var(--blanco); border:1px solid var(--borde);
+      border-radius:var(--r); padding:12px 16px;
+      cursor:pointer; transition:all .2s;
+    }
+    .pac-row:hover { box-shadow:var(--sombra); border-color:rgba(196,38,133,.2); }
+    .pac-avatar {
+      width:38px; height:38px; border-radius:50%;
+      background:var(--rosa-s); color:var(--rosa);
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.1rem; flex-shrink:0;
+    }
+    .pac-row-info { flex:1; min-width:0; }
+    .pac-row-info strong { display:block; font-size:.9rem; color:var(--vio); }
+    .pac-row-info span { font-size:.78rem; color:var(--txt-s); }
+    .pac-row-id { background:var(--vio-s); color:var(--vio); border-radius:999px; padding:3px 10px; font-size:.72rem; font-weight:700; }
+
+    /* ── FICHA (modal) ── */
+    .ficha-backdrop {
+      position:fixed; inset:0; background:rgba(30,20,60,.45);
+      z-index:300; display:none; align-items:flex-end;
+      animation:fadeIn .2s ease;
+    }
+    .ficha-backdrop.open { display:flex; }
+    @media (min-width:600px) { .ficha-backdrop { align-items:center; justify-content:center; } }
+
+    .ficha-sheet {
+      background:var(--blanco);
+      width:100%; max-width:620px;
+      border-radius:28px 28px 0 0;
+      max-height:92svh; overflow-y:auto;
+      padding:24px 22px 36px;
+      animation:slideUp .28s cubic-bezier(.22,1,.36,1);
+    }
+    @media (min-width:600px) {
+      .ficha-sheet { border-radius:28px; max-height:88svh; }
+    }
+    @keyframes slideUp {
+      from { transform:translateY(60px); opacity:0; }
+      to   { transform:translateY(0);    opacity:1; }
+    }
+    @keyframes fadeIn {
+      from { opacity:0; } to { opacity:1; }
+    }
+
+    .ficha-handle { width:40px; height:4px; background:var(--borde); border-radius:4px; margin:0 auto 18px; }
+    @media (min-width:600px) { .ficha-handle { display:none; } }
+
+    .ficha-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px; }
+    .ficha-top-info h3 { font-family:'Playfair Display',serif; color:var(--vio); font-size:1.3rem; }
+    .ficha-top-info span { color:var(--txt-s); font-size:.82rem; }
+    .ficha-close {
+      background:var(--vio-s); border:none; border-radius:50%;
+      width:32px; height:32px; cursor:pointer; display:flex;
+      align-items:center; justify-content:center; color:var(--vio);
+      flex-shrink:0; transition:background .2s;
+    }
+    .ficha-close:hover { background:var(--rosa-s); color:var(--rosa); }
+    .ficha-close svg { width:14px; height:14px; }
+
+    /* Datos base en grid */
+    .ficha-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+    @media (max-width:420px) { .ficha-grid { grid-template-columns:1fr; } }
+
+    .ficha-field label { display:block; font-size:.72rem; font-weight:600; color:var(--txt-s); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
+    .ficha-field input, .ficha-field textarea, .ficha-field select {
+      width:100%; padding:9px 12px;
+      border:1.5px solid var(--borde); border-radius:10px;
+      font-size:.88rem; font-family:inherit; background:var(--blanco);
+      color:var(--txt); outline:none; resize:vertical;
+      transition:border .2s; -webkit-appearance:none;
+    }
+    .ficha-field input:disabled, .ficha-field textarea:disabled, .ficha-field select:disabled {
+      background:#fafafa; color:var(--txt); border-color:transparent;
+    }
+    .ficha-field input:focus, .ficha-field textarea:focus { border-color:var(--rosa); }
+    .ficha-field.full { grid-column:1/-1; }
+
+    .ficha-edit-bar { display:flex; gap:8px; margin-bottom:20px; }
+
+    /* Historial */
+    .historial-title {
+      font-family:'Playfair Display',serif; color:var(--vio);
+      font-size:1rem; margin-bottom:12px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .btn-add-visit {
+      display:flex; align-items:center; gap:5px;
+      background:var(--rosa); color:var(--blanco);
+      border:none; border-radius:999px;
+      padding:7px 14px; font-size:.78rem; font-weight:600;
+      cursor:pointer; transition:background .2s;
+    }
+    .btn-add-visit:hover { background:var(--vio); }
+    .btn-add-visit svg { width:13px; height:13px; }
+
+    .visita-card {
+      background:linear-gradient(160deg, var(--blanco), var(--rosa-s) 300%);
+      border:1px solid rgba(196,38,133,.12);
+      border-radius:14px; padding:14px; margin-bottom:10px;
+    }
+    .visita-head { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .visita-fecha { font-size:.75rem; font-weight:700; color:var(--rosa); }
+    .visita-motivo {
+      background:var(--rosa-s); color:var(--rosa);
+      border-radius:999px; padding:2px 10px; font-size:.72rem; font-weight:700;
+    }
+    .visita-card p { font-size:.82rem; color:var(--txt-s); line-height:1.55; margin-bottom:4px; }
+    .visita-card p strong { color:var(--txt); }
+    .visita-empty { text-align:center; color:var(--txt-s); font-size:.85rem; padding:16px 0; }
+
+    /* Formulario nueva visita */
+    .nueva-visita-form {
+      background:var(--vio-s); border-radius:16px; padding:16px;
+      margin-bottom:14px; display:none;
+    }
+    .nueva-visita-form.open { display:block; }
+    .motivo-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+    .chip-toggle {
+      padding:6px 14px; border-radius:999px;
+      border:1.5px solid var(--borde); background:var(--blanco);
+      font-size:.78rem; font-weight:600; color:var(--txt-s);
+      cursor:pointer; transition:all .15s; user-select:none;
+    }
+    .chip-toggle.sel { background:var(--rosa); color:var(--blanco); border-color:var(--rosa); }
+    .nv-field { margin-bottom:10px; }
+    .nv-field label { display:block; font-size:.72rem; font-weight:600; color:var(--txt-s); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
+    .nv-field input, .nv-field textarea {
+      width:100%; padding:9px 12px;
+      border:1.5px solid var(--borde); border-radius:10px;
+      font-size:.85rem; font-family:inherit; background:var(--blanco);
+      outline:none; resize:vertical; transition:border .2s;
+    }
+    .nv-field input:focus, .nv-field textarea:focus { border-color:var(--rosa); }
+    .nv-actions { display:flex; gap:8px; }
+    .btn-save { background:var(--rosa); color:var(--blanco); border:none; border-radius:999px; padding:10px 20px; font-size:.85rem; font-weight:600; cursor:pointer; transition:background .2s; }
+    .btn-save:hover { background:var(--vio); }
+    .btn-cancel-sm { background:var(--blanco); color:var(--txt-s); border:1.5px solid var(--borde); border-radius:999px; padding:9px 16px; font-size:.82rem; font-weight:500; cursor:pointer; }
+
+    /* ── VACUNAS ── */
+    .vac-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .vac-header h2 { font-family:'Playfair Display',serif; color:var(--vio); font-size:1.4rem; }
+    .vac-cols { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    @media (max-width:600px) { .vac-cols { grid-template-columns:1fr; } }
+
+    .vac-group { background:var(--blanco); border:1px solid var(--borde); border-radius:var(--r); overflow:hidden; }
+    .vac-group-head {
+      padding:12px 16px; font-size:.78rem; font-weight:700;
+      text-transform:uppercase; letter-spacing:.06em;
+      display:flex; align-items:center; gap:8px;
+    }
+    .vac-group-head.semana { background:var(--rosa-s); color:var(--rosa); }
+    .vac-group-head.mes    { background:var(--vio-s);  color:var(--vio); }
+    .vac-group-head .dot { width:8px; height:8px; border-radius:50%; background:currentColor; }
+
+    .vac-row {
+      display:flex; align-items:center; gap:10px;
+      padding:11px 16px; border-bottom:1px solid var(--borde);
+    }
+    .vac-row:last-child { border-bottom:none; }
+    .vac-row-info { flex:1; min-width:0; }
+    .vac-row-info strong { display:block; font-size:.85rem; color:var(--vio); }
+    .vac-row-info span { font-size:.75rem; color:var(--txt-s); }
+    .vac-fecha { font-size:.75rem; font-weight:700; color:var(--txt-s); flex-shrink:0; }
+    .btn-wa {
+      display:flex; align-items:center; gap:5px;
+      background:#25D366; color:var(--blanco);
+      border:none; border-radius:999px;
+      padding:6px 12px; font-size:.72rem; font-weight:700;
+      text-decoration:none; flex-shrink:0; transition:background .2s;
+    }
+    .btn-wa:hover { background:#1da851; }
+    .btn-wa svg { width:13px; height:13px; }
+    .vac-empty { padding:20px; text-align:center; color:var(--txt-s); font-size:.82rem; }
+
+    /* ── LOADER ── */
+    .loader-overlay {
+      position:fixed; inset:0; background:rgba(250,246,240,.8);
+      z-index:400; display:none; align-items:center; justify-content:center; flex-direction:column; gap:12px;
+    }
+    .loader-overlay.on { display:flex; }
+    .spinner { width:36px; height:36px; border:3px solid var(--borde); border-top-color:var(--rosa); border-radius:50%; animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loader-txt { font-size:.82rem; color:var(--txt-s); }
+
+    /* ── CREDITS POPOVER ── */
+    .credits-popover {
+      position:fixed; top:calc(var(--nav-h) + 8px); right:16px;
+      background:var(--blanco); border:1px solid var(--borde);
+      border-radius:16px; box-shadow:var(--sombra);
+      padding:18px; width:220px; z-index:150;
+      display:none; flex-direction:column; gap:10px;
+    }
+    .credits-popover.open { display:flex; }
+    .credits-popover strong { color:var(--vio); font-size:1.1rem; font-family:'Playfair Display',serif; }
+    .credits-popover p { font-size:.78rem; color:var(--txt-s); }
+    .btn-wa-credits {
+      background:#25D366; color:var(--blanco); border:none; border-radius:999px;
+      padding:9px; font-size:.8rem; font-weight:700; cursor:pointer;
+      text-align:center; text-decoration:none; display:block;
+    }
+
+    /* utils */
+    .mt8  { margin-top:8px; }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div class="loader-overlay" id="loader">
+  <div class="spinner"></div>
+  <span class="loader-txt" id="loaderTxt">Cargando...</span>
+</div>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <img src="https://i.ibb.co/hFyg48KD/Logo-Dra-Bruzera.png" alt="Logo"/>
+    <h2>Panel veterinario</h2>
+    <p>Ingresá con tu usuario y clave</p>
+    <input class="login-field" type="text"     id="loginUser" placeholder="Usuario" autocomplete="username"/>
+    <input class="login-field" type="password" id="loginPass" placeholder="Clave"   autocomplete="current-password"/>
+    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <p class="login-error" id="loginErr"></p>
+  </div>
+</div>
+
+<!-- NAV -->
+<header class="nav" id="appNav" style="display:none">
+  <a class="nav-brand" href="../index.html">
+    <img src="https://i.ibb.co/hFyg48KD/Logo-Dra-Bruzera.png" alt="Logo"/>
+    <div class="nav-brand-text">Dra. Lili Bruzera <small>Panel veterinario</small></div>
+  </a>
+  <div class="nav-right">
+    <button class="credits-pill" id="creditsBtn" onclick="toggleCredits()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <span id="creditsVal">—</span> créditos
+    </button>
+    <a class="btn-site" href="precios.html">Precios</a>
+    <a class="btn-site" href="finanzas.html">Finanzas</a>
+    <a class="btn-site" href="../turnero.html">Turnero</a>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+</header>
+
+<!-- CREDITS POPOVER -->
+<div class="credits-popover" id="creditsPopover">
+  <strong id="creditsValBig">—</strong>
+  <p>créditos disponibles</p>
+  <a class="btn-wa-credits" id="creditsWaBtn" href="#" target="_blank">Agregar por WhatsApp</a>
+</div>
+
+<!-- APP -->
+<div class="app" id="appShell">
+
+  <!-- TABS -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" data-tab="hoy" onclick="switchTab('hoy')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Hoy <span class="badge" id="badgeHoy">0</span>
+    </button>
+    <button class="tab-btn" data-tab="pacientes" onclick="switchTab('pacientes')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Pacientes
+    </button>
+    <button class="tab-btn" data-tab="vacunas" onclick="switchTab('vacunas')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 2 4 4"/><path d="m17 7 3-3"/><path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/><path d="m9 11 4 4"/></svg>
+      Vacunas <span class="badge" id="badgeVac">0</span>
+    </button>
+  </div>
+
+  <!-- TAB HOY -->
+  <div class="tab-panel active" id="tab-hoy">
+    <div class="hoy-header">
+      <h2>Turnos de hoy</h2>
+      <span class="hoy-date" id="hoyFecha"></span>
+    </div>
+    <div class="pac-actions" style="margin-bottom:14px;">
+      <button class="btn-sm btn-secondary" onclick="cargarProximos()">📅 Ver próximos turnos</button>
+      <button class="btn-sm btn-primary"   onclick="cargarHoy()">↻ Solo hoy</button>
+    </div>
+    <div id="hoyList"><div class="hoy-empty">Cargando turnos…</div></div>
+  </div>
+
+  <!-- TAB PACIENTES -->
+  <div class="tab-panel" id="tab-pacientes">
+    <div class="search-bar-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" id="searchInput" type="text" placeholder="Buscar por nombre o ID…" oninput="onSearchInput()" autocomplete="off"/>
+    </div>
+    <div class="pac-actions">
+      <button class="btn-sm btn-secondary" onclick="cargarTodos()">Ver todos</button>
+    </div>
+    <div class="pac-list" id="pacList"><p style="color:var(--txt-s);font-size:.85rem;text-align:center;padding:32px 0">Buscá un paciente o tocá "Ver todos"</p></div>
+  </div>
+
+  <!-- TAB VACUNAS -->
+  <div class="tab-panel" id="tab-vacunas">
+    <div class="vac-header">
+      <h2>Recordatorios</h2>
+      <button class="btn-sm btn-secondary" onclick="cargarVacunas()">↻ Actualizar</button>
+    </div>
+    <div class="vac-cols">
+      <div class="vac-group">
+        <div class="vac-group-head semana"><span class="dot"></span> Esta semana (7 días)</div>
+        <div id="vacSemana"><div class="vac-empty">Cargando…</div></div>
+      </div>
+      <div class="vac-group">
+        <div class="vac-group-head mes"><span class="dot"></span> Este mes (30 días)</div>
+        <div id="vacMes"><div class="vac-empty">Cargando…</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FICHA MODAL -->
+<div class="ficha-backdrop" id="fichaBackdrop" onclick="onBackdropClick(event)">
+  <div class="ficha-sheet" id="fichaSheet">
+    <div class="ficha-handle"></div>
+
+    <div class="ficha-top">
+      <div class="ficha-top-info">
+        <h3 id="fichaTitle">—</h3>
+        <span id="fichaSubtitle"></span>
+      </div>
+      <button class="ficha-close" onclick="closeFicha()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Datos base -->
+    <div class="ficha-edit-bar">
+      <button class="btn-sm btn-secondary" id="btnEditFicha" onclick="toggleEditFicha()">✏️ Editar datos</button>
+    </div>
+
+    <div class="ficha-grid" id="fichaGrid">
+      <!-- se renderizan los campos -->
+    </div>
+
+    <!-- Historial -->
+    <div class="historial-title">
+      Historial médico
+      <button class="btn-add-visit" onclick="toggleNuevaVisita()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Nueva consulta
+      </button>
+    </div>
+
+    <!-- Form nueva visita -->
+    <div class="nueva-visita-form" id="nuevaVisitaForm">
+      <div class="motivo-chips" id="motivoChips">
+        <span class="chip-toggle" onclick="toggleChip(this)">Consulta</span>
+        <span class="chip-toggle" onclick="toggleChip(this)">Vacuna</span>
+        <span class="chip-toggle" onclick="toggleChip(this)">Antiparasitario</span>
+        <span class="chip-toggle" onclick="toggleChip(this)">Tratamiento</span>
+        <span class="chip-toggle" onclick="toggleChip(this)">Cirugía</span>
+      </div>
+      <div class="nv-field">
+        <label>Descripción</label>
+        <textarea id="nvDesc" rows="2" placeholder="¿Qué se trató?"></textarea>
+      </div>
+      <div class="nv-field">
+        <label>Observaciones</label>
+        <textarea id="nvObs" rows="2" placeholder="Notas adicionales…"></textarea>
+      </div>
+      <div class="nv-field">
+        <label>Próxima vacuna</label>
+        <input type="date" id="nvProxVac"/>
+      </div>
+      <div class="nv-actions">
+        <button class="btn-save" onclick="guardarVisita()">Guardar</button>
+        <button class="btn-cancel-sm" onclick="toggleNuevaVisita()">Cancelar</button>
+      </div>
+    </div>
+
+    <div id="historialList"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════
+const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbwTuR0WkPtZvNJWH95sxIEuj4FRrr_vaG2dlqDehQdplfkv6AY0d3zGMNxBf4LqVUDaMQ/exec";
+
+// ═══════════════════════════════════════
+// LOADER
+// ═══════════════════════════════════════
+function showLoader(msg="Cargando…"){ document.getElementById("loader").classList.add("on"); document.getElementById("loaderTxt").textContent=msg; }
+function hideLoader(){ document.getElementById("loader").classList.remove("on"); }
+
+// ═══════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════
+async function doLogin(){
+  const u=document.getElementById("loginUser").value.trim();
+  const p=document.getElementById("loginPass").value.trim();
+  const err=document.getElementById("loginErr");
+  err.style.display="none";
+  showLoader("Verificando…");
+  try{
+    const res=await fetch(URL_SCRIPT,{method:"POST",body:new URLSearchParams({accion:"login",usuario:u,clave:p})});
+    const d=await res.json();
+    hideLoader();
+    if(d.success){
+      sessionStorage.setItem("logueado","1");
+      sessionStorage.setItem("usuario",u);
+      mostrarApp();
+    } else {
+      err.textContent=d.error||"Usuario o clave incorrecta";
+      err.style.display="block";
+    }
+  } catch(e){ hideLoader(); err.textContent="Error de conexión"; err.style.display="block"; }
+}
+document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&document.getElementById("loginWrap").style.display!=="none") doLogin(); });
+
+function doLogout(){
+  sessionStorage.removeItem("logueado");
+  sessionStorage.removeItem("usuario");
+  document.getElementById("appNav").style.display="none";
+  document.getElementById("appShell").style.display="none";
+  document.getElementById("loginWrap").style.display="flex";
+}
+
+function mostrarApp(){
+  document.getElementById("loginWrap").style.display="none";
+  document.getElementById("appNav").style.display="flex";
+  document.getElementById("appShell").style.display="block";
+  const u=sessionStorage.getItem("usuario")||"";
+  // actualizar WA link
+  const msg=encodeURIComponent(`Hola, soy ${u} y quiero agregar créditos.`);
+  document.getElementById("creditsWaBtn").href=`https://wa.me/5493435020970?text=${msg}`;
+  cargarHoy();
+  cargarCreditos();
+  cargarVacunas();
+}
+
+window.addEventListener("load",()=>{
+  if(sessionStorage.getItem("logueado")==="1") mostrarApp();
+});
+
+// ═══════════════════════════════════════
+// CREDITS
+// ═══════════════════════════════════════
+async function cargarCreditos(){
+  try{
+    const r=await fetch(URL_SCRIPT+"?accion=creditos");
+    const d=await r.json();
+    if(d.success){
+      document.getElementById("creditsVal").textContent=d.creditos;
+      document.getElementById("creditsValBig").textContent=d.creditos;
+    }
+  } catch(e){}
+}
+function toggleCredits(){
+  document.getElementById("creditsPopover").classList.toggle("open");
+}
+document.addEventListener("click",e=>{
+  const pop=document.getElementById("creditsPopover");
+  if(!pop.contains(e.target)&&!document.getElementById("creditsBtn").contains(e.target))
+    pop.classList.remove("open");
+});
+
+// ═══════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════
+function switchTab(name){
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active",b.dataset.tab===name));
+  document.querySelectorAll(".tab-panel").forEach(p=>p.classList.toggle("active",p.id==="tab-"+name));
+}
+
+// ═══════════════════════════════════════
+// UTILIDADES FECHA
+// ═══════════════════════════════════════
+function leerFechaStr(v){
+  if(!v) return "";
+  if(v instanceof Date) return fmtDDMMYYYY(v);
+  const s=String(v).trim();
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
+  try{ const d=new Date(s); if(!isNaN(d)) return fmtDDMMYYYY(d); } catch(e){}
+  return s;
+}
+function leerHoraStr(v){
+  if(!v) return "";
+  if(v instanceof Date) return fmtHHmm(v);
+  const s=String(v).trim();
+  if(/^\d{2}:\d{2}/.test(s)) return s.substring(0,5);
+  return s;
+}
+function fmtDDMMYYYY(d){ return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; }
+function fmtHHmm(d){ return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+
+function parseFecha(s){
+  if(!s) return null;
+  if(s instanceof Date) return s;
+  const str=String(s).trim();
+  if(str.includes("/")){const p=str.split("/");return new Date(+p[2],+p[1]-1,+p[0]);}
+  if(str.includes("T")||str.includes("-")){const d=new Date(str);return isNaN(d)?null:d;}
+  return null;
+}
+
+function iconoMascota(tipo){
+  const t=(tipo||"").toLowerCase();
+  if(t.includes("perro")||t.includes("dog")) return "🐶";
+  if(t.includes("gato")||t.includes("cat"))  return "🐱";
+  if(t.includes("conejo")) return "🐰";
+  return "🐾";
+}
+
+// ═══════════════════════════════════════
+// TAB HOY
+// ═══════════════════════════════════════
+async function cargarHoy(){
+  const hoy=new Date();
+  document.getElementById("hoyFecha").textContent=hoy.toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long"});
+  const iso=hoy.toISOString().split("T")[0];
+  try{
+    const r=await fetch(URL_SCRIPT+"?fecha="+iso);
+    const d=await r.json();
+    const lista=d.resultados||[];
+    document.getElementById("badgeHoy").textContent=lista.length;
+    renderTurnos(lista,"Turnos de hoy");
+  } catch(e){ document.getElementById("hoyList").innerHTML='<div class="hoy-empty">Error al cargar turnos</div>'; }
+}
+
+async function cargarProximos(){
+  showLoader("Cargando próximos turnos…");
+  try{
+    const r=await fetch(URL_SCRIPT+"?buscar=todos");
+    const d=await r.json();
+    hideLoader();
+    const hoy=new Date(); hoy.setHours(0,0,0,0);
+    // Filtrar solo turnos desde hoy en adelante y ordenar
+    const lista=(d.resultados||[]).filter(t=>{
+      const f=parseFecha(t.fecha);
+      return f && f>=hoy;
+    }).sort((a,b)=>{
+      const fa=parseFecha(a.fecha), fb=parseFecha(b.fecha);
+      if(fa-fb!==0) return fa-fb;
+      return (a.turno||"").localeCompare(b.turno||"");
+    });
+    document.getElementById("badgeHoy").textContent=lista.length;
+    renderTurnos(lista,"Próximos turnos");
+  } catch(e){ hideLoader(); document.getElementById("hoyList").innerHTML='<div class="hoy-empty">Error al cargar</div>'; }
+}
+
+function renderTurnos(lista, titulo){
+  document.getElementById("hoyFecha").textContent=titulo;
+  const el=document.getElementById("hoyList");
+  if(!lista.length){el.innerHTML='<div class="hoy-empty">Sin turnos en este período</div>';return;}
+  el.innerHTML=lista.map(t=>`
+    <div class="turno-card" onclick="abrirFichaDesdeTurno('${t.dniMascota}','${t.nombreMascota}','${t.tipoMascota}')">
+      <div class="turno-hora" style="font-size:.75rem;min-width:64px;">
+        <div>${leerFechaStr(t.fecha)}</div>
+        <div style="font-size:.9rem;font-weight:700;">${leerHoraStr(t.turno)}</div>
+      </div>
+      <div class="turno-info">
+        <strong>${iconoMascota(t.tipoMascota)} ${t.nombreMascota}</strong>
+        <span>${t.nombre} · ${t.telefono}</span>
+      </div>
+      <span class="turno-id">${t.dniMascota}</span>
+    </div>`).join("");
+}
+
+// ═══════════════════════════════════════
+// TAB PACIENTES
+// ═══════════════════════════════════════
+let searchTimeout=null;
+function onSearchInput(){
+  clearTimeout(searchTimeout);
+  const q=document.getElementById("searchInput").value.trim();
+  if(!q){ document.getElementById("pacList").innerHTML='<p style="color:var(--txt-s);font-size:.85rem;text-align:center;padding:32px 0">Buscá un paciente o tocá "Ver todos"</p>'; return; }
+  if(q.length<2) return;
+  searchTimeout=setTimeout(()=>buscarPacientes(q),400);
+}
+
+async function buscarPacientes(q){
+  showLoader("Buscando…");
+  try{
+    const r=await fetch(URL_SCRIPT+"?buscar="+encodeURIComponent(q));
+    const d=await r.json();
+    hideLoader();
+    renderPacList(d.resultados||[]);
+  } catch(e){ hideLoader(); }
+}
+
+async function cargarTodos(){
+  showLoader("Cargando pacientes…");
+  try{
+    const r=await fetch(URL_SCRIPT+"?buscar=todos");
+    const d=await r.json();
+    hideLoader();
+    // deduplicar por dniMascota
+    const vistos=new Set();
+    const lista=(d.resultados||[]).filter(p=>{
+      if(vistos.has(p.dniMascota)) return false;
+      vistos.add(p.dniMascota); return true;
+    });
+    renderPacList(lista);
+  } catch(e){ hideLoader(); }
+}
+
+function renderPacList(lista){
+  const el=document.getElementById("pacList");
+  if(!lista.length){el.innerHTML='<p style="color:var(--txt-s);font-size:.85rem;text-align:center;padding:32px 0">Sin resultados</p>';return;}
+  el.innerHTML=lista.map(p=>`
+    <div class="pac-row" onclick="abrirFicha('${p.dniMascota}')">
+      <div class="pac-avatar">${iconoMascota(p.tipoMascota)}</div>
+      <div class="pac-row-info">
+        <strong>${p.nombreMascota}</strong>
+        <span>${p.nombre} · ${p.telefono}</span>
+      </div>
+      <span class="pac-row-id">${p.dniMascota}</span>
+    </div>`).join("");
+}
+
+// ═══════════════════════════════════════
+// FICHA MODAL
+// ═══════════════════════════════════════
+let fichaActual=null;
+let fichaEditando=false;
+
+async function abrirFicha(dni){
+  showLoader("Abriendo ficha…");
+  try{
+    const r=await fetch(URL_SCRIPT+"?historial="+dni);
+    const d=await r.json();
+    hideLoader();
+    if(d.success&&d.resultados&&d.resultados.length){
+      fichaActual=d.resultados[0];
+      fichaEditando=false;
+      renderFicha();
+      document.getElementById("fichaBackdrop").classList.add("open");
+      document.body.style.overflow="hidden";
+    } else { alert("No se encontró la ficha."); }
+  } catch(e){ hideLoader(); alert("Error al cargar ficha."); }
+}
+
+function abrirFichaDesdeTurno(dni,nombre,tipo){
+  switchTab("pacientes");
+  abrirFicha(dni);
+}
+
+function closeFicha(){
+  document.getElementById("fichaBackdrop").classList.remove("open");
+  document.body.style.overflow="";
+  fichaActual=null;
+  fichaEditando=false;
+}
+function onBackdropClick(e){
+  if(e.target===document.getElementById("fichaBackdrop")) closeFicha();
+}
+
+function renderFicha(){
+  const r=fichaActual;
+  document.getElementById("fichaTitle").textContent=`${iconoMascota(r.tipoMascota)} ${r.nombreMascota}`;
+  document.getElementById("fichaSubtitle").textContent=`${r.tipoMascota} · ID: ${r.dniMascota}`;
+  document.getElementById("btnEditFicha").textContent=fichaEditando?"💾 Guardar datos":"✏️ Editar datos";
+
+  // Para campos de fecha: disabled → text con dd/mm/yyyy; editing → date con yyyy-mm-dd
+  function fechaParaMostrar(v){ return leerFechaStr(v)||"—"; }
+  function fechaParaInput(v){
+    // Convierte cualquier formato a yyyy-mm-dd para <input type="date">
+    const f=parseFecha(v);
+    if(!f) return "";
+    return `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}-${String(f.getDate()).padStart(2,'0')}`;
+  }
+
+  const campos=[
+    {id:"fNombre",      label:"Dueño",         val:r.nombre,           full:false},
+    {id:"fTelefono",    label:"Teléfono",       val:r.telefono,         full:false},
+    {id:"fEmail",       label:"Email",          val:r.email,            full:false},
+    {id:"fEspecie",     label:"Especie",        val:r.tipoMascota,      full:false},
+    {id:"fPeso",        label:"Peso",           val:r.peso||"",         full:false},
+    {id:"fNacimiento",  label:"Fecha nac.",     val:r.fehcaDeNac,       full:false, esFecha:true},
+    {id:"fVeterinario", label:"Veterinario",    val:r.veterinario||"",  full:true,  textarea:true},
+    {id:"fProxVac",     label:"Próxima vacuna", val:r.proxima_vacuna,   full:false, esFecha:true},
+  ];
+
+  const grid=document.getElementById("fichaGrid");
+  grid.innerHTML=campos.map(c=>{
+    const fullClass=c.full?" full":"";
+    let input;
+    if(c.textarea){
+      input=`<textarea id="${c.id}"${fichaEditando?"":" disabled"}>${c.val||""}</textarea>`;
+    } else if(c.esFecha){
+      if(fichaEditando){
+        input=`<input id="${c.id}" type="date" value="${fechaParaInput(c.val)}"/>`;
+      } else {
+        input=`<input id="${c.id}" type="text" value="${fechaParaMostrar(c.val)}" disabled/>`;
+      }
+    } else {
+      input=`<input id="${c.id}" type="text" value="${c.val||""}"${fichaEditando?"":" disabled"}/>`;
+    }
+    return `<div class="ficha-field${fullClass}"><label>${c.label}</label>${input}</div>`;
+  }).join("");
+
+  // Historial
+  const extras=r.extras||{};
+  const bloques=agruparExtras(extras);
+  const el=document.getElementById("historialList");
+  if(!bloques.length){ el.innerHTML='<div class="visita-empty">Sin visitas registradas aún.</div>'; return; }
+  el.innerHTML=[...bloques].reverse().map(b=>`
+    <div class="visita-card">
+      <div class="visita-head">
+        <span class="visita-fecha">${leerFechaStr(b.Fecha)||"Sin fecha"}</span>
+        <span class="visita-motivo">${b.Motivo||"Visita"}</span>
+      </div>
+      <p><strong>Desc:</strong> ${b.Descripción||"—"}</p>
+      <p><strong>Obs:</strong> ${b.Observaciones||"—"}</p>
+    </div>`).join("");
+}
+
+function agruparExtras(extras){
+  const bloques={};
+  Object.entries(extras).forEach(([k,v])=>{
+    const p=k.split("_"); if(p.length!==2) return;
+    const[campo,num]=p;
+    if(!bloques[num]) bloques[num]={};
+    bloques[num][campo]=v;
+  });
+  return Object.values(bloques).filter(b=>Object.values(b).some(v=>String(v||"").trim()));
+}
+
+async function toggleEditFicha(){
+  if(!fichaEditando){
+    fichaEditando=true;
+    renderFicha();
+    return;
+  }
+  // Guardar
+  const r=fichaActual;
+  const datos={
+    dniMascota:   r.dniMascota,
+    nombre:       document.getElementById("fNombre").value.trim(),
+    nombreMascota:r.nombreMascota,
+    tipoMascota:  document.getElementById("fEspecie").value.trim(),
+    email:        document.getElementById("fEmail").value.trim(),
+    telefono:     document.getElementById("fTelefono").value.trim(),
+    peso:         document.getElementById("fPeso").value.trim(),
+    fehcaDeNac:   document.getElementById("fNacimiento").value.trim(),
+    veterinario:  document.getElementById("fVeterinario").value.trim(),
+    proxima_vacuna: document.getElementById("fProxVac").value.trim(),
+    extras: r.extras||{}
+  };
+  showLoader("Guardando…");
+  try{
+    const res=await fetch(URL_SCRIPT,{method:"POST",body:new URLSearchParams({accion:"editar",datos:JSON.stringify(datos)})});
+    const d=await res.json();
+    hideLoader();
+    if(d.success){
+      fichaActual={...fichaActual,...datos};
+      fichaEditando=false;
+      renderFicha();
+    } else { alert(d.error||"Error al guardar."); }
+  } catch(e){ hideLoader(); alert("Error de conexión."); }
+}
+
+// ═══════════════════════════════════════
+// NUEVA VISITA
+// ═══════════════════════════════════════
+function toggleNuevaVisita(){
+  document.getElementById("nuevaVisitaForm").classList.toggle("open");
+}
+function toggleChip(el){ el.classList.toggle("sel"); }
+
+async function guardarVisita(){
+  if(!fichaActual){ alert("No hay ficha abierta."); return; }
+  const motivos=Array.from(document.querySelectorAll("#motivoChips .chip-toggle.sel")).map(c=>c.textContent).join(", ");
+  const desc=document.getElementById("nvDesc").value.trim();
+  const obs=document.getElementById("nvObs").value.trim();
+  const proxVac=document.getElementById("nvProxVac").value.trim();
+
+  const extrasActuales=fichaActual.extras||{};
+  const nums=Object.keys(extrasActuales).map(k=>parseInt(k.split("_")[1])||0);
+  const siguiente=(nums.length?Math.max(...nums):0)+1;
+
+  const nuevosExtras={...extrasActuales};
+  nuevosExtras[`Fecha_${siguiente}`]=new Date().toISOString().split("T")[0];
+  nuevosExtras[`Motivo_${siguiente}`]=motivos;
+  nuevosExtras[`Descripción_${siguiente}`]=desc;
+  nuevosExtras[`Observaciones_${siguiente}`]=obs;
+
+  const datos={
+    dniMascota:     fichaActual.dniMascota,
+    nombre:         fichaActual.nombre,
+    nombreMascota:  fichaActual.nombreMascota,
+    tipoMascota:    fichaActual.tipoMascota,
+    email:          fichaActual.email,
+    telefono:       fichaActual.telefono,
+    peso:           fichaActual.peso||"",
+    fehcaDeNac:     fichaActual.fehcaDeNac||"",
+    veterinario:    fichaActual.veterinario||"",
+    proxima_vacuna: proxVac||fichaActual.proxima_vacuna||"",
+    extras:         nuevosExtras
+  };
+
+  showLoader("Guardando consulta…");
+  try{
+    const res=await fetch(URL_SCRIPT,{method:"POST",body:new URLSearchParams({accion:"editar",datos:JSON.stringify(datos)})});
+    const d=await res.json();
+    hideLoader();
+    if(d.success){
+      fichaActual.extras=nuevosExtras;
+      if(proxVac) fichaActual.proxima_vacuna=proxVac;
+      toggleNuevaVisita();
+      document.querySelectorAll("#motivoChips .chip-toggle.sel").forEach(c=>c.classList.remove("sel"));
+      document.getElementById("nvDesc").value="";
+      document.getElementById("nvObs").value="";
+      document.getElementById("nvProxVac").value="";
+      renderFicha();
+    } else { alert(d.error||"Error al guardar."); }
+  } catch(e){ hideLoader(); alert("Error de conexión."); }
+}
+
+// ═══════════════════════════════════════
+// TAB VACUNAS
+// ═══════════════════════════════════════
+async function cargarVacunas(){
+  document.getElementById("vacSemana").innerHTML='<div class="vac-empty">Cargando…</div>';
+  document.getElementById("vacMes").innerHTML='<div class="vac-empty">Cargando…</div>';
+  try{
+    const r=await fetch(URL_SCRIPT+"?buscar=todos");
+    const d=await r.json();
+    const hoy=new Date(); hoy.setHours(0,0,0,0);
+    const semana=[],mes=[];
+    (d.resultados||[]).forEach(p=>{
+      const f=parseFecha(p.proxima_vacuna);
+      if(!f) return;
+      const diff=Math.ceil((f-hoy)/(1000*60*60*24));
+      if(diff>=0&&diff<=7) semana.push({...p,_f:f});
+      else if(diff>7&&diff<=30) mes.push({...p,_f:f});
+    });
+    document.getElementById("badgeVac").textContent=semana.length+mes.length;
+    renderVacGroup("vacSemana",semana);
+    renderVacGroup("vacMes",mes);
+  } catch(e){
+    document.getElementById("vacSemana").innerHTML='<div class="vac-empty">Error al cargar</div>';
+    document.getElementById("vacMes").innerHTML='<div class="vac-empty">Error al cargar</div>';
+  }
+}
+
+function renderVacGroup(elId,lista){
+  const el=document.getElementById(elId);
+  if(!lista.length){el.innerHTML='<div class="vac-empty">✅ Sin vacunas en este período</div>';return;}
+  el.innerHTML=lista.map(p=>{
+    const txt=encodeURIComponent(`Hola! Recordatorio para ${p.nombreMascota} (ID: ${p.dniMascota}): próxima vacuna el ${fmtDDMMYYYY(p._f)}. — Dra. Bruzera`);
+    return `<div class="vac-row">
+      <div class="vac-row-info">
+        <strong>${iconoMascota(p.tipoMascota)} ${p.nombreMascota}</strong>
+        <span>${p.nombre} · ${p.dniMascota}</span>
+      </div>
+      <span class="vac-fecha">${fmtDDMMYYYY(p._f)}</span>
+      <a class="btn-wa" href="https://api.whatsapp.com/send?text=${txt}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+        WA
+      </a>
+    </div>`;
+  }).join("");
+}
+</script>
+</body>
+</html>

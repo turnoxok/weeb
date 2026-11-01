@@ -7,6 +7,7 @@ editor/            editor.html  ← ÚLTIMA versión (la maestra)
 biblioteca/        piezas reutilizables (tobogan, puente, arco…) + _borradores/
 herramientas/      agregar_pieza.py (mete una pieza en un proyecto)
 proyectos/tuweeb/  la web tuweeb.com (index.html, JSON, assets, editor.html copia)
+proyectos/bruzera/   veterinariabruzera.com (copia del repo DisenoWeeb/bruzera)
 proyectos/<cliente>/   un proyecto por cliente (misma estructura)
 ```
 
