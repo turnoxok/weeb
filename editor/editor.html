@@ -8784,6 +8784,8 @@ const ICONS = {
   pause: <path d="M8 5v14M16 5v14" />,
   file: <><path d="M5 4h11l3 3v13H5z" /><path d="M8 4v5h7V4M8 20v-6h8v6" /></>,
   open: <path d="M3 7h6l2 2h10v10H3z" />,
+  undo: <path d="M9 7L4 12l5 5M4 12h10a6 6 0 0 1 0 12" transform="translate(0 -3)" />,
+  redo: <path d="M15 7l5 5-5 5M20 12H10a6 6 0 0 0 0 12" transform="translate(0 -3)" />,
   export: <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />,
   plus: <path d="M12 5v14M5 12h14" />,
   insert: <><path d="M4 5v14M20 5v14" /><path d="M12 9v6M9 12h6" /></>,
@@ -10306,7 +10308,7 @@ function App() {
     objectTransformsByKf,
   });
 
-  const restoreProjectState = (p) => {
+  const restoreProjectState = (p, keep) => {
     if (!p || p.kind !== "weeb-scroll-project") throw new Error("no es un archivo de proyecto de esta herramienta");
     if (typeof p.projectName === "string" && p.projectName.trim()) setProjectName(p.projectName);
     setModelUrl(p.modelUrl || DEFAULT_MODEL_URL);
@@ -10334,12 +10336,78 @@ function App() {
     setCamsByKf(p.camsByKf || {});
     setMovesByKf(p.movesByKf || {});
     setFxByKf(p.fxByKf || {});
-    setObjects(p.objects || []);
+    setObjects((p.objects || []).map((o) => (keep && histRef.current.prev[o.id] && !o.previewUrl ? { ...o, previewUrl: histRef.current.prev[o.id] } : o)));
     setObjectTransformsByKf(p.objectTransformsByKf || {});
-    setActiveStage(loadedStages[0].id);
-    setSelectedObj(null);
-    setScrub(0);
+    if (keep) {
+      if (!loadedStages.some((st) => st.id === activeStage)) setActiveStage(loadedStages[0].id);
+      if (selectedObj && !(p.objects || []).some((o) => o.id === selectedObj)) setSelectedObj(null);
+    } else {
+      setActiveStage(loadedStages[0].id);
+      setSelectedObj(null);
+      setScrub(0);
+      histRef.current.reset = true;
+    }
   };
+
+  /* Deshacer / rehacer: guarda "fotos" del proyecto (hasta 60) cada vez que
+     algo cambia y se queda quieto ~0,45 s. Ctrl/Cmd+Z deshace, Ctrl+Y o
+     Ctrl/Cmd+Shift+Z rehace. */
+  const histRef = useRef({ stack: [], idx: -1, cur: null, reset: true, until: 0, prev: {} });
+  const [histVer, setHistVer] = useState(0);
+  const histSnap = () => {
+    const sn = buildProjectSnapshot();
+    delete sn.savedAt;
+    const h = histRef.current;
+    objects.forEach((o) => { if (o.previewUrl) h.prev[o.id] = o.previewUrl; });
+    return JSON.stringify(sn);
+  };
+  const histCapture = () => {
+    const h = histRef.current;
+    const str = histSnap();
+    if (Date.now() < h.until) { h.cur = str; return; }
+    if (h.reset || h.cur == null) { h.stack = [str]; h.idx = 0; h.reset = false; h.cur = str; setHistVer((v) => v + 1); return; }
+    if (str === h.cur) return;
+    h.stack = h.stack.slice(0, h.idx + 1);
+    h.stack.push(str);
+    if (h.stack.length > 60) h.stack.shift();
+    h.idx = h.stack.length - 1;
+    h.cur = str;
+    setHistVer((v) => v + 1);
+  };
+  useEffect(() => {
+    const t = setTimeout(histCapture, 450);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [objects, stages, objectTransformsByKf, posesByKf, camsByKf, movesByKf, fxByKf, durationsVh, easings, brandColors, sections, projectName, charScale, charCenterY, postFx, site2d, menu, seo]);
+  const histGo = (dir) => {
+    const h = histRef.current;
+    if (!h.reset) { const now = histSnap(); if (now !== h.cur) { h.stack = h.stack.slice(0, h.idx + 1); h.stack.push(now); h.idx = h.stack.length - 1; h.cur = now; } }
+    const ni = h.idx + dir;
+    if (ni < 0 || ni >= h.stack.length) return;
+    h.idx = ni;
+    h.cur = h.stack[ni];
+    h.until = Date.now() + 900;
+    restoreProjectState(JSON.parse(h.stack[ni]), true);
+    setHistVer((v) => v + 1);
+  };
+  const histGoRef = useRef(null);
+  histGoRef.current = histGo;
+  useEffect(() => {
+    const k = (e) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      const key = (e.key || "").toLowerCase();
+      if (key !== "z" && key !== "y") return;
+      const a = document.activeElement;
+      const tag = a && a.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || (a && a.isContentEditable)) return;
+      e.preventDefault();
+      histGoRef.current(key === "y" || e.shiftKey ? 1 : -1);
+    };
+    window.addEventListener("keydown", k);
+    return () => window.removeEventListener("keydown", k);
+  }, []);
+  const canUndo = histRef.current.idx > 0 || (!histRef.current.reset && histRef.current.cur !== null);
+  const canRedo = histRef.current.idx < histRef.current.stack.length - 1;
 
   /* Al abrir un archivo que "Guardar como editor" generó, este mismo
      componente ya viene con el progreso embebido (base64, en un tag
@@ -11030,6 +11098,8 @@ function App() {
             <label className="ibtn" title="Abrir proyecto (.json)"><Icon name="open" size={16} />
               <input type="file" accept=".json,application/json" onChange={(e) => { loadProject(e.target.files[0]); e.target.value = ""; }} />
             </label>
+            <IBtn icon="undo" title="Deshacer (Ctrl+Z)" disabled={histRef.current.idx <= 0 && histVer >= 0} onClick={() => histGo(-1)} />
+            <IBtn icon="redo" title="Rehacer (Ctrl+Y)" disabled={!canRedo} onClick={() => histGo(1)} />
             <IBtn icon="file" title="Guardar proyecto (.json)" onClick={saveProject} />
             <IBtn icon="export" kind="acc" title="Exportar index.html" onClick={downloadFullHtml} />
           </div>
