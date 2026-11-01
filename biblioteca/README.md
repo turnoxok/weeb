@@ -6,7 +6,7 @@ Cada pieza = carpeta con `pieza.json` + `svg/` (las partes). Catálogo en `indic
 |---|---|---|
 | tobogan | 7 | rampa, cuerpo, detalle |
 | puente | 9 | piso, estructura, zocalo, remaches |
-| arco (final del puente) | 4 | arco, neon, detalle |
+| arco (final del puente) | 2 | arco, interno |
 
 ## Cómo funciona
 - La pieza se inserta como **grupo**: una parte es la *madre* y las demás son *hijos* con posición relativa. En el editor, mover/escalar/girar la madre mueve todo; "Aislar" muestra solo la pieza; cada parte se puede abrir y recolorear sola.

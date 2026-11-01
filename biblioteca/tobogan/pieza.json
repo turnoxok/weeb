@@ -1,7 +1,7 @@
 {
  "nombre": "tobogan",
  "titulo": "Tobogán",
- "version": 1,
+ "version": 2,
  "origen": "tuweeb 2026-10-30",
  "madre": "tobogan_00",
  "nota": "La madre guarda su pose absoluta de referencia; los hijos son RELATIVOS a la madre (como en el editor). Al insertar se puede mover/escalar/girar solo la madre.",
@@ -46,28 +46,28 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
-    "label": "tobogan_rampa_blanca",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
     "shCast": true,
-    "previewUrl": null
+    "previewUrl": null,
+    "label": "tobogan_rampa_blanca"
    },
    "pose": {
     "position": [
-     7.8,
-     1.3145,
-     0.65
+     0,
+     0.8645,
+     0
     ],
     "scale": 2.251,
     "rotationY": -90,
-    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1
+    "sy": 1,
+    "hidden": false
    }
   },
   {
@@ -105,28 +105,28 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
-    "label": "tobogan_pared_izq",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
     "shCast": true,
-    "previewUrl": null
+    "previewUrl": null,
+    "label": "tobogan_pared_izq"
    },
    "pose": {
     "position": [
-     0.0,
+     0,
      0.0911,
      0.4354
     ],
     "scale": 1.10218,
-    "rotationY": -0.0,
-    "hidden": false,
+    "rotationY": 0,
     "fadeDir": "ltr",
-    "rx": -0.0,
+    "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
+    "sx": 1,
+    "sy": 1,
+    "hidden": false
    }
   },
   {
@@ -164,28 +164,28 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
-    "label": "tobogan_poste_izq",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
     "shCast": true,
-    "previewUrl": null
+    "previewUrl": null,
+    "label": "tobogan_poste_izq"
    },
    "pose": {
     "position": [
      -0.6442,
      0.7932,
-     0.4354
+     0.41
     ],
     "scale": 0.31986,
-    "rotationY": 90.0,
-    "hidden": false,
+    "rotationY": 90,
     "fadeDir": "ltr",
-    "rx": -0.0,
+    "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
+    "sx": 1,
+    "sy": 1,
+    "hidden": false
    }
   },
   {
@@ -223,28 +223,28 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
-    "label": "tobogan_esfera_izq",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
     "shCast": true,
-    "previewUrl": null
+    "previewUrl": null,
+    "label": "tobogan_esfera_izq"
    },
    "pose": {
     "position": [
      -0.6442,
      1.0064,
-     0.4354
+     0.41
     ],
     "scale": 0.15993,
-    "rotationY": 90.0,
-    "hidden": false,
+    "rotationY": 90,
     "fadeDir": "ltr",
-    "rx": -0.0,
+    "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
+    "sx": 1,
+    "sy": 1,
+    "hidden": false
    }
   },
   {
@@ -282,28 +282,28 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
-    "label": "tobogan_pared_der",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
     "shCast": true,
-    "previewUrl": null
+    "previewUrl": null,
+    "label": "tobogan_pared_der"
    },
    "pose": {
     "position": [
-     0.0,
+     0,
      0.0911,
      -0.4354
     ],
     "scale": 1.10218,
-    "rotationY": -0.0,
-    "hidden": false,
+    "rotationY": 0,
     "fadeDir": "ltr",
-    "rx": -0.0,
+    "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
+    "sx": 1,
+    "sy": 1,
+    "hidden": false
    }
   },
   {
@@ -341,28 +341,28 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
-    "label": "tobogan_poste_der",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
     "shCast": true,
-    "previewUrl": null
+    "previewUrl": null,
+    "label": "tobogan_poste_der"
    },
    "pose": {
     "position": [
      -0.6442,
      0.7932,
-     -0.4354
+     -0.46
     ],
     "scale": 0.31986,
-    "rotationY": 90.0,
-    "hidden": false,
+    "rotationY": 90,
     "fadeDir": "ltr",
-    "rx": -0.0,
+    "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
+    "sx": 1,
+    "sy": 1,
+    "hidden": false
    }
   },
   {
@@ -400,28 +400,28 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
-    "label": "tobogan_esfera_der",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
     "shCast": true,
-    "previewUrl": null
+    "previewUrl": null,
+    "label": "tobogan_esfera_der"
    },
    "pose": {
     "position": [
      -0.6442,
      1.0064,
-     -0.4354
+     -0.46
     ],
     "scale": 0.15993,
-    "rotationY": 90.0,
-    "hidden": false,
+    "rotationY": 90,
     "fadeDir": "ltr",
-    "rx": -0.0,
+    "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
+    "sx": 1,
+    "sy": 1,
+    "hidden": false
    }
   }
  ]

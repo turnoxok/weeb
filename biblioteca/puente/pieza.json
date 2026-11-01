@@ -1,7 +1,7 @@
 {
  "nombre": "puente",
  "titulo": "Puente",
- "version": 1,
+ "version": 2,
  "origen": "tuweeb 2026-10-30",
  "madre": "puente_00",
  "nota": "La madre guarda su pose absoluta de referencia; los hijos son RELATIVOS a la madre (como en el editor). Al insertar se puede mover/escalar/girar solo la madre.",
@@ -47,28 +47,28 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
-    "label": "puente_tablones",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
     "shCast": true,
-    "previewUrl": null
+    "previewUrl": null,
+    "label": "puente_tablones"
    },
    "pose": {
     "position": [
-     -11.18,
+     0,
      0.5544,
-     -8.3
+     0
     ],
-    "scale": 0.8189108483122063,
+    "scale": 0.81891,
     "rotationY": -93.501,
-    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1
+    "sy": 1,
+    "hidden": false
    }
   },
   {
@@ -106,28 +106,28 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
-    "label": "puente_pared_izq",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
     "shCast": true,
-    "previewUrl": null
+    "previewUrl": null,
+    "label": "puente_pared_izq"
    },
    "pose": {
     "position": [
-     -0.0,
+     0,
      -0.0336,
      1.7951
     ],
     "scale": 1.79976,
-    "rotationY": -0.0,
-    "hidden": false,
+    "rotationY": 0,
     "fadeDir": "ltr",
-    "rx": -0.0,
+    "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
+    "sx": 1,
+    "sy": 1,
+    "hidden": false
    }
   },
   {
@@ -165,28 +165,28 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
-    "label": "puente_zocalo_izq",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
     "shCast": true,
-    "previewUrl": null
+    "previewUrl": null,
+    "label": "puente_zocalo_izq"
    },
    "pose": {
     "position": [
-     -0.0,
+     0,
      -0.4671,
-     1.7951
+     1.716
     ],
     "scale": 0.93276,
-    "rotationY": 0.0,
-    "hidden": false,
+    "rotationY": 0,
     "fadeDir": "ltr",
-    "rx": -0.0,
+    "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
+    "sx": 1,
+    "sy": 1,
+    "hidden": false
    }
   },
   {
@@ -224,28 +224,28 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
-    "label": "puente_remaches_izq",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
     "shCast": true,
-    "previewUrl": null
+    "previewUrl": null,
+    "label": "puente_remaches_izq"
    },
    "pose": {
     "position": [
-     0.0,
+     0,
      0.0222,
-     1.9905
+     1.9105
     ],
     "scale": 0.93567,
-    "rotationY": -0.0,
-    "hidden": false,
+    "rotationY": 0,
     "fadeDir": "ltr",
-    "rx": -0.0,
+    "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
+    "sx": 1,
+    "sy": 1,
+    "hidden": false
    }
   },
   {
@@ -283,28 +283,28 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
-    "label": "puente_pilares_izq",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
     "shCast": true,
-    "previewUrl": null
+    "previewUrl": null,
+    "label": "puente_pilares_izq"
    },
    "pose": {
     "position": [
-     0.0,
+     0,
      0.1025,
      1.7218
     ],
     "scale": 2.08898,
-    "rotationY": -0.0,
-    "hidden": false,
+    "rotationY": 0,
     "fadeDir": "ltr",
-    "rx": -0.0,
+    "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
+    "sx": 1,
+    "sy": 1,
+    "hidden": false
    }
   },
   {
@@ -342,28 +342,28 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
-    "label": "puente_pared_der",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
     "shCast": true,
-    "previewUrl": null
+    "previewUrl": null,
+    "label": "puente_pared_der"
    },
    "pose": {
     "position": [
-     0.0,
+     0,
      -0.0336,
      -1.7951
     ],
     "scale": 1.79976,
-    "rotationY": -0.0,
-    "hidden": false,
+    "rotationY": 0,
     "fadeDir": "ltr",
-    "rx": -0.0,
+    "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
+    "sx": 1,
+    "sy": 1,
+    "hidden": false
    }
   },
   {
@@ -401,28 +401,28 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
-    "label": "puente_zocalo_der",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
     "shCast": true,
-    "previewUrl": null
+    "previewUrl": null,
+    "label": "puente_zocalo_der"
    },
    "pose": {
     "position": [
-     0.0,
+     0,
      -0.4671,
      -1.7951
     ],
     "scale": 0.93276,
-    "rotationY": 0.0,
-    "hidden": false,
+    "rotationY": 0,
     "fadeDir": "ltr",
-    "rx": -0.0,
+    "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
+    "sx": 1,
+    "sy": 1,
+    "hidden": false
    }
   },
   {
@@ -460,28 +460,28 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
-    "label": "puente_remaches_der",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
     "shCast": true,
-    "previewUrl": null
+    "previewUrl": null,
+    "label": "puente_remaches_der"
    },
    "pose": {
     "position": [
-     -0.0,
+     0,
      0.0222,
      -1.9905
     ],
     "scale": 0.93567,
-    "rotationY": -0.0,
-    "hidden": false,
+    "rotationY": 0,
     "fadeDir": "ltr",
-    "rx": -0.0,
+    "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
+    "sx": 1,
+    "sy": 1,
+    "hidden": false
    }
   },
   {
@@ -519,28 +519,28 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
-    "label": "puente_pilares_der",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
     "shCast": true,
-    "previewUrl": null
+    "previewUrl": null,
+    "label": "puente_pilares_der"
    },
    "pose": {
     "position": [
-     -0.0,
+     0,
      0.1025,
      -1.7218
     ],
     "scale": 2.08898,
-    "rotationY": -0.0,
-    "hidden": false,
+    "rotationY": 0,
     "fadeDir": "ltr",
-    "rx": -0.0,
+    "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
+    "sx": 1,
+    "sy": 1,
+    "hidden": false
    }
   }
  ]

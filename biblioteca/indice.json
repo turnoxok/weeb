@@ -23,11 +23,10 @@
  {
   "nombre": "arco",
   "titulo": "Arco (final del puente)",
-  "partes": 4,
+  "partes": 2,
   "roles": [
    "arco",
-   "neon",
-   "detalle"
+   "interno"
   ]
  }
 ]
