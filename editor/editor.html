@@ -7954,7 +7954,7 @@ function generateLoaderCss(loader) {
 const GRP_DEF = () => ({ position: [0, 0, 0], scale: 1, rotationY: 0, hidden: false, fadeDir: "ltr" });
 function tfMatrix(t) {
   const s = t.scale ?? 1, sx = t.sx ?? 1, sy = t.sy ?? 1;
-  const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(((t.rx || 0) * Math.PI) / 180, ((t.rotationY || 0) * Math.PI) / 180, 0, "YXZ"));
+  const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(((t.rx || 0) * Math.PI) / 180, ((t.rotationY || 0) * Math.PI) / 180, ((t.rz || 0) * Math.PI) / 180, "YXZ"));
   return new THREE.Matrix4().compose(new THREE.Vector3(...(t.position || [0, 0, 0])), q, new THREE.Vector3(s * sx, s * sy, s));
 }
 function matToTf(m, base) {
@@ -7962,7 +7962,7 @@ function matToTf(m, base) {
   m.decompose(p, q, sc);
   const e = new THREE.Euler().setFromQuaternion(q, "YXZ");
   const sz = Math.abs(sc.z) || 1e-6;
-  return { ...base, position: [p.x, p.y, p.z], scale: sz, sx: sc.x / sz, sy: sc.y / sz, rotationY: (e.y * 180) / Math.PI, rx: (e.x * 180) / Math.PI };
+  return { ...base, position: [p.x, p.y, p.z], scale: sz, sx: sc.x / sz, sy: sc.y / sz, rotationY: (e.y * 180) / Math.PI, rx: (e.x * 180) / Math.PI, rz: (e.z * 180) / Math.PI };
 }
 function composeGroups(objects, tfByKf, stages) {
   const byId = {}; objects.forEach((o) => { byId[o.id] = o; });
@@ -9792,16 +9792,26 @@ function App() {
   const duplicateObject = (id) => {
     const src = objects.find((o) => o.id === id);
     if (!src) return;
-    const newId = `obj-${Date.now()}`;
-    const copy = JSON.parse(JSON.stringify(src));
-    copy.id = newId; copy.label = `${src.label} (copia)`; copy.previewUrl = src.previewUrl;
+    /* Copia el objeto y TODO su grupo (hijos, nietos…), con la misma estructura madre → hijos y la misma posición relativa. */
+    const sub = [src], seen = new Set([src.id]);
+    for (let i = 0; i < sub.length && sub.length < 200; i++) objects.forEach((o) => { if (o.parent === sub[i].id && !seen.has(o.id)) { seen.add(o.id); sub.push(o); } });
+    const stamp = Date.now(), idMap = {};
+    sub.forEach((o, k) => { idMap[o.id] = k === 0 ? `obj-${stamp}` : `obj-${stamp}-${k}`; });
     const used = objects.map((o, k) => o.color || PALETTE[k % PALETTE.length]);
-    copy.color = PALETTE.find((c) => !used.includes(c)) || src.color;
-    const tr = JSON.parse(JSON.stringify(objectTransformsByKf[id] || {}));
-    Object.values(tr).forEach((t) => { if (t && Array.isArray(t.position)) t.position[0] += 0.6; });
-    setObjects((prev) => { const i = prev.findIndex((o) => o.id === id); const n = [...prev]; n.splice(i + 1, 0, copy); return n; });
-    setObjectTransformsByKf((prev) => ({ ...prev, [newId]: tr }));
-    setSelectedObj(newId);
+    const copies = [], newTr = {};
+    sub.forEach((o, k) => {
+      const c = JSON.parse(JSON.stringify(o));
+      c.id = idMap[o.id]; c.previewUrl = o.previewUrl;
+      c.label = k === 0 ? `${o.label} (copia)` : o.label;
+      if (k > 0) c.parent = idMap[o.parent];
+      const col = PALETTE.find((p) => !used.includes(p)) || o.color; c.color = col; used.push(col);
+      const tr = JSON.parse(JSON.stringify(objectTransformsByKf[o.id] || {}));
+      if (k === 0) Object.values(tr).forEach((t) => { if (t && Array.isArray(t.position)) t.position[0] += 0.6; });
+      copies.push(c); newTr[c.id] = tr;
+    });
+    setObjects((prev) => { const i = prev.findIndex((o) => o.id === id); const n = [...prev]; n.splice(i + 1, 0, ...copies); return n; });
+    setObjectTransformsByKf((prev) => ({ ...prev, ...newTr }));
+    setSelectedObj(idMap[id]);
   };
   /* Fila de luces: copias de esta luz repartidas a lo largo de X (centradas en la posición actual). Cada copia
      apunta a su propio tramo (el destino se corre igual que la luz), así iluminan un cartel parejo. */
