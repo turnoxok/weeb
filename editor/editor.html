@@ -9081,6 +9081,28 @@ function parseColorText(t) {
   if (/^[0-9a-f]{8}$/i.test(v)) v = v.slice(0, 6);
   return /^[0-9a-f]{6}$/i.test(v) ? "#" + v.toLowerCase() : null;
 }
+/* ---- Colores de la marca (paleta del proyecto) ----
+   Se guardan en el JSON del proyecto (brandColors). Clic = aplica el color; clic derecho = quita; "+" = suma el color actual. */
+const DEFAULT_BRAND = ["#9977b7", "#ebebef", "#e8693a", "#5bd0e7", "#ffffff"];
+let BRAND_COLORS = DEFAULT_BRAND.slice();
+let BRAND_SET = null;
+function BrandSwatches({ value, onChange }) {
+  const cur = (value || "").toLowerCase();
+  const ok = /^#[0-9a-f]{6}$/i.test(cur);
+  const sw = { width: 18, height: 18, borderRadius: 9, padding: 0, cursor: "pointer", flex: "0 0 auto" };
+  return (
+    <div className="row" style={{ flexWrap: "wrap", gap: 5, alignItems: "center" }}>
+      {BRAND_COLORS.map((c) => (
+        <button key={c} title={c + " · clic derecho para quitar de la marca"} onClick={() => onChange(c)}
+          onContextMenu={(e) => { e.preventDefault(); if (BRAND_SET) BRAND_SET(BRAND_COLORS.filter((x) => x !== c)); }}
+          style={{ ...sw, background: c, border: cur === c ? "2px solid #fff" : "1px solid rgba(255,255,255,.35)" }} />
+      ))}
+      <button title="Agregar el color actual a los colores de la marca" disabled={!ok || BRAND_COLORS.includes(cur)}
+        onClick={() => { if (ok && !BRAND_COLORS.includes(cur) && BRAND_SET) BRAND_SET([...BRAND_COLORS, cur]); }}
+        style={{ ...sw, background: "transparent", border: "1px dashed rgba(255,255,255,.5)", color: "inherit", font: "12px/16px sans-serif", opacity: (!ok || BRAND_COLORS.includes(cur)) ? 0.35 : 1 }}>+</button>
+    </div>
+  );
+}
 function HexColor({ value, onChange, width = 76 }) {
   const cur = /^#[0-9a-f]{6}$/i.test(value || "") ? value : "#000000";
   const [draft, setDraft] = useState(cur);
@@ -9100,7 +9122,7 @@ function HexColor({ value, onChange, width = 76 }) {
   );
 }
 function ColorRow({ label, value, onChange }) {
-  return <div className="row"><span className="lbl">{label}</span><HexColor value={value} onChange={onChange} /></div>;
+  return <><div className="row"><span className="lbl">{label}</span><HexColor value={value} onChange={onChange} /></div><BrandSwatches value={value} onChange={onChange} /></>;
 }
 function SelectRow({ label, value, onChange, options }) {
   return (
@@ -10239,9 +10261,12 @@ function App() {
      verla de nuevo en el visor. */
   const [projectLoadError, setProjectLoadError] = useState(null);
   const [projectLoaded, setProjectLoaded] = useState(false);
+  const [brandColors, setBrandColorsState] = useState(DEFAULT_BRAND);
+  BRAND_COLORS = brandColors; BRAND_SET = setBrandColorsState;
 
   const buildProjectSnapshot = () => ({
     kind: "weeb-scroll-project",
+    brandColors,
     version: 1,
     savedAt: new Date().toISOString(),
     projectName,
@@ -10287,6 +10312,7 @@ function App() {
     setProgressBar({ ...DEFAULT_PROGRESS_BAR, ...(p.progressBar || {}) });
     setBackTop({ ...DEFAULT_BACKTOP, ...(p.backTop || {}) });
     setMenu({ ...DEFAULT_MENU, ...(p.menu || {}), items: (p.menu && p.menu.items) || DEFAULT_MENU.items });
+    setBrandColorsState(Array.isArray(p.brandColors) && p.brandColors.length ? p.brandColors : DEFAULT_BRAND);
     setSections(Array.isArray(p.sections) && p.sections.length ? p.sections : DEFAULT_SECTIONS);
     setSite2d({ ...DEFAULT_SITE2D, ...(p.site2d || {}) });
     setSelSec(null);
