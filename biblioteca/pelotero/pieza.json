@@ -1,0 +1,178 @@
+{
+ "nombre": "pelotero",
+ "titulo": "Pelotero (marco de tubos + reja)",
+ "version": 1,
+ "origen": "lemadavami 2026-11-01",
+ "madre": "pelotero_00",
+ "nota": "Madre = la reja (plana, de frente). 4 tubos (abajo, arriba, lateral izq./der.) hechos con un anillo extruido largo. Roles: reja (color original del SVG, #e6e6e6) y tubo.",
+ "roles": {
+  "reja": "#e6e6e6",
+  "tubo": "#ebebef"
+ },
+ "partes": [
+  {
+   "clave": "pelotero_00",
+   "rol": "reja",
+   "esMadre": true,
+   "objeto": {
+    "label": "pelotero_reja",
+    "type": "image",
+    "url": "./assets/models/pelotero_reja.svg",
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.001,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": ""
+   },
+   "pose": {
+    "position": [
+     0,
+     0,
+     0
+    ],
+    "scale": 3.35,
+    "rotationY": 0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "rz": 0,
+    "rx": 0,
+    "sx": 1,
+    "sy": 1
+   }
+  },
+  {
+   "clave": "pelotero_01",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "Tubo de abajo",
+    "type": "image",
+    "url": "./assets/models/pelotero_tubo.svg",
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#ebebef",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "position": [
+     0,
+     -0.5255474452554744,
+     0
+    ],
+    "scale": 0.218978102189781,
+    "rotationY": 89.99999999999999,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "sx": 0.5,
+    "sy": 0.5,
+    "rx": 0,
+    "rz": 0
+   }
+  },
+  {
+   "clave": "pelotero_02",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "Tubo de arriba",
+    "type": "image",
+    "url": "./assets/models/pelotero_tubo.svg",
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#ebebef",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "position": [
+     0,
+     0.54014598540146,
+     0
+    ],
+    "scale": 0.218978102189781,
+    "rotationY": 89.99999999999999,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "sx": 0.5,
+    "sy": 0.5,
+    "rx": 0,
+    "rz": 0
+   }
+  },
+  {
+   "clave": "pelotero_03",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "Tubo lateral izquierdo",
+    "type": "image",
+    "url": "./assets/models/pelotero_tubo.svg",
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#ebebef",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "position": [
+     -1.0401459854014599,
+     1.1102230246251565e-16,
+     0
+    ],
+    "scale": 0.218978102189781,
+    "rotationY": 89.99999999999999,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "sx": 0.5,
+    "sy": 0.5,
+    "rx": -90,
+    "rz": 0
+   }
+  },
+  {
+   "clave": "pelotero_04",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "Tubo lateral derecho",
+    "type": "image",
+    "url": "./assets/models/pelotero_tubo.svg",
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#ebebef",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "position": [
+     1.0437956204379562,
+     1.1102230246251565e-16,
+     0
+    ],
+    "scale": 0.219,
+    "rotationY": 89.99999999999999,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "sx": 0.5,
+    "sy": 0.5,
+    "rx": -90,
+    "rz": 0
+   }
+  }
+ ]
+}

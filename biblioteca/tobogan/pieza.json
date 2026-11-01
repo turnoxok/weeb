@@ -46,13 +46,12 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
+    "label": "tobogan_rampa_blanca",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
-    "shCast": true,
-    "previewUrl": null,
-    "label": "tobogan_rampa_blanca"
+    "shCast": true
    },
    "pose": {
     "position": [
@@ -62,12 +61,12 @@
     ],
     "scale": 2.251,
     "rotationY": -90,
+    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1,
-    "hidden": false
+    "sy": 1
    }
   },
   {
@@ -105,13 +104,12 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
+    "label": "tobogan_pared_izq",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
-    "shCast": true,
-    "previewUrl": null,
-    "label": "tobogan_pared_izq"
+    "shCast": true
    },
    "pose": {
     "position": [
@@ -121,12 +119,12 @@
     ],
     "scale": 1.10218,
     "rotationY": 0,
+    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1,
-    "hidden": false
+    "sy": 1
    }
   },
   {
@@ -164,13 +162,12 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
+    "label": "tobogan_poste_izq",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
-    "shCast": true,
-    "previewUrl": null,
-    "label": "tobogan_poste_izq"
+    "shCast": true
    },
    "pose": {
     "position": [
@@ -180,12 +177,12 @@
     ],
     "scale": 0.31986,
     "rotationY": 90,
+    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1,
-    "hidden": false
+    "sy": 1
    }
   },
   {
@@ -223,13 +220,12 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
+    "label": "tobogan_esfera_izq",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
-    "shCast": true,
-    "previewUrl": null,
-    "label": "tobogan_esfera_izq"
+    "shCast": true
    },
    "pose": {
     "position": [
@@ -239,12 +235,12 @@
     ],
     "scale": 0.15993,
     "rotationY": 90,
+    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1,
-    "hidden": false
+    "sy": 1
    }
   },
   {
@@ -282,13 +278,12 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
+    "label": "tobogan_pared_der",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
-    "shCast": true,
-    "previewUrl": null,
-    "label": "tobogan_pared_der"
+    "shCast": true
    },
    "pose": {
     "position": [
@@ -298,12 +293,12 @@
     ],
     "scale": 1.10218,
     "rotationY": 0,
+    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1,
-    "hidden": false
+    "sy": 1
    }
   },
   {
@@ -341,13 +336,12 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
+    "label": "tobogan_poste_der",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
-    "shCast": true,
-    "previewUrl": null,
-    "label": "tobogan_poste_der"
+    "shCast": true
    },
    "pose": {
     "position": [
@@ -357,12 +351,12 @@
     ],
     "scale": 0.31986,
     "rotationY": 90,
+    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1,
-    "hidden": false
+    "sy": 1
    }
   },
   {
@@ -400,13 +394,12 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
+    "label": "tobogan_esfera_der",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
-    "shCast": true,
-    "previewUrl": null,
-    "label": "tobogan_esfera_der"
+    "shCast": true
    },
    "pose": {
     "position": [
@@ -416,12 +409,12 @@
     ],
     "scale": 0.15993,
     "rotationY": 90,
+    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1,
-    "hidden": false
+    "sy": 1
    }
   }
  ]

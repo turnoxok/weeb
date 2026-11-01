@@ -47,28 +47,27 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
+    "label": "puente_tablones",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
-    "shCast": true,
-    "previewUrl": null,
-    "label": "puente_tablones"
+    "shCast": true
    },
    "pose": {
     "position": [
      0,
-     0.5544,
+     0,
      0
     ],
     "scale": 0.81891,
     "rotationY": -93.501,
+    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1,
-    "hidden": false
+    "sy": 1
    }
   },
   {
@@ -106,13 +105,12 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
+    "label": "puente_pared_izq",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
-    "shCast": true,
-    "previewUrl": null,
-    "label": "puente_pared_izq"
+    "shCast": true
    },
    "pose": {
     "position": [
@@ -122,12 +120,12 @@
     ],
     "scale": 1.79976,
     "rotationY": 0,
+    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1,
-    "hidden": false
+    "sy": 1
    }
   },
   {
@@ -165,13 +163,12 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
+    "label": "puente_zocalo_izq",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
-    "shCast": true,
-    "previewUrl": null,
-    "label": "puente_zocalo_izq"
+    "shCast": true
    },
    "pose": {
     "position": [
@@ -181,12 +178,12 @@
     ],
     "scale": 0.93276,
     "rotationY": 0,
+    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1,
-    "hidden": false
+    "sy": 1
    }
   },
   {
@@ -224,13 +221,12 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
+    "label": "puente_remaches_izq",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
-    "shCast": true,
-    "previewUrl": null,
-    "label": "puente_remaches_izq"
+    "shCast": true
    },
    "pose": {
     "position": [
@@ -240,12 +236,12 @@
     ],
     "scale": 0.93567,
     "rotationY": 0,
+    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1,
-    "hidden": false
+    "sy": 1
    }
   },
   {
@@ -283,13 +279,12 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
+    "label": "puente_pilares_izq",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
-    "shCast": true,
-    "previewUrl": null,
-    "label": "puente_pilares_izq"
+    "shCast": true
    },
    "pose": {
     "position": [
@@ -299,12 +294,12 @@
     ],
     "scale": 2.08898,
     "rotationY": 0,
+    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1,
-    "hidden": false
+    "sy": 1
    }
   },
   {
@@ -342,13 +337,12 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
+    "label": "puente_pared_der",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
-    "shCast": true,
-    "previewUrl": null,
-    "label": "puente_pared_der"
+    "shCast": true
    },
    "pose": {
     "position": [
@@ -358,12 +352,12 @@
     ],
     "scale": 1.79976,
     "rotationY": 0,
+    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1,
-    "hidden": false
+    "sy": 1
    }
   },
   {
@@ -401,13 +395,12 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
+    "label": "puente_zocalo_der",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
-    "shCast": true,
-    "previewUrl": null,
-    "label": "puente_zocalo_der"
+    "shCast": true
    },
    "pose": {
     "position": [
@@ -417,12 +410,12 @@
     ],
     "scale": 0.93276,
     "rotationY": 0,
+    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1,
-    "hidden": false
+    "sy": 1
    }
   },
   {
@@ -460,13 +453,12 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
+    "label": "puente_remaches_der",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
-    "shCast": true,
-    "previewUrl": null,
-    "label": "puente_remaches_der"
+    "shCast": true
    },
    "pose": {
     "position": [
@@ -476,12 +468,12 @@
     ],
     "scale": 0.93567,
     "rotationY": 0,
+    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1,
-    "hidden": false
+    "sy": 1
    }
   },
   {
@@ -519,13 +511,12 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 1,
+    "label": "puente_pilares_der",
     "visible": true,
     "color": "#7ee787",
     "scrubFrom": 0,
     "scrubTo": 100,
-    "shCast": true,
-    "previewUrl": null,
-    "label": "puente_pilares_der"
+    "shCast": true
    },
    "pose": {
     "position": [
@@ -535,12 +526,12 @@
     ],
     "scale": 2.08898,
     "rotationY": 0,
+    "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
     "sx": 1,
-    "sy": 1,
-    "hidden": false
+    "sy": 1
    }
   }
  ]
