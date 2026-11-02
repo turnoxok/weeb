@@ -1,0 +1,664 @@
+{
+ "nombre": "castillo",
+ "titulo": "Castillo (con parlantes y micrófonos)",
+ "version": 1,
+ "origen": "lemadavami",
+ "madre": "cas_000",
+ "nota": "Castillo en un solo grupo (la madre es el frente). Las luces (spots) del castillo NO van en el grupo: se ponen aparte. Roles: frente, arco, arco_2, fondo, plataforma, torre, torre_base, torre_tope, micro, parlante, parlante_detalle.",
+ "roles": {
+  "frente": "#8149bd",
+  "arco": "#fc9835",
+  "arco_2": "#78c944",
+  "fondo": "#6c36a6",
+  "plataforma": "#ffffff",
+  "torre": "#b079dc",
+  "torre_base": "#c59df6",
+  "torre_tope": "#ffffff",
+  "micro": "#000000",
+  "parlante": "#000000",
+  "parlante_detalle": "#ffffff"
+ },
+ "partes": [
+  {
+   "clave": "cas_000",
+   "rol": "frente",
+   "esMadre": true,
+   "objeto": {
+    "label": "castillo_frente_00",
+    "type": "image",
+    "url": "./assets/models/castillo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#7c8cff",
+    "ext": 0.105,
+    "matColor": "#8149bd",
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "position": [
+     0,
+     2.68,
+     0
+    ],
+    "scale": 6.03,
+    "rotationY": 0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "sy": 1
+   }
+  },
+  {
+   "clave": "cas_001",
+   "rol": "arco",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_arco_01",
+    "type": "image",
+    "url": "./assets/models/castillo-arco.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#7c8cff",
+    "ext": 0.105,
+    "matColor": "#fc9835",
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.0039,
+     -0.1476,
+     0.0031
+    ],
+    "scale": 0.69652,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "cas_002",
+   "rol": "arco_2",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_arco_2_02",
+    "type": "image",
+    "url": "./assets/models/castillo-arco.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#7c8cff",
+    "ext": 0.105,
+    "matColor": "#78c944",
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.0039,
+     -0.1476,
+     0.0031
+    ],
+    "scale": 0.64677,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "cas_003",
+   "rol": "fondo",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_fondo_03",
+    "type": "image",
+    "url": "./assets/models/Pelotero-sin-circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff5d73",
+    "ext": 0.005,
+    "bev": 0,
+    "matColor": "#6c36a6"
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.3148,
+     0.0066,
+     -0.3255
+    ],
+    "scale": 0.75788,
+    "sx": 1.26,
+    "sy": 1.31,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "cas_004",
+   "rol": "plataforma",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_plataforma_04",
+    "type": "image",
+    "url": "./assets/models/Circulo-plano.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff5d73",
+    "ext": 0.12,
+    "bev": 0,
+    "matColor": "#ffffff",
+    "float": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.0099,
+     -0.4312,
+     -0.2652
+    ],
+    "scale": 0.51741,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "cas_005",
+   "rol": "torre",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_torre_05",
+    "type": "image",
+    "url": "./assets/models/Circulo-plano.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff5d73",
+    "ext": 5,
+    "bev": 0,
+    "matColor": "#b079dc",
+    "float": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.5512,
+     0.0398,
+     -0.0061
+    ],
+    "scale": 0.199,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "cas_006",
+   "rol": "torre",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_torre_06",
+    "type": "image",
+    "url": "./assets/models/Circulo-plano.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff5d73",
+    "ext": 5,
+    "bev": 0,
+    "matColor": "#b079dc",
+    "float": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.5927,
+     0.0398,
+     0.0151
+    ],
+    "scale": 0.199,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "cas_007",
+   "rol": "torre_base",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_torre_base_07",
+    "type": "image",
+    "url": "./assets/models/Circulo-plano.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff5d73",
+    "ext": 0.28,
+    "bev": 0,
+    "matColor": "#c59df6",
+    "float": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.5927,
+     -0.4312,
+     0.0151
+    ],
+    "scale": 0.25041,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "cas_008",
+   "rol": "torre_tope",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_torre_tope_08",
+    "type": "image",
+    "url": "./assets/models/Circulo-plano.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff5d73",
+    "ext": 1,
+    "bev": 0,
+    "matColor": "#ffffff",
+    "float": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.5927,
+     0.1857,
+     0.0151
+    ],
+    "scale": 0.25041,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "cas_009",
+   "rol": "torre_tope",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_torre_tope_09",
+    "type": "image",
+    "url": "./assets/models/Circulo-plano.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff5d73",
+    "ext": 1,
+    "bev": 0,
+    "matColor": "#ffffff",
+    "float": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.5512,
+     0.1857,
+     -0.0061
+    ],
+    "scale": 0.25041,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "cas_010",
+   "rol": "micro",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_micro_10",
+    "type": "image",
+    "url": "./assets/models/micro.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 0.035,
+    "matColor": "#000000",
+    "bev": 0.03
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.0066,
+     -0.3383,
+     -0.0714
+    ],
+    "scale": 0.16584,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 92.5,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "cas_011",
+   "rol": "micro",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_micro_11",
+    "type": "image",
+    "url": "./assets/models/micro.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 0.085,
+    "matColor": "#000000",
+    "bev": 0.03
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.2242,
+     0.2056,
+     -0.2452
+    ],
+    "scale": 0.36484,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -141.0,
+    "rx": 14.0,
+    "rz": -148.0
+   }
+  },
+  {
+   "clave": "cas_012",
+   "rol": "micro",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_micro_12",
+    "type": "image",
+    "url": "./assets/models/micro.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 0.085,
+    "matColor": "#000000",
+    "bev": 0.03
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.1475,
+     0.2056,
+     -0.1024
+    ],
+    "scale": 0.36484,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -19.3,
+    "rx": 14.0,
+    "rz": -148.0
+   }
+  },
+  {
+   "clave": "cas_013",
+   "rol": "parlante",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_parlante_13",
+    "type": "image",
+    "url": "./assets/models/Castillo-parlante.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 0.38,
+    "matColor": "#000000",
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.316,
+     -0.272,
+     0.179
+    ],
+    "scale": 0.36484,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 22.1,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "cas_014",
+   "rol": "parlante",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_parlante_14",
+    "type": "image",
+    "url": "./assets/models/Castillo-parlante.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 0.38,
+    "matColor": "#000000",
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.3415,
+     -0.272,
+     0.1161
+    ],
+    "scale": 0.36484,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -5.5,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "cas_015",
+   "rol": "parlante_detalle",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_parlante_detalle_15",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 1,
+    "matColor": "#ffffff",
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.3415,
+     -0.2056,
+     0.1161
+    ],
+    "scale": 0.0995,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -5.5,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "cas_016",
+   "rol": "parlante_detalle",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_parlante_detalle_16",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 1,
+    "matColor": "#ffffff",
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.3415,
+     -0.3391,
+     0.1161
+    ],
+    "scale": 0.0995,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -5.5,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "cas_017",
+   "rol": "parlante_detalle",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_parlante_detalle_17",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 1,
+    "matColor": "#ffffff",
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.316,
+     -0.2056,
+     0.179
+    ],
+    "scale": 0.0995,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 22.1,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "cas_018",
+   "rol": "parlante_detalle",
+   "esMadre": false,
+   "objeto": {
+    "label": "castillo_parlante_detalle_18",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 1,
+    "matColor": "#ffffff",
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.316,
+     -0.3391,
+     0.179
+    ],
+    "scale": 0.0995,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 22.1,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  }
+ ]
+}

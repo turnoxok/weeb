@@ -137,5 +137,23 @@
    "palanca",
    "palanca_2"
   ]
+ },
+ {
+  "nombre": "castillo",
+  "titulo": "Castillo (con parlantes y micrófonos)",
+  "partes": 19,
+  "roles": [
+   "frente",
+   "arco",
+   "arco_2",
+   "fondo",
+   "plataforma",
+   "torre",
+   "torre_base",
+   "torre_tope",
+   "micro",
+   "parlante",
+   "parlante_detalle"
+  ]
  }
 ]

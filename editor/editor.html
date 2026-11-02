@@ -4006,7 +4006,7 @@ function ballsLayout(d, lite) {
   const W = Math.max(0.1, d.ballW ?? 4), D = Math.max(0.1, d.ballD ?? 2), L = Math.max(1, Math.round(d.ballL ?? 3));
   const dia = Math.max(0.02, d.ballR ?? 0.16), jit = Math.min(1, Math.max(0, d.ballJit ?? 0.5)), dark = Math.min(0.9, Math.max(0, d.ballDark ?? 0.35));
   const cols = (Array.isArray(d.ballCols) && d.ballCols.length ? d.ballCols : ["#8149bd", "#fc9835", "#78c944"]).map((c) => new THREE.Color(c));
-  const cap = lite ? 700 : 5000;
+  const cap = lite ? 450 : 5000;
   const step = dia * 0.94, nx = Math.max(1, Math.floor(W / step)), nz = Math.max(1, Math.floor(D / step));
   const cx = W / nx, cz = D / nz;
   let sd = (Math.round(d.ballSeed ?? 1) * 2654435761) >>> 0;
@@ -4032,7 +4032,7 @@ function BallsBody({ data, fade, hasFade, shadows }) {
   const key = JSON.stringify([data.ballW, data.ballD, data.ballL, data.ballR, data.ballJit, data.ballDark, data.ballSeed, data.ballCols, lite]);
   const list = useMemo(() => ballsLayout(data, lite), [key]);
   const dia = Math.max(0.02, data.ballR ?? 0.16);
-  const geo = useMemo(() => new THREE.SphereGeometry(dia / 2, lite ? 9 : 18, lite ? 6 : 12), [dia, lite]);
+  const geo = useMemo(() => new THREE.SphereGeometry(dia / 2, lite ? 14 : 20, lite ? 10 : 14), [dia, lite]);
   const mat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: data.ballRough ?? 0.3, metalness: 0 }), [data.ballRough]);
   const gref = useRef(null), mref = useRef(null);
   useEffect(() => () => geo.dispose(), [geo]);
