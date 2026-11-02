@@ -3891,7 +3891,7 @@ function buildSvgExtrude(text, depthK, bevK, segK, lite, rev, arc) {
   let nCurves = 0;
   parts.forEach((pt) => pt.shapes.forEach((sh) => { nCurves += sh.curves.length; (sh.holes || []).forEach((h) => { nCurves += h.curves.length; }); }));
   let curveSeg = segK > 0 ? Math.round(segK) : Math.max(8, Math.min(32, Math.round(2500 / Math.max(1, nCurves))));
-  if (lite) curveSeg = Math.max(4, Math.min(curveSeg, Math.round(1400 / Math.max(1, nCurves)), 12));   // celular / nivel liviano: muchos menos polígonos
+  if (lite) curveSeg = Math.max(4, Math.min(curveSeg, Math.round(1400 / Math.max(1, nCurves)), nCurves <= 12 ? 28 : 12));   // celular / nivel liviano: muchos menos polígonos
   const H = Math.max(1e-6, box.max.y - box.min.y), W = box.max.x - box.min.x;
   const cx = (box.min.x + box.max.x) / 2, cy = (box.min.y + box.max.y) / 2;
   const depth = Math.max(0.002, depthK) * H;
