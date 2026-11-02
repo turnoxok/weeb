@@ -387,15 +387,14 @@
   @media (prefers-reduced-motion: reduce) { .backtop, .backtop__ico { transition: opacity .2s linear; } }
   .fab { position: fixed; z-index: 9; left: 0; right: 0; bottom: calc(16px + env(safe-area-inset-bottom)); display: flex; justify-content: center; gap: 8px; padding: 0 12px; opacity: 0; visibility: hidden; transform: translateY(14px); pointer-events: none; transition: opacity .35s ease, transform .35s ease, visibility 0s linear .35s; }
   .fab.is-on { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
-  .fab__btn { box-sizing: border-box; flex: none; width: 74px; height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 0; margin: 0; border-radius: 18px; text-decoration: none; cursor: pointer; font-family: inherit; font-weight: 600; font-size: 11px; line-height: 1; letter-spacing: .01em; white-space: nowrap; overflow: hidden; background: rgba(10,8,16,.74); color: #fff; border: 1.5px solid #fff; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: 0 6px 20px rgba(0,0,0,.35); pointer-events: none; transition: transform .2s ease, max-width .35s ease, opacity .3s ease, margin .35s ease; -webkit-tap-highlight-color: transparent; }
+  .fab__btn { box-sizing: border-box; flex: 1 1 0; min-width: 0; max-width: 88px; height: 66px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 0 6px; margin: 0; border: 0; border-radius: 18px; text-decoration: none; cursor: pointer; font-family: inherit; font-weight: 600; font-size: 11px; line-height: 1; letter-spacing: .03em; white-space: nowrap; overflow: hidden; background: rgba(20,12,36,.58); color: #fff; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 8px 28px rgba(0,0,0,.28); pointer-events: none; transition: transform .2s ease, max-width .35s ease, opacity .3s ease, margin .35s ease, flex-grow .35s ease; -webkit-tap-highlight-color: transparent; }
   .fab.is-on .fab__btn { pointer-events: auto; }
-  @media (pointer: coarse) { .fab__btn { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(10,8,16,.88); } }
   .fab__btn:hover { transform: translateY(-2px); } .fab__btn:active { transform: scale(.95); }
-  .fab__btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
-  .fab__top { max-width: 0; margin-left: -8px; border-width: 0; opacity: 0; }
-  .fab__top.is-on { max-width: 74px; margin-left: 0; border-width: 1.5px; opacity: 1; }
+  .fab__btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .fab__top { flex-grow: 0; max-width: 0; padding: 0; margin-left: -8px; opacity: 0; }
+  .fab__top.is-on { flex-grow: 1; max-width: 88px; padding: 0 6px; margin-left: 0; opacity: 1; }
   .fab__btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
-  @media (max-width: 360px) { .fab__btn { width: 68px; } .fab__top.is-on { max-width: 68px; } }
+  @media (max-width: 340px) { .fab__more { display: none; } .fab__map > span { text-transform: capitalize; } }
   @media (prefers-reduced-motion: reduce) { .fab, .fab__btn { transition: opacity .2s linear; } }
 
   .brand-mark {
@@ -5533,7 +5532,7 @@ function FloatingActions() {
       {showMap && (
         <a className="fab__btn fab__map" href={mapHref} target="_blank" rel="noopener" aria-label="Cómo llegar">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
-          <span>Cómo llegar</span>
+          <span><span className="fab__more">Cómo </span>llegar</span>
         </a>
       )}
       {BACKTOP.enabled && <BackToTop inline />}
