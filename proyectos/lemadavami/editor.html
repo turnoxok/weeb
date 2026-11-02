@@ -3903,7 +3903,7 @@ function buildSvgExtrude(text, depthK, bevK, segK, lite, rev, arc) {
         const pr = pts.map((v) =&gt; new THREE.Vector2(Math.max(0, v.x), v.y - cy));
         if (pr.length &lt; 3) return;
         const arcR = arc &gt; 0 &amp;&amp; arc &lt; 360 ? (arc * Math.PI) / 180 : Math.PI * 2;
-        const g = new THREE.LatheGeometry(pr, arcR &lt; Math.PI * 2 ? Math.max(8, Math.round(nSeg * arcR / (Math.PI * 2))) : nSeg, 0, arcR);
+        const g = new THREE.LatheGeometry(pr, arcR &lt; Math.PI * 2 ? Math.max(lite ? 22 : 36, Math.round((lite ? 22 : 36) * arcR / (Math.PI / 2))) : nSeg, 0, arcR);
         g.scale(1 / H, 1 / H, 1 / H);
         const geo = toCreasedNormals(g, 0.7);
         g.dispose();
@@ -4030,7 +4030,7 @@ function BallsBody({ data, fade, hasFade, shadows }) {
   const key = JSON.stringify([data.ballW, data.ballD, data.ballL, data.ballR, data.ballJit, data.ballDark, data.ballSeed, data.ballCols, lite]);
   const list = useMemo(() =&gt; ballsLayout(data, lite), [key]);
   const dia = Math.max(0.02, data.ballR ?? 0.16);
-  const geo = useMemo(() =&gt; new THREE.SphereGeometry(dia / 2, lite ? 10 : 18, lite ? 7 : 12), [dia, lite]);
+  const geo = useMemo(() =&gt; new THREE.SphereGeometry(dia / 2, lite ? 9 : 18, lite ? 6 : 12), [dia, lite]);
   const mat = useMemo(() =&gt; new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: data.ballRough ?? 0.3, metalness: 0 }), [data.ballRough]);
   const gref = useRef(null), mref = useRef(null);
   useEffect(() =&gt; () =&gt; geo.dispose(), [geo]);
