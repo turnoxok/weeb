@@ -9,6 +9,7 @@ Cada pieza = carpeta con `pieza.json` + `svg/` (las partes). Catálogo en `indic
 | arco (final del puente) | 3 | arco, interno, externo |
 | rayuela | 5 | contorno, base, fondo_numeros, numeros_color, numeros |
 | esfera | 1 | esfera (color y tamaño con --color / --escala) |
+| tubo_cuarto | 1 | tubo (cuarto de aro hueco, pared fina) |
 | pelotero | 5 | reja, tubo (marco de 4 tubos + reja) |
 
 ## Cómo funciona

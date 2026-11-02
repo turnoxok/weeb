@@ -1,0 +1,72 @@
+{
+ "nombre": "tubo_cuarto",
+ "titulo": "Tubo cuarto de círculo",
+ "version": 1,
+ "origen": "tuweeb",
+ "madre": "tubo_cuarto_00",
+ "nota": "Cuarto de aro hueco de pared fina (curva de 90°). Rol \"tubo\" para el color. --escala = alto de la curva; el codo mira hacia arriba-izquierda (usar --giro para orientarlo). Es una pared curva extruida, no un caño con sección redonda.",
+ "roles": {
+  "tubo": "#9977b7"
+ },
+ "partes": [
+  {
+   "clave": "tubo_cuarto_00",
+   "rol": "tubo",
+   "esMadre": true,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/tw_tubo_cuarto.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.3,
+    "bev": 0.08,
+    "seg": 0,
+    "rev": false,
+    "mat": "matte",
+    "matColor": "#9977b7",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 0,
+    "label": "tubo_cuarto",
+    "visible": true,
+    "color": "#7ee787",
+    "previewUrl": null,
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true
+   },
+   "pose": {
+    "position": [
+     0,
+     0,
+     0
+    ],
+    "scale": 1,
+    "rotationY": 0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "rx": 0,
+    "rz": 0,
+    "sx": 1,
+    "sy": 1
+   }
+  }
+ ]
+}

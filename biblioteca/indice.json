@@ -58,5 +58,13 @@
    "reja",
    "tubo"
   ]
+ },
+ {
+  "nombre": "tubo_cuarto",
+  "titulo": "Tubo cuarto de círculo",
+  "partes": 1,
+  "roles": [
+   "tubo"
+  ]
  }
 ]
