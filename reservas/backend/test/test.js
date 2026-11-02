@@ -3,18 +3,15 @@ const assert = require('assert');
 let n = 0, fallos = 0;
 function t(nombre, fn) { try { fn(); n++; console.log('  ok  ' + nombre); } catch (e) { fallos++; console.log('FALLA ' + nombre + '\n      ' + (e.stack || e).split('\n').slice(0, 3).join('\n      ')); } }
 const NOW = Date.parse('2026-11-02T18:00:00-03:00');
-const ADM = { 'tok-ok': { aud: 'CID', email: 'dueno@mail.com', email_verified: 'true', exp: String(Math.floor(NOW / 1000) + 3600) },
-              'tok-otro': { aud: 'CID', email: 'intruso@mail.com', email_verified: 'true', exp: String(Math.floor(NOW / 1000) + 3600) },
-              'tok-aud': { aud: 'OTRO', email: 'dueno@mail.com', email_verified: 'true', exp: String(Math.floor(NOW / 1000) + 3600) } };
 function nuevo() {
-  const a = crear({ tokens: ADM }); a.setNow(NOW);
+  const a = crear(); a.setNow(NOW);
   a.run('instalar()');
-  a.post; // alias
-  const adm = (accion, p = {}) => a.post(Object.assign({ action: accion, token: 'tok-ok' }, p));
-  a.adm = adm;
-  // como en la vida real: el dueño/tuweeb completa estas celdas en la pestaña Config de la hoja (el panel todavía no puede abrir sin googleClientId)
-  const v = { googleClientId: 'CID', adminEmails: 'dueno@mail.com', transferAlias: 'salon.fiestas', transferTitular: 'Ana Pérez', emailAdmin: 'dueno@mail.com' };
+  a.run("definirUsuario_('dueno@mail.com','clave-segura-123','Ana','admin')");
+  const v = { transferAlias: 'salon.fiestas', transferTitular: 'Ana Pérez', emailAdmin: 'dueno@mail.com' };
   Object.keys(v).forEach(k => a.run(`actualizar_('Config', leer_('Config').filter(r => r.clave === '${k}')[0]._row, { valor: '${v[k]}' })`));
+  const lg = a.post({ action: 'login', email: 'dueno@mail.com', clave: 'clave-segura-123' }); assert(lg.ok, JSON.stringify(lg));
+  a.token = lg.data.token;
+  a.adm = (accion, p = {}) => a.post(Object.assign({ action: accion, token: a.token }, p));
   return a;
 }
 // sábado 2026-11-07 (dow 6)
@@ -33,7 +30,7 @@ t('instalar dos veces no duplica salón ni config', () => { const a = crear(); a
 t('las columnas de texto quedan en formato texto plano', () => { const a = crear(); a.run('instalar()'); assert.equal(a.hojas.Reservas.formatos[5], '@'); assert.equal(a.hojas.Reservas.formatos[14], undefined); });
 
 console.log('Público');
-t('config pública no filtra datos privados', () => { const a = nuevo(); const c = a.get({ action: 'config' }); assert(c.ok); assert(!('transferAlias' in c.data) && !('adminEmails' in c.data)); assert.equal(c.data.salones.length, 1); });
+t('config pública no filtra datos privados', () => { const a = nuevo(); const c = a.get({ action: 'config' }); assert(c.ok); assert(!('transferAlias' in c.data) && !('emailAdmin' in c.data)); assert.equal(c.data.salones.length, 1); });
 t('acción desconocida da error ordenado', () => { const a = nuevo(); assert.equal(a.get({ action: 'x' }).error, 'ACCION_DESCONOCIDA'); });
 t('reservar por GET se rechaza', () => { const a = nuevo(); assert.equal(a.get(Object.assign(cli(), {})).error, 'METODO'); });
 
@@ -93,13 +90,24 @@ t('los datos del cliente no quedan expuestos en estado público (sin teléfono n
 t('mails: cliente y dueño reciben aviso de reserva', () => { const a = nuevo(); const [t1] = conTurnos(a); a.post(cli({ turnoId: t1 })); assert.equal(a.mails.length, 2); assert(a.mails.some(m => m.to === 'juan@mail.com')); });
 
 console.log('Panel: seguridad');
-t('sin token, token ajeno o de otra app se rechazan', () => {
-  const a = nuevo(); assert.equal(a.post({ action: 'admin.reservas' }).error, 'NO_AUTORIZADO');
-  assert.equal(a.post({ action: 'admin.reservas', token: 'tok-otro' }).error, 'NO_AUTORIZADO'); assert.equal(a.post({ action: 'admin.reservas', token: 'tok-aud' }).error, 'NO_AUTORIZADO');
-  assert.equal(a.post({ action: 'admin.reservas', token: 'inventado' }).error, 'NO_AUTORIZADO'); });
-t('acciones admin por GET se rechazan', () => { const a = nuevo(); assert.equal(a.get({ action: 'admin.reservas', token: 'tok-ok' }).error, 'METODO'); });
-t('usuarios extra desde la pestaña Usuarios', () => { const a = nuevo(); a.run('agregar_("Usuarios",{email:"intruso@mail.com",nombre:"Staff",rol:"staff",activo:true})'); assert.equal(a.post({ action: 'admin.ping', token: 'tok-otro' }).data.rol, 'staff'); });
-t('sin googleClientId configurado el panel no abre', () => { const a = crear({ tokens: ADM }); a.setNow(NOW); a.run('instalar()'); assert.equal(a.post({ action: 'admin.ping', token: 'tok-ok' }).error, 'SIN_CONFIGURAR'); });
+t('login correcto devuelve token; clave o mail incorrectos se rechazan con el mismo mensaje', () => {
+  const a = nuevo(); assert.equal(a.post({ action: 'login', email: 'dueno@mail.com', clave: 'mala' }).error, 'CREDENCIALES');
+  const x = a.post({ action: 'login', email: 'nadie@mail.com', clave: 'clave-segura-123' }); assert.equal(x.error, 'CREDENCIALES'); assert.equal(x.mensaje, a.post({ action: 'login', email: 'dueno@mail.com', clave: 'mala' }).mensaje); });
+t('la clave no queda guardada en texto en la hoja', () => { const a = nuevo(); assert(!JSON.stringify(a.hojas.Usuarios.filas).includes('clave-segura-123')); assert(a.run('leer_("Usuarios")[0].claveHash.length') === 64); });
+t('5 intentos fallidos bloquean el login 15 minutos', () => { const a = nuevo(); for (let i = 0; i < 5; i++) a.post({ action: 'login', email: 'dueno@mail.com', clave: 'x' + i }); assert.equal(a.post({ action: 'login', email: 'dueno@mail.com', clave: 'clave-segura-123' }).error, 'DEMASIADOS_INTENTOS'); });
+t('sin token, token falsificado o alterado se rechazan', () => {
+  const a = nuevo(); assert.equal(a.post({ action: 'admin.reservas' }).error, 'NO_AUTORIZADO'); assert.equal(a.post({ action: 'admin.reservas', token: 'inventado' }).error, 'NO_AUTORIZADO');
+  const [c, f] = a.token.split('.'); const falso = Buffer.from(JSON.stringify({ e: 'dueno@mail.com', r: 'admin', v: 'x', x: NOW + 1e12 })).toString('base64url');
+  assert.equal(a.post({ action: 'admin.reservas', token: falso + '.' + f }).error, 'NO_AUTORIZADO'); assert.equal(a.post({ action: 'admin.reservas', token: c + '.' + f.replace(/.$/, '0') }).error === 'NO_AUTORIZADO' || a.post({ action: 'admin.reservas', token: c + '.' + f.replace(/.$/, '1') }).error === 'NO_AUTORIZADO', true); });
+t('el token vence a los 14 días', () => { const a = nuevo(); assert(a.adm('admin.ping').ok); a.setNow(NOW + 15 * 86400000); assert.equal(a.adm('admin.ping').error, 'NO_AUTORIZADO'); });
+t('cambiar la clave invalida las sesiones viejas y entrega una nueva', () => {
+  const a = nuevo(); assert.equal(a.adm('admin.cambiarClave', { actual: 'mala', nueva: 'otra-clave-123' }).error, 'CREDENCIALES'); assert.equal(a.adm('admin.cambiarClave', { actual: 'clave-segura-123', nueva: 'corta' }).error, 'DATO_INVALIDO');
+  const r = a.adm('admin.cambiarClave', { actual: 'clave-segura-123', nueva: 'otra-clave-123' }); assert(r.ok, JSON.stringify(r)); assert.equal(a.adm('admin.ping').error, 'NO_AUTORIZADO');
+  assert(a.post({ action: 'admin.ping', token: r.data.token }).ok); assert.equal(a.post({ action: 'login', email: 'dueno@mail.com', clave: 'clave-segura-123' }).error, 'CREDENCIALES'); });
+t('un usuario desactivado pierde el acceso al instante', () => { const a = nuevo(); a.run('actualizar_("Usuarios", leer_("Usuarios")[0]._row, { activo: false })'); assert.equal(a.adm('admin.ping').error, 'NO_AUTORIZADO'); });
+t('acciones admin por GET se rechazan', () => { const a = nuevo(); assert.equal(a.get({ action: 'admin.reservas', token: a.token }).error, 'METODO'); });
+t('roles: el usuario secundario entra con su propia clave', () => { const a = nuevo(); a.run("definirUsuario_('staff@mail.com','otra-clave-999','Staff','staff')"); assert.equal(a.post({ action: 'login', email: 'staff@mail.com', clave: 'otra-clave-999' }).data.rol, 'staff'); });
+t('definirUsuario_ valida mail y largo de clave', () => { const a = nuevo(); assert.throws(() => a.run("definirUsuario_('malmail','12345678')")); assert.throws(() => a.run("definirUsuario_('a@b.com','123')")); });
 
 console.log('Panel: reservas y cobros');
 t('alta manual con pago en efectivo y saldo', () => {

@@ -30,10 +30,16 @@ function crear(opts = {}) {
   const ctx = {
     console, Date, JSON, Math, Number, String, Object, Array, RegExp, Error, isFinite, parseInt,
     SpreadsheetApp: { getActiveSpreadsheet: () => ss, openById: () => ss, getUi: () => ({ createMenu: () => ({ addItem() { return this; }, addToUi() {} }) }) },
-    PropertiesService: { getScriptProperties: () => ({ getProperty: k => props[k] || null }) },
+    PropertiesService: { getScriptProperties: () => ({ getProperty: k => props[k] || null, setProperty: (k, v) => { props[k] = v; } }) },
     LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
     CacheService: { getScriptCache: () => ({ get: k => (k in cache ? cache[k] : null), put: (k, v) => { cache[k] = v; }, remove: k => { delete cache[k]; } }) },
     Utilities: {
+      DigestAlgorithm: { SHA_256: 'sha256' }, Charset: { UTF_8: 'utf8' },
+      computeDigest: (alg, s) => [...require('crypto').createHash('sha256').update(s, 'utf8').digest()].map(b => (b > 127 ? b - 256 : b)),
+      computeHmacSha256Signature: (s, k) => [...require('crypto').createHmac('sha256', k).update(s, 'utf8').digest()].map(b => (b > 127 ? b - 256 : b)),
+      base64EncodeWebSafe: s => Buffer.from(s, 'utf8').toString('base64url'),
+      base64DecodeWebSafe: s => [...Buffer.from(s, 'base64url')],
+      newBlob: b => ({ getDataAsString: () => Buffer.from(b).toString('utf8') }),
       getUuid: () => 'u' + String(++uuid).padStart(8, '0') + '-aaaa-bbbb-cccc-' + Math.random().toString(16).slice(2, 14),
       formatDate: (d, tz, f) => {
         const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(d).map(x => [x.type, x.value]));
@@ -42,7 +48,6 @@ function crear(opts = {}) {
     },
     ContentService: { MimeType: { JSON: 'json' }, createTextOutput: s => ({ s, setMimeType() { return this; }, getContent() { return s; } }) },
     MailApp: { sendEmail: m => mails.push(m), getRemainingDailyQuota: () => 100 },
-    UrlFetchApp: { fetch: url => { const t = decodeURIComponent(url.split('id_token=')[1]); const r = tokens[t]; return { getResponseCode: () => (r ? 200 : 400), getContentText: () => JSON.stringify(r || {}) }; } },
     ScriptApp: { getProjectTriggers: () => triggers.slice(), deleteTrigger: t => triggers.splice(triggers.indexOf(t), 1),
       newTrigger: f => { const t = { getHandlerFunction: () => f, f }; const b = { timeBased: () => b, everyMinutes: () => b, everyDays: () => b, atHour: () => b, create: () => { triggers.push(t); return t; } }; return b; } },
     DriveApp: {}

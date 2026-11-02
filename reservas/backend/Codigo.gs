@@ -7,7 +7,7 @@
  * Implementar > Nueva implementación > Aplicación web (ejecutar como YO, acceso: cualquier persona). La URL /exec es la "API" del cliente.
  *
  * API (todo JSON). Público:  GET ?action=config | disponibilidad&mes=YYYY-MM | estado&id=...   POST {action:'reservar',...}
- *      Panel:  POST {action:'admin.xxx', token:<Google ID token>, ...}   (ver ADMIN más abajo)
+ *      Panel:  POST {action:'login', email, clave} -> token;  POST {action:'admin.xxx', token, ...}   (ver ADMIN más abajo)
  * Los POST se mandan con Content-Type text/plain para evitar el preflight CORS.
  */
 
@@ -23,7 +23,7 @@ var TABLAS = {
                 'total', 'sena', 'pagado', 'saldo', 'estado', 'origen', 'metodo', 'venceEn', 'extRef'],
   Pagos:       ['id', 'reservaId', 'fecha', 'monto', 'metodo', 'nota', 'creado', 'usuario'],
   Movimientos: ['id', 'fecha', 'tipo', 'categoria', 'monto', 'descripcion', 'creado', 'usuario'],
-  Usuarios:    ['email', 'nombre', 'rol', 'activo'],
+  Usuarios:    ['email', 'nombre', 'rol', 'activo', 'sal', 'claveHash'],
   Log:         ['fecha', 'usuario', 'accion', 'detalle']
 };
 var NUMS = { capacidad: 1, orden: 1, precio: 1, senaValor: 1, personas: 1, total: 1, sena: 1, pagado: 1, saldo: 1, monto: 1 };
@@ -38,10 +38,10 @@ var CFG_DEF = {
   pagoTransferencia: true, pagoMercadoPago: false,
   transferTitular: '', transferCbu: '', transferAlias: '', transferBanco: '', transferNota: '',
   holdHorasTransferencia: 24, holdMinutosOnline: 20, autoConfirmarSinSena: true,
-  emailsActivos: true, emailAdmin: '', adminEmails: '', googleClientId: '', textoConfirmacion: ''
+  emailsActivos: true, emailAdmin: '', textoConfirmacion: ''
 };
 var CFG_PUBLICA = ['nombre', 'logoUrl', 'colorPrincipal', 'whatsapp', 'direccion', 'mapsUrl', 'moneda', 'mesesAnticipacion', 'antelacionHoras',
-                   'pagoTransferencia', 'pagoMercadoPago', 'googleClientId'];
+                   'pagoTransferencia', 'pagoMercadoPago'];
 var CFG_MEMO = null;
 
 /* ───────────────────────── utilidades ───────────────────────── */
@@ -306,25 +306,51 @@ function notificar_(r, evento) {
   } catch (e) { log_('sistema', 'mail_error', e.message); }
 }
 
-/* ───────────────────────── autenticación del panel ───────────────────────── */
-function autenticar_(token) {
-  var cfg = config_();
-  if (!token) throw err_('NO_AUTORIZADO', 'Iniciá sesión');
-  if (!cfg.googleClientId) throw err_('SIN_CONFIGURAR', 'Falta configurar googleClientId en Config');
-  var cache = CacheService.getScriptCache(), ck = 'tk:' + token.slice(-48), hit = cache.get(ck), info;
-  if (hit) info = JSON.parse(hit);
-  else {
-    var resp = UrlFetchApp.fetch('https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(token), { muteHttpExceptions: true });
-    if (resp.getResponseCode() !== 200) throw err_('NO_AUTORIZADO', 'Sesión inválida');
-    info = JSON.parse(resp.getContentText());
-    if (info.aud !== cfg.googleClientId || String(info.email_verified) !== 'true' || Number(info.exp) * 1000 < ahora_()) throw err_('NO_AUTORIZADO', 'Sesión inválida');
-    cache.put(ck, JSON.stringify({ email: info.email, exp: info.exp }), 300);
+/* ───────────────────────── autenticación del panel (mail + clave) ───────────────────────── */
+function hex_(bytes) { return bytes.map(function (b) { return ('0' + ((b + 256) % 256).toString(16)).slice(-2); }).join(''); }
+function hashClave_(clave, sal) {
+  var h = sal + clave;
+  for (var i = 0; i < 600; i++) h = hex_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, h + sal + clave, Utilities.Charset.UTF_8));
+  return h;
+}
+function iguales_(a, b) { if (a.length !== b.length) return false; var d = 0; for (var i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i); return d === 0; }
+function secreto_() {
+  var p = PropertiesService.getScriptProperties(), s = p.getProperty('SECRET');
+  if (!s) { s = Utilities.getUuid() + Utilities.getUuid() + Utilities.getUuid(); p.setProperty('SECRET', s); }
+  return s;
+}
+function firmar_(texto) { return hex_(Utilities.computeHmacSha256Signature(texto, secreto_())); }
+/** Crea o cambia un usuario del panel. La clave se guarda solo como hash con sal. */
+function definirUsuario_(email, clave, nombre, rol) {
+  email = txt_(email, 120).toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw err_('DATO_INVALIDO', 'Email inválido');
+  if (String(clave || '').length < 8) throw err_('DATO_INVALIDO', 'La clave debe tener al menos 8 caracteres');
+  var sal = Utilities.getUuid().replace(/-/g, '').slice(0, 16), d = { email: email, nombre: txt_(nombre, 60), rol: rol || 'admin', activo: true, sal: sal, claveHash: hashClave_(String(clave), sal) };
+  var cur = porId_('Usuarios', email);
+  if (cur) { if (!nombre) delete d.nombre; if (!rol) delete d.rol; actualizar_('Usuarios', cur._row, d); } else agregar_('Usuarios', d);
+}
+function login_(p) {
+  var email = txt_(p.email, 120).toLowerCase(), clave = String(p.clave || ''), cache = CacheService.getScriptCache(), k = 'lf:' + email;
+  if (Number(cache.get(k) || 0) >= 5) throw err_('DEMASIADOS_INTENTOS', 'Demasiados intentos. Esperá 15 minutos.');
+  var u = email && porId_('Usuarios', email);
+  if (!u || !u.activo || !u.claveHash || !iguales_(hashClave_(clave, u.sal), u.claveHash)) {
+    cache.put(k, String(Number(cache.get(k) || 0) + 1), 900); log_(email, 'login_fallido', '');
+    throw err_('CREDENCIALES', 'Mail o clave incorrectos');
   }
-  var email = String(info.email).toLowerCase();
-  var u = leer_('Usuarios').filter(function (x) { return x.email.toLowerCase() === email && x.activo; })[0];
-  var lista = cfg.adminEmails.split(',').map(function (x) { return x.trim().toLowerCase(); });
-  if (!u && lista.indexOf(email) < 0) throw err_('NO_AUTORIZADO', 'Tu cuenta no tiene acceso al panel');
-  return { email: email, rol: u ? u.rol || 'admin' : 'admin' };
+  cache.remove(k);
+  var cuerpo = Utilities.base64EncodeWebSafe(JSON.stringify({ e: u.email, r: u.rol || 'admin', v: u.claveHash.slice(0, 8), x: ahora_() + 14 * 86400000 }));
+  log_(u.email, 'login', '');
+  return { token: cuerpo + '.' + firmar_(cuerpo), email: u.email, nombre: u.nombre, rol: u.rol || 'admin' };
+}
+function autenticar_(token) {
+  if (!token || token.indexOf('.') < 0) throw err_('NO_AUTORIZADO', 'Iniciá sesión');
+  var partes = token.split('.');
+  if (!iguales_(partes[1] || '', firmar_(partes[0]))) throw err_('NO_AUTORIZADO', 'Sesión inválida');
+  var d; try { d = JSON.parse(Utilities.newBlob(Utilities.base64DecodeWebSafe(partes[0])).getDataAsString()); } catch (e) { throw err_('NO_AUTORIZADO', 'Sesión inválida'); }
+  if (d.x < ahora_()) throw err_('NO_AUTORIZADO', 'La sesión venció. Volvé a entrar.');
+  var u = porId_('Usuarios', d.e);
+  if (!u || !u.activo || u.claveHash.slice(0, 8) !== d.v) throw err_('NO_AUTORIZADO', 'Sesión inválida');
+  return { email: u.email, rol: u.rol || 'admin' };
 }
 
 /* ───────────────────────── panel (ADMIN) ───────────────────────── */
@@ -384,6 +410,11 @@ function caja_(mes) {
 
 var ADMIN = {
   'admin.ping': function (p, u) { return { email: u.email, rol: u.rol }; },
+  'admin.cambiarClave': function (p, u) {
+    var cur = porId_('Usuarios', u.email);
+    if (!iguales_(hashClave_(String(p.actual || ''), cur.sal), cur.claveHash)) throw err_('CREDENCIALES', 'La clave actual no es correcta');
+    definirUsuario_(u.email, p.nueva); log_(u.email, 'cambio_clave', ''); return login_({ email: u.email, clave: p.nueva });
+  },
   'admin.agenda': function (p) { return agenda_(p.mes, true); },
   'admin.reservas': function (p) {
     var q = txt_(p.q).toLowerCase();
@@ -494,11 +525,12 @@ function despachar_(p, esPost) {
   if (a === 'config') return configPublica_();
   if (a === 'disponibilidad') return disponibilidad_(p);
   if (a === 'estado') return estado_(p);
+  if (a === 'login') { if (!esPost) throw err_('METODO', 'Usá POST'); return login_(p); }
   if (a === 'reservar') { if (!esPost) throw err_('METODO', 'Usá POST'); return reservar_(p); }
   if (a.indexOf('admin.') === 0) {
     if (!esPost) throw err_('METODO', 'Usá POST');
     if (!ADMIN[a]) throw err_('ACCION_DESCONOCIDA', 'Acción desconocida');
-    var u = autenticar_(txt_(p.token, 4000));
+    var u = autenticar_(txt_(p.token, 1000));
     return ADMIN[a](p, u);
   }
   throw err_('ACCION_DESCONOCIDA', 'Acción desconocida');
@@ -522,7 +554,12 @@ function doPost(e) {
 
 /* ───────────────────────── instalación / mantenimiento ───────────────────────── */
 function onOpen() {
-  try { SpreadsheetApp.getUi().createMenu('Weeb Reservas').addItem('Instalar / reparar hojas', 'instalar').addItem('Hacer backup ahora', 'backup_').addToUi(); } catch (e) {}
+  try { SpreadsheetApp.getUi().createMenu('Weeb Reservas').addItem('Instalar / reparar hojas', 'instalar').addItem('Crear o cambiar usuario del panel', 'menuUsuario_').addItem('Hacer backup ahora', 'backup_').addToUi(); } catch (e) {}
+}
+function menuUsuario_() {
+  var ui = SpreadsheetApp.getUi(), a = ui.prompt('Usuario del panel', 'Mail del dueño:', ui.ButtonSet.OK_CANCEL); if (a.getSelectedButton() !== ui.Button.OK) return;
+  var b = ui.prompt('Usuario del panel', 'Clave (mínimo 8 caracteres). Se guarda cifrada, nadie puede leerla después:', ui.ButtonSet.OK_CANCEL); if (b.getSelectedButton() !== ui.Button.OK) return;
+  try { definirUsuario_(a.getResponseText(), b.getResponseText(), '', 'admin'); ui.alert('Listo. El dueño ya puede entrar al panel con ese mail y esa clave.'); } catch (e) { ui.alert(e.message); }
 }
 function instalar() {
   var ss = ss_();
@@ -533,6 +570,7 @@ function instalar() {
   });
   if (!leer_('Salones').length) agregar_('Salones', { id: 'S1', nombre: 'Salón principal', capacidad: 0, activo: true, orden: 1 });
   if (!leer_('Config').length) Object.keys(CFG_DEF).forEach(function (k) { agregar_('Config', { clave: k, valor: CFG_DEF[k] }); });
+  secreto_();
   ScriptApp.getProjectTriggers().forEach(function (t) { var f = t.getHandlerFunction(); if (f === 'vencer_' || f === 'backup_') ScriptApp.deleteTrigger(t); });
   ScriptApp.newTrigger('vencer_').timeBased().everyMinutes(5).create();
   ScriptApp.newTrigger('backup_').timeBased().everyDays(1).atHour(3).create();
