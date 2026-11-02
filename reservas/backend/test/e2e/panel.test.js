@@ -29,6 +29,8 @@ require('fs').mkdirSync(OUT, { recursive: true });
   assert(a.get({ action: 'disponibilidad', mes: '2026-11' }).data.dias['2026-11-14'].every(x => x.estado === 'no_disponible')); ok('el bloqueo se refleja en la web pública');
   // nuevo turno de 3 horas con helper de duración
   await p.click('button:has-text("+ Turno")'); await p.waitForSelector('select[aria-label=Duración]'); await p.fill('input[name=inicio]', '10:00'); await p.selectOption('select[aria-label=Duración]', '3'); assert.equal(await p.inputValue('input[name=fin]'), '13:00'); await shot('08-turno-form'); ok('el selector de duración calcula la hora de fin');
+  await p.fill('input[name=precio]', '90000'); await p.click('input[name=senaValor]'); await p.keyboard.press('Control+A'); await p.keyboard.type('45'); await p.keyboard.press('Enter'); await p.waitForTimeout(500);
+  assert.equal(await p.locator('.sheet').count(), 1); assert.equal(await p.inputValue('input[name=senaValor]'), '45'); ok('Enter en un campo no cierra ni envía el formulario a medio completar');
   await p.click('.sheet-head .icon'); await p.waitForTimeout(300);
   // caja
   await p.click('.tabs button:has-text("Caja")'); await p.waitForSelector('.stats'); await p.click('button:has-text("+ Movimiento")'); await p.fill('input[name=monto]', '8000'); await p.fill('input[name=categoria]', 'Limpieza'); await p.click('.sheet button:has-text("Guardar")'); await p.waitForSelector('.item:has-text("Limpieza")');

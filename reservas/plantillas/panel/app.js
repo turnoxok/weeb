@@ -56,6 +56,12 @@ function sheet(titulo, contenido) {
   cerrar(true);
   const back = h('div', { class: 'sheet-back', onclick: e => { if (e.target === back) cerrar(); } },
     h('div', { class: 'sheet', role: 'dialog', 'aria-label': titulo }, h('div', { class: 'sheet-head' }, h('h3', null, titulo), h('button', { class: 'icon', 'aria-label': 'Cerrar', onclick: () => cerrar() }, '✕')), h('div', { class: 'sheet-body' }, contenido)));
+  /* Enter en un campo pasa al siguiente (como la tecla "Siguiente" del celular) en vez de enviar el formulario a medio completar */
+  back.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || e.target.tagName !== 'INPUT' || ['submit', 'button', 'checkbox', 'radio'].includes(e.target.type)) return;
+    e.preventDefault(); const cs = [...back.querySelectorAll('input:not([type=hidden]),select,textarea')], i = cs.indexOf(e.target);
+    if (i >= 0 && i < cs.length - 1) cs[i + 1].focus(); else e.target.blur();
+  });
   document.body.append(back); requestAnimationFrame(() => back.classList.add('open')); sheetEl = back;
 }
 function cerrar(rapido) { if (!sheetEl) return; const s = sheetEl; sheetEl = null; s.classList.remove('open'); if (rapido) s.remove(); else setTimeout(() => s.remove(), 200); }
@@ -69,7 +75,7 @@ async function iniciar() {
   try { S.pub = await llamar('config', {}, 'get'); } catch (e) { S.pub = { nombre: 'Panel', colorPrincipal: '#8149bd', salones: [] }; }
   marca();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
-  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); S.instalar = e; if (S.user) render(); });
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); S.instalar = e; if (S.user && !sheetEl && S.view === 'ajustes') render(); });
   if (S.token) { try { S.user = await api('admin.ping'); } catch (e) { S.token = ''; } }
   S.user ? await entrar() : pantallaLogin();
 }

@@ -1,3 +1,4 @@
+html,body{overscroll-behavior-y:none}
 body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 .top{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:.7rem;padding:.6rem 1rem;padding-top:calc(.6rem + env(safe-area-inset-top))}
 .top img{height:34px;max-width:120px;object-fit:contain}
@@ -46,3 +47,5 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 .slotbtns button{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:.5rem .8rem;cursor:pointer;font-weight:600}.slotbtns button.on{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
 h3.sec{font-size:1rem;margin:1.3rem 0 .6rem}
 .empty{text-align:center;color:var(--mute);padding:2rem 1rem}
+
+.sheet-body{overscroll-behavior:contain}
