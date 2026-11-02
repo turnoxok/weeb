@@ -3,7 +3,7 @@ const { iniciar } = require('./servidor'); const assert = require('assert'); con
 (async () => {
   const { srv, a } = await iniciar('reservar', 8783);
   const b = await chromium.launch({ args: ['--no-sandbox'] }), p = await (await b.newContext({ viewport: { width: 390, height: 800 }, locale: 'es-AR' })).newPage();
-  const errores = []; p.on('pageerror', e => errores.push(e.message)); p.on('console', m => { if (m.type() === 'error') errores.push(m.text()); });
+  const errores = []; p.on('pageerror', e => errores.push(e.message)); p.on('console', m => { if (m.type() === 'error' && !/ERR_TUNNEL|ERR_NAME|fonts\.g/.test(m.text())) errores.push(m.text()); });
   const ok = n => console.log('  ok  ' + n), shot = async n => { await p.waitForTimeout(500); await p.screenshot({ path: `${OUT}/${n}.png`, fullPage: true }); };
   await p.goto('http://localhost:8783/'); await p.waitForSelector('.cal button.libre'); assert.equal(await p.title(), 'Reservar · Lemadavami'); await shot('r1-calendario'); ok('calendario con días disponibles y datos del salón');
   assert((await p.locator('a:has-text("WhatsApp")').getAttribute('href')).includes('5491155551234')); assert(await p.locator('a:has-text("Cómo llegar")').count()); ok('botones WhatsApp y cómo llegar');
