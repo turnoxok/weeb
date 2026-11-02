@@ -1,0 +1,598 @@
+{
+ "nombre": "metegol",
+ "titulo": "Metegol",
+ "version": 1,
+ "origen": "lemadavami",
+ "madre": "met_000",
+ "nota": "Metegol en un solo grupo (la madre es el marco). Roles de colores: jugadores/jugadores_2 y palanca/palanca_2 son los dos equipos. Roles: marco, cancha, arco, pata, jugadores, jugadores_2, marco_arriba, palanca, palanca_2.",
+ "roles": {
+  "marco": "#8149bd",
+  "cancha": "#649843",
+  "arco": "#8149bd",
+  "pata": "#8149bd",
+  "jugadores": "#78c944",
+  "jugadores_2": "#fc9835",
+  "marco_arriba": "#ffffff",
+  "palanca": "#fc9835",
+  "palanca_2": "#78c944"
+ },
+ "partes": [
+  {
+   "clave": "met_000",
+   "rol": "marco",
+   "esMadre": true,
+   "objeto": {
+    "label": "metegol_marco_00",
+    "type": "image",
+    "url": "./assets/models/tejo1.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#49d3ff",
+    "ext": 0.25,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#8149bd"
+   },
+   "pose": {
+    "position": [
+     0,
+     0.48,
+     0
+    ],
+    "scale": 1.74,
+    "rotationY": 0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "rx": -90
+   }
+  },
+  {
+   "clave": "met_001",
+   "rol": "cancha",
+   "esMadre": false,
+   "objeto": {
+    "label": "metegol_cancha_01",
+    "type": "image",
+    "url": "./assets/models/tejo2.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#49d3ff",
+    "ext": 0.02,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#649843"
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.023,
+     0.0,
+     0.0517
+    ],
+    "scale": 1.0,
+    "sx": 0.78,
+    "sy": 0.99,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "met_002",
+   "rol": "arco",
+   "esMadre": false,
+   "objeto": {
+    "label": "metegol_arco_02",
+    "type": "image",
+    "url": "./assets/models/tejo2.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#49d3ff",
+    "ext": 0.02,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#8149bd",
+    "bev": 0
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.8276,
+     0.0,
+     0.0862
+    ],
+    "scale": 0.16667,
+    "sx": 0.92,
+    "sy": 1.44,
+    "rotationY": -90.0,
+    "rx": 0.0,
+    "rz": -90.0
+   }
+  },
+  {
+   "clave": "met_003",
+   "rol": "arco",
+   "esMadre": false,
+   "objeto": {
+    "label": "metegol_arco_03",
+    "type": "image",
+    "url": "./assets/models/tejo2.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#49d3ff",
+    "ext": 0.02,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#8149bd",
+    "bev": 0
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.8276,
+     0.0,
+     0.0862
+    ],
+    "scale": 0.16667,
+    "sx": 0.85,
+    "sy": 1.33,
+    "rotationY": -90.0,
+    "rx": 0.0,
+    "rz": -90.0
+   }
+  },
+  {
+   "clave": "met_004",
+   "rol": "pata",
+   "esMadre": false,
+   "objeto": {
+    "label": "metegol_pata_04",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#49d3ff",
+    "ext": 0.355,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#8149bd",
+    "bev": 0
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.8276,
+     0.3908,
+     -0.1207
+    ],
+    "scale": 0.95977,
+    "sx": 0.2,
+    "sy": 0.2,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": -90.0
+   }
+  },
+  {
+   "clave": "met_005",
+   "rol": "pata",
+   "esMadre": false,
+   "objeto": {
+    "label": "metegol_pata_05",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#49d3ff",
+    "ext": 0.355,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#8149bd",
+    "bev": 0
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.8506,
+     0.3908,
+     -0.1207
+    ],
+    "scale": 0.95977,
+    "sx": 0.2,
+    "sy": 0.2,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": -90.0
+   }
+  },
+  {
+   "clave": "met_006",
+   "rol": "pata",
+   "esMadre": false,
+   "objeto": {
+    "label": "metegol_pata_06",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#49d3ff",
+    "ext": 0.355,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#8149bd",
+    "bev": 0
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.8276,
+     -0.3908,
+     -0.1207
+    ],
+    "scale": 0.95977,
+    "sx": 0.2,
+    "sy": 0.2,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": -90.0
+   }
+  },
+  {
+   "clave": "met_007",
+   "rol": "pata",
+   "esMadre": false,
+   "objeto": {
+    "label": "metegol_pata_07",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#49d3ff",
+    "ext": 0.355,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#8149bd",
+    "bev": 0
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.8276,
+     -0.3908,
+     -0.1207
+    ],
+    "scale": 0.95977,
+    "sx": 0.2,
+    "sy": 0.2,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": -90.0
+   }
+  },
+  {
+   "clave": "met_008",
+   "rol": "jugadores",
+   "esMadre": false,
+   "objeto": {
+    "label": "metegol_jugadores_08",
+    "type": "image",
+    "url": "./assets/models/Metegol-jugadores.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#49d3ff",
+    "ext": 0.11,
+    "matColor": "#78c944",
+    "mat": "matte",
+    "matRough": null,
+    "bev": 0.02,
+    "seg": 0
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.5517,
+     0.0,
+     0.1839
+    ],
+    "scale": 0.17241,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 90.0,
+    "rx": 0.0,
+    "rz": 90.0
+   }
+  },
+  {
+   "clave": "met_009",
+   "rol": "jugadores_2",
+   "esMadre": false,
+   "objeto": {
+    "label": "metegol_jugadores_2_09",
+    "type": "image",
+    "url": "./assets/models/Metegol-jugadores.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#49d3ff",
+    "ext": 0.11,
+    "matColor": "#fc9835",
+    "mat": "matte",
+    "matRough": null,
+    "bev": 0.02,
+    "seg": 0
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.2069,
+     0.0,
+     0.1839
+    ],
+    "scale": 0.17241,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 90.0,
+    "rx": 0.0,
+    "rz": 90.0
+   }
+  },
+  {
+   "clave": "met_010",
+   "rol": "jugadores",
+   "esMadre": false,
+   "objeto": {
+    "label": "metegol_jugadores_10",
+    "type": "image",
+    "url": "./assets/models/Metegol-jugadores.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#49d3ff",
+    "ext": 0.11,
+    "matColor": "#78c944",
+    "mat": "matte",
+    "matRough": null,
+    "bev": 0.02,
+    "seg": 0
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.1379,
+     0.0,
+     0.1839
+    ],
+    "scale": 0.17241,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 90.0,
+    "rx": 0.0,
+    "rz": 90.0
+   }
+  },
+  {
+   "clave": "met_011",
+   "rol": "jugadores_2",
+   "esMadre": false,
+   "objeto": {
+    "label": "metegol_jugadores_2_11",
+    "type": "image",
+    "url": "./assets/models/Metegol-jugadores.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#49d3ff",
+    "ext": 0.11,
+    "matColor": "#fc9835",
+    "mat": "matte",
+    "matRough": null,
+    "bev": 0.02,
+    "seg": 0
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.4828,
+     0.0,
+     0.1839
+    ],
+    "scale": 0.17241,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 90.0,
+    "rx": 0.0,
+    "rz": 90.0
+   }
+  },
+  {
+   "clave": "met_012",
+   "rol": "marco_arriba",
+   "esMadre": false,
+   "objeto": {
+    "label": "metegol_marco_arriba_12",
+    "type": "image",
+    "url": "./assets/models/tejo1.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff5d73",
+    "ext": 0.11,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#ffffff",
+    "bev": 0.02
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.0,
+     0.0,
+     0.1839
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "met_013",
+   "rol": "palanca",
+   "esMadre": false,
+   "objeto": {
+    "label": "metegol_palanca_13",
+    "type": "image",
+    "url": "./assets/models/Circulo-plano.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ffb454",
+    "ext": 60,
+    "bev": 0.02,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#fc9835"
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.4828,
+     0.0,
+     0.2069
+    ],
+    "scale": 0.01897,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": 90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "met_014",
+   "rol": "palanca_2",
+   "esMadre": false,
+   "objeto": {
+    "label": "metegol_palanca_2_14",
+    "type": "image",
+    "url": "./assets/models/Circulo-plano.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ffb454",
+    "ext": 60,
+    "bev": 0.02,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#78c944"
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.5517,
+     0.0,
+     0.2069
+    ],
+    "scale": 0.01897,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": 90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "met_015",
+   "rol": "palanca",
+   "esMadre": false,
+   "objeto": {
+    "label": "metegol_palanca_15",
+    "type": "image",
+    "url": "./assets/models/Circulo-plano.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ffb454",
+    "ext": 60,
+    "bev": 0.02,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#fc9835"
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.2069,
+     0.0,
+     0.2069
+    ],
+    "scale": 0.01897,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": 90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "met_016",
+   "rol": "palanca_2",
+   "esMadre": false,
+   "objeto": {
+    "label": "metegol_palanca_2_16",
+    "type": "image",
+    "url": "./assets/models/Circulo-plano.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ffb454",
+    "ext": 60,
+    "bev": 0.02,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#78c944"
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.1379,
+     0.0,
+     0.2069
+    ],
+    "scale": 0.01897,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": 90.0,
+    "rz": 0.0
+   }
+  }
+ ]
+}

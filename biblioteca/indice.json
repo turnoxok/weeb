@@ -121,5 +121,21 @@
    "capa",
    "detalle"
   ]
+ },
+ {
+  "nombre": "metegol",
+  "titulo": "Metegol",
+  "partes": 17,
+  "roles": [
+   "marco",
+   "cancha",
+   "arco",
+   "pata",
+   "jugadores",
+   "jugadores_2",
+   "marco_arriba",
+   "palanca",
+   "palanca_2"
+  ]
  }
 ]

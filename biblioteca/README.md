@@ -14,6 +14,7 @@ Cada pieza = carpeta con `pieza.json` + `svg/` (las partes). Catálogo en `indic
 | pelotero_gigante | 119 | pelotero completo: cuerpos, pelotas, contenedores, puente, tobogán, palo y tubos, UN grupo plano |
 | tejo | 16 | juego del tejo (mesa, patas, fichas, mandos), un grupo |
 | plataforma | 3 | base de 3 capas para apoyar la escena |
+| metegol | 17 | metegol (cancha, patas, arcos, jugadores y palancas de dos equipos), un grupo |
 
 (El editor tiene además el objeto "Pelotas": relleno de pelotas de colores en una sola malla; viene dentro del pelotero_gigante.)
 
