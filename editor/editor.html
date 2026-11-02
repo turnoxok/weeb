@@ -387,15 +387,17 @@
   .backtop__ico { width: 40%; height: 40%; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: transform .3s ease; }
   .backtop:hover .backtop__ico { transform: translateY(-2px); }
   @media (prefers-reduced-motion: reduce) { .backtop, .backtop__ico { transition: opacity .2s linear; } }
-  .fab { position: fixed; z-index: 9; bottom: calc(18px + var(--fab-lift, 0px) + env(safe-area-inset-bottom)); display: flex; gap: 10px; align-items: center; opacity: 0; visibility: hidden; transform: translateY(14px); pointer-events: none; transition: opacity .35s ease, transform .35s ease, visibility 0s linear .35s; }
-  .fab.is-on { opacity: 1; visibility: visible; transform: none; pointer-events: auto; transition-delay: 0s; }
-  .fab--right { right: 18px; flex-direction: row-reverse; } .fab--left { left: 18px; } .fab--center { left: 0; right: 0; justify-content: center; }
-  .fab__btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; border-radius: 99px; text-decoration: none; font-family: inherit; font-weight: 700; font-size: 15px; line-height: 1; background: rgba(10,8,16,.74); color: #fff; border: 1.5px solid #fff; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: 0 6px 20px rgba(0,0,0,.35); transition: transform .2s ease; -webkit-tap-highlight-color: transparent; }
+  .fab { position: fixed; z-index: 9; left: 0; right: 0; bottom: calc(16px + env(safe-area-inset-bottom)); display: flex; justify-content: center; gap: 8px; padding: 0 12px; opacity: 0; visibility: hidden; transform: translateY(14px); pointer-events: none; transition: opacity .35s ease, transform .35s ease, visibility 0s linear .35s; }
+  .fab.is-on { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+  .fab__btn { box-sizing: border-box; flex: none; width: 74px; height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 0; margin: 0; border-radius: 18px; text-decoration: none; cursor: pointer; font-family: inherit; font-weight: 600; font-size: 11px; line-height: 1; letter-spacing: .01em; white-space: nowrap; overflow: hidden; background: rgba(10,8,16,.74); color: #fff; border: 1.5px solid #fff; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: 0 6px 20px rgba(0,0,0,.35); pointer-events: none; transition: transform .2s ease, max-width .35s ease, opacity .3s ease, margin .35s ease; -webkit-tap-highlight-color: transparent; }
+  .fab.is-on .fab__btn { pointer-events: auto; }
   @media (pointer: coarse) { .fab__btn { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(10,8,16,.88); } }
   .fab__btn:hover { transform: translateY(-2px); } .fab__btn:active { transform: scale(.95); }
   .fab__btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
-  .fab__book { padding: 0 20px 0 16px; }
-  .fab__round { width: 48px; padding: 0; }
+  .fab__top { max-width: 0; margin-left: -8px; border-width: 0; opacity: 0; }
+  .fab__top.is-on { max-width: 74px; margin-left: 0; border-width: 1.5px; opacity: 1; }
+  .fab__btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  @media (max-width: 360px) { .fab__btn { width: 68px; } .fab__top.is-on { max-width: 68px; } }
   @media (prefers-reduced-motion: reduce) { .fab, .fab__btn { transition: opacity .2s linear; } }
 
   .brand-mark {
@@ -5416,7 +5418,7 @@ function ovlFold(nodes, secs) {
     return <React.Fragment key={"f-" + secs[ch[0]].id}>{acc}</React.Fragment>;
   });
 }
-function BackToTop() {
+function BackToTop({ inline }) {
   const ref = useRef(null);
   const fillRef = useRef(null);
   const R = 21, C = 2 * Math.PI * R;
@@ -5434,7 +5436,7 @@ function BackToTop() {
     run();
     window.addEventListener("scroll", calc, { passive: true });
     window.addEventListener("resize", calc);
-    el.style.setProperty("--bt-bottom", "24px");
+    if (!inline) el.style.setProperty("--bt-bottom", "24px");
     return () => { if (raf) cancelAnimationFrame(raf); window.removeEventListener("scroll", calc); window.removeEventListener("resize", calc); };
   }, []);
   const go = () => {
@@ -5477,6 +5479,12 @@ function BackToTop() {
       cancel();
     })();
   };
+  if (inline) return (
+    <button ref={ref} type="button" aria-label="Volver arriba" tabIndex={-1} onClick={go} className="fab__btn fab__top">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5" /><path d="M5.5 11.5 12 5l6.5 6.5" /></svg>
+      <span>Subir</span>
+    </button>
+  );
   const sz = BACKTOP.size || 46;
   const custom = BACKTOP.color ? { "--bt-bg": BACKTOP.color, "--bt-bg-h": BACKTOP.color, "--bt-line": "transparent", "--bt-fg": "#0a0a0a", "--bt-accent": BACKTOP.color } : null;
   return (
@@ -5494,6 +5502,12 @@ function BackToTop() {
   );
 }
 
+function fabItems() {
+  const phone = String(FAB.phone || "").replace(/\D/g, "");
+  const mapHref = FAB.mapUrl || (FAB.address ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(FAB.address) : "");
+  return { phone, mapHref, showBook: !!(FAB.book !== false && FAB.reservarUrl), showWa: !!(FAB.wa !== false && phone), showMap: !!(FAB.map !== false && mapHref) };
+}
+function fabActive() { const it = fabItems(); return !!(FAB.enabled && (it.showBook || it.showWa || it.showMap)); }
 function FloatingActions() {
   const [on, setOn] = useState(!(FAB.showAfter > 0));
   useEffect(() => {
@@ -5502,14 +5516,10 @@ function FloatingActions() {
     f(); window.addEventListener("scroll", f, { passive: true });
     return () => window.removeEventListener("scroll", f);
   }, []);
-  const phone = String(FAB.phone || "").replace(/\D/g, "");
-  const mapHref = FAB.mapUrl || (FAB.address ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(FAB.address) : "");
-  const pos = FAB.position || "right";
-  const lift = BACKTOP.enabled && pos !== "center" && (BACKTOP.position || "right") === pos ? (BACKTOP.size || 46) + 14 : 0;
-  const showBook = FAB.book !== false && FAB.reservarUrl, showWa = FAB.wa !== false && phone, showMap = FAB.map !== false && mapHref;
+  const { phone, mapHref, showBook, showWa, showMap } = fabItems();
   if (!showBook && !showWa && !showMap) return null;
   return (
-    <nav className={"fab fab--" + pos + (on ? " is-on" : "")} aria-label="Reservas y contacto" style={{ "--fab-lift": lift + "px" }}>
+    <nav className={"fab" + (on ? " is-on" : "")} aria-label="Reservas y contacto">
       {showBook && (
         <a className="fab__btn fab__book" href={FAB.reservarUrl} target={FAB.newTab ? "_blank" : undefined} rel={FAB.newTab ? "noopener" : undefined}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="3" /><path d="M8 2.5v4M16 2.5v4M3 10h18" /></svg>
@@ -5517,15 +5527,18 @@ function FloatingActions() {
         </a>
       )}
       {showWa && (
-        <a className="fab__btn fab__round fab__wa" href={"https://wa.me/" + phone + (FAB.waText ? "?text=" + encodeURIComponent(FAB.waText) : "")} target="_blank" rel="noopener" aria-label="WhatsApp">
+        <a className="fab__btn fab__wa" href={"https://wa.me/" + phone + (FAB.waText ? "?text=" + encodeURIComponent(FAB.waText) : "")} target="_blank" rel="noopener" aria-label="WhatsApp">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3z" /><path d="M8.9 8.6c.2 2.8 3.2 5.8 6.1 6l1-1.3-2-1-.9.8c-.9-.3-1.8-1.2-2.1-2.1l.8-.9-1-2z" /></svg>
+          <span>WhatsApp</span>
         </a>
       )}
       {showMap && (
-        <a className="fab__btn fab__round fab__map" href={mapHref} target="_blank" rel="noopener" aria-label="Cómo llegar">
+        <a className="fab__btn fab__map" href={mapHref} target="_blank" rel="noopener" aria-label="Cómo llegar">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
+          <span>Cómo llegar</span>
         </a>
       )}
+      {BACKTOP.enabled && <BackToTop inline />}
     </nav>
   );
 }
@@ -6247,7 +6260,7 @@ function App() {
         </div>
       ) : <Block2D key={sec.id} s={sec} theme={SITE2D} />), SECTIONS)}
       {FAB.enabled && <FloatingActions />}
-      {BACKTOP.enabled && <BackToTop />}
+      {BACKTOP.enabled && !fabActive() && <BackToTop />}
       {MENU.logoUrl && <SiteLogo cfg={MENU} />}
       {MENU.enabled && <SiteMenu cfg={MENU} />}
       {LAB_ON && <LabPanel />}
@@ -11376,7 +11389,6 @@ function App() {
                   <Switch checked={fab.wa !== false} onChange={(v) => setFabField("wa", v)} label="Botón WhatsApp (usa el teléfono de Datos del negocio)" />
                   <div className="row"><span className="lbl">Mensaje</span><input type="text" style={{ flex: 1 }} value={fab.waText || ""} placeholder="Hola! Quiero consultar por una reserva." spellCheck={false} onChange={(e) => setFabField("waText", e.target.value)} /></div>
                   <Switch checked={fab.map !== false} onChange={(v) => setFabField("map", v)} label="Botón Cómo llegar (usa el link o la dirección de Datos del negocio)" />
-                  <SelectRow label="Posición" value={fab.position} onChange={(v) => setFabField("position", v)} options={[["right", "Derecha"], ["left", "Izquierda"], ["center", "Centro"]]} />
                   <Slider label="Aparece al (%)" min={0} max={50} step={1} value={Math.round((fab.showAfter || 0) * 100)} onChange={(v) => setFabField("showAfter", v / 100)} />
                   <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Botones fijos abajo en todo el sitio, siempre en vidrio oscuro con borde blanco para que se lean sobre cualquier fondo. "Reservar" abre la página de reservas del salón; WhatsApp y Cómo llegar usan los datos del grupo "Datos del negocio".</div>
                 </Group>
