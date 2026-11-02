@@ -1,28 +1,42 @@
 {
- "nombre": "pelotero_grande",
- "titulo": "Pelotero grande (8 cuerpos + pisos + tobogán de tubos)",
+ "nombre": "pelotero_gigante",
+ "titulo": "Pelotero gigante (cuerpos, pelotas, contenedores, puente, tobogán, palo y tubos)",
  "version": 1,
  "origen": "lemadavami",
- "madre": "pg_000",
- "nota": "Pelotero de 4 cuerpos abajo y 4 arriba, 3 pisos/tapas, tobogán de tubos y 5 semitubos. UN solo grupo: la madre es la primera reja; mover/escalar/girar la madre mueve todo (--pos, --giro, --escala). Hijos en un solo nivel, nombres pelotero_grande_<rol>_<nn>. Roles: reja, tubo, tapa_2, tapa, piso, piso_hueco, tobogan_tubo, tobogan_tubo_2, semitubo.",
+ "madre": "pel_000",
+ "nota": "UN solo grupo plano; la madre es la primera reja: mover/escalar/girar la madre mueve todo (--pos, --giro, --escala). Incluye los rellenos de pelotas (objetos \"pelotas\": se cambian sus colores en el editor, ficha Pelotas). Roles: reja, tobogan_rampa, tobogan_cuerpo, tobogan_detalle, puente_piso, puente_estructura, puente_zocalo, puente_remaches, tubo, palo, tapa, tapa_2, piso, piso_2, tobogan_tubo, tobogan_tubo_2, tobogan_tubo_3, semitubo, semitubo_2, pelotas, contenedor, contenedor_largo, contenedor_largo_tapa.",
  "roles": {
   "reja": "#ffffff",
+  "tobogan_rampa": "#78c944",
+  "tobogan_cuerpo": "#8149bd",
+  "tobogan_detalle": "#fc9835",
+  "puente_piso": "#ffffff",
+  "puente_estructura": "#8149bd",
+  "puente_zocalo": "#e3bd40",
+  "puente_remaches": "#ffffff",
   "tubo": "#e7dfdf",
-  "tapa_2": "#e3bd40",
-  "tapa": "#fc9835",
-  "piso": "#b079dc",
-  "piso_hueco": "#78c944",
-  "tobogan_tubo": "#78c944",
-  "tobogan_tubo_2": "#fc9835",
-  "semitubo": "#78c944"
+  "palo": "#ffffff",
+  "tapa": "#8149bd",
+  "tapa_2": "#fc9835",
+  "piso": "#8149bd",
+  "piso_2": "#78c944",
+  "tobogan_tubo": "#8149bd",
+  "tobogan_tubo_2": "#78c944",
+  "tobogan_tubo_3": "#fc9835",
+  "semitubo": "#8149bd",
+  "semitubo_2": "#78c944",
+  "pelotas": "#ffffff",
+  "contenedor": "#8149bd",
+  "contenedor_largo": "#fc9835",
+  "contenedor_largo_tapa": "#d2d3d4"
  },
  "partes": [
   {
-   "clave": "pg_000",
+   "clave": "pel_000",
    "rol": "reja",
    "esMadre": true,
    "objeto": {
-    "label": "pelotero_grande_reja_00",
+    "label": "pelotero_gigante_reja_00",
     "type": "image",
     "url": "./assets/models/polotero-reja.svg",
     "previewUrl": null,
@@ -48,11 +62,955 @@
    }
   },
   {
-   "clave": "pg_001",
+   "clave": "pel_001",
+   "rol": "tobogan_rampa",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/tbg_rampa.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.75522,
+    "bev": 0.2665,
+    "seg": 0,
+    "rev": false,
+    "mat": "matte",
+    "matColor": "#78c944",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 1,
+    "label": "pelotero_gigante_tobogan_rampa_01",
+    "visible": true,
+    "color": "#7ee787",
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "previewUrl": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -8.6213,
+     -0.0058,
+     -0.6575
+    ],
+    "scale": 1.37594,
+    "sx": 1.01,
+    "sy": 1.1,
+    "rotationY": 179.2,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_002",
+   "rol": "tobogan_cuerpo",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/tbg_pared.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.06449,
+    "bev": 0.4031,
+    "seg": 0,
+    "rev": false,
+    "mat": "matte",
+    "matColor": "#8149bd",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 1,
+    "label": "pelotero_gigante_tobogan_cuerpo_02",
+    "visible": true,
+    "color": "#7ee787",
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "previewUrl": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -8.6129,
+     0.1321,
+     -1.2565
+    ],
+    "scale": 1.51653,
+    "sx": 1.01,
+    "sy": 1.1,
+    "rotationY": 179.2,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_003",
+   "rol": "tobogan_cuerpo",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/tbg_poste.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.01,
+    "bev": 0.3,
+    "seg": 0,
+    "rev": true,
+    "mat": "matte",
+    "matColor": "#8149bd",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 1,
+    "label": "pelotero_gigante_tobogan_cuerpo_03",
+    "visible": true,
+    "color": "#7ee787",
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "previewUrl": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -7.7182,
+     1.2552,
+     -1.209
+    ],
+    "scale": 0.44451,
+    "sx": 0.9901,
+    "sy": 1.52475,
+    "rotationY": -90.8,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_004",
+   "rol": "tobogan_detalle",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/tw_esfera.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.01,
+    "bev": 0.3,
+    "seg": 0,
+    "rev": true,
+    "mat": "matte",
+    "matColor": "#fc9835",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 1,
+    "label": "pelotero_gigante_tobogan_detalle_04",
+    "visible": true,
+    "color": "#7ee787",
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "previewUrl": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -7.7182,
+     1.699,
+     -1.209
+    ],
+    "scale": 0.22225,
+    "sx": 0.9901,
+    "sy": 1.08911,
+    "rotationY": -90.8,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_005",
+   "rol": "tobogan_cuerpo",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/tbg_pared.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.06449,
+    "bev": 0.4031,
+    "seg": 0,
+    "rev": false,
+    "mat": "matte",
+    "matColor": "#8149bd",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 1,
+    "label": "pelotero_gigante_tobogan_cuerpo_05",
+    "visible": true,
+    "color": "#7ee787",
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "previewUrl": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -8.6296,
+     0.1321,
+     -0.0584
+    ],
+    "scale": 1.51653,
+    "sx": 1.01,
+    "sy": 1.1,
+    "rotationY": 179.2,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_006",
+   "rol": "tobogan_cuerpo",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/tbg_poste.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.01,
+    "bev": 0.3,
+    "seg": 0,
+    "rev": true,
+    "mat": "matte",
+    "matColor": "#8149bd",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 1,
+    "label": "pelotero_gigante_tobogan_cuerpo_06",
+    "visible": true,
+    "color": "#7ee787",
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "previewUrl": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -7.735,
+     1.2552,
+     -0.0121
+    ],
+    "scale": 0.44451,
+    "sx": 0.9901,
+    "sy": 1.44851,
+    "rotationY": -90.8,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_007",
+   "rol": "tobogan_detalle",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/tw_esfera.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.01,
+    "bev": 0.3,
+    "seg": 0,
+    "rev": true,
+    "mat": "matte",
+    "matColor": "#fc9835",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 1,
+    "label": "pelotero_gigante_tobogan_detalle_07",
+    "visible": true,
+    "color": "#7ee787",
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "previewUrl": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -7.735,
+     1.699,
+     -0.0121
+    ],
+    "scale": 0.22225,
+    "sx": 0.9901,
+    "sy": 1.08911,
+    "rotationY": -90.8,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_008",
+   "rol": "puente_piso",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/pte_tablones.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 3.24822,
+    "bev": 0.7327,
+    "seg": 0,
+    "rev": false,
+    "mat": "matte",
+    "matColor": "#ffffff",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 1,
+    "label": "pelotero_gigante_puente_piso_08",
+    "visible": true,
+    "color": "#7ee787",
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "previewUrl": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.3156,
+     0.7218,
+     -0.5645
+    ],
+    "scale": 0.30786,
+    "sx": 1.35,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -0.0,
+    "rz": 2.0
+   }
+  },
+  {
+   "clave": "pel_009",
+   "rol": "puente_estructura",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/pte_pared.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.10856,
+    "bev": 0.6785,
+    "seg": 0,
+    "rev": false,
+    "mat": "matte",
+    "matColor": "#8149bd",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 1,
+    "label": "pelotero_gigante_puente_estructura_09",
+    "visible": true,
+    "color": "#7ee787",
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "previewUrl": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.3152,
+     0.7115,
+     -0.0119
+    ],
+    "scale": 0.55408,
+    "sx": 1.35,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -0.0,
+    "rz": 2.0
+   }
+  },
+  {
+   "clave": "pel_010",
+   "rol": "puente_zocalo",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/pte_zocalo.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.37966,
+    "bev": 0.9164,
+    "seg": 0,
+    "rev": false,
+    "mat": "matte",
+    "matColor": "#e3bd40",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 1,
+    "label": "pelotero_gigante_puente_zocalo_10",
+    "visible": true,
+    "color": "#7ee787",
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "previewUrl": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.3106,
+     0.5781,
+     -0.0362
+    ],
+    "scale": 0.28716,
+    "sx": 1.35,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -0.0,
+    "rz": 2.0
+   }
+  },
+  {
+   "clave": "pel_011",
+   "rol": "puente_remaches",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/pte_remaches.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.0261,
+    "bev": 0.7831,
+    "seg": 0,
+    "rev": false,
+    "mat": "matte",
+    "matColor": "#ffffff",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 1,
+    "label": "pelotero_gigante_puente_remaches_11",
+    "visible": true,
+    "color": "#7ee787",
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "previewUrl": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.3171,
+     0.7656,
+     0.0237
+    ],
+    "scale": 0.28806,
+    "sx": 1.14742,
+    "sy": 1.06013,
+    "rotationY": -0.0,
+    "rx": -0.0,
+    "rz": 2.7423
+   }
+  },
+  {
+   "clave": "pel_012",
+   "rol": "puente_estructura",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/pte_pilares.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.19875,
+    "bev": 0.7015,
+    "seg": 0,
+    "rev": false,
+    "mat": "matte",
+    "matColor": "#8149bd",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 1,
+    "label": "pelotero_gigante_puente_estructura_12",
+    "visible": true,
+    "color": "#7ee787",
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "previewUrl": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.3167,
+     0.7533,
+     -0.0344
+    ],
+    "scale": 0.64312,
+    "sx": 1.35,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -0.0,
+    "rz": 2.0
+   }
+  },
+  {
+   "clave": "pel_013",
+   "rol": "puente_estructura",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/pte_pared.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.10856,
+    "bev": 0.6785,
+    "seg": 0,
+    "rev": false,
+    "mat": "matte",
+    "matColor": "#8149bd",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 1,
+    "label": "pelotero_gigante_puente_estructura_13",
+    "visible": true,
+    "color": "#7ee787",
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "previewUrl": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.3152,
+     0.7115,
+     -1.1171
+    ],
+    "scale": 0.55408,
+    "sx": 1.35,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -0.0,
+    "rz": 2.0
+   }
+  },
+  {
+   "clave": "pel_014",
+   "rol": "puente_zocalo",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/pte_zocalo.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.37966,
+    "bev": 0.9164,
+    "seg": 0,
+    "rev": false,
+    "mat": "matte",
+    "matColor": "#e3bd40",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 1,
+    "label": "pelotero_gigante_puente_zocalo_14",
+    "visible": true,
+    "color": "#7ee787",
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "previewUrl": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.3106,
+     0.5781,
+     -1.1171
+    ],
+    "scale": 0.28716,
+    "sx": 1.35,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -0.0,
+    "rz": 2.0
+   }
+  },
+  {
+   "clave": "pel_015",
+   "rol": "puente_remaches",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/pte_remaches.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.0261,
+    "bev": 0.7831,
+    "seg": 0,
+    "rev": false,
+    "mat": "matte",
+    "matColor": "#ffffff",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 1,
+    "label": "pelotero_gigante_puente_remaches_15",
+    "visible": true,
+    "color": "#7ee787",
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "previewUrl": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.3158,
+     0.7286,
+     -1.1773
+    ],
+    "scale": 0.28806,
+    "sx": 1.35,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -0.0,
+    "rz": 2.0
+   }
+  },
+  {
+   "clave": "pel_016",
+   "rol": "puente_estructura",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/pte_pilares.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.19875,
+    "bev": 0.7015,
+    "seg": 0,
+    "rev": false,
+    "mat": "matte",
+    "matColor": "#8149bd",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 1,
+    "label": "pelotero_gigante_puente_estructura_16",
+    "visible": true,
+    "color": "#7ee787",
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "previewUrl": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.3167,
+     0.7533,
+     -1.0946
+    ],
+    "scale": 0.64312,
+    "sx": 1.35,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -0.0,
+    "rz": 2.0
+   }
+  },
+  {
+   "clave": "pel_017",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_01",
+    "label": "pelotero_gigante_tubo_17",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -69,7 +1027,7 @@
     "hidden": false,
     "fadeDir": "ltr",
     "position": [
-     0.0,
+     -0.0,
      -0.5255,
      0.0
     ],
@@ -82,11 +1040,45 @@
    }
   },
   {
-   "clave": "pg_002",
+   "clave": "pel_018",
+   "rol": "palo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_gigante_palo_18",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#ffffff",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.04,
+     0.4745,
+     0.48
+    ],
+    "scale": 0.21898,
+    "sx": 0.3,
+    "sy": 0.3,
+    "rotationY": -0.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_019",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_02",
+    "label": "pelotero_gigante_tubo_19",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -103,7 +1095,7 @@
     "hidden": false,
     "fadeDir": "ltr",
     "position": [
-     0.0,
+     -0.0,
      0.5401,
      0.0
     ],
@@ -116,11 +1108,11 @@
    }
   },
   {
-   "clave": "pg_003",
+   "clave": "pel_020",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_03",
+    "label": "pelotero_gigante_tubo_20",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -150,11 +1142,11 @@
    }
   },
   {
-   "clave": "pg_004",
+   "clave": "pel_021",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_04",
+    "label": "pelotero_gigante_tubo_21",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -184,11 +1176,11 @@
    }
   },
   {
-   "clave": "pg_005",
-   "rol": "tapa_2",
+   "clave": "pel_022",
+   "rol": "tapa",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tapa_2_05",
+    "label": "pelotero_gigante_tapa_22",
     "type": "image",
     "url": "./assets/models/Pelotero-con-circulo.svg",
     "previewUrl": null,
@@ -198,7 +1190,7 @@
     "ext": 0.09,
     "mat": "matte",
     "matRough": null,
-    "matColor": "#e3bd40",
+    "matColor": "#8149bd",
     "bev": 0
    },
    "pose": {
@@ -212,17 +1204,17 @@
     "scale": 1.0,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": 0.0,
+    "rotationY": -0.0,
     "rx": -0.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_006",
+   "clave": "pel_023",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_06",
+    "label": "pelotero_gigante_tubo_23",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -252,11 +1244,11 @@
    }
   },
   {
-   "clave": "pg_007",
+   "clave": "pel_024",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_07",
+    "label": "pelotero_gigante_tubo_24",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -286,11 +1278,11 @@
    }
   },
   {
-   "clave": "pg_008",
+   "clave": "pel_025",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_08",
+    "label": "pelotero_gigante_tubo_25",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -320,11 +1312,11 @@
    }
   },
   {
-   "clave": "pg_009",
+   "clave": "pel_026",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_09",
+    "label": "pelotero_gigante_tubo_26",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -354,11 +1346,11 @@
    }
   },
   {
-   "clave": "pg_010",
+   "clave": "pel_027",
    "rol": "reja",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_reja_10",
+    "label": "pelotero_gigante_reja_27",
     "type": "image",
     "url": "./assets/models/polotero-reja.svg",
     "previewUrl": null,
@@ -380,17 +1372,17 @@
     "scale": 1.0,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": 0.0,
+    "rotationY": -0.0,
     "rx": -0.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_011",
+   "clave": "pel_028",
    "rol": "reja",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_reja_11",
+    "label": "pelotero_gigante_reja_28",
     "type": "image",
     "url": "./assets/models/polotero-reja.svg",
     "previewUrl": null,
@@ -412,17 +1404,17 @@
     "scale": 1.0,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": 0.0,
+    "rotationY": -0.0,
     "rx": -0.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_012",
+   "clave": "pel_029",
    "rol": "reja",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_reja_12",
+    "label": "pelotero_gigante_reja_29",
     "type": "image",
     "url": "./assets/models/polotero-reja.svg",
     "previewUrl": null,
@@ -444,17 +1436,17 @@
     "scale": 1.0,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": 0.0,
+    "rotationY": -0.0,
     "rx": -0.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_013",
+   "clave": "pel_030",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_13",
+    "label": "pelotero_gigante_tubo_30",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -484,11 +1476,11 @@
    }
   },
   {
-   "clave": "pg_014",
+   "clave": "pel_031",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_14",
+    "label": "pelotero_gigante_tubo_31",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -518,11 +1510,11 @@
    }
   },
   {
-   "clave": "pg_015",
+   "clave": "pel_032",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_15",
+    "label": "pelotero_gigante_tubo_32",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -552,11 +1544,11 @@
    }
   },
   {
-   "clave": "pg_016",
+   "clave": "pel_033",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_16",
+    "label": "pelotero_gigante_tubo_33",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -586,11 +1578,11 @@
    }
   },
   {
-   "clave": "pg_017",
+   "clave": "pel_034",
    "rol": "reja",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_reja_17",
+    "label": "pelotero_gigante_reja_34",
     "type": "image",
     "url": "./assets/models/polotero-reja.svg",
     "previewUrl": null,
@@ -612,17 +1604,17 @@
     "scale": 1.0,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": 0.0,
+    "rotationY": -0.0,
     "rx": -0.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_018",
+   "clave": "pel_035",
    "rol": "reja",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_reja_18",
+    "label": "pelotero_gigante_reja_35",
     "type": "image",
     "url": "./assets/models/polotero-reja.svg",
     "previewUrl": null,
@@ -644,17 +1636,17 @@
     "scale": 1.0,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": 0.0,
+    "rotationY": -0.0,
     "rx": -0.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_019",
+   "clave": "pel_036",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_19",
+    "label": "pelotero_gigante_tubo_36",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -684,11 +1676,11 @@
    }
   },
   {
-   "clave": "pg_020",
+   "clave": "pel_037",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_20",
+    "label": "pelotero_gigante_tubo_37",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -718,11 +1710,11 @@
    }
   },
   {
-   "clave": "pg_021",
+   "clave": "pel_038",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_21",
+    "label": "pelotero_gigante_tubo_38",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -752,11 +1744,11 @@
    }
   },
   {
-   "clave": "pg_022",
+   "clave": "pel_039",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_22",
+    "label": "pelotero_gigante_tubo_39",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -786,11 +1778,11 @@
    }
   },
   {
-   "clave": "pg_023",
+   "clave": "pel_040",
    "rol": "reja",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_reja_23",
+    "label": "pelotero_gigante_reja_40",
     "type": "image",
     "url": "./assets/models/polotero-reja.svg",
     "previewUrl": null,
@@ -812,17 +1804,17 @@
     "scale": 1.0,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": 0.0,
+    "rotationY": -0.0,
     "rx": -0.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_024",
+   "clave": "pel_041",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_24",
+    "label": "pelotero_gigante_tubo_41",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -852,11 +1844,11 @@
    }
   },
   {
-   "clave": "pg_025",
+   "clave": "pel_042",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_25",
+    "label": "pelotero_gigante_tubo_42",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -886,11 +1878,11 @@
    }
   },
   {
-   "clave": "pg_026",
+   "clave": "pel_043",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_26",
+    "label": "pelotero_gigante_tubo_43",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -920,11 +1912,11 @@
    }
   },
   {
-   "clave": "pg_027",
+   "clave": "pel_044",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_27",
+    "label": "pelotero_gigante_tubo_44",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -954,11 +1946,11 @@
    }
   },
   {
-   "clave": "pg_028",
+   "clave": "pel_045",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_28",
+    "label": "pelotero_gigante_tubo_45",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -988,11 +1980,11 @@
    }
   },
   {
-   "clave": "pg_029",
+   "clave": "pel_046",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_29",
+    "label": "pelotero_gigante_tubo_46",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1022,11 +2014,11 @@
    }
   },
   {
-   "clave": "pg_030",
+   "clave": "pel_047",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_30",
+    "label": "pelotero_gigante_tubo_47",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1056,11 +2048,11 @@
    }
   },
   {
-   "clave": "pg_031",
+   "clave": "pel_048",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_31",
+    "label": "pelotero_gigante_tubo_48",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1090,11 +2082,11 @@
    }
   },
   {
-   "clave": "pg_032",
+   "clave": "pel_049",
    "rol": "reja",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_reja_32",
+    "label": "pelotero_gigante_reja_49",
     "type": "image",
     "url": "./assets/models/polotero-reja.svg",
     "previewUrl": null,
@@ -1116,17 +2108,17 @@
     "scale": 1.0,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": 0.0,
+    "rotationY": -0.0,
     "rx": -0.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_033",
+   "clave": "pel_050",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_33",
+    "label": "pelotero_gigante_tubo_50",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1156,11 +2148,11 @@
    }
   },
   {
-   "clave": "pg_034",
+   "clave": "pel_051",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_34",
+    "label": "pelotero_gigante_tubo_51",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1190,11 +2182,11 @@
    }
   },
   {
-   "clave": "pg_035",
+   "clave": "pel_052",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_35",
+    "label": "pelotero_gigante_tubo_52",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1224,11 +2216,11 @@
    }
   },
   {
-   "clave": "pg_036",
+   "clave": "pel_053",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_36",
+    "label": "pelotero_gigante_tubo_53",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1258,11 +2250,11 @@
    }
   },
   {
-   "clave": "pg_037",
+   "clave": "pel_054",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_37",
+    "label": "pelotero_gigante_tubo_54",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1292,11 +2284,11 @@
    }
   },
   {
-   "clave": "pg_038",
+   "clave": "pel_055",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_38",
+    "label": "pelotero_gigante_tubo_55",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1326,11 +2318,11 @@
    }
   },
   {
-   "clave": "pg_039",
+   "clave": "pel_056",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_39",
+    "label": "pelotero_gigante_tubo_56",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1360,11 +2352,11 @@
    }
   },
   {
-   "clave": "pg_040",
+   "clave": "pel_057",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_40",
+    "label": "pelotero_gigante_tubo_57",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1394,11 +2386,11 @@
    }
   },
   {
-   "clave": "pg_041",
+   "clave": "pel_058",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_41",
+    "label": "pelotero_gigante_tubo_58",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1428,11 +2420,11 @@
    }
   },
   {
-   "clave": "pg_042",
+   "clave": "pel_059",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_42",
+    "label": "pelotero_gigante_tubo_59",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1462,11 +2454,11 @@
    }
   },
   {
-   "clave": "pg_043",
+   "clave": "pel_060",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_43",
+    "label": "pelotero_gigante_tubo_60",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1496,11 +2488,11 @@
    }
   },
   {
-   "clave": "pg_044",
+   "clave": "pel_061",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_44",
+    "label": "pelotero_gigante_tubo_61",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1530,11 +2522,11 @@
    }
   },
   {
-   "clave": "pg_045",
-   "rol": "tapa",
+   "clave": "pel_062",
+   "rol": "tapa_2",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tapa_45",
+    "label": "pelotero_gigante_tapa_2_62",
     "type": "image",
     "url": "./assets/models/Pelotero-con-circulo.svg",
     "previewUrl": null,
@@ -1551,24 +2543,24 @@
     "hidden": false,
     "fadeDir": "ltr",
     "position": [
-     0.0,
+     -0.0,
      1.1701,
      0.0
     ],
     "scale": 1.0,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": 0.0,
+    "rotationY": -0.0,
     "rx": -0.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_046",
+   "clave": "pel_063",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_46",
+    "label": "pelotero_gigante_tubo_63",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1585,7 +2577,7 @@
     "hidden": false,
     "fadeDir": "ltr",
     "position": [
-     0.0,
+     -0.0,
      0.6446,
      0.0
     ],
@@ -1598,11 +2590,11 @@
    }
   },
   {
-   "clave": "pg_047",
+   "clave": "pel_064",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_47",
+    "label": "pelotero_gigante_tubo_64",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1619,7 +2611,7 @@
     "hidden": false,
     "fadeDir": "ltr",
     "position": [
-     0.0,
+     -0.0,
      1.7103,
      0.0
     ],
@@ -1632,11 +2624,11 @@
    }
   },
   {
-   "clave": "pg_048",
+   "clave": "pel_065",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_48",
+    "label": "pelotero_gigante_tubo_65",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1666,11 +2658,11 @@
    }
   },
   {
-   "clave": "pg_049",
+   "clave": "pel_066",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_49",
+    "label": "pelotero_gigante_tubo_66",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1700,11 +2692,11 @@
    }
   },
   {
-   "clave": "pg_050",
+   "clave": "pel_067",
    "rol": "reja",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_reja_50",
+    "label": "pelotero_gigante_reja_67",
     "type": "image",
     "url": "./assets/models/polotero-reja.svg",
     "previewUrl": null,
@@ -1726,17 +2718,17 @@
     "scale": 1.0,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": 0.0,
+    "rotationY": -0.0,
     "rx": -0.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_051",
+   "clave": "pel_068",
    "rol": "reja",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_reja_51",
+    "label": "pelotero_gigante_reja_68",
     "type": "image",
     "url": "./assets/models/polotero-reja.svg",
     "previewUrl": null,
@@ -1758,17 +2750,17 @@
     "scale": 1.0,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": 0.0,
+    "rotationY": -0.0,
     "rx": -0.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_052",
+   "clave": "pel_069",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_52",
+    "label": "pelotero_gigante_tubo_69",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1798,11 +2790,11 @@
    }
   },
   {
-   "clave": "pg_053",
+   "clave": "pel_070",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_53",
+    "label": "pelotero_gigante_tubo_70",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1832,11 +2824,11 @@
    }
   },
   {
-   "clave": "pg_054",
+   "clave": "pel_071",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_54",
+    "label": "pelotero_gigante_tubo_71",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1866,11 +2858,11 @@
    }
   },
   {
-   "clave": "pg_055",
+   "clave": "pel_072",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_55",
+    "label": "pelotero_gigante_tubo_72",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1900,11 +2892,11 @@
    }
   },
   {
-   "clave": "pg_056",
+   "clave": "pel_073",
    "rol": "reja",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_reja_56",
+    "label": "pelotero_gigante_reja_73",
     "type": "image",
     "url": "./assets/models/polotero-reja.svg",
     "previewUrl": null,
@@ -1926,17 +2918,17 @@
     "scale": 1.0,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": 0.0,
+    "rotationY": -0.0,
     "rx": -0.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_057",
+   "clave": "pel_074",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_57",
+    "label": "pelotero_gigante_tubo_74",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -1966,11 +2958,11 @@
    }
   },
   {
-   "clave": "pg_058",
+   "clave": "pel_075",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_58",
+    "label": "pelotero_gigante_tubo_75",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2000,11 +2992,11 @@
    }
   },
   {
-   "clave": "pg_059",
+   "clave": "pel_076",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_59",
+    "label": "pelotero_gigante_tubo_76",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2034,11 +3026,11 @@
    }
   },
   {
-   "clave": "pg_060",
+   "clave": "pel_077",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_60",
+    "label": "pelotero_gigante_tubo_77",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2068,11 +3060,11 @@
    }
   },
   {
-   "clave": "pg_061",
+   "clave": "pel_078",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_61",
+    "label": "pelotero_gigante_tubo_78",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2102,11 +3094,11 @@
    }
   },
   {
-   "clave": "pg_062",
+   "clave": "pel_079",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_62",
+    "label": "pelotero_gigante_tubo_79",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2136,11 +3128,11 @@
    }
   },
   {
-   "clave": "pg_063",
+   "clave": "pel_080",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_63",
+    "label": "pelotero_gigante_tubo_80",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2170,11 +3162,11 @@
    }
   },
   {
-   "clave": "pg_064",
+   "clave": "pel_081",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_64",
+    "label": "pelotero_gigante_tubo_81",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2204,11 +3196,11 @@
    }
   },
   {
-   "clave": "pg_065",
+   "clave": "pel_082",
    "rol": "reja",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_reja_65",
+    "label": "pelotero_gigante_reja_82",
     "type": "image",
     "url": "./assets/models/polotero-reja.svg",
     "previewUrl": null,
@@ -2230,17 +3222,17 @@
     "scale": 1.0,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": 0.0,
+    "rotationY": -0.0,
     "rx": -0.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_066",
+   "clave": "pel_083",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_66",
+    "label": "pelotero_gigante_tubo_83",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2270,11 +3262,11 @@
    }
   },
   {
-   "clave": "pg_067",
+   "clave": "pel_084",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_67",
+    "label": "pelotero_gigante_tubo_84",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2304,11 +3296,11 @@
    }
   },
   {
-   "clave": "pg_068",
+   "clave": "pel_085",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_68",
+    "label": "pelotero_gigante_tubo_85",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2338,11 +3330,11 @@
    }
   },
   {
-   "clave": "pg_069",
+   "clave": "pel_086",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_69",
+    "label": "pelotero_gigante_tubo_86",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2372,11 +3364,11 @@
    }
   },
   {
-   "clave": "pg_070",
+   "clave": "pel_087",
    "rol": "reja",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_reja_70",
+    "label": "pelotero_gigante_reja_87",
     "type": "image",
     "url": "./assets/models/polotero-reja.svg",
     "previewUrl": null,
@@ -2398,17 +3390,17 @@
     "scale": 1.0,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": 0.0,
+    "rotationY": -0.0,
     "rx": -0.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_071",
+   "clave": "pel_088",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_71",
+    "label": "pelotero_gigante_tubo_88",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2438,11 +3430,11 @@
    }
   },
   {
-   "clave": "pg_072",
+   "clave": "pel_089",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_72",
+    "label": "pelotero_gigante_tubo_89",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2472,11 +3464,11 @@
    }
   },
   {
-   "clave": "pg_073",
+   "clave": "pel_090",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_73",
+    "label": "pelotero_gigante_tubo_90",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2506,11 +3498,11 @@
    }
   },
   {
-   "clave": "pg_074",
+   "clave": "pel_091",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_74",
+    "label": "pelotero_gigante_tubo_91",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2540,11 +3532,11 @@
    }
   },
   {
-   "clave": "pg_075",
+   "clave": "pel_092",
    "rol": "reja",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_reja_75",
+    "label": "pelotero_gigante_reja_92",
     "type": "image",
     "url": "./assets/models/polotero-reja.svg",
     "previewUrl": null,
@@ -2566,17 +3558,17 @@
     "scale": 1.0,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": 0.0,
+    "rotationY": -0.0,
     "rx": -0.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_076",
+   "clave": "pel_093",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_76",
+    "label": "pelotero_gigante_tubo_93",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2606,11 +3598,11 @@
    }
   },
   {
-   "clave": "pg_077",
+   "clave": "pel_094",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_77",
+    "label": "pelotero_gigante_tubo_94",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2640,11 +3632,11 @@
    }
   },
   {
-   "clave": "pg_078",
+   "clave": "pel_095",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_78",
+    "label": "pelotero_gigante_tubo_95",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2674,11 +3666,11 @@
    }
   },
   {
-   "clave": "pg_079",
+   "clave": "pel_096",
    "rol": "tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tubo_79",
+    "label": "pelotero_gigante_tubo_96",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2708,11 +3700,11 @@
    }
   },
   {
-   "clave": "pg_080",
+   "clave": "pel_097",
    "rol": "piso",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_piso_80",
+    "label": "pelotero_gigante_piso_97",
     "type": "image",
     "url": "./assets/models/Pelotero-sin-circulo.svg",
     "previewUrl": null,
@@ -2720,7 +3712,7 @@
     "visible": true,
     "color": "#f6e05e",
     "ext": 0.085,
-    "matColor": "#b079dc",
+    "matColor": "#8149bd",
     "bev": 0,
     "mat": "matte",
     "matRough": null
@@ -2729,60 +3721,26 @@
     "hidden": false,
     "fadeDir": "ltr",
     "position": [
-     0.0,
+     -0.0,
      0.6466,
      -0.6316
     ],
     "scale": 1.08647,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": -0.0,
+    "rotationY": 0.0,
     "rx": -90.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_081",
-   "rol": "piso",
+   "clave": "pel_098",
+   "rol": "piso_2",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_piso_81",
+    "label": "pelotero_gigante_piso_2_98",
     "type": "image",
     "url": "./assets/models/Pelotero-sin-circulo.svg",
-    "previewUrl": null,
-    "billboard": false,
-    "visible": true,
-    "color": "#f6e05e",
-    "ext": 0.085,
-    "matColor": "#b079dc",
-    "bev": 0,
-    "mat": "matte",
-    "matRough": null
-   },
-   "pose": {
-    "hidden": false,
-    "fadeDir": "ltr",
-    "position": [
-     -6.5263,
-     0.6316,
-     -0.6316
-    ],
-    "scale": 1.08647,
-    "sx": 1.0,
-    "sy": 1.0,
-    "rotationY": -0.0,
-    "rx": -90.0,
-    "rz": 0.0
-   }
-  },
-  {
-   "clave": "pg_082",
-   "rol": "piso_hueco",
-   "esMadre": false,
-   "objeto": {
-    "label": "pelotero_grande_piso_hueco_82",
-    "type": "image",
-    "url": "./assets/models/Pelotero-con-circulo.svg",
     "previewUrl": null,
     "billboard": false,
     "visible": true,
@@ -2798,23 +3756,57 @@
     "fadeDir": "ltr",
     "position": [
      -6.5263,
+     0.6316,
+     -0.6316
+    ],
+    "scale": 1.08647,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_099",
+   "rol": "tapa",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_gigante_tapa_99",
+    "type": "image",
+    "url": "./assets/models/Pelotero-con-circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#f6e05e",
+    "ext": 0.085,
+    "matColor": "#8149bd",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -6.5263,
      1.6992,
      -0.6165
     ],
     "scale": 1.08647,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": -0.0,
+    "rotationY": 0.0,
     "rx": -90.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_083",
+   "clave": "pel_100",
    "rol": "tobogan_tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tobogan_tubo_83",
+    "label": "pelotero_gigante_tobogan_tubo_100",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2823,7 +3815,7 @@
     "color": "#7c8cff",
     "ext": 1.3,
     "bev": 0,
-    "matColor": "#78c944"
+    "matColor": "#8149bd"
    },
    "pose": {
     "hidden": false,
@@ -2836,17 +3828,17 @@
     "scale": 0.88346,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": -0.0,
+    "rotationY": 0.0,
     "rx": -90.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_084",
-   "rol": "tobogan_tubo",
+   "clave": "pel_101",
+   "rol": "tobogan_tubo_2",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tobogan_tubo_84",
+    "label": "pelotero_gigante_tobogan_tubo_2_101",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2874,11 +3866,11 @@
    }
   },
   {
-   "clave": "pg_085",
+   "clave": "pel_102",
    "rol": "tobogan_tubo",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tobogan_tubo_85",
+    "label": "pelotero_gigante_tobogan_tubo_102",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2887,7 +3879,7 @@
     "color": "#7c8cff",
     "ext": 3.2,
     "bev": 0,
-    "matColor": "#78c944",
+    "matColor": "#8149bd",
     "mat": "matte",
     "matRough": null
    },
@@ -2908,11 +3900,11 @@
    }
   },
   {
-   "clave": "pg_086",
-   "rol": "tobogan_tubo_2",
+   "clave": "pel_103",
+   "rol": "tobogan_tubo_3",
    "esMadre": false,
    "objeto": {
-    "label": "pelotero_grande_tobogan_tubo_2_86",
+    "label": "pelotero_gigante_tobogan_tubo_3_103",
     "type": "image",
     "url": "./assets/models/Circulo.svg",
     "previewUrl": null,
@@ -2942,7 +3934,7 @@
    }
   },
   {
-   "clave": "pg_087",
+   "clave": "pel_104",
    "rol": "semitubo",
    "esMadre": false,
    "objeto": {
@@ -2972,11 +3964,11 @@
     "seg": 0,
     "rev": true,
     "mat": "matte",
-    "matColor": "#78c944",
+    "matColor": "#8149bd",
     "matRough": null,
     "float": 0,
     "floatSpeed": 0,
-    "label": "pelotero_grande_semitubo_87",
+    "label": "pelotero_gigante_semitubo_104",
     "visible": true,
     "color": "#7ee787",
     "previewUrl": null,
@@ -2996,14 +3988,14 @@
     "scale": 0.45113,
     "sx": 1.0,
     "sy": 1.0,
-    "rotationY": -180.0,
+    "rotationY": 180.0,
     "rx": -23.0,
     "rz": 0.0
    }
   },
   {
-   "clave": "pg_088",
-   "rol": "semitubo",
+   "clave": "pel_105",
+   "rol": "semitubo_2",
    "esMadre": false,
    "objeto": {
     "type": "image",
@@ -3036,7 +4028,7 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 0,
-    "label": "pelotero_grande_semitubo_88",
+    "label": "pelotero_gigante_semitubo_2_105",
     "visible": true,
     "color": "#7ee787",
     "previewUrl": null,
@@ -3062,7 +4054,7 @@
    }
   },
   {
-   "clave": "pg_089",
+   "clave": "pel_106",
    "rol": "semitubo",
    "esMadre": false,
    "objeto": {
@@ -3092,11 +4084,11 @@
     "seg": 0,
     "rev": true,
     "mat": "matte",
-    "matColor": "#78c944",
+    "matColor": "#8149bd",
     "matRough": null,
     "float": 0,
     "floatSpeed": 0,
-    "label": "pelotero_grande_semitubo_89",
+    "label": "pelotero_gigante_semitubo_106",
     "visible": true,
     "color": "#7ee787",
     "previewUrl": null,
@@ -3122,8 +4114,8 @@
    }
   },
   {
-   "clave": "pg_090",
-   "rol": "semitubo",
+   "clave": "pel_107",
+   "rol": "semitubo_2",
    "esMadre": false,
    "objeto": {
     "type": "image",
@@ -3156,7 +4148,7 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 0,
-    "label": "pelotero_grande_semitubo_90",
+    "label": "pelotero_gigante_semitubo_2_107",
     "visible": true,
     "color": "#7ee787",
     "previewUrl": null,
@@ -3182,8 +4174,8 @@
    }
   },
   {
-   "clave": "pg_091",
-   "rol": "semitubo",
+   "clave": "pel_108",
+   "rol": "semitubo_2",
    "esMadre": false,
    "objeto": {
     "type": "image",
@@ -3216,7 +4208,7 @@
     "matRough": null,
     "float": 0,
     "floatSpeed": 0,
-    "label": "pelotero_grande_semitubo_91",
+    "label": "pelotero_gigante_semitubo_2_108",
     "visible": true,
     "color": "#7ee787",
     "previewUrl": null,
@@ -3239,6 +4231,397 @@
     "rotationY": 88.0,
     "rx": 1.0,
     "rz": 29.0
+   }
+  },
+  {
+   "clave": "pel_109",
+   "rol": "pelotas",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_gigante_pelotas_109",
+    "type": "image",
+    "url": "balls:fill",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#7ee787",
+    "shadows": true,
+    "ballW": 0.75,
+    "ballD": 0.75,
+    "ballL": 3,
+    "ballR": 0.12,
+    "ballJit": 0.5,
+    "ballDark": 0.35,
+    "ballSeed": 1,
+    "ballRough": 0.3,
+    "ballCols": [
+     "#8149bd",
+     "#b079dc",
+     "#78c944"
+    ],
+    "ext": 0,
+    "float": 0,
+    "floatSpeed": 1
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -7.92,
+     -0.66,
+     2.84
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_110",
+   "rol": "pelotas",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_gigante_pelotas_110",
+    "type": "image",
+    "url": "balls:fill",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#7ee787",
+    "shadows": true,
+    "ballW": 0.75,
+    "ballD": 1,
+    "ballL": 3,
+    "ballR": 0.12,
+    "ballJit": 0.5,
+    "ballDark": 0.35,
+    "ballSeed": 1,
+    "ballRough": 0.3,
+    "ballCols": [
+     "#8149bd",
+     "#b079dc",
+     "#78c944"
+    ],
+    "ext": 0,
+    "float": 0,
+    "floatSpeed": 1,
+    "lit": true,
+    "litBase": 0.11,
+    "shCast": true
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -9.72,
+     -0.74,
+     -0.64
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_111",
+   "rol": "pelotas",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_gigante_pelotas_111",
+    "type": "image",
+    "url": "balls:fill",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#7ee787",
+    "shadows": true,
+    "ballW": 8.85,
+    "ballD": 1.15,
+    "ballL": 0.5,
+    "ballR": 0.12,
+    "ballJit": 0.5,
+    "ballDark": 0.35,
+    "ballSeed": 1,
+    "ballRough": 0.3,
+    "ballCols": [
+     "#8149bd",
+     "#c59df6",
+     "#b079dc"
+    ],
+    "ext": 0,
+    "float": 0,
+    "floatSpeed": 1
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.32,
+     -0.66,
+     -0.64
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_112",
+   "rol": "pelotas",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_gigante_pelotas_112",
+    "type": "image",
+    "url": "balls:fill",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#7ee787",
+    "shadows": true,
+    "ballW": 6.1,
+    "ballD": 0.9,
+    "ballL": 0.5,
+    "ballR": 0.12,
+    "ballJit": 1,
+    "ballDark": 0.35,
+    "ballSeed": 1,
+    "ballRough": 0.3,
+    "ballCols": [
+     "#8149bd",
+     "#8149bd",
+     "#78c944"
+    ],
+    "ext": 0,
+    "float": 0,
+    "floatSpeed": 1
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -2.4,
+     -0.5,
+     0.68
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_113",
+   "rol": "contenedor",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_gigante_contenedor_113",
+    "type": "image",
+    "url": "./assets/models/Contenedor-pelotas.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#49d3ff",
+    "ext": 0.6,
+    "bev": 0,
+    "matColor": "#8149bd",
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -8.1442,
+     -0.5113,
+     2.8106
+    ],
+    "scale": 0.45489,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -89.7,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_114",
+   "rol": "contenedor",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_gigante_contenedor_114",
+    "type": "image",
+    "url": "./assets/models/Contenedor-pelotas.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#49d3ff",
+    "ext": 0.6,
+    "bev": 0,
+    "matColor": "#8149bd",
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -9.7937,
+     -0.5113,
+     -0.6376
+    ],
+    "scale": 0.45489,
+    "sx": 1.47,
+    "sy": 1.54,
+    "rotationY": -89.7,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_115",
+   "rol": "contenedor",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_gigante_contenedor_115",
+    "type": "image",
+    "url": "./assets/models/Contenedor-pelotas.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#49d3ff",
+    "ext": 0.6,
+    "bev": 0,
+    "matColor": "#8149bd",
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -9.1492,
+     -0.5113,
+     -0.641
+    ],
+    "scale": 0.45489,
+    "sx": 1.47,
+    "sy": 1.54,
+    "rotationY": 90.3,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_116",
+   "rol": "contenedor",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_gigante_contenedor_116",
+    "type": "image",
+    "url": "./assets/models/Contenedor-pelotas.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#49d3ff",
+    "ext": 0.6,
+    "bev": 0,
+    "matColor": "#8149bd",
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -7.7258,
+     -0.5113,
+     2.8085
+    ],
+    "scale": 0.45489,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 90.3,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_117",
+   "rol": "contenedor_largo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_gigante_contenedor_largo_117",
+    "type": "image",
+    "url": "./assets/models/Contenedor-pelotas-largo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff5d73",
+    "ext": 0.225,
+    "matColor": "#fc9835",
+    "mat": "matte",
+    "matRough": null,
+    "bev": 0
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -2.4374,
+     -0.5113,
+     0.6827
+    ],
+    "scale": 1.28947,
+    "sx": 1.26,
+    "sy": 1.0,
+    "rotationY": -0.2,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pel_118",
+   "rol": "contenedor_largo_tapa",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_gigante_contenedor_largo_tapa_118",
+    "type": "image",
+    "url": "./assets/models/Contenedor-pelotas-largo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff5d73",
+    "ext": 0.06,
+    "matColor": "#d2d3d4",
+    "mat": "matte",
+    "matRough": null,
+    "bev": 0.02
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -2.4374,
+     -0.3158,
+     0.6827
+    ],
+    "scale": 1.28947,
+    "sx": 1.26,
+    "sy": 1.0,
+    "rotationY": -0.2,
+    "rx": -90.0,
+    "rz": 0.0
    }
   }
  ]

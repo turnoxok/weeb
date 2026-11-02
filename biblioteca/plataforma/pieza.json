@@ -1,0 +1,114 @@
+{
+ "nombre": "plataforma",
+ "titulo": "Plataforma (base de la escena)",
+ "version": 1,
+ "origen": "lemadavami",
+ "madre": "pla_000",
+ "nota": "Base de 3 capas apiladas (base, capa, detalle) para apoyar la escena; la madre es la base. Roles: base, capa, detalle.",
+ "roles": {
+  "base": "#8149bd",
+  "capa": "#fc9835",
+  "detalle": "#c59df6"
+ },
+ "partes": [
+  {
+   "clave": "pla_000",
+   "rol": "base",
+   "esMadre": true,
+   "objeto": {
+    "label": "plataforma_base_00",
+    "type": "image",
+    "url": "./assets/models/Plataforma.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.014,
+    "bev": 0,
+    "mat": "matte",
+    "matRough": 0.2,
+    "matColor": "#8149bd"
+   },
+   "pose": {
+    "position": [
+     0,
+     -0.56,
+     0
+    ],
+    "scale": 33,
+    "rotationY": 0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "rx": -90
+   }
+  },
+  {
+   "clave": "pla_001",
+   "rol": "capa",
+   "esMadre": false,
+   "objeto": {
+    "label": "plataforma_capa_01",
+    "type": "image",
+    "url": "./assets/models/Plataforma.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.005,
+    "bev": 0.02,
+    "mat": "matte",
+    "matRough": 0.45,
+    "matColor": "#fc9835"
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.0,
+     0.0,
+     0.0109
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pla_002",
+   "rol": "detalle",
+   "esMadre": false,
+   "objeto": {
+    "label": "plataforma_detalle_02",
+    "type": "image",
+    "url": "./assets/models/Plataforma.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.0001,
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": 0.45,
+    "matColor": "#c59df6"
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.0,
+     0.0,
+     0.0145
+    ],
+    "scale": 0.99394,
+    "sx": 1.006,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": 0.0,
+    "rz": 0.0
+   }
+  }
+ ]
+}

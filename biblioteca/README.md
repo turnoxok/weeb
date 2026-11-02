@@ -10,9 +10,12 @@ Cada pieza = carpeta con `pieza.json` + `svg/` (las partes). Catálogo en `indic
 | rayuela | 5 | contorno, base, fondo_numeros, numeros_color, numeros |
 | esfera | 1 | esfera (color y tamaño con --color / --escala) |
 | tubo_cuarto | 1 | tubo (cuarto de aro hueco, pared fina) |
-| pelotero_grande | 92 | pelotero de 8 cuerpos + pisos + tobogán de tubos, UN grupo plano (reja, tubo, tapa, piso, tobogan_tubo, semitubo) |
-(El editor tiene además el objeto "Pelotas": relleno de pelotas de colores en una sola malla; no es pieza de biblioteca, se agrega con el botón Pelotas.)
 | pelotero | 5 | reja, tubo (marco de 4 tubos + reja) |
+| pelotero_gigante | 119 | pelotero completo: cuerpos, pelotas, contenedores, puente, tobogán, palo y tubos, UN grupo plano |
+| tejo | 16 | juego del tejo (mesa, patas, fichas, mandos), un grupo |
+| plataforma | 3 | base de 3 capas para apoyar la escena |
+
+(El editor tiene además el objeto "Pelotas": relleno de pelotas de colores en una sola malla; viene dentro del pelotero_gigante.)
 
 ## Cómo funciona
 - La pieza se inserta como **grupo**: una parte es la *madre* y las demás son *hijos* con posición relativa. En el editor, mover/escalar/girar la madre mueve todo; "Aislar" muestra solo la pieza; cada parte se puede abrir y recolorear sola.

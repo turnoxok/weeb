@@ -68,19 +68,58 @@
   ]
  },
  {
-  "nombre": "pelotero_grande",
-  "titulo": "Pelotero grande (8 cuerpos + pisos + tobogán de tubos)",
-  "partes": 92,
+  "nombre": "pelotero_gigante",
+  "titulo": "Pelotero gigante (cuerpos, pelotas, contenedores, puente, tobogán, palo y tubos)",
+  "partes": 119,
   "roles": [
    "reja",
+   "tobogan_rampa",
+   "tobogan_cuerpo",
+   "tobogan_detalle",
+   "puente_piso",
+   "puente_estructura",
+   "puente_zocalo",
+   "puente_remaches",
    "tubo",
-   "tapa_2",
+   "palo",
    "tapa",
+   "tapa_2",
    "piso",
-   "piso_hueco",
+   "piso_2",
    "tobogan_tubo",
    "tobogan_tubo_2",
-   "semitubo"
+   "tobogan_tubo_3",
+   "semitubo",
+   "semitubo_2",
+   "pelotas",
+   "contenedor",
+   "contenedor_largo",
+   "contenedor_largo_tapa"
+  ]
+ },
+ {
+  "nombre": "tejo",
+  "titulo": "Tejo (juego)",
+  "partes": 16,
+  "roles": [
+   "marco",
+   "tablero",
+   "ranura",
+   "pata",
+   "ficha",
+   "mando",
+   "mando_detalle",
+   "ficha_detalle"
+  ]
+ },
+ {
+  "nombre": "plataforma",
+  "titulo": "Plataforma (base de la escena)",
+  "partes": 3,
+  "roles": [
+   "base",
+   "capa",
+   "detalle"
   ]
  }
 ]
