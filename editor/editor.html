@@ -3875,7 +3875,7 @@ function projectUVs(g, tile) {
   }
   g.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
 }
-function buildSvgExtrude(text, depthK, bevK, segK, lite, rev) {
+function buildSvgExtrude(text, depthK, bevK, segK, lite, rev, arc) {
   const data = new SVGLoader().parse(text);
   const parts = [];
   const box = new THREE.Box2();
@@ -3904,7 +3904,8 @@ function buildSvgExtrude(text, depthK, bevK, segK, lite, rev) {
         const pts = sh.getPoints(Math.max(6, Math.round(curveSeg * 1.2))).filter((v, i, a) => i === 0 || Math.abs(v.x - a[i - 1].x) + Math.abs(v.y - a[i - 1].y) > 1e-5);
         const pr = pts.map((v) => new THREE.Vector2(Math.max(0, v.x), v.y - cy));
         if (pr.length < 3) return;
-        const g = new THREE.LatheGeometry(pr, nSeg);
+        const arcR = arc > 0 && arc < 360 ? (arc * Math.PI) / 180 : Math.PI * 2;
+        const g = new THREE.LatheGeometry(pr, arcR < Math.PI * 2 ? Math.max(8, Math.round(nSeg * arcR / (Math.PI * 2))) : nSeg, 0, arcR);
         g.scale(1 / H, 1 / H, 1 / H);
         const geo = toCreasedNormals(g, 0.7);
         g.dispose();
@@ -3963,14 +3964,14 @@ function makeSvgMat(data, base, lite) {
 }
 function SvgExtrudeBody({ url, data, fade, hasFade, shadows }) {
   const [built, setBuilt] = useState(null);
-  const ext = data.ext || 0, bev = data.bev ?? 0.3, seg = data.seg || 0, rev = !!data.rev;
+  const ext = data.ext || 0, bev = data.bev ?? 0.3, seg = data.seg || 0, rev = !!data.rev, arc = rev ? (data.revArc || 0) : 0;
   const lite = React.useContext(PerfCtx).tier < 2;
   const gref = useRef(null);
   useEffect(() => {
     let off = false;
     let tries = 0, timer = null;
     const load = () => {
-      fetchSvgText(url).then((t) => { if (off) return; try { setBuilt((prev) => { if (prev) prev.parts.forEach((pt) => pt.geo.dispose()); return buildSvgExtrude(t, ext, bev, seg, lite, rev); }); } catch (e) { console.warn("No se pudo extruir el SVG:", e && e.message); } }).catch((e) => {
+      fetchSvgText(url).then((t) => { if (off) return; try { setBuilt((prev) => { if (prev) prev.parts.forEach((pt) => pt.geo.dispose()); return buildSvgExtrude(t, ext, bev, seg, lite, rev, arc); }); } catch (e) { console.warn("No se pudo extruir el SVG:", e && e.message); } }).catch((e) => {
         if (off) return;
         console.warn("SVG no disponible, reintentando:", e && e.message);
         if (++tries <= 6) timer = setTimeout(load, 2000 * tries);
@@ -3978,8 +3979,8 @@ function SvgExtrudeBody({ url, data, fade, hasFade, shadows }) {
     };
     load();
     return () => { off = true; if (timer) clearTimeout(timer); };
-  }, [url, ext, bev, seg, lite, rev]);
-  const mats = useMemo(() => (built ? built.parts.map((pt) => makeSvgMat(data, pt.color, lite)) : []), [built, data.mat, data.matColor, data.matRough, lite]);
+  }, [url, ext, bev, seg, lite, rev, arc]);
+  const mats = useMemo(() => (built ? built.parts.map((pt) => { const m = makeSvgMat(data, pt.color, lite); if (arc > 0 && arc < 360) m.side = THREE.DoubleSide; return m; }) : []), [built, data.mat, data.matColor, data.matRough, lite, arc]);
   useEffect(() => () => mats.forEach((m) => m.dispose()), [mats]);
   const envTex = useStudioEnv();
   const envCfg = React.useContext(EnvSettingsCtx);
@@ -8127,6 +8128,7 @@ ${kfLines}
     bev: ${fmtNum(o.bev ?? 0.3)},
     seg: ${fmtNum(o.seg || 0)},
     rev: ${o.rev ? "true" : "false"},
+    revArc: ${fmtNum(o.revArc || 0)},
     mat: ${JSON.stringify(o.mat || "plastic")},
     matColor: ${JSON.stringify(o.matColor || "")},
     matRough: ${o.matRough != null ? fmtNum(o.matRough) : "null"},
@@ -10931,6 +10933,7 @@ function App() {
             {(o.ext || 0) > 0 && (
               <>
                 <Switch checked={!!o.rev} onChange={(v) => updateObject(o.id, { rev: v })} label="Revolución (esfera, aro, cilindro: gira el perfil)" />
+                {o.rev && <Slider label="Arco de la revolución (grados · 0 = vuelta completa)" min={0} max={360} step={5} value={o.revArc || 0} onChange={(v) => updateObject(o.id, { revArc: v })} />}
                 {o.rev && <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>El SVG se lee como el perfil de medio corte: el borde izquierdo es el eje de giro y el alto es la altura real. Aro = un círculo separado del borde izquierdo; esfera = media circunferencia pegada al borde.</div>}
                 <Slider label="Bisel (borde redondeado)" min={0} max={1} step={0.01} value={o.bev ?? 0.3} onChange={(v) => updateObject(o.id, { bev: v })} />
                 <Slider label="Suavidad de curvas (0 = auto)" min={0} max={64} step={1} value={o.seg || 0} onChange={(v) => updateObject(o.id, { seg: v })} />

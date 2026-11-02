@@ -4,7 +4,7 @@
  "version": 1,
  "origen": "tuweeb",
  "madre": "tubo_cuarto_00",
- "nota": "Cuarto de aro hueco de pared fina (curva de 90°). Rol \"tubo\" para el color. --escala = alto de la curva; el codo mira hacia arriba-izquierda (usar --giro para orientarlo). Es una pared curva extruida, no un caño con sección redonda.",
+ "nota": "Tubo hueco curvo (cuarto de vuelta) de pared fina y sección redonda, hecho por revolución. Rol \"tubo\" = color. --escala = diámetro del tubo (radio de curva = 1,25 diámetros). Sale con la curva de +Z hacia +X; usar --giro para orientarla. En el editor: ficha de la pieza → \"Arco de la revolución\" (90 = cuarto, 180 = medio).",
  "roles": {
   "tubo": "#9977b7"
  },
@@ -35,10 +35,10 @@
     "borderWidth": 0,
     "borderColor": "#ffffff",
     "billboard": false,
-    "ext": 0.3,
-    "bev": 0.08,
+    "ext": 0.01,
+    "bev": 0,
     "seg": 0,
-    "rev": false,
+    "rev": true,
     "mat": "matte",
     "matColor": "#9977b7",
     "matRough": null,
@@ -50,7 +50,8 @@
     "previewUrl": null,
     "scrubFrom": 0,
     "scrubTo": 100,
-    "shCast": true
+    "shCast": true,
+    "revArc": 90
    },
    "pose": {
     "position": [
