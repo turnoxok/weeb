@@ -1,0 +1,3245 @@
+{
+ "nombre": "pelotero_grande",
+ "titulo": "Pelotero grande (8 cuerpos + pisos + tobogán de tubos)",
+ "version": 1,
+ "origen": "lemadavami",
+ "madre": "pg_000",
+ "nota": "Pelotero de 4 cuerpos abajo y 4 arriba, 3 pisos/tapas, tobogán de tubos y 5 semitubos. UN solo grupo: la madre es la primera reja; mover/escalar/girar la madre mueve todo (--pos, --giro, --escala). Hijos en un solo nivel, nombres pelotero_grande_<rol>_<nn>. Roles: reja, tubo, tapa_2, tapa, piso, piso_hueco, tobogan_tubo, tobogan_tubo_2, semitubo.",
+ "roles": {
+  "reja": "#ffffff",
+  "tubo": "#e7dfdf",
+  "tapa_2": "#e3bd40",
+  "tapa": "#fc9835",
+  "piso": "#b079dc",
+  "piso_hueco": "#78c944",
+  "tobogan_tubo": "#78c944",
+  "tobogan_tubo_2": "#fc9835",
+  "semitubo": "#78c944"
+ },
+ "partes": [
+  {
+   "clave": "pg_000",
+   "rol": "reja",
+   "esMadre": true,
+   "objeto": {
+    "label": "pelotero_grande_reja_00",
+    "type": "image",
+    "url": "./assets/models/polotero-reja.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.001,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#ffffff"
+   },
+   "pose": {
+    "position": [
+     0,
+     1.68,
+     0
+    ],
+    "scale": 2.66,
+    "rotationY": 0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "rz": 0
+   }
+  },
+  {
+   "clave": "pg_001",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_01",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.0,
+     -0.5255,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_002",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_02",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.0,
+     0.5401,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_003",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_03",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -1.0401,
+     0.0,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_004",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_04",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     1.0438,
+     0.0,
+     0.0
+    ],
+    "scale": 0.219,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_005",
+   "rol": "tapa_2",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tapa_2_05",
+    "type": "image",
+    "url": "./assets/models/Pelotero-con-circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.09,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#e3bd40",
+    "bev": 0
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -4.3409,
+     0.0,
+     0.0
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_006",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_06",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -4.3409,
+     -0.5255,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_007",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_07",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -4.3409,
+     0.5401,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_008",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_08",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -5.381,
+     0.0,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_009",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_09",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.2971,
+     0.0,
+     0.0
+    ],
+    "scale": 0.219,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_010",
+   "rol": "reja",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_reja_10",
+    "type": "image",
+    "url": "./assets/models/polotero-reja.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.001,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -4.3409,
+     1.1701,
+     0.0
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_011",
+   "rol": "reja",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_reja_11",
+    "type": "image",
+    "url": "./assets/models/polotero-reja.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.001,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -6.514,
+     0.0,
+     0.0
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_012",
+   "rol": "reja",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_reja_12",
+    "type": "image",
+    "url": "./assets/models/polotero-reja.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.001,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -4.3618,
+     0.0,
+     -1.24
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_013",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_13",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -4.3409,
+     0.6446,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_014",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_14",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -4.3409,
+     1.7103,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_015",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_15",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -5.381,
+     1.1701,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_016",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_16",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.2971,
+     1.1701,
+     0.0
+    ],
+    "scale": 0.219,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_017",
+   "rol": "reja",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_reja_17",
+    "type": "image",
+    "url": "./assets/models/polotero-reja.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.001,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -6.514,
+     1.1701,
+     0.0
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_018",
+   "rol": "reja",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_reja_18",
+    "type": "image",
+    "url": "./assets/models/polotero-reja.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.001,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -4.3618,
+     1.1701,
+     -1.24
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_019",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_19",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -6.514,
+     -0.5255,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_020",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_20",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -6.514,
+     0.5401,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_021",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_21",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -7.5542,
+     0.0,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_022",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_22",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -5.4702,
+     0.0,
+     0.0
+    ],
+    "scale": 0.219,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_023",
+   "rol": "reja",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_reja_23",
+    "type": "image",
+    "url": "./assets/models/polotero-reja.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.001,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -6.5349,
+     0.0,
+     -1.24
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_024",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_24",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -4.3618,
+     -0.5255,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_025",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_25",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -4.3618,
+     0.5401,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_026",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_26",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -5.4019,
+     0.0,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_027",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_27",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.318,
+     0.0,
+     -1.24
+    ],
+    "scale": 0.219,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_028",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_28",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -6.514,
+     0.6446,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_029",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_29",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -6.514,
+     1.7103,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_030",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_30",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -7.5542,
+     1.1701,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_031",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_31",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -5.4702,
+     1.1701,
+     0.0
+    ],
+    "scale": 0.219,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_032",
+   "rol": "reja",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_reja_32",
+    "type": "image",
+    "url": "./assets/models/polotero-reja.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.001,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -6.5349,
+     1.1701,
+     -1.24
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_033",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_33",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -4.3618,
+     0.6446,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_034",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_34",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -4.3618,
+     1.7103,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_035",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_35",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -5.4019,
+     1.1701,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_036",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_36",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.318,
+     1.1701,
+     -1.24
+    ],
+    "scale": 0.219,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_037",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_37",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -6.5349,
+     -0.5255,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_038",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_38",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -6.5349,
+     0.5401,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_039",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_39",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -7.5751,
+     0.0,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_040",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_40",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -5.4911,
+     0.0,
+     -1.24
+    ],
+    "scale": 0.219,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_041",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_41",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -6.5349,
+     0.6446,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_042",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_42",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -6.5349,
+     1.7103,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_043",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_43",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -7.5751,
+     1.1701,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_044",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_44",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -5.4911,
+     1.1701,
+     -1.24
+    ],
+    "scale": 0.219,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_045",
+   "rol": "tapa",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tapa_45",
+    "type": "image",
+    "url": "./assets/models/Pelotero-con-circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.08,
+    "mat": "matte",
+    "matRough": null,
+    "bev": 0,
+    "matColor": "#fc9835"
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.0,
+     1.1701,
+     0.0
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_046",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_46",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.0,
+     0.6446,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_047",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_47",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.0,
+     1.7103,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_048",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_48",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -1.0401,
+     1.1701,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_049",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_49",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     1.0438,
+     1.1701,
+     0.0
+    ],
+    "scale": 0.219,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_050",
+   "rol": "reja",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_reja_50",
+    "type": "image",
+    "url": "./assets/models/polotero-reja.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.001,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -2.1731,
+     1.1701,
+     0.0
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_051",
+   "rol": "reja",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_reja_51",
+    "type": "image",
+    "url": "./assets/models/polotero-reja.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.001,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.0209,
+     1.1701,
+     -1.24
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_052",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_52",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -2.1731,
+     0.6446,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_053",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_53",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -2.1731,
+     1.7103,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_054",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_54",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.2133,
+     1.1701,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_055",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_55",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -1.1293,
+     1.1701,
+     0.0
+    ],
+    "scale": 0.219,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_056",
+   "rol": "reja",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_reja_56",
+    "type": "image",
+    "url": "./assets/models/polotero-reja.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.001,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -2.194,
+     1.1701,
+     -1.24
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_057",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_57",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.0209,
+     0.6446,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_058",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_58",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.0209,
+     1.7103,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_059",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_59",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -1.061,
+     1.1701,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_060",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_60",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     1.0229,
+     1.1701,
+     -1.24
+    ],
+    "scale": 0.219,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_061",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_61",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -2.194,
+     0.6446,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_062",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_62",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -2.194,
+     1.7103,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_063",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_63",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.2342,
+     1.1701,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_064",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_64",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -1.1502,
+     1.1701,
+     -1.24
+    ],
+    "scale": 0.219,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_065",
+   "rol": "reja",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_reja_65",
+    "type": "image",
+    "url": "./assets/models/polotero-reja.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.001,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -2.1731,
+     0.0,
+     0.0
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_066",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_66",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -2.1731,
+     -0.5255,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_067",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_67",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -2.1731,
+     0.5401,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_068",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_68",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.2133,
+     0.0,
+     0.0
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_069",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_69",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -1.1293,
+     0.0,
+     0.0
+    ],
+    "scale": 0.219,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_070",
+   "rol": "reja",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_reja_70",
+    "type": "image",
+    "url": "./assets/models/polotero-reja.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.001,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -2.194,
+     0.0,
+     -1.24
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_071",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_71",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -2.194,
+     -0.5255,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_072",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_72",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -2.194,
+     0.5401,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_073",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_73",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -3.2342,
+     0.0,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_074",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_74",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -1.1502,
+     0.0,
+     -1.24
+    ],
+    "scale": 0.219,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_075",
+   "rol": "reja",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_reja_75",
+    "type": "image",
+    "url": "./assets/models/polotero-reja.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#d68cff",
+    "ext": 0.001,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.0209,
+     0.0,
+     -1.24
+    ],
+    "scale": 1.0,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 0.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_076",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_76",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.0209,
+     -0.5255,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_077",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_77",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 10,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -0.0209,
+     0.5401,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_078",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_78",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -1.061,
+     0.0,
+     -1.24
+    ],
+    "scale": 0.21898,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_079",
+   "rol": "tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tubo_79",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#ff8cc6",
+    "ext": 4.9,
+    "matColor": "#e7dfdf",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     1.0229,
+     0.0,
+     -1.24
+    ],
+    "scale": 0.219,
+    "sx": 0.5,
+    "sy": 0.5,
+    "rotationY": 90.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_080",
+   "rol": "piso",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_piso_80",
+    "type": "image",
+    "url": "./assets/models/Pelotero-sin-circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#f6e05e",
+    "ext": 0.085,
+    "matColor": "#b079dc",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     0.0,
+     0.6466,
+     -0.6316
+    ],
+    "scale": 1.08647,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_081",
+   "rol": "piso",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_piso_81",
+    "type": "image",
+    "url": "./assets/models/Pelotero-sin-circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#f6e05e",
+    "ext": 0.085,
+    "matColor": "#b079dc",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -6.5263,
+     0.6316,
+     -0.6316
+    ],
+    "scale": 1.08647,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_082",
+   "rol": "piso_hueco",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_piso_hueco_82",
+    "type": "image",
+    "url": "./assets/models/Pelotero-con-circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#f6e05e",
+    "ext": 0.085,
+    "matColor": "#78c944",
+    "bev": 0,
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -6.5263,
+     1.6992,
+     -0.6165
+    ],
+    "scale": 1.08647,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_083",
+   "rol": "tobogan_tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tobogan_tubo_83",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#7c8cff",
+    "ext": 1.3,
+    "bev": 0,
+    "matColor": "#78c944"
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -6.6015,
+     2.2556,
+     -0.5714
+    ],
+    "scale": 0.88346,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -0.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_084",
+   "rol": "tobogan_tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tobogan_tubo_84",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#7c8cff",
+    "ext": 0.59,
+    "bev": 0,
+    "matColor": "#78c944"
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -7.1579,
+     2.406,
+     -0.5714
+    ],
+    "scale": 0.51128,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -90.0,
+    "rx": -0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_085",
+   "rol": "tobogan_tubo",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tobogan_tubo_85",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#7c8cff",
+    "ext": 3.2,
+    "bev": 0,
+    "matColor": "#78c944",
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -6.7669,
+     1.3684,
+     1.609
+    ],
+    "scale": 0.45489,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -4.5,
+    "rx": 26.0,
+    "rz": -35.0
+   }
+  },
+  {
+   "clave": "pg_086",
+   "rol": "tobogan_tubo_2",
+   "esMadre": false,
+   "objeto": {
+    "label": "pelotero_grande_tobogan_tubo_2_86",
+    "type": "image",
+    "url": "./assets/models/Circulo.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#7c8cff",
+    "ext": 0.26,
+    "bev": 0,
+    "matColor": "#fc9835",
+    "mat": "matte",
+    "matRough": null
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -7.4135,
+     -0.2256,
+     2.7368
+    ],
+    "scale": 0.45489,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -83.2,
+    "rx": -2.0,
+    "rz": -35.0
+   }
+  },
+  {
+   "clave": "pg_087",
+   "rol": "semitubo",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/tw_tubo_cuarto.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.01,
+    "bev": 0,
+    "seg": 0,
+    "rev": true,
+    "mat": "matte",
+    "matColor": "#78c944",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 0,
+    "label": "pelotero_grande_semitubo_87",
+    "visible": true,
+    "color": "#7ee787",
+    "previewUrl": null,
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "revArc": 180
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -7.218,
+     2.1805,
+     -0.0602
+    ],
+    "scale": 0.45113,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -180.0,
+    "rx": -23.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_088",
+   "rol": "semitubo",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/tw_tubo_cuarto.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.01,
+    "bev": 0,
+    "seg": 0,
+    "rev": true,
+    "mat": "matte",
+    "matColor": "#78c944",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 0,
+    "label": "pelotero_grande_semitubo_88",
+    "visible": true,
+    "color": "#7ee787",
+    "previewUrl": null,
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "revArc": 90
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -7.3835,
+     1.0526,
+     2.2256
+    ],
+    "scale": 0.45113,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -3.1,
+    "rx": 27.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_089",
+   "rol": "semitubo",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/tw_tubo_cuarto.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.01,
+    "bev": 0,
+    "seg": 0,
+    "rev": true,
+    "mat": "matte",
+    "matColor": "#78c944",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 0,
+    "label": "pelotero_grande_semitubo_89",
+    "visible": true,
+    "color": "#7ee787",
+    "previewUrl": null,
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "revArc": 180
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -7.4135,
+     0.5414,
+     2.2256
+    ],
+    "scale": 0.45113,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": -180.0,
+    "rx": 27.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_090",
+   "rol": "semitubo",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/tw_tubo_cuarto.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.01,
+    "bev": 0,
+    "seg": 0,
+    "rev": true,
+    "mat": "matte",
+    "matColor": "#78c944",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 0,
+    "label": "pelotero_grande_semitubo_90",
+    "visible": true,
+    "color": "#7ee787",
+    "previewUrl": null,
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "revArc": 180
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -7.3985,
+     0.0301,
+     2.2256
+    ],
+    "scale": 0.45113,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 5.2,
+    "rx": 27.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "pg_091",
+   "rol": "semitubo",
+   "esMadre": false,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/tw_tubo_cuarto.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.01,
+    "bev": 0,
+    "seg": 0,
+    "rev": true,
+    "mat": "matte",
+    "matColor": "#78c944",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 0,
+    "label": "pelotero_grande_semitubo_91",
+    "visible": true,
+    "color": "#7ee787",
+    "previewUrl": null,
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "revArc": 90
+   },
+   "pose": {
+    "hidden": false,
+    "fadeDir": "ltr",
+    "position": [
+     -7.2782,
+     1.6842,
+     0.9624
+    ],
+    "scale": 0.45113,
+    "sx": 1.0,
+    "sy": 1.0,
+    "rotationY": 88.0,
+    "rx": 1.0,
+    "rz": 29.0
+   }
+  }
+ ]
+}

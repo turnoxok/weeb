@@ -66,5 +66,21 @@
   "roles": [
    "tubo"
   ]
+ },
+ {
+  "nombre": "pelotero_grande",
+  "titulo": "Pelotero grande (8 cuerpos + pisos + tobogán de tubos)",
+  "partes": 92,
+  "roles": [
+   "reja",
+   "tubo",
+   "tapa_2",
+   "tapa",
+   "piso",
+   "piso_hueco",
+   "tobogan_tubo",
+   "tobogan_tubo_2",
+   "semitubo"
+  ]
  }
 ]

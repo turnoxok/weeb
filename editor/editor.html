@@ -9746,6 +9746,8 @@ function App() {
   const [showObjects, setShowObjects] = useState(true);
   const [showGhosts, setShowGhosts] = useState(false);     // objetos ocultos en esta pose (se dibujan tenues)
   const [labelMode, setLabelMode] = useState("visible");     // etiquetas del visor: all | visible | sel | none
+  const [openGroups, setOpenGroups] = useState(() => new Set());   // grupos desplegados en la lista (por defecto plegados)
+  const hiddenByGroup = (o) => { let q = o, n = 0; while (q && q.parent && n++ < 12) { const par = objects.find((x) => x.id === q.parent); if (!par) return false; if (!openGroups.has(par.id)) return true; q = par; } return false; };
   const [isolate, setIsolate] = useState(false);              // solo el objeto seleccionado y su grupo
   const [objSearch, setObjSearch] = useState("");
   /* Archivos que el proyecto usa pero no están en la carpeta del sitio (al reabrir un proyecto, lo subido con «Subir archivo» no se conserva:
@@ -11608,10 +11610,11 @@ function App() {
                 )}
                 {objects.length > 6 && <input type="text" placeholder={`Buscar entre ${objects.length} objetos…`} value={objSearch} onChange={(e) => setObjSearch(e.target.value)} style={{ width: "100%", marginBottom: 6 }} />}
                 <div className="outliner">
-                  {objects.map((o, i) => (objOnlyVisible && !isVisibleHere(o) && !(selObj && selObj.id === o.id)) || (objSearch.trim() && !String(o.label).toLowerCase().includes(objSearch.trim().toLowerCase()) && !(selObj && selObj.id === o.id)) ? null : (
+                  {objects.map((o, i) => (hiddenByGroup(o) && !objSearch.trim() && !(selObj && selObj.id === o.id)) || (objOnlyVisible && !isVisibleHere(o) && !(selObj && selObj.id === o.id)) || (objSearch.trim() && !String(o.label).toLowerCase().includes(objSearch.trim().toLowerCase()) && !(selObj && selObj.id === o.id)) ? null : (
                     <div key={o.id} className={`orow ${selObj && selObj.id === o.id ? "sel" : ""} ${o.visible && !(objectTransformsByKf[o.id] && objectTransformsByKf[o.id][activeStage] && objectTransformsByKf[o.id][activeStage].hidden) ? "" : "off"}`} style={{ "--oc": colorOf(o, i) }} onClick={() => setSelectedObj(o.id)}>
                       <span className="oico"><Icon name={o.type === "text" ? "text" : o.type === "shape" ? "shape" : o.type === "light" ? "light" : o.type === "smoke" ? "smoke" : o.type === "image" ? "image" : o.type === "video" ? "video" : "cube"} size={15} /></span>
-                      <span className="oname">{o.parent && objects.some((q) => q.id === o.parent) ? "↳ " : ""}{o.label}{objects.some((q) => q.parent === o.id) ? " ⛓" : ""}{missingFiles.some((m) => m.id === o.id) ? " ⚠" : ""}</span>
+                      {objects.some((q) => q.parent === o.id) && <button className="mini" title="Plegar / desplegar el grupo" onClick={(e) => { e.stopPropagation(); setOpenGroups((g) => { const n = new Set(g); if (n.has(o.id)) n.delete(o.id); else n.add(o.id); return n; }); }}>{openGroups.has(o.id) ? "▾" : "▸"}</button>}
+                      <span className="oname">{o.parent && objects.some((q) => q.id === o.parent) ? "↳ " : ""}{o.label}{objects.some((q) => q.parent === o.id) ? " ⛓ " + objects.filter((q) => q.parent === o.id).length : ""}{missingFiles.some((m) => m.id === o.id) ? " ⚠" : ""}</span>
                       <button className="mini" title="Visible" onClick={(e) => { e.stopPropagation(); updateObject(o.id, { visible: !o.visible }); }}><Icon name={o.visible ? "eye" : "eyeoff"} size={14} /></button>
                       <button className="mini" title="Duplicar (usa el mismo archivo)" onClick={(e) => { e.stopPropagation(); duplicateObject(o.id); }}><Icon name="copy" size={14} /></button>
                       <button className="mini danger" title="Eliminar" onClick={(e) => { e.stopPropagation(); removeObject(o.id); }}><Icon name="trash" size={14} /></button>

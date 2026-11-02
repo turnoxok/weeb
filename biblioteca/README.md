@@ -10,6 +10,7 @@ Cada pieza = carpeta con `pieza.json` + `svg/` (las partes). Catálogo en `indic
 | rayuela | 5 | contorno, base, fondo_numeros, numeros_color, numeros |
 | esfera | 1 | esfera (color y tamaño con --color / --escala) |
 | tubo_cuarto | 1 | tubo (cuarto de aro hueco, pared fina) |
+| pelotero_grande | 92 | pelotero de 8 cuerpos + pisos + tobogán de tubos, UN grupo plano (reja, tubo, tapa, piso, tobogan_tubo, semitubo) |
 | pelotero | 5 | reja, tubo (marco de 4 tubos + reja) |
 
 ## Cómo funciona
