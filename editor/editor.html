@@ -3996,6 +3996,73 @@ function SvgExtrudeBody({ url, data, fade, hasFade, shadows }) {
     </group>
   );
 }
+/* ============================================================
+   RELLENO DE PELOTAS: una caja llena de pelotas, dibujadas todas juntas (una sola malla instanciada) para que pese poco.
+   Es un objeto "image" con url "balls:fill". Las pelotas se reparten en una grilla con desorden (semilla fija = siempre igual),
+   solo las capas de arriba (las de abajo quedan tapadas). Los colores salen de ballCols; repetir un color = que haya más de ese.
+   ============================================================ */
+function isBallsUrl(u) { return typeof u === "string" && u.indexOf("balls:") === 0; }
+function ballsLayout(d, lite) {
+  const W = Math.max(0.1, d.ballW ?? 4), D = Math.max(0.1, d.ballD ?? 2), L = Math.max(1, Math.round(d.ballL ?? 3));
+  const dia = Math.max(0.02, d.ballR ?? 0.16), jit = Math.min(1, Math.max(0, d.ballJit ?? 0.5)), dark = Math.min(0.9, Math.max(0, d.ballDark ?? 0.35));
+  const cols = (Array.isArray(d.ballCols) && d.ballCols.length ? d.ballCols : ["#8149bd", "#fc9835", "#78c944"]).map((c) => new THREE.Color(c));
+  const cap = lite ? 700 : 5000;
+  const step = dia * 0.94, nx = Math.max(1, Math.floor(W / step)), nz = Math.max(1, Math.floor(D / step));
+  const cx = W / nx, cz = D / nz;
+  let sd = (Math.round(d.ballSeed ?? 1) * 2654435761) >>> 0;
+  const rnd = () => { sd = (sd + 0x6D2B79F5) >>> 0; let t = sd; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const out = [];
+  const mx = Math.max(0, W / 2 - dia / 2), mz = Math.max(0, D / 2 - dia / 2);
+  for (let k = L - 1; k >= 0 && out.length < cap; k--) {
+    const sh = 1 - dark * ((L - 1 - k) / Math.max(1, L - 1));
+    for (let i = 0; i < nx && out.length < cap; i++) {
+      for (let j = 0; j < nz && out.length < cap; j++) {
+        const x = Math.max(-mx, Math.min(mx, -W / 2 + (i + 0.5) * cx + (k % 2 ? cx * 0.3 : 0) + (rnd() - 0.5) * jit * cx * 0.8));
+        const z = Math.max(-mz, Math.min(mz, -D / 2 + (j + 0.5) * cz + (k % 2 ? cz * 0.3 : 0) + (rnd() - 0.5) * jit * cz * 0.8));
+        const y = dia / 2 + k * dia * 0.8 + (k === L - 1 ? rnd() * jit * dia * 0.7 : 0);
+        const c = cols[Math.floor(rnd() * cols.length) % cols.length].clone().multiplyScalar(sh * (0.94 + rnd() * 0.1));
+        out.push({ x, y, z, c });
+      }
+    }
+  }
+  return out;
+}
+function BallsBody({ data, fade, hasFade, shadows }) {
+  const lite = React.useContext(PerfCtx).tier < 2;
+  const key = JSON.stringify([data.ballW, data.ballD, data.ballL, data.ballR, data.ballJit, data.ballDark, data.ballSeed, data.ballCols, lite]);
+  const list = useMemo(() => ballsLayout(data, lite), [key]);
+  const dia = Math.max(0.02, data.ballR ?? 0.16);
+  const geo = useMemo(() => new THREE.SphereGeometry(dia / 2, lite ? 10 : 18, lite ? 7 : 12), [dia, lite]);
+  const mat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: data.ballRough ?? 0.3, metalness: 0 }), [data.ballRough]);
+  const gref = useRef(null), mref = useRef(null);
+  useEffect(() => () => geo.dispose(), [geo]);
+  useEffect(() => () => mat.dispose(), [mat]);
+  const envTex = useStudioEnv();
+  const envCfg = React.useContext(EnvSettingsCtx);
+  React.useLayoutEffect(() => {
+    const m = mref.current;
+    if (!m) return;
+    const dm = new THREE.Object3D();
+    list.forEach((b, i) => { dm.position.set(b.x, b.y, b.z); dm.updateMatrix(); m.setMatrixAt(i, dm.matrix); m.setColorAt(i, b.c); });
+    m.instanceMatrix.needsUpdate = true;
+    if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    m.computeBoundingSphere();
+  }, [list, geo, mat]);
+  useEffect(() => {
+    if (!gref.current) return;
+    if (hasFade) patchFadeMaterial([mat], fade);
+    applyStudioEnv(gref.current, envTex, envCfg.enabled, envCfg.intensity);
+  }, [mat, envTex, envCfg.enabled, envCfg.intensity, hasFade, fade]);
+  return (
+    <group ref={gref}>
+      <instancedMesh key={list.length + "|" + dia + "|" + (lite ? 1 : 0)} ref={mref} args={[geo, mat, Math.max(1, list.length)]} castShadow={shadows !== false && !lite} receiveShadow frustumCulled={false} />
+    </group>
+  );
+}
+function SceneObjectBalls({ data }) {
+  const { groupRef, fade, hasFade, zRef } = useObjectTransformRef(data.keyframes, false, false, data);
+  return <group ref={groupRef}><group ref={zRef}><BallsBody data={data} fade={fade} hasFade={hasFade} shadows={data.shadows !== false} /></group></group>;
+}
 function SceneObjectSvgExtrude({ data }) {
   const { groupRef, fade, hasFade, zRef } = useObjectTransformRef(data.keyframes, data.billboard, false, data);
   const body = <group ref={zRef}><SvgExtrudeBody url={data.url} data={data} fade={fade} hasFade={hasFade} shadows={data.shadows !== false} /></group>;
@@ -4058,6 +4125,7 @@ function SceneObjectVideo({ data }) {
   );
 }
 function SceneObjectImage({ data }) {
+  if (isBallsUrl(data.url)) return <SceneObjectBalls data={data} />;
   return isSvgUrl(data.url) ? ((data.ext || 0) > 0 ? <SceneObjectSvgExtrude data={data} /> : <SceneObjectImageSvg data={data} />) : <SceneObjectImageRaster data={data} />;
 }
 /* ============================================================
@@ -4417,7 +4485,7 @@ function SceneObjects() {
 }
 OBJECTS.forEach((obj) => {
   if (obj.type === "text" || obj.type === "video" || obj.type === "light" || obj.type === "smoke") return; // texto y video no se precargan (el video se baja solo al montarse)
-  if (obj.type === "image") useTexture.preload(obj.url);
+  if (obj.type === "image") { if (!isBallsUrl(obj.url)) useTexture.preload(obj.url); }
   else useGLTF.preload(obj.url);
 });
 
@@ -6683,6 +6751,9 @@ function FadeGroup({ obj, fade, children }) {
 //@@use buildSvgExtrude
 //@@use makeSvgMat
 //@@use SvgExtrudeBody
+//@@use isBallsUrl
+//@@use ballsLayout
+//@@use BallsBody
 //@@use accentTone
 //@@use accentHalo
 //@@use NaturalFill
@@ -7047,7 +7118,16 @@ function ObjectPreviewShape({ obj, fade }) {
     ? <Billboard position={obj.position}>{mesh}</Billboard>
     : <group position={obj.position} rotation={[0, (obj.rotationY * Math.PI) / 180, 0]}>{mesh}</group>;
 }
+function ObjectPreviewBalls({ obj, fade }) {
+  const sc = obj.scale;
+  return (
+    <group scale={[sc, sc, sc]} position={obj.position} rotation={eulYXZ(obj.rx, obj.rotationY, obj.rz)}>
+      <BallsBody data={obj} fade={fade} hasFade shadows />
+    </group>
+  );
+}
 function ObjectPreviewImage({ obj, fade }) {
+  if (isBallsUrl(obj.url)) return <ObjectPreviewBalls obj={obj} fade={fade} />;
   return isSvgUrl(obj.url) ? ((obj.ext || 0) > 0 ? <ObjectPreviewSvgExtrude obj={obj} fade={fade} /> : <ObjectPreviewImageSvg obj={obj} fade={fade} />) : <ObjectPreviewImageRaster obj={obj} fade={fade} />;
 }
 function eulYXZ(rx, ry, rz) { return new THREE.Euler(((rx || 0) * Math.PI) / 180, ((ry || 0) * Math.PI) / 180, ((rz || 0) * Math.PI) / 180, "YXZ"); }
@@ -8127,7 +8207,7 @@ ${kfLines}
     ext: ${fmtNum(o.ext || 0)},
     bev: ${fmtNum(o.bev ?? 0.3)},
     seg: ${fmtNum(o.seg || 0)},
-    rev: ${o.rev ? "true" : "false"},
+${o.url && o.url.indexOf("balls:") === 0 ? `    ballW: ${fmtNum(o.ballW ?? 4)}, ballD: ${fmtNum(o.ballD ?? 2)}, ballL: ${fmtNum(o.ballL ?? 3)}, ballR: ${fmtNum(o.ballR ?? 0.16)}, ballJit: ${fmtNum(o.ballJit ?? 0.5)}, ballDark: ${fmtNum(o.ballDark ?? 0.35)}, ballSeed: ${fmtNum(o.ballSeed ?? 1)}, ballRough: ${fmtNum(o.ballRough ?? 0.3)}, ballCols: ${JSON.stringify(o.ballCols || ["#8149bd", "#fc9835", "#78c944"])},\n` : ""}    rev: ${o.rev ? "true" : "false"},
     revArc: ${fmtNum(o.revArc || 0)},
     mat: ${JSON.stringify(o.mat || "plastic")},
     matColor: ${JSON.stringify(o.matColor || "")},
@@ -9762,7 +9842,7 @@ function App() {
       const miss = [];
       for (const o of objects) {
         const u = o.url || "";
-        if (!u || o.previewUrl || /^(blob:|data:)/.test(u) || ["text", "shape", "light", "smoke"].includes(o.type)) continue;
+        if (!u || o.previewUrl || u.indexOf("balls:") === 0 || /^(blob:|data:)/.test(u) || ["text", "shape", "light", "smoke"].includes(o.type)) continue;
         let ok = fileCheckRef.current[u];
         if (ok === undefined) {
           try { const r = await fetch(new URL(u, window.location.href).href, { method: "HEAD", cache: "no-store" }); ok = r.ok; } catch (e) { ok = false; }
@@ -9793,6 +9873,15 @@ function App() {
     if (type === "text") Object.assign(base, { text: "Texto", textEffect: "none", textColor: "#ffffff", fontFamily: "'Inter', sans-serif", fontWeight: 600, textAlign: "center", textOutline: false, textOutlineColor: "#000000", textGradient: { on: false, colors: ["#6ee7f9", "#a78bfa"], angle: 0 }, letterSpacing: 0, lineHeight: 1.2, wordStyles: {} });
     setObjects((prev) => [...prev, base]);
     setObjectTransformsByKf((prev) => ({ ...prev, [newId]: Object.fromEntries(stagesComputed.map((st) => [st.id, type === "light" ? { ...defaultObjectTransform(), position: [0, 2.5, 4], lt: [0, 1, 0], li: 1 } : type === "smoke" ? { ...defaultObjectTransform(), position: [0, 1.5, 0], sm: defaultSmokeParams() } : defaultObjectTransform()])) }));
+    setSelectedObj(newId);
+  };
+  const addBalls = () => {
+    const newId = `obj-${Date.now()}`;
+    const used = objects.map((o, k) => o.color || PALETTE[k % PALETTE.length]);
+    const color = PALETTE.find((c) => !used.includes(c)) || PALETTE[objects.length % PALETTE.length];
+    const base = { id: newId, label: `Pelotas ${objects.length + 1}`, type: "image", url: "balls:fill", previewUrl: null, billboard: false, visible: true, color, shadows: true, ballW: 4, ballD: 2, ballL: 3, ballR: 0.16, ballJit: 0.5, ballDark: 0.35, ballSeed: 1, ballRough: 0.3, ballCols: ["#8149bd", "#fc9835", "#78c944"] };
+    setObjects((prev) => [...prev, base]);
+    setObjectTransformsByKf((prev) => ({ ...prev, [newId]: Object.fromEntries(stagesComputed.map((st) => [st.id, { ...defaultObjectTransform(), position: [0, 0, 0] }])) }));
     setSelectedObj(newId);
   };
   const duplicateObject = (id) => {
@@ -10710,6 +10799,7 @@ function App() {
     const c = colorOf(o, idx);
     const isImage = o.type === "image", isVideo = o.type === "video", isText = o.type === "text", isShape = o.type === "shape", isLight = o.type === "light", isSmoke = o.type === "smoke", isModel = !isImage && !isVideo && !isText && !isShape && !isLight && !isSmoke;
     const t = (objectTransformsByKf[o.id] && objectTransformsByKf[o.id][activeStage]) || defaultObjectTransform();
+    const isBalls = o.type === "image" && isBallsUrl(o.url);
     const mismatch = (isModel && /\.(svg|png|jpe?g|webp|mp4|webm)$/i.test(o.url)) || (isImage && /\.(glb|mp4|webm)$/i.test(o.url)) || (isVideo && /\.(glb|svg|png|jpe?g|webp)$/i.test(o.url));
     const head = (
       <>
@@ -10805,7 +10895,7 @@ function App() {
         {head}
         {isText ? (
           <TextStyleEditor o={o} updateObject={updateObject} />
-        ) : isShape ? null : (
+        ) : isShape || isBalls ? null : (
           <div className="row">
             <span className="lbl">Archivo</span>
             <PathInput value={o.url} onCommit={(v) => setObjectUrl(o.id, v)} placeholder={isImage ? "./assets/models/imagen.svg" : isVideo ? "./assets/models/video.mp4" : "./assets/models/objeto.glb"} />
@@ -10896,6 +10986,37 @@ function App() {
                   <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Guion y Hueco en 0 = trazo continuo. Guion 0 con Hueco &gt; 0 = línea de puntitos. Cambiá el Desfase entre dos poses para que los guiones "caminen" al scrollear. Todo lo que cambies entre poses se anima solo.</div>
                 </>
               )}
+            </>
+          );
+        })()}
+        {isBalls && (() => {
+          const cols = Array.isArray(o.ballCols) && o.ballCols.length ? o.ballCols : ["#8149bd", "#fc9835", "#78c944"];
+          const U = (k) => (v) => updateObject(o.id, { [k]: v });
+          const setCol = (i, v) => updateObject(o.id, { ballCols: cols.map((c, j) => (j === i ? v : c)) });
+          const dia = Math.max(0.02, o.ballR ?? 0.16), st = dia * 0.94;
+          const est = Math.min(5000, Math.max(1, Math.floor((o.ballW ?? 4) / st)) * Math.max(1, Math.floor((o.ballD ?? 2) / st)) * Math.max(1, Math.round(o.ballL ?? 3)));
+          return (
+            <>
+              <div className="grp-t" style={{ marginTop: 4 }}>Relleno de pelotas · unas {est} (en celular se bajan solas)</div>
+              <Slider label="Ancho de la caja" min={0.3} max={30} step={0.05} value={o.ballW ?? 4} onChange={U("ballW")} />
+              <Slider label="Largo de la caja" min={0.3} max={30} step={0.05} value={o.ballD ?? 2} onChange={U("ballD")} />
+              <Slider label="Capas de pelotas" min={1} max={8} step={1} value={o.ballL ?? 3} onChange={U("ballL")} />
+              <Slider label="Tamaño de cada pelota" min={0.04} max={0.6} step={0.005} value={o.ballR ?? 0.16} onChange={U("ballR")} />
+              <Slider label="Desorden / relieve" min={0} max={1} step={0.01} value={o.ballJit ?? 0.5} onChange={U("ballJit")} />
+              <Slider label="Oscurecer capas de abajo" min={0} max={0.9} step={0.01} value={o.ballDark ?? 0.35} onChange={U("ballDark")} />
+              <Slider label="Brillo del plástico (0 = muy brillante)" min={0} max={1} step={0.01} value={o.ballRough ?? 0.3} onChange={U("ballRough")} />
+              <Slider label="Mezcla (semilla)" min={1} max={99} step={1} value={o.ballSeed ?? 1} onChange={U("ballSeed")} />
+              <div className="grp-t" style={{ marginTop: 6 }}>Colores de las pelotas</div>
+              {cols.map((c, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <div style={{ flex: 1 }}><ColorRow label={`Color ${i + 1}`} value={c} onChange={(v) => setCol(i, v)} /></div>
+                  {cols.length > 1 && <button className="mini danger" title="Quitar color" onClick={() => updateObject(o.id, { ballCols: cols.filter((_, j) => j !== i) })}><Icon name="trash" size={14} /></button>}
+                </div>
+              ))}
+              <div className="tools">
+                {cols.length < 8 && <Btn icon="plus" onClick={() => updateObject(o.id, { ballCols: [...cols, cols[cols.length - 1]] })}>Sumar color</Btn>}
+              </div>
+              <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>El objeto es una caja que se llena de pelotas; su posición es el centro del piso de la caja. Repetir un color hace que haya más pelotas de ese color. Se mueve y se escala como cualquier objeto.</div>
             </>
           );
         })()}
@@ -11598,6 +11719,7 @@ function App() {
                   <Btn icon="shape" onClick={() => addObject("shape")}>Forma</Btn>
                   <Btn icon="light" onClick={() => addObject("light")}>Luz</Btn>
                   <Btn icon="smoke" onClick={() => addObject("smoke")}>Humo</Btn>
+                  <Btn icon="shape" onClick={addBalls}>Pelotas</Btn>
                   <span className="grow" />
                   <IBtn icon="copy" title="Todos desde la pose anterior" disabled={stageIndex <= 0 || !objects.length} onClick={copyAllObjectTransformsFromPrev} />
                   <IBtn icon="pin" title="Fijar todos en todas las poses" disabled={!objects.length} onClick={applyAllObjectTransformsToAllStages} />
