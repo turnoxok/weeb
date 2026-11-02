@@ -387,6 +387,16 @@
   .backtop__ico { width: 40%; height: 40%; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: transform .3s ease; }
   .backtop:hover .backtop__ico { transform: translateY(-2px); }
   @media (prefers-reduced-motion: reduce) { .backtop, .backtop__ico { transition: opacity .2s linear; } }
+  .fab { position: fixed; z-index: 9; bottom: calc(18px + var(--fab-lift, 0px) + env(safe-area-inset-bottom)); display: flex; gap: 10px; align-items: center; opacity: 0; visibility: hidden; transform: translateY(14px); pointer-events: none; transition: opacity .35s ease, transform .35s ease, visibility 0s linear .35s; }
+  .fab.is-on { opacity: 1; visibility: visible; transform: none; pointer-events: auto; transition-delay: 0s; }
+  .fab--right { right: 18px; flex-direction: row-reverse; } .fab--left { left: 18px; } .fab--center { left: 0; right: 0; justify-content: center; }
+  .fab__btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; border-radius: 99px; text-decoration: none; font-family: inherit; font-weight: 700; font-size: 15px; line-height: 1; box-shadow: 0 6px 20px rgba(0,0,0,.28); transition: transform .2s ease; -webkit-tap-highlight-color: transparent; }
+  .fab__btn:hover { transform: translateY(-2px); } .fab__btn:active { transform: scale(.95); }
+  .fab__btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .fab__book { background: var(--fab-bg); color: var(--fab-ink); padding: 0 20px 0 16px; }
+  .fab__round { width: 48px; padding: 0; color: #fff; }
+  .fab__wa { background: #25d366; } .fab__map { background: rgba(24,20,34,.86); }
+  @media (prefers-reduced-motion: reduce) { .fab, .fab__btn { transition: opacity .2s linear; } }
 
   .brand-mark {
     position: fixed;
@@ -931,6 +941,7 @@ const BACKTOP = {
   "color": ""
 };
 const MENU = { "enabled": false };
+const FAB = { "enabled": false };
 /*@GEN:EXTRAS_END*/
 
 function damp(current, target, lambda, dt) {
@@ -5483,6 +5494,45 @@ function BackToTop() {
   );
 }
 
+function FloatingActions() {
+  const [on, setOn] = useState(!(FAB.showAfter > 0));
+  useEffect(() => {
+    if (!(FAB.showAfter > 0)) return undefined;
+    const f = () => setOn(window.scrollY / Math.max(1, document.documentElement.scrollHeight - window.innerHeight) > FAB.showAfter);
+    f(); window.addEventListener("scroll", f, { passive: true });
+    return () => window.removeEventListener("scroll", f);
+  }, []);
+  const phone = String(FAB.phone || "").replace(/\D/g, "");
+  const mapHref = FAB.mapUrl || (FAB.address ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(FAB.address) : "");
+  const col = FAB.color || (typeof SITE2D !== "undefined" && SITE2D.accent) || "#ffffff";
+  const n = parseInt(String(col).replace("#", "").padEnd(6, "0").slice(0, 6), 16) || 0;
+  const ink = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255 > 0.62 ? "#15121c" : "#ffffff";
+  const pos = FAB.position || "right";
+  const lift = BACKTOP.enabled && pos !== "center" && (BACKTOP.position || "right") === pos ? (BACKTOP.size || 46) + 14 : 0;
+  const showBook = FAB.book !== false && FAB.reservarUrl, showWa = FAB.wa !== false && phone, showMap = FAB.map !== false && mapHref;
+  if (!showBook && !showWa && !showMap) return null;
+  return (
+    <nav className={"fab fab--" + pos + (on ? " is-on" : "")} aria-label="Reservas y contacto" style={{ "--fab-bg": col, "--fab-ink": ink, "--fab-lift": lift + "px" }}>
+      {showBook && (
+        <a className="fab__btn fab__book" href={FAB.reservarUrl} target={FAB.newTab ? "_blank" : undefined} rel={FAB.newTab ? "noopener" : undefined}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="3" /><path d="M8 2.5v4M16 2.5v4M3 10h18" /></svg>
+          <span>{FAB.label || "Reservar"}</span>
+        </a>
+      )}
+      {showWa && (
+        <a className="fab__btn fab__round fab__wa" href={"https://wa.me/" + phone + (FAB.waText ? "?text=" + encodeURIComponent(FAB.waText) : "")} target="_blank" rel="noopener" aria-label="WhatsApp">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3z" /><path d="M8.9 8.6c.2 2.8 3.2 5.8 6.1 6l1-1.3-2-1-.9.8c-.9-.3-1.8-1.2-2.1-2.1l.8-.9-1-2z" /></svg>
+        </a>
+      )}
+      {showMap && (
+        <a className="fab__btn fab__round fab__map" href={mapHref} target="_blank" rel="noopener" aria-label="Cómo llegar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
+        </a>
+      )}
+    </nav>
+  );
+}
+
 function CursorTrail() {
   const canvasRef = useRef(null);
   useEffect(() => startCursorTrail(canvasRef.current, CURSOR, window), []);
@@ -6199,6 +6249,7 @@ function App() {
       </div>}
         </div>
       ) : <Block2D key={sec.id} s={sec} theme={SITE2D} />), SECTIONS)}
+      {FAB.enabled && <FloatingActions />}
       {BACKTOP.enabled && <BackToTop />}
       {MENU.logoUrl && <SiteLogo cfg={MENU} />}
       {MENU.enabled && <SiteMenu cfg={MENU} />}
@@ -8005,15 +8056,16 @@ const pickDock = (d) => { const o = { ...DEFAULT_DOCK }; DOCK_KEYS.forEach((k) =
 
 const DEFAULT_CURSOR = { enabled: true, color: "#ffffff", size: 56, life: 0.7, intensity: 0.6, shift: 60 };
 const DEFAULT_PROGRESS_BAR = { enabled: true, color: "" };
+const DEFAULT_FAB = { enabled: false, position: "right", book: true, label: "Reservar", reservarUrl: "./reservar/", newTab: false, wa: true, waText: "Hola! Quiero consultar por una reserva.", map: true, color: "", showAfter: 0 };
 const DEFAULT_BACKTOP = { enabled: true, position: "right", style: "dark", size: 46, showAfter: 0.06, duration: 1.8, ring: true, color: "" };
 /* Bloque @GEN:EXTRAS de la plantilla: estela del mouse y barra de progreso lateral. */
 const DEFAULT_MENU = MENU_DEFAULTS;
-function generateExtrasCode(cursor, progressBar, backTop, menu, stageProgress) {
+function generateExtrasCode(cursor, progressBar, backTop, menu, stageProgress, fab) {
   const c = { ...DEFAULT_CURSOR, ...cursor }, p = { ...DEFAULT_PROGRESS_BAR, ...progressBar }, b = { ...DEFAULT_BACKTOP, ...backTop };
   const m0 = { ...DEFAULT_MENU, ...(menu || {}) };
   const sp = stageProgress || [0];
   const m = { ...m0, items: (m0.items || []).map((it) => ({ label: it.label || "", type: it.type === "pose" ? "pose" : it.type === "section" ? "section" : "url", href: it.href || "", newTab: !!it.newTab, ...(it.type === "section" ? { sec: it.sec || "" } : {}), ...(it.type === "pose" ? { pose: it.pose || 1, p: Math.round((sp[Math.min(sp.length - 1, Math.max(0, (it.pose || 1) - 1))] || 0) * 10000) / 10000 } : {}) })) };
-  return `const CURSOR = ${JSON.stringify(c, null, 2)};\nconst PROGRESS_BAR = ${JSON.stringify(p, null, 2)};\nconst BACKTOP = ${JSON.stringify(b, null, 2)};\nconst MENU = ${JSON.stringify(m, null, 2)};`;
+  return `const CURSOR = ${JSON.stringify(c, null, 2)};\nconst PROGRESS_BAR = ${JSON.stringify(p, null, 2)};\nconst BACKTOP = ${JSON.stringify(b, null, 2)};\nconst MENU = ${JSON.stringify(m, null, 2)};\nconst FAB = ${JSON.stringify({ ...DEFAULT_FAB, ...(fab || {}) }, null, 2)};`;
 }
 const DEFAULT_LOADER = { enabled: true, svg: "", background: "#05070f", lineColor: "#ffffff", font: "'Space Grotesk', sans-serif", lineWidth: 1.4, minMs: 1800, showNumber: true };
 /* Bloques @GEN:LOADER y @GEN:LOADER_CSS de la plantilla: pantalla de carga con tu SVG y el contador 000 → 100. */
@@ -9591,6 +9643,8 @@ function App() {
   const [cursor, setCursor] = useState(DEFAULT_CURSOR);
   const [progressBar, setProgressBar] = useState(DEFAULT_PROGRESS_BAR);
   const [backTop, setBackTop] = useState(DEFAULT_BACKTOP);
+  const [fab, setFab] = useState(DEFAULT_FAB);
+  const setFabField = (field, value) => setFab((prev) => ({ ...prev, [field]: value }));
   const [menu, setMenu] = useState(DEFAULT_MENU);
   const setMenuField = (field, value) => setMenu((prev) => ({ ...prev, [field]: value }));
   const setMenuItem = (i, patch) => setMenu((prev) => ({ ...prev, items: prev.items.map((it, k) => (k === i ? { ...it, ...patch } : it)) }));
@@ -10338,7 +10392,7 @@ function App() {
   const sectionsCode = useMemo(() => generateSectionsCode(sections, site2d), [sections, site2d]);
   const loaderCode = useMemo(() => generateLoaderCode(loader), [loader]);
   const loaderCss = useMemo(() => generateLoaderCss(loader), [loader]);
-  const extrasCode = useMemo(() => generateExtrasCode(cursor, progressBar, backTop, menu, stagesComputed.map((st) => st.progress)), [cursor, progressBar, backTop, menu, stagesComputed]);
+  const extrasCode = useMemo(() => generateExtrasCode(cursor, progressBar, backTop, menu, stagesComputed.map((st) => st.progress), { ...fab, phone: dock.whatsappPhone, address: dock.address, mapUrl: dock.mapUrl }), [cursor, progressBar, backTop, menu, stagesComputed, fab, dock]);
 
   const copy = async (text, which) => {
     let ok = false;
@@ -10387,6 +10441,7 @@ function App() {
     cursor,
     progressBar,
     backTop,
+    fab,
     menu,
     sections,
     site2d,
@@ -10416,6 +10471,7 @@ function App() {
     setCursor({ ...DEFAULT_CURSOR, ...(p.cursor || {}) });
     setProgressBar({ ...DEFAULT_PROGRESS_BAR, ...(p.progressBar || {}) });
     setBackTop({ ...DEFAULT_BACKTOP, ...(p.backTop || {}) });
+    setFab({ ...DEFAULT_FAB, ...(p.fab || {}) });
     setMenu({ ...DEFAULT_MENU, ...(p.menu || {}), items: (p.menu && p.menu.items) || DEFAULT_MENU.items });
     setBrandColorsState(Array.isArray(p.brandColors) && p.brandColors.length ? p.brandColors : DEFAULT_BRAND);
     setSections(Array.isArray(p.sections) && p.sections.length ? p.sections : DEFAULT_SECTIONS);
@@ -10734,7 +10790,7 @@ function App() {
     setPostFx({ vignetteEnabled: false, vignetteDarkness: 0.5, vignetteOffset: 0.15, bloomEnabled: false, bloomIntensity: 0.5, beamEnabled: false, beamOpacity: 0.5, beamWidth: 2.5, beamHeight: 14, beamSoft: 0.5, beamGlow: 0.35, beamTx: 0, beamTy: 0, beamTz: 0, partEnabled: false, partCount: 650, partSize: 1, partOpacity: 0.65, partSpeed: 1, partBlur: 0.6, partRange: 16, partBeam: 0.6, envEnabled: true, envIntensity: 0.8, toneMap: false, naturalLight: 0, exposure: 1, lookPreset: "" });
     setTrail({ enabled: false, color: "#ffd873", size: 0.05, life: 0.9, rate: 40 });
     setReflection({ enabled: false, resolution: 256, updateEvery: 2, intensity: 1 });
-    setDock(DEFAULT_DOCK); setSeo(DEFAULT_SEO); setLoader(DEFAULT_LOADER); setCursor(DEFAULT_CURSOR); setProgressBar(DEFAULT_PROGRESS_BAR); setBackTop(DEFAULT_BACKTOP); setMenu(DEFAULT_MENU);
+    setDock(DEFAULT_DOCK); setSeo(DEFAULT_SEO); setLoader(DEFAULT_LOADER); setCursor(DEFAULT_CURSOR); setProgressBar(DEFAULT_PROGRESS_BAR); setBackTop(DEFAULT_BACKTOP); setFab(DEFAULT_FAB); setMenu(DEFAULT_MENU);
     setSections(DEFAULT_SECTIONS); setSite2d(DEFAULT_SITE2D); setSelSec(null);
     setStages(st); setDurationsVh([]); setEasings([]);
     setPosesByKf(initialPoses(st)); setCamsByKf(initialCameras(st)); setMovesByKf(initialMovements(st)); setFxByKf(initialFx(st));
@@ -11314,6 +11370,22 @@ function App() {
                   <Slider label="Tamaño" min={20} max={140} step={1} value={cursor.size} onChange={(v) => setCursorField("size", v)} />
                   <Slider label="Duración (s)" min={0.2} max={2} step={0.05} value={cursor.life} onChange={(v) => setCursorField("life", v)} />
                   <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Una huella translúcida que sigue al mouse (o al dedo en el celular) y se desvanece rápido. Con blanco se ve como el rastro de un dedo sobre un vidrio; "Cambio de color" regula cuánto varían los reflejos. Probalo moviendo el mouse sobre el visor.</div>
+                </Group>
+                <Group id="fab" title="Botones flotantes · Reservar, WhatsApp, Cómo llegar" toggle={{ checked: fab.enabled, onChange: (v) => setFabField("enabled", v) }}>
+                  <Switch checked={fab.book !== false} onChange={(v) => setFabField("book", v)} label="Botón Reservar" />
+                  <div className="row"><span className="lbl">Texto</span><input type="text" style={{ flex: 1 }} value={fab.label || ""} placeholder="Reservar" spellCheck={false} onChange={(e) => setFabField("label", e.target.value)} /></div>
+                  <div className="row"><span className="lbl">Lleva a</span><input type="text" style={{ flex: 1 }} value={fab.reservarUrl || ""} placeholder="./reservar/" spellCheck={false} onChange={(e) => setFabField("reservarUrl", e.target.value)} /></div>
+                  <Switch checked={!!fab.newTab} onChange={(v) => setFabField("newTab", v)} label="Abrir la reserva en otra pestaña" />
+                  <Switch checked={fab.wa !== false} onChange={(v) => setFabField("wa", v)} label="Botón WhatsApp (usa el teléfono de Datos del negocio)" />
+                  <div className="row"><span className="lbl">Mensaje</span><input type="text" style={{ flex: 1 }} value={fab.waText || ""} placeholder="Hola! Quiero consultar por una reserva." spellCheck={false} onChange={(e) => setFabField("waText", e.target.value)} /></div>
+                  <Switch checked={fab.map !== false} onChange={(v) => setFabField("map", v)} label="Botón Cómo llegar (usa el link o la dirección de Datos del negocio)" />
+                  <SelectRow label="Posición" value={fab.position} onChange={(v) => setFabField("position", v)} options={[["right", "Derecha"], ["left", "Izquierda"], ["center", "Centro"]]} />
+                  <Slider label="Aparece al (%)" min={0} max={50} step={1} value={Math.round((fab.showAfter || 0) * 100)} onChange={(v) => setFabField("showAfter", v / 100)} />
+                  <div className="row"><span className="lbl">Color propio</span>
+                    <HexColor value={fab.color || "#fc9835"} onChange={(v) => setFabField("color", v)} />
+                    {fab.color && <button className="mini" onClick={() => setFabField("color", "")}>Quitar</button>}
+                  </div>
+                  <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Botones fijos abajo en todo el sitio. "Reservar" abre la página de reservas del salón; WhatsApp y Cómo llegar usan los datos del grupo "Datos del negocio". Sin color propio toma el color de acento del sitio.</div>
                 </Group>
                 <Group id="backtop" title="Botón volver arriba" toggle={{ checked: backTop.enabled, onChange: (v) => setBackTopField("enabled", v) }}>
                   <SelectRow label="Posición" value={backTop.position} onChange={(v) => setBackTopField("position", v)} options={[["right", "Derecha"], ["left", "Izquierda"], ["center", "Centro"]]} />
