@@ -390,12 +390,12 @@
   .fab { position: fixed; z-index: 9; bottom: calc(18px + var(--fab-lift, 0px) + env(safe-area-inset-bottom)); display: flex; gap: 10px; align-items: center; opacity: 0; visibility: hidden; transform: translateY(14px); pointer-events: none; transition: opacity .35s ease, transform .35s ease, visibility 0s linear .35s; }
   .fab.is-on { opacity: 1; visibility: visible; transform: none; pointer-events: auto; transition-delay: 0s; }
   .fab--right { right: 18px; flex-direction: row-reverse; } .fab--left { left: 18px; } .fab--center { left: 0; right: 0; justify-content: center; }
-  .fab__btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; border-radius: 99px; text-decoration: none; font-family: inherit; font-weight: 700; font-size: 15px; line-height: 1; box-shadow: 0 6px 20px rgba(0,0,0,.28); transition: transform .2s ease; -webkit-tap-highlight-color: transparent; }
+  .fab__btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; border-radius: 99px; text-decoration: none; font-family: inherit; font-weight: 700; font-size: 15px; line-height: 1; background: rgba(10,8,16,.74); color: #fff; border: 1.5px solid #fff; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: 0 6px 20px rgba(0,0,0,.35); transition: transform .2s ease; -webkit-tap-highlight-color: transparent; }
+  @media (pointer: coarse) { .fab__btn { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(10,8,16,.88); } }
   .fab__btn:hover { transform: translateY(-2px); } .fab__btn:active { transform: scale(.95); }
   .fab__btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
-  .fab__book { background: var(--fab-bg); color: var(--fab-ink); padding: 0 20px 0 16px; }
-  .fab__round { width: 48px; padding: 0; color: #fff; }
-  .fab__wa { background: #25d366; } .fab__map { background: rgba(24,20,34,.86); }
+  .fab__book { padding: 0 20px 0 16px; }
+  .fab__round { width: 48px; padding: 0; }
   @media (prefers-reduced-motion: reduce) { .fab, .fab__btn { transition: opacity .2s linear; } }
 
   .brand-mark {
@@ -5504,15 +5504,12 @@ function FloatingActions() {
   }, []);
   const phone = String(FAB.phone || "").replace(/\D/g, "");
   const mapHref = FAB.mapUrl || (FAB.address ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(FAB.address) : "");
-  const col = FAB.color || (typeof SITE2D !== "undefined" && SITE2D.accent) || "#ffffff";
-  const n = parseInt(String(col).replace("#", "").padEnd(6, "0").slice(0, 6), 16) || 0;
-  const ink = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255 > 0.62 ? "#15121c" : "#ffffff";
   const pos = FAB.position || "right";
   const lift = BACKTOP.enabled && pos !== "center" && (BACKTOP.position || "right") === pos ? (BACKTOP.size || 46) + 14 : 0;
   const showBook = FAB.book !== false && FAB.reservarUrl, showWa = FAB.wa !== false && phone, showMap = FAB.map !== false && mapHref;
   if (!showBook && !showWa && !showMap) return null;
   return (
-    <nav className={"fab fab--" + pos + (on ? " is-on" : "")} aria-label="Reservas y contacto" style={{ "--fab-bg": col, "--fab-ink": ink, "--fab-lift": lift + "px" }}>
+    <nav className={"fab fab--" + pos + (on ? " is-on" : "")} aria-label="Reservas y contacto" style={{ "--fab-lift": lift + "px" }}>
       {showBook && (
         <a className="fab__btn fab__book" href={FAB.reservarUrl} target={FAB.newTab ? "_blank" : undefined} rel={FAB.newTab ? "noopener" : undefined}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="3" /><path d="M8 2.5v4M16 2.5v4M3 10h18" /></svg>
@@ -11381,11 +11378,7 @@ function App() {
                   <Switch checked={fab.map !== false} onChange={(v) => setFabField("map", v)} label="Botón Cómo llegar (usa el link o la dirección de Datos del negocio)" />
                   <SelectRow label="Posición" value={fab.position} onChange={(v) => setFabField("position", v)} options={[["right", "Derecha"], ["left", "Izquierda"], ["center", "Centro"]]} />
                   <Slider label="Aparece al (%)" min={0} max={50} step={1} value={Math.round((fab.showAfter || 0) * 100)} onChange={(v) => setFabField("showAfter", v / 100)} />
-                  <div className="row"><span className="lbl">Color propio</span>
-                    <HexColor value={fab.color || "#fc9835"} onChange={(v) => setFabField("color", v)} />
-                    {fab.color && <button className="mini" onClick={() => setFabField("color", "")}>Quitar</button>}
-                  </div>
-                  <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Botones fijos abajo en todo el sitio. "Reservar" abre la página de reservas del salón; WhatsApp y Cómo llegar usan los datos del grupo "Datos del negocio". Sin color propio toma el color de acento del sitio.</div>
+                  <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Botones fijos abajo en todo el sitio, siempre en vidrio oscuro con borde blanco para que se lean sobre cualquier fondo. "Reservar" abre la página de reservas del salón; WhatsApp y Cómo llegar usan los datos del grupo "Datos del negocio".</div>
                 </Group>
                 <Group id="backtop" title="Botón volver arriba" toggle={{ checked: backTop.enabled, onChange: (v) => setBackTopField("enabled", v) }}>
                   <SelectRow label="Posición" value={backTop.position} onChange={(v) => setBackTopField("position", v)} options={[["right", "Derecha"], ["left", "Izquierda"], ["center", "Centro"]]} />

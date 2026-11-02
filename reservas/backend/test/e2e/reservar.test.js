@@ -17,7 +17,8 @@ const { iniciar } = require('./servidor'); const assert = require('assert'); con
   a.setNow(Date.now()); const lg = a.post({ action: 'login', email: 'dueno@mail.com', clave: 'clave-segura-123' }); a.post({ action: 'admin.pago', token: lg.data.token, id: a.run('leer_("Reservas")[0].id'), monto: 30000, metodo: 'transferencia' });
   await p.reload(); await p.waitForSelector('text=Reserva confirmada'); await shot('r5-confirmada'); ok('al registrar el pago, el link muestra "Reserva confirmada"');
   // el horario ya no está disponible para otro
-  await p.goto('http://localhost:8783/'); await p.waitForSelector('.cal button.libre'); await p.click('.cal button[aria-label^="sábado 7 de noviembre"]'); await p.waitForSelector('.slot'); assert.equal(await p.locator('.slot').count(), 1); ok('el turno reservado desaparece de la lista');
+  await p.goto('http://localhost:8783/'); await p.waitForSelector('.cal button.libre'); await p.click('.cal button[aria-label^="sábado 7 de noviembre"]'); await p.waitForSelector('.slot'); assert.equal(await p.locator('.slot').count(), 2); assert.equal(await p.locator('button.slot').count(), 1); assert((await p.locator('.slot.off').innerText()).includes('No disponible')); await shot('r5b-nodisp'); ok('el turno reservado aparece como "No disponible"');
+  assert.equal(await p.locator('a.back').getAttribute('href'), '/volver.html'); ok('hay botón para volver a la web');
   // sin seña: turno de semana
   await p.click('.cal button[aria-label^="lunes 9 de noviembre"]'); await p.waitForSelector('.slot:has-text("Sin seña")'); await p.click('.slot'); await p.fill('input[name=nombre]', 'María López'); await p.fill('input[name=telefono]', '1166667777'); await p.click('#go'); await p.waitForSelector('text=Reserva confirmada'); ok('turno sin seña: se confirma al instante');
   // carrera: otro cliente ocupa el turno mientras completo el formulario

@@ -23,7 +23,7 @@ function iniciar(carpeta, puerto, a) {
       if (req.method === 'POST') { let b = ''; req.on('data', c => (b += c)); req.on('end', () => fin(a.ctx.doPost({ postData: { contents: b } }))); } else fin(a.ctx.doGet({ parameter: Object.fromEntries(u.searchParams) }));
       return;
     }
-    if (u.pathname === '/config.json') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ api: '/exec' })); }
+    if (u.pathname === '/config.json') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ api: '/exec', volver: '/volver.html' })); }
     let rel = u.pathname === '/' ? 'index.html' : u.pathname.slice(1), f = path.join(PL, carpeta, rel);
     if (!fs.existsSync(f)) f = path.join(PL, rel);
     if (!f.startsWith(PL) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); return res.end('no'); }

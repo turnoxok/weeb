@@ -21,8 +21,9 @@ async function llamar(action, data, post) {
 }
 const wa = (txt) => S.pub.whatsapp ? 'https://wa.me/' + S.pub.whatsapp.replace(/\D/g, '') + (txt ? '?text=' + encodeURIComponent(txt) : '') : '';
 function cabecera() {
+  const volver = S.cfg.volver ? h('a', { class: 'btn line sm back', href: S.cfg.volver }, '← Volver a la web') : '';
   const w = wa(`Hola! Quiero consultar por una reserva en ${S.pub.nombre}.`);
-  return h('div', null, h('div', { class: 'head' }, S.pub.logoUrl ? h('img', { src: S.pub.logoUrl, alt: S.pub.nombre }) : '', h('h1', null, S.pub.nombre), S.pub.direccion ? h('p', { class: 'muted small', style: 'margin:.3rem 0 0' }, S.pub.direccion) : ''),
+  return h('div', null, volver, h('div', { class: 'head' }, S.pub.logoUrl ? h('img', { src: S.pub.logoUrl, alt: S.pub.nombre }) : '', h('h1', null, S.pub.nombre), S.pub.direccion ? h('p', { class: 'muted small', style: 'margin:.3rem 0 0' }, S.pub.direccion) : ''),
     h('div', { class: 'acts' }, w ? h('a', { class: 'btn soft sm', href: w, target: '_blank', rel: 'noopener' }, 'WhatsApp') : '', S.pub.mapsUrl ? h('a', { class: 'btn soft sm', href: S.pub.mapsUrl, target: '_blank', rel: 'noopener' }, 'Cómo llegar') : ''));
 }
 const firma = () => h('div', { class: 'firma' }, 'Hecho con ', h('a', { href: 'https://www.tuweeb.com', target: '_blank', rel: 'noopener' }, 'tuweeb'));
@@ -45,8 +46,8 @@ async function calendario() {
   const [y, m] = S.mes.split('-').map(Number), n = new Date(y, m, 0).getDate(), off = (new Date(y, m - 1, 1).getDay() + 6) % 7;
   const ini = d.hoy.slice(0, 7), fin = d.hasta.slice(0, 7), cel = [...['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'].map(x => h('div', { class: 'dow' }, x)), ...Array(off).fill(0).map(() => h('div', { class: 'off' }))];
   for (let i = 1; i <= n; i++) {
-    const f = `${S.mes}-${pad(i)}`, sl = d.dias[f] || [], libres = sl.filter(s => s.estado === 'libre').length;
-    cel.push(h('button', { class: (libres ? 'libre' : sl.some(s => s.estado === 'ocupado') ? 'lleno' : '') + (f === S.fecha ? ' sel' : ''), disabled: !libres, 'aria-label': flarga(f) + (libres ? ' disponible' : ' no disponible'), onclick: () => { S.fecha = f; calendario2(); } }, i));
+    const f = `${S.mes}-${pad(i)}`, sl = d.dias[f] || [], libres = sl.filter(s => s.estado === 'libre').length, mostrable = sl.some(s => s.estado === 'libre' || s.estado === 'ocupado');
+    cel.push(h('button', { class: (libres ? 'libre' : sl.some(s => s.estado === 'ocupado') ? 'lleno' : '') + (f === S.fecha ? ' sel' : ''), disabled: !mostrable, 'aria-label': flarga(f) + (libres ? ' disponible' : ' no disponible'), onclick: () => { S.fecha = f; calendario2(); } }, i));
   }
   const cont = h('div', { id: 'horarios' });
   pagina(h('h2', { class: 't' }, 'Elegí el día'), h('div', { class: 'nav' }, h('button', { class: 'icon', 'aria-label': 'Mes anterior', disabled: S.mes <= ini, onclick: () => { S.mes = sumMes(S.mes, -1); S.fecha = ''; calendario(); } }, '‹'), h('h3', null, nomMes(S.mes)), h('button', { class: 'icon', 'aria-label': 'Mes siguiente', disabled: S.mes >= fin, onclick: () => { S.mes = sumMes(S.mes, 1); S.fecha = ''; calendario(); } }, '›')),
@@ -55,8 +56,8 @@ async function calendario() {
 }
 function calendario2() { document.querySelectorAll('.cal button').forEach(b => b.classList.remove('sel')); document.querySelectorAll('.cal button').forEach(b => { if (b.getAttribute('aria-label') && b.getAttribute('aria-label').startsWith(flarga(S.fecha) + ' ')) b.classList.add('sel'); }); horarios(); }
 function horarios() {
-  const sl = ((S.disp.dias[S.fecha]) || []).filter(s => s.estado === 'libre'), multi = (S.pub.salones || []).length > 1, nom = id => ((S.pub.salones || []).find(s => s.id === id) || {}).nombre;
-  const cont = $('#horarios'); cont.replaceChildren(h('h2', { class: 't' }, 'Horarios del ' + flarga(S.fecha)), h('div', { class: 'slots' }, sl.map(s => h('button', { class: 'slot', onclick: () => { S.slot = s; formulario(); } }, h('div', null, h('b', null, `${s.inicio} a ${s.fin} hs`), h('span', { class: 'muted small' }, (s.etiqueta ? s.etiqueta : '') + (multi ? ' · ' + nom(s.salonId) : ''))), h('div', { class: 'p' }, money(s.precio), h('div', { class: 'muted small', style: 'font-weight:600' }, s.sena > 0 ? 'Seña ' + money(s.sena) : 'Sin seña'))))));
+  const sl = (S.disp.dias[S.fecha]) || [], multi = (S.pub.salones || []).length > 1, nom = id => ((S.pub.salones || []).find(s => s.id === id) || {}).nombre;
+  const cont = $('#horarios'); cont.replaceChildren(h('h2', { class: 't' }, 'Horarios del ' + flarga(S.fecha)), h('div', { class: 'slots' }, sl.map(s => s.estado !== 'libre' ? h('div', { class: 'slot off', 'aria-disabled': 'true' }, h('div', null, h('b', null, `${s.inicio} a ${s.fin} hs`), h('span', { class: 'muted small' }, (s.etiqueta ? s.etiqueta : '') + (multi ? ' · ' + nom(s.salonId) : ''))), h('div', { class: 'p muted' }, 'No disponible')) : h('button', { class: 'slot', onclick: () => { S.slot = s; formulario(); } }, h('div', null, h('b', null, `${s.inicio} a ${s.fin} hs`), h('span', { class: 'muted small' }, (s.etiqueta ? s.etiqueta : '') + (multi ? ' · ' + nom(s.salonId) : ''))), h('div', { class: 'p' }, money(s.precio), h('div', { class: 'muted small', style: 'font-weight:600' }, s.sena > 0 ? 'Seña ' + money(s.sena) : 'Sin seña'))))));
   cont.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
