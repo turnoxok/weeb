@@ -1,0 +1,148 @@
+{
+ "nombre": "torta_fondo",
+ "titulo": "Torta - fondo (4 capas)",
+ "version": 1,
+ "origen": "lemadavami",
+ "madre": "torta_fondo_00",
+ "nota": "Fondo de torta en un solo grupo (madre = capa de atrás). Roles: fondo, fondo_2, fondo_3, fondo_4. Va con torta_juego (mesa+sillas), que se pone aparte delante.",
+ "roles": {
+  "fondo": "#8149bd",
+  "fondo_2": "#fc9835",
+  "fondo_3": "#6eb7fa",
+  "fondo_4": "#ffffff"
+ },
+ "partes": [
+  {
+   "clave": "torta_fondo_00",
+   "rol": "fondo",
+   "esMadre": true,
+   "objeto": {
+    "label": "torta_fondo_fondo_00",
+    "type": "image",
+    "url": "./assets/models/Torta-fondo1.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#f6e05e",
+    "ext": 0.155,
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#8149bd"
+   },
+   "pose": {
+    "position": [
+     8,
+     1.84,
+     -10.96
+    ],
+    "scale": 4.27,
+    "rotationY": -105.3,
+    "hidden": false,
+    "fadeDir": "ltr"
+   }
+  },
+  {
+   "clave": "torta_fondo_01",
+   "rol": "fondo_2",
+   "esMadre": false,
+   "objeto": {
+    "label": "torta_fondo_fondo_01",
+    "type": "image",
+    "url": "./assets/models/Torta-fondo2.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#f6e05e",
+    "ext": 0.155,
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#fc9835"
+   },
+   "pose": {
+    "position": [
+     0.035820895522388096,
+     -0.05970149253731327,
+     0.05970149253731343
+    ],
+    "scale": 0.862686567164179,
+    "rotationY": 0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "sx": 1,
+    "sy": 1,
+    "rx": 0,
+    "rz": 0
+   }
+  },
+  {
+   "clave": "torta_fondo_02",
+   "rol": "fondo_3",
+   "esMadre": false,
+   "objeto": {
+    "label": "torta_fondo_fondo_02",
+    "type": "image",
+    "url": "./assets/models/Torta-fondo3.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#f6e05e",
+    "ext": 0.155,
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#6eb7fa"
+   },
+   "pose": {
+    "position": [
+     -0.05,
+     -0.11,
+     0.05970149253731343
+    ],
+    "scale": 0.8,
+    "rotationY": 0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "sx": 1,
+    "sy": 1,
+    "rx": 0,
+    "rz": 0
+   }
+  },
+  {
+   "clave": "torta_fondo_03",
+   "rol": "fondo_4",
+   "esMadre": false,
+   "objeto": {
+    "label": "torta_fondo_fondo_03",
+    "type": "image",
+    "url": "./assets/models/Torta-fondo4.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#f6e05e",
+    "ext": 0.155,
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#ffffff"
+   },
+   "pose": {
+    "position": [
+     0,
+     -0.11,
+     0.0197
+    ],
+    "scale": 0.8,
+    "rotationY": 0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "sx": 1,
+    "sy": 1,
+    "rx": 0,
+    "rz": 0
+   }
+  }
+ ]
+}

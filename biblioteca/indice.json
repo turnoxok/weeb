@@ -155,5 +155,29 @@
    "parlante",
    "parlante_detalle"
   ]
+ },
+ {
+  "nombre": "torta_fondo",
+  "titulo": "Torta - fondo (4 capas)",
+  "partes": 4,
+  "roles": [
+   "fondo",
+   "fondo_2",
+   "fondo_3",
+   "fondo_4"
+  ]
+ },
+ {
+  "nombre": "torta_juego",
+  "titulo": "Torta - juego de mesa (mesa, pata y 4 sillas)",
+  "partes": 6,
+  "roles": [
+   "mesa",
+   "pata",
+   "silla",
+   "silla_2",
+   "silla_3",
+   "silla_4"
+  ]
  }
 ]

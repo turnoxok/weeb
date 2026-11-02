@@ -16,6 +16,8 @@ Cada pieza = carpeta con `pieza.json` + `svg/` (las partes). Catálogo en `indic
 | plataforma | 3 | base de 3 capas para apoyar la escena |
 | metegol | 17 | metegol (cancha, patas, arcos, jugadores y palancas de dos equipos), un grupo |
 | castillo | 19 | castillo con torres, arcos, parlantes y micrófonos (las luces van aparte), un grupo |
+| torta_fondo | 4 | fondo de la torta en 4 capas, un grupo |
+| torta_juego | 6 | mesa redonda con pata y 4 sillas, un grupo (va aparte del fondo) |
 
 (El editor tiene además el objeto "Pelotas": relleno de pelotas de colores en una sola malla; viene dentro del pelotero_gigante.)
 

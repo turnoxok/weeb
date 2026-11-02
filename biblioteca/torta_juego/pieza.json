@@ -1,0 +1,222 @@
+{
+ "nombre": "torta_juego",
+ "titulo": "Torta - juego de mesa (mesa, pata y 4 sillas)",
+ "version": 1,
+ "origen": "lemadavami",
+ "madre": "torta_juego_00",
+ "nota": "Mesa redonda con pata y 4 sillas en un solo grupo (madre = tablero de la mesa, acostado rx -90). Roles: mesa, pata, silla..silla_4. Va aparte de torta_fondo.",
+ "roles": {
+  "mesa": "#ffffff",
+  "pata": "#ffffff",
+  "silla": "#b079dc",
+  "silla_2": "#fc9835",
+  "silla_3": "#78c944",
+  "silla_4": "#e3bd40"
+ },
+ "partes": [
+  {
+   "clave": "torta_juego_00",
+   "rol": "mesa",
+   "esMadre": true,
+   "objeto": {
+    "label": "torta_juego_mesa_00",
+    "type": "image",
+    "url": "./assets/models/Circulo-plano.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#f6e05e",
+    "ext": 0.06,
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#ffffff"
+   },
+   "pose": {
+    "position": [
+     5.8067,
+     0.559,
+     -11.0288
+    ],
+    "scale": 1.5799,
+    "rotationY": -105.3,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "sx": 1.0,
+    "sy": 1.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "torta_juego_01",
+   "rol": "pata",
+   "esMadre": false,
+   "objeto": {
+    "label": "torta_juego_pata_01",
+    "type": "image",
+    "url": "./assets/models/Circulo-plano.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#f6e05e",
+    "ext": 2,
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#ffffff"
+   },
+   "pose": {
+    "position": [
+     0.0,
+     0.0,
+     -0.2432
+    ],
+    "scale": 0.27027,
+    "rotationY": -0.0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "sx": 1.0,
+    "sy": 1.0,
+    "rx": 0.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "torta_juego_02",
+   "rol": "silla",
+   "esMadre": false,
+   "objeto": {
+    "label": "torta_juego_silla_02",
+    "type": "image",
+    "url": "./assets/models/Torta-silla.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#f6e05e",
+    "ext": 0.6,
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#b079dc"
+   },
+   "pose": {
+    "position": [
+     0.5405,
+     -0.0,
+     -0.1081
+    ],
+    "scale": 0.54054,
+    "rotationY": -180.0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "sx": 1.0,
+    "sy": 1.0,
+    "rx": -90.0,
+    "rz": 0.0
+   }
+  },
+  {
+   "clave": "torta_juego_03",
+   "rol": "silla_2",
+   "esMadre": false,
+   "objeto": {
+    "label": "torta_juego_silla_2_03",
+    "type": "image",
+    "url": "./assets/models/Torta-silla.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#f6e05e",
+    "ext": 0.6,
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#fc9835"
+   },
+   "pose": {
+    "position": [
+     -0.5405,
+     -0.0,
+     -0.1081
+    ],
+    "scale": 0.54054,
+    "rotationY": 90.0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "sx": 1.0,
+    "sy": 1.0,
+    "rx": 89.0,
+    "rz": 90.0
+   }
+  },
+  {
+   "clave": "torta_juego_04",
+   "rol": "silla_3",
+   "esMadre": false,
+   "objeto": {
+    "label": "torta_juego_silla_3_04",
+    "type": "image",
+    "url": "./assets/models/Torta-silla.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#f6e05e",
+    "ext": 0.6,
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#78c944"
+   },
+   "pose": {
+    "position": [
+     0.0,
+     0.5405,
+     -0.1081
+    ],
+    "scale": 0.54054,
+    "rotationY": -90.0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "sx": 1.0,
+    "sy": 1.0,
+    "rx": -4.2,
+    "rz": -90.0
+   }
+  },
+  {
+   "clave": "torta_juego_05",
+   "rol": "silla_4",
+   "esMadre": false,
+   "objeto": {
+    "label": "torta_juego_silla_4_05",
+    "type": "image",
+    "url": "./assets/models/Torta-silla.svg",
+    "previewUrl": null,
+    "billboard": false,
+    "visible": true,
+    "color": "#f6e05e",
+    "ext": 0.6,
+    "bev": 0.03,
+    "mat": "matte",
+    "matRough": null,
+    "matColor": "#e3bd40"
+   },
+   "pose": {
+    "position": [
+     0.0,
+     -0.4324,
+     -0.1081
+    ],
+    "scale": 0.54054,
+    "rotationY": 90.0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "sx": 1.0,
+    "sy": 1.0,
+    "rx": 7.5,
+    "rz": 90.0
+   }
+  }
+ ]
+}
