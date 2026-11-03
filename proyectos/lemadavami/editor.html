@@ -853,6 +853,7 @@ const SITE2D = {};
 /*@GEN:SECTIONS_END*/
 
 /*@GEN:POSTFX_START*/
+const FAKE = { on: true, opacity: 0.45 };
 const LIGHTS = { hemiSky: "#ffffff", hemiGround: "#9d8fb8", hemiIntensity: 0.7, ambColor: "#ffffff", ambIntensity: 0.25, dirColor: "#ffffff", dirIntensity: 1.1, dirAzimuth: 40, dirElevation: 55 };
 const ACCENT = "";
 const HALO = 0;
@@ -4096,11 +4097,63 @@ function makeSvgMat(data, base, lite) {
   }
   return m;
 }
+/* Sombra falsa: una mancha suave bajo los objetos que la tengan prendida (un solo InstancedMesh, casi no pesa). La ubica la persona: tamaño, altura y desplazamiento por objeto. */
+const FAKE_GROUPS = new Map();
+const FAKE_STATE = { tick: 0, built: false, tex: null };
+const FAKE_MAX = 600;
+function fakeShadowTex() {
+  if (FAKE_STATE.tex) return FAKE_STATE.tex;
+  const c = document.createElement("canvas"); c.width = 128; c.height = 128;
+  const g = c.getContext("2d"), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  gr.addColorStop(0, "rgba(0,0,0,1)"); gr.addColorStop(0.4, "rgba(0,0,0,0.9)"); gr.addColorStop(0.7, "rgba(0,0,0,0.4)"); gr.addColorStop(1, "rgba(0,0,0,0)");
+  g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+  FAKE_STATE.tex = new THREE.CanvasTexture(c);
+  return FAKE_STATE.tex;
+}
+function FakeShadows({ cfg }) {
+  const ref = useRef(null);
+  const box = useMemo(() => new THREE.Box3(), []);
+  const tmpM = useMemo(() => new THREE.Matrix4(), []);
+  const tmpQ = useMemo(() => new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0)), []);
+  const tmpP = useMemo(() => new THREE.Vector3(), []);
+  const tmpS = useMemo(() => new THREE.Vector3(), []);
+  const tex = useMemo(() => fakeShadowTex(), []);
+  useFrame(() => {
+    const im = ref.current;
+    if (!im) return;
+    if (!cfg || !cfg.on) { im.count = 0; FAKE_STATE.built = false; return; }
+    im.material.opacity = cfg.opacity;
+    const st = FAKE_STATE; st.tick++;
+    if (st.built && st.tick % 12 !== 1) return;
+    let n = 0;
+    FAKE_GROUPS.forEach((e) => {
+      const g = e.g, d = e.d;
+      if (!g || !d || !d.fakeShadow || n >= FAKE_MAX) return;
+      for (let v = g; v; v = v.parent) { if (!v.visible) return; }
+      box.setFromObject(g);
+      if (box.isEmpty()) return;
+      const k = 1.4 * (d.fakeSize == null ? 1 : d.fakeSize);
+      tmpP.set((box.min.x + box.max.x) / 2 + (d.fakeDx || 0), box.min.y + (d.fakeDrop == null ? 0.03 : d.fakeDrop), (box.min.z + box.max.z) / 2 + (d.fakeDz || 0));
+      tmpS.set(Math.max(0.05, (box.max.x - box.min.x) * k), Math.max(0.05, (box.max.z - box.min.z) * k), 1);
+      tmpM.compose(tmpP, tmpQ, tmpS);
+      im.setMatrixAt(n++, tmpM);
+    });
+    im.count = n; im.instanceMatrix.needsUpdate = true;
+    st.built = true;
+  });
+  return (
+    <instancedMesh ref={ref} args={[undefined, undefined, FAKE_MAX]} frustumCulled={false} renderOrder={5}>
+      <planeGeometry args={[1, 1]} />
+      <meshBasicMaterial map={tex} color="#000000" transparent opacity={0.45} depthWrite={false} toneMapped={false} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
+    </instancedMesh>
+  );
+}
 function SvgExtrudeBody({ url, data, fade, hasFade, shadows }) {
   const [built, setBuilt] = useState(null);
   const ext = data.ext || 0, bev = data.bev ?? 0.3, seg = data.seg || 0, rev = !!data.rev, arc = rev ? (data.revArc || 0) : 0;
   const lite = React.useContext(PerfCtx).tier &lt; 2;
   const gref = useRef(null);
+  const fid = useRef({}).current;
   useEffect(() =&gt; {
     let off = false;
     let tries = 0, timer = null;
@@ -4123,6 +4176,12 @@ function SvgExtrudeBody({ url, data, fade, hasFade, shadows }) {
     if (hasFade) patchFadeMaterial(mats, fade);
     applyStudioEnv(gref.current, envTex, envCfg.enabled, envCfg.intensity);
   }, [mats, envTex, envCfg.enabled, envCfg.intensity, hasFade, fade]);
+  useEffect(() =&gt; {
+    if (!built) return undefined;
+    FAKE_GROUPS.set(fid, { g: gref.current, d: data });
+    return () =&gt; { FAKE_GROUPS.delete(fid); };
+  }, [built]);
+  useEffect(() =&gt; { const fe = FAKE_GROUPS.get(fid); if (fe) fe.d = data; });
   if (!built) return null;
   return (
     &lt;group ref={gref}&gt;
@@ -4870,6 +4929,7 @@ function Experience({ device }) {
       &lt;SceneEnvironment /&gt;
       &lt;CameraRig mouse={mouse} /&gt;
       &lt;GlobalLights /&gt;
+      &lt;FakeShadows cfg={FAKE} /&gt;
       &lt;Suspense fallback={null}&gt;
         &lt;SceneObjects /&gt;
         &lt;ObjectBoundary&gt;
@@ -6873,6 +6933,11 @@ function FadeGroup({ obj, fade, children }) {
 //@@use bevelExtrudeGeometry
 //@@use buildSvgExtrude
 //@@use makeSvgMat
+//@@use FAKE_GROUPS
+//@@use FAKE_STATE
+//@@use FAKE_MAX
+//@@use fakeShadowTex
+//@@use FakeShadows
 //@@use SvgExtrudeBody
 //@@use isBallsUrl
 //@@use ballsLayout
@@ -7415,6 +7480,7 @@ function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate
         <ambientLight color={Lg.ambColor} intensity={Lg.ambIntensity} />
         <directionalLight color={Lg.dirColor} intensity={Lg.dirIntensity} position={lightDirFromAngles(Lg.dirAzimuth, Lg.dirElevation, 8)} />
       </>); })()}
+      <FakeShadows cfg={fakeOf(postFx)} />
       {showGrid && <BlenderGrid />}
       {showObjects &&
         objects.filter((o) => o.visible).map((o) => (
@@ -8015,6 +8081,7 @@ const ENV_ENABLED = ${postFx.envEnabled ?? true ? "true" : "false"};
 const ENV_INTENSITY = ${postFx.envIntensity ?? 0.8};
 const TONEMAP_ENABLED = ${postFx.toneMap ? "true" : "false"};
 const NATURAL_LIGHT = ${postFx.naturalLight ?? 0};
+const FAKE = ${JSON.stringify(fakeOf(postFx))};
 const LIGHTS = ${JSON.stringify(lightsOf(postFx))};
 const SPOTS_ONLY = ${postFx.spotsOnly ? "true" : "false"};
 const EXPOSURE = ${postFx.exposure ?? 1};
@@ -8269,6 +8336,11 @@ ${kfLines}
     tintAmt: ${fmtNum(o.tintAmt || 0)},
     glassMatch: ${JSON.stringify(o.glassMatch || "")},
     shadows: ${o.shadows === false ? "false" : "true"},
+    fakeShadow: ${o.fakeShadow ? "true" : "false"},
+    fakeSize: ${fmtNum(o.fakeSize ?? 1)},
+    fakeDrop: ${fmtNum(o.fakeDrop ?? 0.03)},
+    fakeDx: ${fmtNum(o.fakeDx || 0)},
+    fakeDz: ${fmtNum(o.fakeDz || 0)},
     lit: ${o.lit ? "true" : "false"},
     litBase: ${fmtNum(o.litBase ?? 0.2)},
     cornerRadius: ${fmtNum(o.cornerRadius || 0)},
@@ -9303,6 +9375,7 @@ function IBtn({ icon, kind, ...rest }) {
 }
 /* Luces globales del sitio (fijas, sin sombras): se guardan en postFx. */
 const LIGHTS_DEF = { hemiSky: "#ffffff", hemiGround: "#9d8fb8", hemiIntensity: 0.7, ambColor: "#ffffff", ambIntensity: 0.25, dirColor: "#ffffff", dirIntensity: 1.1, dirAzimuth: 40, dirElevation: 55 };
+const fakeOf = (pf) => ({ on: !pf || pf.fakeOn !== false, opacity: pf && pf.fakeOpacity != null ? pf.fakeOpacity : 0.45 });
 const lightsOf = (pf) => { const o = {}; for (const k in LIGHTS_DEF) o[k] = pf && pf[k] != null ? pf[k] : LIGHTS_DEF[k]; return o; };
 function Group({ id, title, defaultOpen = true, toggle, children }) {
   const [open, setOpen] = useState(() => groupOpenState[id] ?? defaultOpen);
@@ -9803,9 +9876,17 @@ function App() {
   const [canvasKey, setCanvasKey] = useState(0);
   const [recover, setRecover] = useState(() => {
     try {
-      if (document.getElementById("embedded-project-b64")?.textContent.trim()) return null;
       const t = localStorage.getItem("weeb-autosave");
-      return t ? { at: (JSON.parse(t).savedAt) || "", text: t } : null;
+      if (!t) return null;
+      const at = (JSON.parse(t).savedAt) || "";
+      /* Si el editor ya trae un proyecto adentro, solo se ofrece recuperar cuando el guardado automático es más nuevo que ese proyecto. */
+      const eb = document.getElementById("embedded-project-b64")?.textContent.trim();
+      if (eb) {
+        let eat = "";
+        try { eat = JSON.parse(decodeURIComponent(escape(atob(eb)))).savedAt || ""; } catch (e) { /* sin fecha */ }
+        if (!(at && at > eat)) return null;
+      }
+      return { at, text: t };
     } catch (e) { return null; }
   });
   const [exportT, setExportT] = useState(null);      // progreso fijado por el exportador de video (null = inactivo)
@@ -10798,6 +10879,7 @@ function App() {
   const mv = movesByKf[activeStage] || defaultMovement();
   const fxs = fxByKf[activeStage] || defaultFx();
   const lg = lightsOf(postFx);
+  const fk = fakeOf(postFx);
   const nStages = stagesComputed.length;
   const goStage = (d) => { const t = stagesComputed[clamp(stageIndex + d, 0, nStages - 1, )]; if (t) setActiveStage(t.id); };
   const colorOf = (o, i) => o.color || PALETTE[i % PALETTE.length];
@@ -11090,6 +11172,15 @@ function App() {
           </>
         )}
         {isModel && <Switch checked={o.shadows !== false} onChange={(v) => updateObject(o.id, { shadows: v })} label="Sombras (proyecta / recibe)" />}
+        {isImage && <Switch checked={!!o.fakeShadow} onChange={(v) => updateObject(o.id, { fakeShadow: v })} label="Sombra falsa (mancha suave debajo)" />}
+        {isImage && o.fakeShadow && (
+          <>
+            <Slider label="Tamaño de la sombra" min={0.3} max={3} step={0.01} value={o.fakeSize ?? 1} onChange={(v) => updateObject(o.id, { fakeSize: v })} />
+            <Slider label="Altura (sube o baja la sombra)" min={-1} max={1} step={0.005} value={o.fakeDrop ?? 0.03} onChange={(v) => updateObject(o.id, { fakeDrop: v })} />
+            <Slider label="Mover en X" min={-3} max={3} step={0.01} value={o.fakeDx || 0} onChange={(v) => updateObject(o.id, { fakeDx: v })} />
+            <Slider label="Mover en Z" min={-3} max={3} step={0.01} value={o.fakeDz || 0} onChange={(v) => updateObject(o.id, { fakeDz: v })} />
+          </>
+        )}
         {!isModel && <Switch checked={!!o.billboard} onChange={(v) => updateObject(o.id, { billboard: v })} label="Billboard (mira a cámara)" />}
         <Slider label="Flotar siempre (altura · 0 = no)" min={0} max={0.6} step={0.01} value={o.float || 0} onChange={(v) => updateObject(o.id, { float: v })} />
         {(o.float || 0) > 0 && <Slider label="Ritmo de la flotación" min={0.2} max={3} step={0.05} value={o.floatSpeed ?? 1} onChange={(v) => updateObject(o.id, { floatSpeed: v })} />}
@@ -11542,6 +11633,11 @@ function App() {
                   <Slider label="Intens." min={0} max={5} step={0.01} value={lg.dirIntensity} onChange={(v) => setPostFxField("dirIntensity", v)} />
                   <Slider label="Azimut" min={0} max={360} step={1} value={lg.dirAzimuth} onChange={(v) => setPostFxField("dirAzimuth", v)} />
                   <Slider label="Altura" min={-90} max={90} step={1} value={lg.dirElevation} onChange={(v) => setPostFxField("dirElevation", v)} />
+                </Group>
+                <Group id="fake" title="Sombra falsa (todo el sitio)">
+                  <Switch label="Permitir sombras falsas" checked={fk.on} onChange={(v) => setPostFxField("fakeOn", v)} />
+                  <Slider label="Oscuridad" min={0} max={1} step={0.01} value={fk.opacity} onChange={(v) => setPostFxField("fakeOpacity", v)} />
+                  <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.4 }}>Se prende objeto por objeto, en la pestaña Objetos: «Sombra falsa». Acá solo se apaga todo junto o se cambia qué tan oscura es.</div>
                 </Group>
                 <Group id="phonelights" title="Spots: sombras y límite en celular">
                   <Switch checked={!!postFx.mobileShadows} onChange={(v) => setPostFxField("mobileShadows", v)} label="Sombras de los spots en celular (más pesado)" />
