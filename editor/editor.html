@@ -3333,7 +3333,7 @@ function SceneObjectText({ data }) {
   if (!texture) return <group ref={groupRef} />;
   const refH = texture.userData.refH || texture.image.height;
   const mesh = (
-    <group ref={zRef}><mesh key={geo ? "g" : "p"} renderOrder={10} frustumCulled={!geo} geometry={geo || undefined} castShadow={!!sd} customDepthMaterial={sd ? sd.depth : undefined} customDistanceMaterial={sd ? sd.dist : undefined} scale={[texture.image.width / refH, texture.image.height / refH, 1]}>
+    <group ref={zRef}><mesh key={geo ? "g" : "p"} renderOrder={10} frustumCulled={!geo} geometry={geo || undefined} castShadow={!!sd} receiveShadow={!!data.lit} customDepthMaterial={sd ? sd.depth : undefined} customDistanceMaterial={sd ? sd.dist : undefined} scale={[texture.image.width / refH, texture.image.height / refH, 1]}>
       {!geo && <planeGeometry args={[1, 1]} />}
       <TexMaterial map={texture} lit={data.lit} litBase={data.litBase} shadowCut={!!data.shCast} matRef={(m) => { discardClearPixels(m); sharpenTextAlpha(m); if (hasFade) patchFadeMaterial(m, fade); if (geo) patchTextAnimMaterial(m, ta); }} />
     </mesh></group>
@@ -4210,7 +4210,7 @@ function SceneObjectImageRaster({ data }) {
   const { groupRef, fade, hasFade, zRef } = useObjectTransformRef(data.keyframes, data.billboard, false, data);
   const sd = useAlphaDepth(texture, !!data.shCast);
   const mesh = (
-    <group ref={zRef}><mesh renderOrder={10} scale={[aspect, 1, 1]} castShadow={!!sd} customDepthMaterial={sd ? sd.depth : undefined} customDistanceMaterial={sd ? sd.dist : undefined}>
+    <group ref={zRef}><mesh renderOrder={10} scale={[aspect, 1, 1]} castShadow={!!sd} receiveShadow={!!data.lit} customDepthMaterial={sd ? sd.depth : undefined} customDistanceMaterial={sd ? sd.dist : undefined}>
       <planeGeometry args={[1, 1]} />
       <TexMaterial map={texture} lit={data.lit} litBase={data.litBase} shadowCut={!!data.shCast} matRef={(m) => { discardClearPixels(m); if (hasFade) patchFadeMaterial(m, fade); patchMediaMaterial(m, data, aspect); }} />
     </mesh></group>
@@ -4228,7 +4228,7 @@ function SceneObjectImageSvg({ data }) {
   if (!texture) return <group ref={groupRef} />;
   const aspect = texture.image.width / texture.image.height;
   const mesh = (
-    <group ref={zRef}><mesh renderOrder={10} scale={[aspect, 1, 1]} castShadow={!!sd} customDepthMaterial={sd ? sd.depth : undefined} customDistanceMaterial={sd ? sd.dist : undefined}>
+    <group ref={zRef}><mesh renderOrder={10} scale={[aspect, 1, 1]} castShadow={!!sd} receiveShadow={!!data.lit} customDepthMaterial={sd ? sd.depth : undefined} customDistanceMaterial={sd ? sd.dist : undefined}>
       <planeGeometry args={[1, 1]} />
       <TexMaterial map={texture} lit={data.lit} litBase={data.litBase} shadowCut={!!data.shCast} matRef={(m) => { discardClearPixels(m); if (hasFade) patchFadeMaterial(m, fade); patchMediaMaterial(m, data, aspect); }} />
     </mesh></group>
@@ -7164,7 +7164,7 @@ function ObjectPreviewText({ obj, fade }) {
   if (!texture) return null;
   const refH = texture.userData.refH || texture.image.height;
   const mesh = (
-    <mesh key={geo ? "g" : "p"} renderOrder={10} frustumCulled={!geo} geometry={geo || undefined} castShadow={!!sd} customDepthMaterial={sd ? sd.depth : undefined} customDistanceMaterial={sd ? sd.dist : undefined}
+    <mesh key={geo ? "g" : "p"} renderOrder={10} frustumCulled={!geo} geometry={geo || undefined} castShadow={!!sd} receiveShadow={!!obj.lit} customDepthMaterial={sd ? sd.depth : undefined} customDistanceMaterial={sd ? sd.dist : undefined}
       scale={[(obj.scale * (obj.sx ?? 1) * texture.image.width) / refH, (obj.scale * (obj.sy ?? 1) * texture.image.height) / refH, 1]}
       position={obj.billboard ? [0, 0, 0] : obj.position}
       rotation={obj.billboard ? [0, 0, ((obj.rz || 0) * Math.PI) / 180] : eulYXZ(obj.rx, obj.rotationY, obj.rz)}
@@ -7191,7 +7191,7 @@ function ObjectPreviewImageRaster({ obj, fade }) {
   const aspect = texture.image ? texture.image.width / texture.image.height : 1;
   const sd = useAlphaDepth(texture, !!obj.shCast);
   const mesh = (
-    <mesh renderOrder={10} castShadow={!!sd} customDepthMaterial={sd ? sd.depth : undefined} customDistanceMaterial={sd ? sd.dist : undefined}
+    <mesh renderOrder={10} castShadow={!!sd} receiveShadow={!!obj.lit} customDepthMaterial={sd ? sd.depth : undefined} customDistanceMaterial={sd ? sd.dist : undefined}
       scale={[obj.scale * (obj.sx ?? 1) * aspect, obj.scale * (obj.sy ?? 1), 1]}
       position={obj.billboard ? [0, 0, 0] : obj.position}
       rotation={obj.billboard ? [0, 0, ((obj.rz || 0) * Math.PI) / 180] : eulYXZ(obj.rx, obj.rotationY, obj.rz)}
@@ -7208,7 +7208,7 @@ function ObjectPreviewImageSvg({ obj, fade }) {
   if (!texture) return null;
   const aspect = texture.image.width / texture.image.height;
   const mesh = (
-    <mesh renderOrder={10} castShadow={!!sd} customDepthMaterial={sd ? sd.depth : undefined} customDistanceMaterial={sd ? sd.dist : undefined}
+    <mesh renderOrder={10} castShadow={!!sd} receiveShadow={!!obj.lit} customDepthMaterial={sd ? sd.depth : undefined} customDistanceMaterial={sd ? sd.dist : undefined}
       scale={[obj.scale * (obj.sx ?? 1) * aspect, obj.scale * (obj.sy ?? 1), 1]}
       position={obj.billboard ? [0, 0, 0] : obj.position}
       rotation={obj.billboard ? [0, 0, ((obj.rz || 0) * Math.PI) / 180] : eulYXZ(obj.rx, obj.rotationY, obj.rz)}
@@ -8289,7 +8289,7 @@ ${kfLines}
     borderWidth: ${fmtNum(o.borderWidth || 0)},
     borderColor: ${JSON.stringify(o.borderColor || "#ffffff")},
     billboard: ${o.billboard ? "true" : "false"},
-    ext: ${fmtNum(o.ext || 0)},
+    ext: ${(o.ext || 0) > 0 ? Math.max(0.00001, Math.round(o.ext * 100000) / 100000) : 0},
     bev: ${fmtNum(o.bev ?? 0.3)},
     seg: ${fmtNum(o.seg || 0)},
 ${o.url && o.url.indexOf("balls:") === 0 ? `    ballW: ${fmtNum(o.ballW ?? 4)}, ballD: ${fmtNum(o.ballD ?? 2)}, ballL: ${fmtNum(o.ballL ?? 3)}, ballR: ${fmtNum(o.ballR ?? 0.16)}, ballJit: ${fmtNum(o.ballJit ?? 0.5)}, ballDark: ${fmtNum(o.ballDark ?? 0.35)}, ballSeed: ${fmtNum(o.ballSeed ?? 1)}, ballRough: ${fmtNum(o.ballRough ?? 0.3)}, ballCols: ${JSON.stringify(o.ballCols || ["#8149bd", "#fc9835", "#78c944"])},\n` : ""}    rev: ${o.rev ? "true" : "false"},
