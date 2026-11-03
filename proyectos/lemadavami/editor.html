@@ -6706,7 +6706,7 @@ function SceneCameraDriver({ target, active }) {
     if ("fov" in camera) {
       const k = Math.max(1, 9 / 16 / asp);
       camera.fov = (Math.atan(Math.tan((target.fov * Math.PI) / 360) * k) * 360) / Math.PI;
-      const nd = Math.min(3, Math.max(CAM_NEAR, camera.position.distanceTo(new THREE.Vector3(lx, ly, lz)) * 0.012));
+      const nd = Math.min(3, Math.max(0.1, camera.position.distanceTo(new THREE.Vector3(lx, ly, lz)) * 0.012));
       camera.near = nd;
       camera.updateProjectionMatrix();
     }
