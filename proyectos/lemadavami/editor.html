@@ -853,6 +853,7 @@ const SITE2D = {};
 /*@GEN:SECTIONS_END*/
 
 /*@GEN:POSTFX_START*/
+const LIGHTS = { hemiSky: "#ffffff", hemiGround: "#9d8fb8", hemiIntensity: 0.7, ambColor: "#ffffff", ambIntensity: 0.25, dirColor: "#ffffff", dirIntensity: 1.1, dirAzimuth: 40, dirElevation: 55 };
 const ACCENT = "";
 const HALO = 0;
 const PHONE_COLUMN = false;
@@ -4750,6 +4751,18 @@ function BlackFrameGuard({ active, renderDirect, onBlack, onOk }) {
   }, 3);
   return null;
 }
+/* Luces globales: hemisferio + ambiente + una direccional, fijas (no dependen de la cámara ni de la pose) y sin sombras. */
+function GlobalLights() {
+  const L = LIGHTS;
+  return (
+    <>
+      <hemisphereLight color={L.hemiSky} groundColor={L.hemiGround} intensity={L.hemiIntensity} />
+      <ambientLight color={L.ambColor} intensity={L.ambIntensity} />
+      <directionalLight color={L.dirColor} intensity={L.dirIntensity} position={lightDirFromAngles(L.dirAzimuth, L.dirElevation, 8)} />
+    </>
+  );
+}
+
 function SceneEnvironment() {
   const { scene } = useThree();
   const fog = useRef(new THREE.FogExp2("#05070a", 0.12));
@@ -4850,12 +4863,13 @@ function Experience({ device }) {
   return (
     &lt;EnvSettingsCtx.Provider value={envCtx}&gt;
     &lt;PerfCtx.Provider value={perfValue}&gt;
-      &lt;BlackFrameGuard renderDirect={!(safe &lt; 2)} active={forcedSafe == null &amp;&amp; !assetsLoading} onBlack={() =&gt; setSafe((v) =&gt; Math.min(3, v + 1))} /&gt;
+      &lt;BlackFrameGuard renderDirect={true} active={forcedSafe == null &amp;&amp; !assetsLoading} onBlack={() =&gt; setSafe((v) =&gt; Math.min(3, v + 1))} /&gt;
       {autoOn &amp;&amp; monitorOn &amp;&amp; forcedQ == null &amp;&amp; &lt;PerformanceMonitor ms={800} iterations={4} bounds={() =&gt; [22, 55]} flipflops={3} onChange={({ fps }) =&gt; { if (debugOn) setFpsNow(Math.round(fps)); }} onDecline={() =&gt; { if (forcedQ == null) setTier((t) =&gt; Math.max(0, t - 1)); }} onIncline={() =&gt; { if (forcedQ == null) setTier((t) =&gt; Math.min(IS_PHONE ? 1 : 2, t + 1)); }} /&gt;}
       &lt;ScrollSmoother /&gt;
       &lt;MenuFreeze /&gt;
       &lt;SceneEnvironment /&gt;
       &lt;CameraRig mouse={mouse} /&gt;
+      &lt;GlobalLights /&gt;
       &lt;Suspense fallback={null}&gt;
         &lt;SceneObjects /&gt;
         &lt;ObjectBoundary&gt;
@@ -4881,15 +4895,6 @@ function Experience({ device }) {
         intensity={REFLECTION_INTENSITY}
       /&gt;
 
-      {/* En celular (&lt;=768 px): sin MSAA, AO en calidad baja, reflejo/sombras a menor resolución y
-          dpr máx. 1.5 — se ve casi igual y no se traba. Con EffectComposer three.js NO aplica el tone mapping del renderer (solo lo hace al dibujar directo
-          a pantalla). Por eso el ToneMapping va siempre: sin él, con Bloom los colores se queman. */}
-      {safe &lt; 2 &amp;&amp; Lb.post &amp;&amp; (   /* celular en nivel 0: igual queda el brillo (a baja resolución, muy barato) para que no se vea pálido */
-        &lt;EffectComposer multisampling={tier &gt;= 2 &amp;&amp; (AA_MODE === "msaa" || AA_MODE === "both") ? 4 : 0}&gt;
-          &lt;ToneMapping mode={ToneMappingMode.ACES_FILMIC} /&gt;
-          {(AA_MODE === "smaa" || AA_MODE === "both") &amp;&amp; tier &gt;= 1 &amp;&amp; &lt;SMAA /&gt;}
-        &lt;/EffectComposer&gt;
-      )}
     &lt;/PerfCtx.Provider&gt;
     &lt;/EnvSettingsCtx.Provider&gt;
   );
@@ -7405,6 +7410,11 @@ function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate
   return (
     <EnvSettingsCtx.Provider value={envCtx}>
       {showFx && fx.fog.enabled !== false && <fogExp2 attach="fog" args={[fx.fog.color, 1 / Math.max(fx.fog.far, 1)]} />}
+      {(() => { const Lg = lightsOf(postFx); return (<>
+        <hemisphereLight color={Lg.hemiSky} groundColor={Lg.hemiGround} intensity={Lg.hemiIntensity} />
+        <ambientLight color={Lg.ambColor} intensity={Lg.ambIntensity} />
+        <directionalLight color={Lg.dirColor} intensity={Lg.dirIntensity} position={lightDirFromAngles(Lg.dirAzimuth, Lg.dirElevation, 8)} />
+      </>); })()}
       {showGrid && <BlenderGrid />}
       {showObjects &&
         objects.filter((o) => o.visible).map((o) => (
@@ -7459,12 +7469,6 @@ function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate
           />
           <LiveCameraTracker orbitRef={orbitRef} liveCameraRef={liveCameraRef} active={true} />
         </>
-      )}
-      {/* Igual que en el sitio exportado: el ToneMapping va siempre (con EffectComposer three.js no lo aplica solo). */}
-      {postFx && (
-        <EffectComposer multisampling={4}>
-          <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
-        </EffectComposer>
       )}
     </EnvSettingsCtx.Provider>
   );
@@ -8011,6 +8015,7 @@ const ENV_ENABLED = ${postFx.envEnabled ?? true ? "true" : "false"};
 const ENV_INTENSITY = ${postFx.envIntensity ?? 0.8};
 const TONEMAP_ENABLED = ${postFx.toneMap ? "true" : "false"};
 const NATURAL_LIGHT = ${postFx.naturalLight ?? 0};
+const LIGHTS = ${JSON.stringify(lightsOf(postFx))};
 const SPOTS_ONLY = ${postFx.spotsOnly ? "true" : "false"};
 const EXPOSURE = ${postFx.exposure ?? 1};
 const LIGHT_RIG = "${postFx.lightRig === "studio" ? "studio" : "classic"}";
@@ -9296,6 +9301,9 @@ function Btn({ icon, kind, children, ...rest }) {
 function IBtn({ icon, kind, ...rest }) {
   return <button className={`ibtn ${kind || ""}`} {...rest}><Icon name={icon} size={16} /></button>;
 }
+/* Luces globales del sitio (fijas, sin sombras): se guardan en postFx. */
+const LIGHTS_DEF = { hemiSky: "#ffffff", hemiGround: "#9d8fb8", hemiIntensity: 0.7, ambColor: "#ffffff", ambIntensity: 0.25, dirColor: "#ffffff", dirIntensity: 1.1, dirAzimuth: 40, dirElevation: 55 };
+const lightsOf = (pf) => { const o = {}; for (const k in LIGHTS_DEF) o[k] = pf && pf[k] != null ? pf[k] : LIGHTS_DEF[k]; return o; };
 function Group({ id, title, defaultOpen = true, toggle, children }) {
   const [open, setOpen] = useState(() => groupOpenState[id] ?? defaultOpen);
   const set = (v) => { groupOpenState[id] = v; setOpen(v); };
@@ -10789,6 +10797,7 @@ function App() {
   const cam = camsByKf[activeStage] || defaultCamera();
   const mv = movesByKf[activeStage] || defaultMovement();
   const fxs = fxByKf[activeStage] || defaultFx();
+  const lg = lightsOf(postFx);
   const nStages = stagesComputed.length;
   const goStage = (d) => { const t = stagesComputed[clamp(stageIndex + d, 0, nStages - 1, )]; if (t) setActiveStage(t.id); };
   const colorOf = (o, i) => o.color || PALETTE[i % PALETTE.length];
@@ -11518,7 +11527,22 @@ function App() {
 
             {section === "look" && (
               <>
-                <div style={{ fontSize: 10.5, opacity: 0.7, lineHeight: 1.45 }}>Solo queda lo de los spots (en cada objeto), más niebla y fondo por pose y lo de abajo, que vale para todo el sitio.</div>
+                <div style={{ fontSize: 10.5, opacity: 0.7, lineHeight: 1.45 }}>Luces globales fijas (sin sombras) y spots en cada objeto. Niebla y fondo cambian por pose.</div>
+                <Group id="lights" title="Luces globales (fijas, iguales en todas las poses)">
+                  <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>No dependen de la cámara ni de la pose y no hacen sombras. Hemisferio: luz de arriba y de abajo para dar volumen. Ambiente: levanta lo oscuro. Direccional: marca el relieve.</div>
+                  <div style={{ fontSize: 11, fontWeight: 600 }}>Hemisferio</div>
+                  <ColorRow label="Arriba" value={lg.hemiSky} onChange={(v) => setPostFxField("hemiSky", v)} />
+                  <ColorRow label="Abajo" value={lg.hemiGround} onChange={(v) => setPostFxField("hemiGround", v)} />
+                  <Slider label="Intens." min={0} max={3} step={0.01} value={lg.hemiIntensity} onChange={(v) => setPostFxField("hemiIntensity", v)} />
+                  <div style={{ fontSize: 11, fontWeight: 600 }}>Ambiente</div>
+                  <ColorRow label="Color" value={lg.ambColor} onChange={(v) => setPostFxField("ambColor", v)} />
+                  <Slider label="Intens." min={0} max={3} step={0.01} value={lg.ambIntensity} onChange={(v) => setPostFxField("ambIntensity", v)} />
+                  <div style={{ fontSize: 11, fontWeight: 600 }}>Direccional</div>
+                  <ColorRow label="Color" value={lg.dirColor} onChange={(v) => setPostFxField("dirColor", v)} />
+                  <Slider label="Intens." min={0} max={5} step={0.01} value={lg.dirIntensity} onChange={(v) => setPostFxField("dirIntensity", v)} />
+                  <Slider label="Azimut" min={0} max={360} step={1} value={lg.dirAzimuth} onChange={(v) => setPostFxField("dirAzimuth", v)} />
+                  <Slider label="Altura" min={-90} max={90} step={1} value={lg.dirElevation} onChange={(v) => setPostFxField("dirElevation", v)} />
+                </Group>
                 <Group id="phonelights" title="Spots: sombras y límite en celular">
                   <Switch checked={!!postFx.mobileShadows} onChange={(v) => setPostFxField("mobileShadows", v)} label="Sombras de los spots en celular (más pesado)" />
                   <Slider label="Luces máximas en celular (0 = todas)" min={0} max={20} step={1} value={postFx.mobileLights ?? 6} onChange={(v) => setPostFxField("mobileLights", v)} />
