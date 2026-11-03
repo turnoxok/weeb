@@ -89,7 +89,7 @@ function pantallaLogin() {
   const f = h('form', { onsubmit: ev => { ev.preventDefault(); const d = datos(f), b = $('button', f); accion(b, async () => { const r = await llamar('login', { email: d.email, clave: d.clave }); S.token = r.token; S.user = r; localStorage.setItem('weeb_token', r.token); localStorage.setItem('weeb_email', d.email); await entrar(); }); } },
     campo('Mail', inp('email', { type: 'email', required: true, autocomplete: 'username', value: localStorage.getItem('weeb_email') || '' })),
     campo('Clave', inp('clave', { type: 'password', required: true, autocomplete: 'current-password' })), h('button', { class: 'btn block' }, 'Entrar'));
-  $app().replaceChildren(h('div', { class: 'login' }, logo(64), h('h1', null, S.pub.nombre || 'Panel'), h('p', { class: 'sub' }, 'Entrá para gestionar tus reservas.'), f, firma()));
+  $app().replaceChildren(h('div', { class: 'login' }, logo(64), h('p', { class: 'sub' }, 'Entrá para gestionar tus reservas.'), f, firma()));
 }
 function salir(vencida) { S.token = ''; S.user = null; localStorage.removeItem('weeb_token'); cerrar(true); if (vencida) toast('La sesión venció. Volvé a entrar.', 'err'); pantallaLogin(); }
 
@@ -104,7 +104,7 @@ function render() {
   const main = h('main', { class: 'wrap', id: 'vista' });
   const tabs = h('nav', { class: 'tabs' }, Object.entries(VISTAS).map(([k, [t]]) => h('button', { class: S.view === k ? 'on' : '', onclick: () => { S.view = k; render(); } }, svg(IC[k]), t)));
   $app().replaceChildren(
-    h('header', { class: 'top' }, logo(34), h('div', { class: 'name' }, S.pub.nombre), h('button', { class: 'icon', title: 'Salir', 'aria-label': 'Salir', onclick: () => salir() }, '⎋')),
+    h('header', { class: 'top' }, logo(34), h('div', { class: 'name' }), h('button', { class: 'icon', title: 'Salir', 'aria-label': 'Salir', onclick: () => salir() }, '⎋')),
     main, firma(), tabs);
   VISTAS[S.view][1](main);
 }

@@ -23,7 +23,7 @@ const wa = (txt) => S.pub.whatsapp ? 'https://wa.me/' + S.pub.whatsapp.replace(/
 function cabecera() {
   const emb = window.parent !== window, volver = emb ? h('button', { class: 'btn line sm back', onclick: () => parent.postMessage('weeb-cerrar', location.origin) }, '← Volver a la web') : S.cfg.volver ? h('a', { class: 'btn line sm back', href: S.cfg.volver }, '← Volver a la web') : '';
   const w = wa(`Hola! Quiero consultar por una reserva en ${S.pub.nombre}.`);
-  return h('div', null, volver, h('div', { class: 'head' }, h('img', { src: S.pub.logoUrl || 'weeb-logo.svg', alt: S.pub.nombre, onerror: ev => { if (!ev.target.dataset.f) { ev.target.dataset.f = 1; ev.target.src = 'weeb-logo.svg'; } } }), h('h1', null, S.pub.nombre), S.pub.direccion ? h('p', { class: 'muted small', style: 'margin:.3rem 0 0' }, S.pub.direccion) : ''),
+  return h('div', null, volver, h('div', { class: 'head' }, h('img', { src: S.pub.logoUrl || 'weeb-logo.svg', alt: S.pub.nombre, onerror: ev => { if (!ev.target.dataset.f) { ev.target.dataset.f = 1; ev.target.src = 'weeb-logo.svg'; } } }), S.pub.direccion ? h('p', { class: 'muted small', style: 'margin:.3rem 0 0' }, S.pub.direccion) : ''),
     h('div', { class: 'acts' }, w ? h('a', { class: 'btn soft sm', href: w, target: '_blank', rel: 'noopener' }, 'WhatsApp') : '', S.pub.mapsUrl ? h('a', { class: 'btn soft sm', href: S.pub.mapsUrl, target: '_blank', rel: 'noopener' }, 'Cómo llegar') : ''));
 }
 const firma = () => h('div', { class: 'firma' }, 'Hecho con ', h('a', { href: 'https://www.tuweeb.com', target: '_blank', rel: 'noopener' }, 'tuweeb'));
