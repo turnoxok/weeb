@@ -1446,6 +1446,9 @@ function CameraRig({ mouse, parallaxStrength = 0.18 }) {
       // para que el ANCHO que se ve sea el mismo: así no se corta el modelo a los costados.
       const k = Math.max(1, 9 / 16 / (camera.aspect || 9 / 16));
       camera.fov = (Math.atan(Math.tan((dampedFov.current * Math.PI) / 360) * k) * 360) / Math.PI;
+      /* Plano cercano dinámico: con la cámara lejos (maqueta) un plano cercano chico agota la precisión de profundidad y las capas finas parpadean o muestran rayas. */
+      const nearDyn = Math.min(3, Math.max(CAM_NEAR, camera.position.distanceTo(currentLookAt.current) * 0.012));
+      if (Math.abs(camera.near - nearDyn) > 0.002) camera.near = nearDyn;
       camera.updateProjectionMatrix();
     }
   });
@@ -4692,7 +4695,7 @@ function ClassicLighting() {
       <directionalLight
         ref={keyRef}
         intensity={0.9}
-        castShadow
+        castShadow={!SPOTS_ONLY}
         shadow-mapSize={[2048, 2048]}
         shadow-bias={-0.0003}
         shadow-normalBias={0.02}
@@ -4703,7 +4706,7 @@ function ClassicLighting() {
         shadow-camera-near={1}
         shadow-camera-far={20}
       />
-      <directionalLight position={[-3, 2, -2]} intensity={0.5} />
+      <directionalLight position={[-3, 2, -2]} intensity={SPOTS_ONLY ? 0 : 0.5} />
       <pointLight ref={rimRef} position={[-2.5, -1, -2]} intensity={1.4} distance={12} />
       <NaturalFill intensity={labNat * 0.85 * labExp} />
     </>
@@ -7401,7 +7404,7 @@ function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate
         color={showFx ? fx.light.color : "#ffffff"}
         position={showFx ? lightDirFromAngles(fx.light.azimuth ?? 45, fx.light.elevation ?? 35, 6) : [3, 4, 5]}
         intensity={LL ? LL.key : 0.9}
-        castShadow
+        castShadow={!(postFx && postFx.spotsOnly)}
         shadow-mapSize={[2048, 2048]}
         shadow-bias={-0.0003}
         shadow-normalBias={0.02}
@@ -7412,7 +7415,7 @@ function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate
         shadow-camera-near={1}
         shadow-camera-far={20}
       />
-      <directionalLight position={[-3, 2, -2]} intensity={0.4} />
+      <directionalLight position={[-3, 2, -2]} intensity={postFx && postFx.spotsOnly ? 0 : 0.4} />
       <pointLight color={showFx ? ((postFx && postFx.accent) || fx.light.rimColor) : "#ffffff"} position={[-2.5, -1, -2]} intensity={LL ? LL.rim : 0} distance={12} />
       <NaturalFill intensity={LL ? LL.fill : 0} />
       </>)}
@@ -8049,6 +8052,7 @@ const ENV_ENABLED = ${postFx.envEnabled ?? true ? "true" : "false"};
 const ENV_INTENSITY = ${postFx.envIntensity ?? 0.8};
 const TONEMAP_ENABLED = ${postFx.toneMap ? "true" : "false"};
 const NATURAL_LIGHT = ${postFx.naturalLight ?? 0};
+const SPOTS_ONLY = ${postFx.spotsOnly ? "true" : "false"};
 const EXPOSURE = ${postFx.exposure ?? 1};
 const LIGHT_RIG = "${postFx.lightRig === "studio" ? "studio" : "classic"}";
 const BLOOM_THRESHOLD = ${postFx.bloomThreshold ?? 0.25};
@@ -11803,6 +11807,7 @@ function App() {
                         <Switch label="Una pose por deslizamiento" checked={!!postFx.mobileSnap} onChange={(v) => setSc({ mobileSnap: v })} />
                         <SelectRow label="Scroll en las páginas 2D" value={postFx.scroll2d === "smooth" ? "smooth" : "native"} onChange={(v) => setSc({ scroll2d: v })} options={[["native", "Nativo del navegador (máxima fluidez, recomendado)"], ["smooth", "Amortiguado (como el 3D, más pesado)"]]} />
                         <Slider label={"Largo del recorrido 3D en celular (" + Math.round(postFx.mobileLength || 100) + "%)"} min={30} max={100} step={5} value={postFx.mobileLength || 100} onChange={(v) => setSc({ mobileLength: v })} />
+                        <Switch checked={!!postFx.spotsOnly} onChange={(v) => setSc({ spotsOnly: v })} label="Solo luz de los spots (sin luz ambiente, ni principal, ni relleno)" />
                         <Switch checked={!!postFx.mobileShadows} onChange={(v) => setSc({ mobileShadows: v })} label="Sombras de los spots en celular (más pesado)" />
                         <Slider label="Luces máximas en celular (0 = todas)" min={0} max={20} step={1} value={postFx.mobileLights ?? 6} onChange={(v) => setSc({ mobileLights: v })} />
                         {!postFx.mobileSnap && <Slider label={`Velocidad celular (0 = auto ×${Math.max(1, Math.round((postFx.scrollSpeed > 0 ? postFx.scrollSpeed : autoSpeed) * 0.4 * 2) / 2)})`} min={0} max={15} step={0.5} value={postFx.scrollSpeedMobile ?? 0} onChange={(v) => setSc({ scrollSpeedMobile: v })} />}
