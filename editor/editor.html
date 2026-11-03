@@ -4579,7 +4579,7 @@ function SceneObjectLight({ data }) {
   useEffect(() => () => { WEEB_LIGHTS.delete(tgt.uuid); }, [tgt]);
   const common = { color: data.lightColor || "#fff4e0", intensity: 0, distance: data.lightDistance || 0, decay: data.lightDecay ?? 2 };
   const phoneSh = MOBILE_SHADOWS && IS_PHONE && perf.tier >= 1;   // opción "Sombras de los spots en celular"
-  const shadow = !!data.lightShadow && (phoneSh || (perf.tier >= 2 && !IS_MOBILE_VIEW));
+  const shadow = !!data.lightShadow && (phoneSh || (perf.tier >= 1 && !IS_MOBILE_VIEW));
   if (data.lightKind === "point") return <pointLight ref={ref} {...common} castShadow={shadow} />;
   return <spotLight ref={ref} {...common} angle={Math.min(1.5, Math.max(0.05, ((data.lightAngle ?? 35) * Math.PI) / 180))} penumbra={data.lightPenumbra ?? 0.5} castShadow={shadow} shadow-mapSize={phoneSh ? [512, 512] : [1024, 1024]} shadow-bias={-0.0004} shadow-normalBias={0.02} />;
 }
@@ -6695,11 +6695,23 @@ function SceneCameraDriver({ target, active }) {
   const { camera } = useThree();
   useFrame(() => {
     if (!active || !target) return;
-    camera.position.set(target.position[0], target.position[1], target.position[2]);
+    /* Mismo encuadre que el sitio exportado (CameraRig): acerca la cámara en pantallas anchas y abre el fov en pantallas altas. */
+    const asp = camera.aspect || 9 / 16;
+    const [lx, ly, lz] = target.lookAt;
+    const fitK = Math.min(1, Math.max(0.3, 9 / 16 / asp));
+    const wFit = Math.min(1, Math.max(0, (target.fov - 26) / 8));
+    const dk = 1 - (1 - fitK) * (1 - wFit);
+    camera.position.set(lx + (target.position[0] - lx) * dk, ly + (target.position[1] - ly) * dk, lz + (target.position[2] - lz) * dk);
     camera.up.set(0, 1, 0);
-    camera.lookAt(target.lookAt[0], target.lookAt[1], target.lookAt[2]);
+    camera.lookAt(lx, ly, lz);
     if (target.roll) camera.rotateZ((target.roll * Math.PI) / 180);
-    if ("fov" in camera) { camera.fov = target.fov; camera.updateProjectionMatrix(); }
+    if ("fov" in camera) {
+      const k = Math.max(1, 9 / 16 / asp);
+      camera.fov = (Math.atan(Math.tan((target.fov * Math.PI) / 360) * k) * 360) / Math.PI;
+      const nd = Math.min(3, Math.max(CAM_NEAR, camera.position.distanceTo(new THREE.Vector3(lx, ly, lz)) * 0.012));
+      camera.near = nd;
+      camera.updateProjectionMatrix();
+    }
   });
   return null;
 }
