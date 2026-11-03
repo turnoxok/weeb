@@ -80,7 +80,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="brand"><img src="./assets/models/lemadavami-solo.svg" alt="Lemadavami" /></div>
+  <div class="brand"><img src="./assets/models/lemadavami-logo.png" alt="Lemadavami" /></div>
   <div class="main">
     <div class="side">
       <div class="hd">
@@ -126,7 +126,7 @@
   var LUGAR = 'Payva 1923, Gualeguaychú';
   var $ = function (id) { return document.getElementById(id); };
   var BG = ['fondo1.jpg', 'fondo2.jpg', 'fondo3.jpg', 'fondo4.jpg'].map(function (n) { var i = new Image(); i.src = './assets/inv/' + n; i.onload = rerender; return i; });
-  var SHEEP = new Image(); SHEEP.src = './assets/models/lemadavami-solo.svg'; SHEEP.onload = rerender;
+  var SHEEP = new Image(); SHEEP.src = './assets/models/lemadavami-logo.png'; SHEEP.onload = rerender;
   var photo = null, FAST = false;
   var DEFOTO = new Image(); DEFOTO.onload = function () { if (!photo) { photo = DEFOTO; rerender(); } }; DEFOTO.src = './assets/inv/foto.jpg';
 
