@@ -23,17 +23,18 @@ const wa = (txt) => S.pub.whatsapp ? 'https://wa.me/' + S.pub.whatsapp.replace(/
 function cabecera() {
   const volver = S.cfg.volver ? h('a', { class: 'btn line sm back', href: S.cfg.volver }, '← Volver a la web') : '';
   const w = wa(`Hola! Quiero consultar por una reserva en ${S.pub.nombre}.`);
-  return h('div', null, volver, h('div', { class: 'head' }, S.pub.logoUrl ? h('img', { src: S.pub.logoUrl, alt: S.pub.nombre }) : '', h('h1', null, S.pub.nombre), S.pub.direccion ? h('p', { class: 'muted small', style: 'margin:.3rem 0 0' }, S.pub.direccion) : ''),
+  return h('div', null, volver, h('div', { class: 'head' }, h('img', { src: S.pub.logoUrl || 'weeb-logo.svg', alt: S.pub.nombre, onerror: ev => { if (!ev.target.dataset.f) { ev.target.dataset.f = 1; ev.target.src = 'weeb-logo.svg'; } } }), h('h1', null, S.pub.nombre), S.pub.direccion ? h('p', { class: 'muted small', style: 'margin:.3rem 0 0' }, S.pub.direccion) : ''),
     h('div', { class: 'acts' }, w ? h('a', { class: 'btn soft sm', href: w, target: '_blank', rel: 'noopener' }, 'WhatsApp') : '', S.pub.mapsUrl ? h('a', { class: 'btn soft sm', href: S.pub.mapsUrl, target: '_blank', rel: 'noopener' }, 'Cómo llegar') : ''));
 }
 const firma = () => h('div', { class: 'firma' }, 'Hecho con ', h('a', { href: 'https://www.tuweeb.com', target: '_blank', rel: 'noopener' }, 'tuweeb'));
-const pagina = (...c) => $('#app').replaceChildren(h('div', { class: 'page' }, cabecera(), ...c, firma()));
+const pasos = n => h('div', { class: 'steps', 'aria-hidden': 'true' }, [1, 2, 3, 4].map(i => h('i', { class: i <= n ? 'on' : '' })));
+const setPaso = n => document.querySelectorAll('.steps i').forEach((e, i) => e.classList.toggle('on', i < n));
+const pagina = (paso, ...c) => $('#app').replaceChildren(h('div', { class: 'page' }, cabecera(), pasos(paso), ...c, firma()));
 
 async function iniciar() {
   S.cfg = await (await fetch('config.json', { cache: 'no-store' })).json();
   try { S.pub = await llamar('config'); } catch (e) { $('#app').replaceChildren(h('p', { class: 'empty', style: 'text-align:center;padding:30vh 1rem' }, e.message)); return; }
-  const c = S.pub.colorPrincipal || '#8149bd', n = parseInt(c.slice(1), 16), lum = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
-  document.documentElement.style.setProperty('--brand', c); document.documentElement.style.setProperty('--brand-ink', lum > 0.62 ? '#1d1a24' : '#fff'); document.title = 'Reservar · ' + S.pub.nombre;
+  document.title = 'Reservar · ' + S.pub.nombre;
   const id = new URLSearchParams(location.search).get('reserva');
   if (id) return estado(id);
   S.mes = new Date().getFullYear() + '-' + pad(new Date().getMonth() + 1); calendario();
@@ -41,8 +42,8 @@ async function iniciar() {
 
 /* ───── 1. calendario y horarios ───── */
 async function calendario() {
-  pagina(h('h2', { class: 't' }, 'Elegí el día'), h('p', { class: 'empty' }, h('span', { class: 'spin' })));
-  let d; try { d = S.disp = await llamar('disponibilidad', { mes: S.mes }); } catch (e) { return pagina(h('div', { class: 'err' }, e.message)); }
+  pagina(1, h('h2', { class: 't' }, 'Elegí el día'), h('p', { class: 'empty' }, h('span', { class: 'spin' })));
+  let d; try { d = S.disp = await llamar('disponibilidad', { mes: S.mes }); } catch (e) { return pagina(1, h('div', { class: 'err' }, e.message)); }
   const [y, m] = S.mes.split('-').map(Number), n = new Date(y, m, 0).getDate(), off = (new Date(y, m - 1, 1).getDay() + 6) % 7;
   const ini = d.hoy.slice(0, 7), fin = d.hasta.slice(0, 7), cel = [...['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'].map(x => h('div', { class: 'dow' }, x)), ...Array(off).fill(0).map(() => h('div', { class: 'off' }))];
   for (let i = 1; i <= n; i++) {
@@ -50,11 +51,11 @@ async function calendario() {
     cel.push(h('button', { class: (libres ? 'libre' : sl.some(s => s.estado === 'ocupado') ? 'lleno' : '') + (f === S.fecha ? ' sel' : ''), disabled: !mostrable, 'aria-label': flarga(f) + (libres ? ' disponible' : ' no disponible'), onclick: () => { S.fecha = f; calendario2(); } }, i));
   }
   const cont = h('div', { id: 'horarios' });
-  pagina(h('h2', { class: 't' }, 'Elegí el día'), h('div', { class: 'nav' }, h('button', { class: 'icon', 'aria-label': 'Mes anterior', disabled: S.mes <= ini, onclick: () => { S.mes = sumMes(S.mes, -1); S.fecha = ''; calendario(); } }, '‹'), h('h3', null, nomMes(S.mes)), h('button', { class: 'icon', 'aria-label': 'Mes siguiente', disabled: S.mes >= fin, onclick: () => { S.mes = sumMes(S.mes, 1); S.fecha = ''; calendario(); } }, '›')),
+  pagina(S.fecha && mesDe(S.fecha) === S.mes ? 2 : 1, h('h2', { class: 't' }, 'Elegí el día'), h('div', { class: 'nav' }, h('button', { class: 'icon', 'aria-label': 'Mes anterior', disabled: S.mes <= ini, onclick: () => { S.mes = sumMes(S.mes, -1); S.fecha = ''; calendario(); } }, '‹'), h('h3', null, nomMes(S.mes)), h('button', { class: 'icon', 'aria-label': 'Mes siguiente', disabled: S.mes >= fin, onclick: () => { S.mes = sumMes(S.mes, 1); S.fecha = ''; calendario(); } }, '›')),
     h('div', { class: 'cal' }, cel), h('p', { class: 'muted small', style: 'margin:.6rem 0' }, 'Los días con borde de color tienen lugar. Podés reservar hasta ' + nomMes(fin) + '.'), cont);
   if (S.fecha && mesDe(S.fecha) === S.mes) horarios();
 }
-function calendario2() { document.querySelectorAll('.cal button').forEach(b => b.classList.remove('sel')); document.querySelectorAll('.cal button').forEach(b => { if (b.getAttribute('aria-label') && b.getAttribute('aria-label').startsWith(flarga(S.fecha) + ' ')) b.classList.add('sel'); }); horarios(); }
+function calendario2() { setPaso(2); document.querySelectorAll('.cal button').forEach(b => b.classList.remove('sel')); document.querySelectorAll('.cal button').forEach(b => { if (b.getAttribute('aria-label') && b.getAttribute('aria-label').startsWith(flarga(S.fecha) + ' ')) b.classList.add('sel'); }); horarios(); }
 function horarios() {
   const sl = (S.disp.dias[S.fecha]) || [], multi = (S.pub.salones || []).length > 1, nom = id => ((S.pub.salones || []).find(s => s.id === id) || {}).nombre;
   const cont = $('#horarios'); cont.replaceChildren(h('h2', { class: 't' }, 'Horarios del ' + flarga(S.fecha)), h('div', { class: 'slots' }, sl.map(s => s.estado !== 'libre' ? h('div', { class: 'slot off', 'aria-disabled': 'true' }, h('div', null, h('b', null, `${s.inicio} a ${s.fin} hs`), h('span', { class: 'muted small' }, (s.etiqueta ? s.etiqueta : '') + (multi ? ' · ' + nom(s.salonId) : ''))), h('div', { class: 'p muted' }, 'No disponible')) : h('button', { class: 'slot', onclick: () => { S.slot = s; formulario(); } }, h('div', null, h('b', null, `${s.inicio} a ${s.fin} hs`), h('span', { class: 'muted small' }, (s.etiqueta ? s.etiqueta : '') + (multi ? ' · ' + nom(s.salonId) : ''))), h('div', { class: 'p' }, money(s.precio), h('div', { class: 'muted small', style: 'font-weight:600' }, s.sena > 0 ? 'Seña ' + money(s.sena) : 'Sin seña'))))));
@@ -74,7 +75,7 @@ function formulario(error) {
     h('div', { class: 'hp', 'aria-hidden': 'true' }, h('input', { name: 'web', tabindex: '-1', autocomplete: 'off' })),
     error ? h('div', { class: 'err' }, error) : '', h('button', { class: 'btn block', id: 'go' }, s.sena > 0 ? 'Reservar y pagar la seña' : 'Confirmar reserva'),
     h('button', { type: 'button', class: 'btn line block', style: 'margin-top:.6rem', onclick: () => calendario() }, 'Volver'));
-  pagina(h('h2', { class: 't' }, 'Tus datos'), h('div', { class: 'resumen' }, h('b', null, flarga(S.fecha)), `${s.inicio} a ${s.fin} hs` + (s.etiqueta ? ' · ' + s.etiqueta : ''), h('div', null, 'Total ' + money(s.precio) + (s.sena > 0 ? ' · Seña ' + money(s.sena) : ' · Sin seña'))), f);
+  pagina(3, h('h2', { class: 't' }, 'Tus datos'), h('div', { class: 'resumen' }, h('b', null, flarga(S.fecha)), `${s.inicio} a ${s.fin} hs` + (s.etiqueta ? ' · ' + s.etiqueta : ''), h('div', null, 'Total ' + money(s.precio) + (s.sena > 0 ? ' · Seña ' + money(s.sena) : ' · Sin seña'))), f);
   window.scrollTo(0, 0);
 }
 async function enviar(f) {
@@ -90,19 +91,19 @@ async function enviar(f) {
 
 /* ───── 3. resultado y estado ───── */
 async function estado(id) {
-  let r; try { r = await llamar('estado', { id }); } catch (e) { return pagina(h('div', { class: 'err' }, e.codigo === 'NO_ENCONTRADA' ? 'No encontramos esa reserva. Revisá el link o escribinos por WhatsApp.' : e.message)); }
+  let r; try { r = await llamar('estado', { id }); } catch (e) { return pagina(4, h('div', { class: 'err' }, e.codigo === 'NO_ENCONTRADA' ? 'No encontramos esa reserva. Revisá el link o escribinos por WhatsApp.' : e.message)); }
   resultado(r, false); if (r.estado === 'pendiente') setTimeout(() => { if (new URLSearchParams(location.search).get('reserva') === id) estado(id); }, 20000);
 }
 function copiar(label, valor) { return h('div', { class: 'copy' }, h('div', null, h('span', null, label), h('b', null, valor)), h('button', { class: 'btn soft sm', onclick: e => { navigator.clipboard && navigator.clipboard.writeText(valor); e.target.textContent = '¡Copiado!'; setTimeout(() => (e.target.textContent = 'Copiar'), 1500); } }, 'Copiar')); }
 function resultado(r, nueva) {
   const fh = flarga(r.fecha) + ' · ' + r.inicio + ' a ' + r.fin + ' hs', cod = h('p', { class: 'muted small', style: 'text-align:center' }, 'Código de reserva: ' + r.id), volver = h('a', { class: 'btn line block', style: 'margin-top:1rem', href: location.pathname }, 'Hacer otra reserva');
-  if (r.estado === 'confirmada' || r.estado === 'saldada') return pagina(h('div', { class: 'big' }, h('div', { class: 'ico' }, '✓'), h('h2', null, '¡Reserva confirmada!'), h('p', null, fh), r.pagado ? h('p', { class: 'muted' }, 'Pagaste ' + money(r.pagado) + (r.saldo > 0 ? ' · Saldo ' + money(r.saldo) : '')) : '', nueva ? h('p', { class: 'muted small' }, 'Si dejaste tu mail, te mandamos la confirmación.') : ''), cod, volver);
+  if (r.estado === 'confirmada' || r.estado === 'saldada') return pagina(4, h('div', { class: 'big' }, h('div', { class: 'ico' }, '✓'), h('h2', null, '¡Reserva confirmada!'), h('p', null, fh), r.pagado ? h('p', { class: 'muted' }, 'Pagaste ' + money(r.pagado) + (r.saldo > 0 ? ' · Saldo ' + money(r.saldo) : '')) : '', nueva ? h('p', { class: 'muted small' }, 'Si dejaste tu mail, te mandamos la confirmación.') : ''), cod, volver);
   if (r.estado === 'pendiente') {
     const t = r.transferencia, aviso = wa(`Hola! Ya hice la transferencia de la seña. Reserva ${r.id}, a nombre de ${r.nombre}, ${flarga(r.fecha)} de ${r.inicio} a ${r.fin} hs.`);
-    return pagina(h('div', { class: 'big' }, h('div', { class: 'ico w' }, '⏳'), h('h2', null, nueva ? '¡Casi listo!' : 'Reserva pendiente de pago'), h('p', null, fh), h('p', { class: 'muted' }, 'Guardamos el turno para vos hasta el ' + new Date(r.venceEn).toLocaleString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }))),
+    return pagina(4, h('div', { class: 'big' }, h('div', { class: 'ico w' }, '⏳'), h('h2', null, nueva ? '¡Casi listo!' : 'Reserva pendiente de pago'), h('p', null, fh), h('p', { class: 'muted' }, 'Guardamos el turno para vos hasta el ' + new Date(r.venceEn).toLocaleString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }))),
       t ? h('div', { class: 'card' }, h('h3', { style: 'margin-bottom:.4rem' }, 'Transferí la seña de ' + money(t.importe)), t.alias ? copiar('Alias', t.alias) : '', t.cbu ? copiar('CBU / CVU', t.cbu) : '', t.titular ? copiar('Titular', t.titular) : '', t.banco ? h('p', { class: 'muted small' }, 'Banco o billetera: ' + t.banco) : '', t.nota ? h('p', { class: 'small' }, t.nota) : '') : h('div', { class: 'card' }, h('p', null, 'Para confirmar el turno, coordiná el pago de la seña con nosotros.')),
       aviso ? h('a', { class: 'btn block', style: 'margin-top:1rem', href: aviso, target: '_blank', rel: 'noopener' }, 'Ya transferí: avisar por WhatsApp') : '', h('p', { class: 'muted small', style: 'text-align:center;margin-top:.8rem' }, 'Cuando confirmemos el pago, esta página y tu mail van a mostrar la reserva como confirmada. Guardá este link para volver.'), cod);
   }
-  return pagina(h('div', { class: 'big' }, h('div', { class: 'ico b' }, '✕'), h('h2', null, r.estado === 'vencida' ? 'La reserva venció' : 'Reserva cancelada'), h('p', { class: 'muted' }, r.estado === 'vencida' ? 'No recibimos la seña a tiempo y el turno se liberó. Podés volver a reservar.' : 'Esta reserva fue cancelada.')), cod, volver);
+  return pagina(4, h('div', { class: 'big' }, h('div', { class: 'ico b' }, '✕'), h('h2', null, r.estado === 'vencida' ? 'La reserva venció' : 'Reserva cancelada'), h('p', { class: 'muted' }, r.estado === 'vencida' ? 'No recibimos la seña a tiempo y el turno se liberó. Podés volver a reservar.' : 'Esta reserva fue cancelada.')), cod, volver);
 }
 iniciar().catch(e => { $('#app').replaceChildren(h('p', { style: 'text-align:center;padding:30vh 1rem' }, 'No se pudo cargar: ' + e.message)); });

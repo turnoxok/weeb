@@ -2,7 +2,7 @@
 const http = require('http'), fs = require('fs'), path = require('path');
 const { crear } = require('../mock');
 const PL = path.join(__dirname, '..', '..', '..', 'plantillas');
-const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png' };
+const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml' };
 function semilla() {
   const a = crear(); a.run('instalar()');
   a.run("definirUsuario_('dueno@mail.com','clave-segura-123','Ana','admin')");
