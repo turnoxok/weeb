@@ -4052,7 +4052,7 @@ function buildSvgExtrude(text, depthK, bevK, segK, lite, rev, arc) {
   parts.forEach((pt) => {
     /* Bisel propio (ver bevelExtrudeGeometry): cada punto se corre según el grosor local, sin puntas ni cruces. Si algo falla, queda la pieza sin bisel. */
     let g = null;
-    if (b0 > 0.0001) { try { g = bevelExtrudeGeometry(pt.shapes, depth, b0, lite ? 4 : 7, curveSeg, H); if (!g.attributes.position.count) g = null; } catch (e) { g = null; } }
+    if (b0 > 0.0001) { try { g = bevelExtrudeGeometry(pt.shapes, depth, b0, lite ? 3 : 7, curveSeg, H); if (!g.attributes.position.count) g = null; } catch (e) { g = null; } }
     const own = !!g;   // el bisel propio ya trae sus normales lisas calculadas desde la forma
     if (g) g.translate(-cx, -cy, -(depth / 2 + b0));
     else { g = new THREE.ExtrudeGeometry(pt.shapes, { depth, curveSegments: curveSeg, bevelEnabled: false }); g.translate(-cx, -cy, -depth / 2); }
