@@ -3902,7 +3902,7 @@ function projectUVs(g, tile) {
    Cada punto del contorno se corre hacia adentro solo lo que cabe según el grosor local (rayo hacia adentro hasta el lado opuesto), con anillos conectados. */
 function bevelExtrudeGeometry(shapes, depth, b, nSeg, curveSeg, H) {
   const eps = Math.max(1e-9, H * 1e-5);
-  const P = [], N = [], capP = [], sideP = [];
+  const capP = [], sideP = [], sideN = [];
   const pushTri = (arr, a, b2, c) => { arr.push(a[0], a[1], a[2], b2[0], b2[1], b2[2], c[0], c[1], c[2]); };
   const clean = (pts) => {
     const out = [];
@@ -3923,7 +3923,7 @@ function bevelExtrudeGeometry(shapes, depth, b, nSeg, curveSeg, H) {
     const segs = [];
     loops.forEach((lp, li) => { for (let i = 0; i < lp.length; i++) { const a = lp[i], c = lp[(i + 1) % lp.length]; segs.push({ ax: a.x, ay: a.y, bx: c.x, by: c.y, li, i }); } });
     const rings = loops.map((lp, li) => {
-      const n = lp.length, mv = new Array(n), dd = new Array(n);
+      const n = lp.length, mv = new Array(n), dd = new Array(n), oA = new Array(n), oB = new Array(n);
       for (let i = 0; i < n; i++) {
         const p0 = lp[(i + n - 1) % n], p1 = lp[i], p2 = lp[(i + 1) % n];
         let e1x = p1.x - p0.x, e1y = p1.y - p0.y, l1 = Math.hypot(e1x, e1y) || 1; e1x /= l1; e1y /= l1;
@@ -3946,31 +3946,48 @@ function bevelExtrudeGeometry(shapes, depth, b, nSeg, curveSeg, H) {
           if (tt > 0 && uu >= 0 && uu <= 1 && tt < t) t = tt;
         }
         mv[i] = [mx / c, my / c];
+        const sharp = (n1x * n2x + n1y * n2y) < Math.cos(0.6);   // esquina marcada: normal propia de cada lado; curva: normal suave
+        oA[i] = sharp ? [-n2x, -n2y] : [-mx, -my];
+        oB[i] = sharp ? [-n1x, -n1y] : [-mx, -my];
         dd[i] = Math.min(b, 0.4 * t * c);
       }
       /* suavizar: mínimo en ventana y luego promedio (nunca supera el valor original de cada punto) */
       let d1 = dd.map((_, i) => { let m = Infinity; for (let k = -2; k <= 2; k++) m = Math.min(m, dd[(i + k + n * 4) % n]); return m; });
       for (let pass = 0; pass < 3; pass++) d1 = d1.map((_, i) => 0.25 * d1[(i + n - 1) % n] + 0.5 * d1[i] + 0.25 * d1[(i + 1) % n]);
-      return { pts: lp, mv, d: d1, n };
+      return { pts: lp, mv, d: d1, n, oA, oB };
     });
-    /* anillos del bisel */
+    /* anillos del bisel, con normales calculadas desde la forma del bisel (no desde los triángulos): sombreado liso */
     const fz = (th, front) => (front ? depth + b * Math.sin(th) : -b * Math.sin(th));
-    const ringPos = (rg, th, front) => rg.pts.map((p, i) => { const k = rg.d[i] * (1 - Math.cos(th)); return [p.x + rg.mv[i][0] * k, p.y + rg.mv[i][1] * k, fz(th, front)]; });
+    const ringData = (rg, th, front) => {
+      const cs = Math.cos(th), sn = Math.sin(th), sg = front ? 1 : -1;
+      const P = [], NA = [], NB = [];
+      for (let i = 0; i < rg.n; i++) {
+        const p = rg.pts[i], k = rg.d[i] * (1 - cs), dz = Math.max(rg.d[i], 1e-9) * sn * sg, hb = b * cs;
+        P.push([p.x + rg.mv[i][0] * k, p.y + rg.mv[i][1] * k, fz(th, front)]);
+        const mk = (o) => { const x = o[0] * hb, y = o[1] * hb, l = Math.hypot(x, y, dz) || 1; return [x / l, y / l, dz / l]; };
+        NA.push(mk(rg.oA[i])); NB.push(mk(rg.oB[i]));
+      }
+      return { P, NA, NB };
+    };
     rings.forEach((rg) => {
-      const n = rg.n;
-      const stripes = [];
-      const wallF = ringPos(rg, 0, true), wallB = ringPos(rg, 0, false);
+      const n = rg.n, stripes = [];
+      const wallF = ringData(rg, 0, true), wallB = ringData(rg, 0, false);
       stripes.push([wallB, wallF]);
       let prev = wallF;
-      for (let r = 1; r <= nSeg; r++) { const cur = ringPos(rg, (r / nSeg) * Math.PI / 2, true); stripes.push([prev, cur]); prev = cur; }
+      for (let r = 1; r <= nSeg; r++) { const cur = ringData(rg, (r / nSeg) * Math.PI / 2, true); stripes.push([prev, cur]); prev = cur; }
       prev = wallB;
-      for (let r = 1; r <= nSeg; r++) { const cur = ringPos(rg, (r / nSeg) * Math.PI / 2, false); stripes.push([cur, prev]); prev = cur; }
+      for (let r = 1; r <= nSeg; r++) { const cur = ringData(rg, (r / nSeg) * Math.PI / 2, false); stripes.push([cur, prev]); prev = cur; }
+      const put = (R, i, useB) => { sideP.push(R.P[i][0], R.P[i][1], R.P[i][2]); const v = useB ? R.NB[i] : R.NA[i]; sideN.push(v[0], v[1], v[2]); };
       stripes.forEach(([A, B]) => {
-        for (let i = 0; i < n; i++) { const j = (i + 1) % n; pushTri(sideP, A[i], A[j], B[j]); pushTri(sideP, A[i], B[j], B[i]); }
+        for (let i = 0; i < n; i++) {
+          const j = (i + 1) % n;
+          put(A, i, false); put(A, j, true); put(B, j, true);
+          put(A, i, false); put(B, j, true); put(B, i, false);
+        }
       });
     });
+    const topRings = rings.map((rg) => ringData(rg, Math.PI / 2, true).P);
     /* tapas: polígono interior (último anillo) triangulado con huecos */
-    const topRings = rings.map((rg) => ringPos(rg, Math.PI / 2, true));
     const v2 = (arr) => arr.map((q) => new THREE.Vector2(q[0], q[1]));
     const outer2 = v2(topRings[0]), holes2 = topRings.slice(1).map(v2);
     const all = [...topRings[0], ...topRings.slice(1).flat()];
@@ -3983,7 +4000,7 @@ function bevelExtrudeGeometry(shapes, depth, b, nSeg, curveSeg, H) {
   });
   const nc = capP.length / 3, ns = sideP.length / 3;
   const pos = new Float32Array((nc + ns) * 3), nor = new Float32Array((nc + ns) * 3);
-  pos.set(capP, 0); pos.set(sideP, nc * 3);
+  pos.set(capP, 0); pos.set(sideP, nc * 3); nor.set(sideN, nc * 3);
   for (let i = 0; i < nc; i++) nor[i * 3 + 2] = (capP[i * 3 + 2] > depth * 0.5 ? 1 : -1);   // tapa delantera / trasera
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
@@ -4035,13 +4052,12 @@ function buildSvgExtrude(text, depthK, bevK, segK, lite, rev, arc) {
   parts.forEach((pt) => {
     /* Bisel propio (ver bevelExtrudeGeometry): cada punto se corre según el grosor local, sin puntas ni cruces. Si algo falla, queda la pieza sin bisel. */
     let g = null;
-    if (b0 > 0.0001) { try { g = bevelExtrudeGeometry(pt.shapes, depth, b0, lite ? 3 : 6, curveSeg, H); if (!g.attributes.position.count) g = null; } catch (e) { g = null; } }
+    if (b0 > 0.0001) { try { g = bevelExtrudeGeometry(pt.shapes, depth, b0, lite ? 4 : 7, curveSeg, H); if (!g.attributes.position.count) g = null; } catch (e) { g = null; } }
+    const own = !!g;   // el bisel propio ya trae sus normales lisas calculadas desde la forma
     if (g) g.translate(-cx, -cy, -(depth / 2 + b0));
     else { g = new THREE.ExtrudeGeometry(pt.shapes, { depth, curveSegments: curveSeg, bevelEnabled: false }); g.translate(-cx, -cy, -depth / 2); }
     g.scale(1 / H, 1 / H, 1 / H);
-    pt.geo = creaseSides(g);
-    projectUVs(pt.geo, 1.6);
-    g.dispose();
+    if (own) { pt.geo = g; projectUVs(pt.geo, 1.6); } else { pt.geo = creaseSides(g); projectUVs(pt.geo, 1.6); g.dispose(); }
   });
   return { parts, aspect: W / H };
 }
