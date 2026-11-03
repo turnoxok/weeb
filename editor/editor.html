@@ -4578,8 +4578,8 @@ function SceneObjectLight({ data }) {
   });
   useEffect(() => () => { WEEB_LIGHTS.delete(tgt.uuid); }, [tgt]);
   const common = { color: data.lightColor || "#fff4e0", intensity: 0, distance: data.lightDistance || 0, decay: data.lightDecay ?? 2 };
-  const phoneSh = MOBILE_SHADOWS && IS_PHONE && perf.tier >= 1;   // opción "Sombras de los spots en celular"
-  const shadow = !!data.lightShadow && (phoneSh || (perf.tier >= 1 && !IS_MOBILE_VIEW));
+  const phoneSh = MOBILE_SHADOWS && IS_PHONE;   // opción "Sombras de los spots en celular"
+  const shadow = !!data.lightShadow && (phoneSh || !IS_MOBILE_VIEW);
   if (data.lightKind === "point") return <pointLight ref={ref} {...common} castShadow={shadow} />;
   return <spotLight ref={ref} {...common} angle={Math.min(1.5, Math.max(0.05, ((data.lightAngle ?? 35) * Math.PI) / 180))} penumbra={data.lightPenumbra ?? 0.5} castShadow={shadow} shadow-mapSize={phoneSh ? [512, 512] : [1024, 1024]} shadow-bias={-0.0004} shadow-normalBias={0.02} />;
 }
