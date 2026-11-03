@@ -394,6 +394,9 @@
   .fab__top { flex-grow: 0; max-width: 0; padding: 0; margin-left: -8px; opacity: 0; }
   .fab__top.is-on { flex-grow: 1; max-width: 88px; padding: 0 6px; margin-left: 0; opacity: 1; }
   .fab__btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  .resv { position: fixed; inset: 0; z-index: 60; background: #1a1026; opacity: 0; visibility: hidden; transition: opacity .25s ease, visibility 0s linear .25s; }
+  .resv.on { opacity: 1; visibility: visible; transition-delay: 0s; }
+  .resv iframe { width: 100%; height: 100%; border: 0; display: block; background: #1a1026; }
   @media (max-width: 340px) { .fab__more { display: none; } .fab__map &gt; span { text-transform: capitalize; } }
   @media (prefers-reduced-motion: reduce) { .fab, .fab__btn { transition: opacity .2s linear; } }
 
@@ -5514,11 +5517,34 @@ function FloatingActions() {
     return () =&gt; window.removeEventListener("scroll", f);
   }, []);
   const { phone, mapHref, showBook, showWa, showMap } = fabItems();
+  /* "Reservar" se abre encima del sitio (en un iframe que queda cargado): al volver no se recarga el 3D y reabrirlo es instantáneo. */
+  const embed = !!(showBook &amp;&amp; !FAB.newTab);
+  const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() =&gt; {
+    if (!embed) return undefined;
+    const t = setTimeout(() =&gt; setMounted(true), 4000);   // precarga tranquila, cuando el sitio ya terminó de cargar
+    return () =&gt; clearTimeout(t);
+  }, [embed]);
+  useEffect(() =&gt; {
+    if (!open) return undefined;
+    const l = window.__lenis; if (l &amp;&amp; l.stop) l.stop();
+    const prev = document.documentElement.style.overflow; document.documentElement.style.overflow = "hidden";
+    const onMsg = (e) =&gt; { if (e.origin === location.origin &amp;&amp; e.data === "weeb-cerrar") closeRes(); };
+    const onPop = () =&gt; setOpen(false);
+    const onKey = (e) =&gt; { if (e.key === "Escape") closeRes(); };
+    window.addEventListener("message", onMsg); window.addEventListener("popstate", onPop); window.addEventListener("keydown", onKey);
+    return () =&gt; { window.removeEventListener("message", onMsg); window.removeEventListener("popstate", onPop); window.removeEventListener("keydown", onKey); document.documentElement.style.overflow = prev; if (l &amp;&amp; l.start) l.start(); };
+  }, [open]);
+  const closeRes = () =&gt; { if (history.state &amp;&amp; history.state.weebRes) history.back(); else setOpen(false); };
+  const openRes = (e) =&gt; { if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return; e.preventDefault(); setMounted(true); setOpen(true); try { history.pushState({ weebRes: 1 }, ""); } catch (_) {} };
+  const resSrc = FAB.reservarUrl + (String(FAB.reservarUrl).indexOf("?") &gt;= 0 ? "&amp;" : "?") + "embed=1";
   if (!showBook &amp;&amp; !showWa &amp;&amp; !showMap) return null;
-  return (
+  return (&lt;&gt;
+    {embed &amp;&amp; mounted &amp;&amp; &lt;div className={"resv" + (open ? " on" : "")} aria-hidden={!open}&gt;&lt;iframe src={resSrc} title="Reservas" /&gt;&lt;/div&gt;}
     &lt;nav className={"fab" + (on ? " is-on" : "")} aria-label="Reservas y contacto"&gt;
       {showBook &amp;&amp; (
-        &lt;a className="fab__btn fab__book" href={FAB.reservarUrl} target={FAB.newTab ? "_blank" : undefined} rel={FAB.newTab ? "noopener" : undefined}&gt;
+        &lt;a className="fab__btn fab__book" href={FAB.reservarUrl} target={FAB.newTab ? "_blank" : undefined} rel={FAB.newTab ? "noopener" : undefined} onClick={embed ? openRes : undefined}&gt;
           &lt;svg viewBox="0 0 24 24" aria-hidden="true"&gt;&lt;rect x="3" y="4.5" width="18" height="16" rx="3" /&gt;&lt;path d="M8 2.5v4M16 2.5v4M3 10h18" /&gt;&lt;/svg&gt;
           &lt;span&gt;{FAB.label || "Reservar"}&lt;/span&gt;
         &lt;/a&gt;
@@ -5537,7 +5563,7 @@ function FloatingActions() {
       )}
       {BACKTOP.enabled &amp;&amp; &lt;BackToTop inline /&gt;}
     &lt;/nav&gt;
-  );
+  &lt;/&gt;);
 }
 
 function CursorTrail() {

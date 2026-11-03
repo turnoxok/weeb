@@ -21,7 +21,7 @@ async function llamar(action, data, post) {
 }
 const wa = (txt) => S.pub.whatsapp ? 'https://wa.me/' + S.pub.whatsapp.replace(/\D/g, '') + (txt ? '?text=' + encodeURIComponent(txt) : '') : '';
 function cabecera() {
-  const volver = S.cfg.volver ? h('a', { class: 'btn line sm back', href: S.cfg.volver }, '← Volver a la web') : '';
+  const emb = window.parent !== window, volver = emb ? h('button', { class: 'btn line sm back', onclick: () => parent.postMessage('weeb-cerrar', location.origin) }, '← Volver a la web') : S.cfg.volver ? h('a', { class: 'btn line sm back', href: S.cfg.volver }, '← Volver a la web') : '';
   const w = wa(`Hola! Quiero consultar por una reserva en ${S.pub.nombre}.`);
   return h('div', null, volver, h('div', { class: 'head' }, h('img', { src: S.pub.logoUrl || 'weeb-logo.svg', alt: S.pub.nombre, onerror: ev => { if (!ev.target.dataset.f) { ev.target.dataset.f = 1; ev.target.src = 'weeb-logo.svg'; } } }), h('h1', null, S.pub.nombre), S.pub.direccion ? h('p', { class: 'muted small', style: 'margin:.3rem 0 0' }, S.pub.direccion) : ''),
     h('div', { class: 'acts' }, w ? h('a', { class: 'btn soft sm', href: w, target: '_blank', rel: 'noopener' }, 'WhatsApp') : '', S.pub.mapsUrl ? h('a', { class: 'btn soft sm', href: S.pub.mapsUrl, target: '_blank', rel: 'noopener' }, 'Cómo llegar') : ''));
@@ -96,7 +96,7 @@ async function estado(id) {
 }
 function copiar(label, valor) { return h('div', { class: 'copy' }, h('div', null, h('span', null, label), h('b', null, valor)), h('button', { class: 'btn soft sm', onclick: e => { navigator.clipboard && navigator.clipboard.writeText(valor); e.target.textContent = '¡Copiado!'; setTimeout(() => (e.target.textContent = 'Copiar'), 1500); } }, 'Copiar')); }
 function resultado(r, nueva) {
-  const fh = flarga(r.fecha) + ' · ' + r.inicio + ' a ' + r.fin + ' hs', cod = h('p', { class: 'muted small', style: 'text-align:center' }, 'Código de reserva: ' + r.id), volver = h('a', { class: 'btn line block', style: 'margin-top:1rem', href: location.pathname }, 'Hacer otra reserva');
+  const fh = flarga(r.fecha) + ' · ' + r.inicio + ' a ' + r.fin + ' hs', cod = h('p', { class: 'muted small', style: 'text-align:center' }, 'Código de reserva: ' + r.id), volver = h('button', { class: 'btn line block', style: 'margin-top:1rem', onclick: () => { history.replaceState(null, '', location.pathname); S.fecha = ''; S.slot = null; calendario(); } }, 'Hacer otra reserva');
   if (r.estado === 'confirmada' || r.estado === 'saldada') return pagina(4, h('div', { class: 'big' }, h('div', { class: 'ico' }, '✓'), h('h2', null, '¡Reserva confirmada!'), h('p', null, fh), r.pagado ? h('p', { class: 'muted' }, 'Pagaste ' + money(r.pagado) + (r.saldo > 0 ? ' · Saldo ' + money(r.saldo) : '')) : '', nueva ? h('p', { class: 'muted small' }, 'Si dejaste tu mail, te mandamos la confirmación.') : ''), cod, volver);
   if (r.estado === 'pendiente') {
     const t = r.transferencia, aviso = wa(`Hola! Ya hice la transferencia de la seña. Reserva ${r.id}, a nombre de ${r.nombre}, ${flarga(r.fecha)} de ${r.inicio} a ${r.fin} hs.`);
