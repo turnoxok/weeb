@@ -10960,7 +10960,7 @@ function App() {
     ["cfg", "cfg", "Escena"], ["look", "look", "Look"], ["pose", "pose", "Personaje"], ["camera", "cam", "Cámara"],
     ["timing", "time", "Tiempo"], ["objects", "cube", "Objetos"], ["pages", "page", "Páginas"], ["seo", "search", "SEO"], ["preview", "play", "Preview"], ["file", "file", "Archivo"],
   ];
-  const showStageBar = ["pose", "camera", "objects"].includes(section);
+  const showStageBar = ["pose", "camera", "objects", "look"].includes(section);
   const currentStageLabel = stages.find((s) => s.id === activeStage)?.label || "";
   const noBonesFound = Object.keys(foundMap).length > 0 && !Object.values(foundMap).some(Boolean);
   const cam = camsByKf[activeStage] || defaultCamera();
@@ -11503,24 +11503,11 @@ function App() {
           <div className="content">
             {section === "cfg" && (
               <>
-                <Group id="model" title="Modelo principal">
-                  <div className="row"><span className="lbl">Archivo</span>
-                    <PathInput value={modelUrl} onCommit={setModelUrl} placeholder="./assets/models/modelo.glb" />
-                    {modelUrl && <button className="mini danger" title="Quitar modelo" onClick={() => setModelUrl("")}><Icon name="trash" size={14} /></button>}
-                  </div>
-                  <Slider label="Escala" min={0.01} max={5} step={0.01} value={charScale} onChange={setCharScale} />
-                  <Slider label="Centro Y" min={-2} max={2} step={0.01} value={charCenterY} onChange={setCharCenterY} />
-                </Group>
                 <Group id="loader" title="Loader · pantalla de carga" toggle={{ checked: loader.enabled, onChange: (v) => setLoaderField("enabled", v) }}>
                   <LoaderFields loader={loader} setLoaderField={setLoaderField} onPreview={() => setLoaderPreview((n) => n + 1)} />
                 </Group>
                 <Group id="dock" title="Datos del negocio (para Google)" defaultOpen={false}>
                   <DockFields dock={dock} setDockField={setDockField} />
-                </Group>
-                <Group id="refl" title="Reflejo" toggle={{ checked: reflection.enabled, onChange: (v) => setReflectionField("enabled", v) }}>
-                  <SelectRow label="Resol." value={reflection.resolution} onChange={(v) => setReflectionField("resolution", Number(v))} options={[[128, "128"], [256, "256"], [512, "512"]]} />
-                  <Slider label="Cada" min={1} max={10} step={1} value={reflection.updateEvery} onChange={(v) => setReflectionField("updateEvery", v)} />
-                  <Slider label="Intens." min={0} max={3} step={0.05} value={reflection.intensity} onChange={(v) => setReflectionField("intensity", v)} />
                 </Group>
                 <Group id="cursor" title="Estela del mouse / dedo" toggle={{ checked: cursor.enabled, onChange: (v) => setCursorField("enabled", v) }}>
                   <ColorRow label="Color base" value={cursor.color} onChange={(v) => setCursorField("color", v)} />
@@ -11707,12 +11694,6 @@ function App() {
                     {progressBar.color && <button className="mini" onClick={() => setProgressField("color", "")}>Usar el de la marca</button>}
                   </div>
                 </Group>
-                <Group id="trail" title="Estela del personaje (brillos al scrollear)" toggle={{ checked: trail.enabled, onChange: (v) => setTrailField("enabled", v) }}>
-                  <ColorRow label="Color" value={trail.color} onChange={(v) => setTrailField("color", v)} />
-                  <Slider label="Tamaño" min={0.005} max={0.3} step={0.005} value={trail.size} onChange={(v) => setTrailField("size", v)} />
-                  <Slider label="Vida" min={0.1} max={3} step={0.05} value={trail.life} onChange={(v) => setTrailField("life", v)} />
-                  <Slider label="Densidad" min={2} max={120} step={1} value={trail.rate} onChange={(v) => setTrailField("rate", v)} />
-                </Group>
               </>
             )}
 
@@ -11741,6 +11722,46 @@ function App() {
                   <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.4 }}>Si la cámara "atraviesa" paredes o objetos cercanos, bajalo (0.05–0.1). Si ves parpadeos en bordes lejanos, subilo. Vale igual en el editor y en el sitio exportado.</div>
                   <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Luz natural: relleno suave y cálido desde arriba que aclara las sombras (no cambia el fondo ni el neón). Exposición: multiplica todas las luces a la vez. Salen igual en el index.html y en el MP4.</div>
                 </Group>
+                <Group id="phonelights" title="Luces y sombras (qué se calcula y qué pesa)">
+                  <Switch checked={!!postFx.spotsOnly} onChange={(v) => setPostFxField("spotsOnly", v)} label="Solo luz de los spots (sin luz ambiente, ni principal, ni relleno)" />
+                  <Switch checked={!!postFx.mobileShadows} onChange={(v) => setPostFxField("mobileShadows", v)} label="Sombras de los spots en celular (más pesado)" />
+                  <Slider label="Luces máximas en celular (0 = todas)" min={0} max={20} step={1} value={postFx.mobileLights ?? 6} onChange={(v) => setPostFxField("mobileLights", v)} />
+                  <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Los spots de los objetos son los que dan la luz puntual. Cada luz y cada sombra suma peso en el celular: mirá el medidor "Peso celu" arriba a la derecha del visor.</div>
+                </Group>
+                <div style={{ fontSize: 11, fontWeight: 600, marginTop: 10 }}>Por pose</div>
+                <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Estos cambian de una pose a otra: elegí la pose arriba. Lo de más abajo vale para todo el sitio.</div>
+                <Group id="light" title="Luz principal">
+                  <ColorRow label="Color" value={fxs.light.color} onChange={(v) => setFxField("light", "color", v)} />
+                  <Slider label="Intens." min={0} max={5} step={0.05} value={fxs.light.intensity} onChange={(v) => setFxField("light", "intensity", v)} />
+                  <Slider label="Ambiente" min={0} max={3} step={0.01} value={fxs.light.ambient ?? 0.28} onChange={(v) => setFxField("light", "ambient", v)} />
+                  <Slider label="Azimut" min={0} max={360} step={1} value={fxs.light.azimuth ?? 45} onChange={(v) => setFxField("light", "azimuth", v)} />
+                  <Slider label="Altura" min={-90} max={90} step={1} value={fxs.light.elevation ?? 35} onChange={(v) => setFxField("light", "elevation", v)} />
+                </Group>
+                <Group id="rim" title="Luz de contorno">
+                  <ColorRow label="Color" value={fxs.light.rimColor} onChange={(v) => setFxField("light", "rimColor", v)} />
+                  <Slider label="Intens." min={0} max={5} step={0.05} value={fxs.light.rimIntensity} onChange={(v) => setFxField("light", "rimIntensity", v)} />
+                </Group>
+                <Group id="fog" title="Niebla" toggle={{ checked: fxs.fog.enabled !== false, onChange: (v) => setFxField("fog", "enabled", v) }}>
+                  <ColorRow label="Color" value={fxs.fog.color} onChange={(v) => setFxField("fog", "color", v)} />
+                  <Slider label="Alcance" min={0} max={300} step={0.5} value={fxs.fog.far} onChange={(v) => setFxField("fog", "far", v)} />
+                </Group>
+                <Group id="bg" title="Fondo">
+                  <Seg value={fxs.background.mode === "gradient" ? "gradient" : fxs.background.mode === "transparent" ? "transparent" : "solid"} onChange={setBackgroundMode} options={[["solid", "Sólido"], ["gradient", "Degradado"], ["transparent", "Transparente"]]} />
+                  {fxs.background.mode !== "transparent" && <ColorRow label={fxs.background.mode === "gradient" ? "Desde" : "Color"} value={fxs.background.from} onChange={(v) => setBackgroundColor("from", v)} />}
+                  {fxs.background.mode === "gradient" && (
+                    <>
+                      <Switch checked={!!fxs.background.midOn} onChange={toggleBackgroundMid} label="Color intermedio (3 colores)" />
+                      {fxs.background.midOn && (
+                        <>
+                          <ColorRow label="Medio" value={fxs.background.mid || "#808080"} onChange={(v) => setBackgroundColor("mid", v)} />
+                          <Slider label="Posición %" min={0} max={100} step={1} value={fxs.background.midPos == null ? 50 : fxs.background.midPos} onChange={(v) => setFxField("background", "midPos", v)} />
+                        </>
+                      )}
+                      <ColorRow label="Hasta" value={fxs.background.to} onChange={(v) => setBackgroundColor("to", v)} />
+                      <Slider label="Ángulo" min={0} max={360} step={1} value={fxs.background.angle ?? 180} onChange={(v) => setFxField("background", "angle", v)} />
+                    </>
+                  )}
+                </Group>
                 {lookMode === "manual" && (
                   <>
                   <Group id="screen" title="Pantalla (PC y celular)">
@@ -11757,6 +11778,7 @@ function App() {
                   </Group>
                   <Group id="bloom" title="Bloom" toggle={{ checked: postFx.bloomEnabled, onChange: (v) => setPostFxField("bloomEnabled", v) }}>
                     <Slider label="Intens." min={0} max={2} step={0.01} value={postFx.bloomIntensity} onChange={(v) => setPostFxField("bloomIntensity", v)} />
+                    <Slider label="Umbral bloom" min={0} max={1.5} step={0.01} value={postFx.bloomThreshold ?? 0.25} onChange={(v) => setPostFxField("bloomThreshold", v)} />
                   </Group>
                   <Group id="dof" title="Desenfoque (profundidad de campo)" toggle={{ checked: !!postFx.dofEnabled, onChange: (v) => setPostFxField("dofEnabled", v) }}>
                     <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Desenfoca según la distancia a la cámara. Con "Solo el fondo" queda nítido todo lo que está entre la cámara y el plano de foco, y se desenfoca lo que queda detrás. Solo en equipos con calidad alta (en celulares se apaga solo).</div>
@@ -11772,19 +11794,22 @@ function App() {
                     <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Un "estudio" invisible (softboxes) que los materiales metálicos reflejan desde cualquier ángulo. No se ve de fondo: el fondo no cambia. Se aplica a los modelos .glb de la pestaña Objetos. Sale igual en el index.html y en el MP4.</div>
                     <Slider label="Intensidad" min={0} max={3} step={0.05} value={postFx.envIntensity ?? 0.8} onChange={(v) => setPostFxField("envIntensity", v)} />
                   </Group>
-                  <Group id="rig" title="Luz de estudio y piso">
+                  <Group id="rig" title="Estilo de luz (clásica / estudio)">
                     <ColorRow label="Color de acento" value={postFx.accent || "#ffffff"} onChange={(v) => setPostFxField("accent", v)} />
                     <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Cambia de una vez el color del contraluz, del entorno de reflejos y del foco de fondo (el lila/magenta de Estudio). Blanco = neutro. <span style={{ color: "var(--acc)", cursor: "pointer", textDecoration: "underline" }} onClick={() => setPostFxField("accent", "")}>Volver al color original (por pose)</span>{postFx.accent ? ` · Activo: ${postFx.accent}` : " · Activo: original"}</div>
                     <Seg value={postFx.lightRig === "studio" ? "studio" : "classic"} onChange={(v) => setPostFxField("lightRig", v)} options={[["classic", "Clásica"], ["studio", "Estudio"]]} />
                     <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Estudio: un spot con sombra suave + rim de color atrás + softboxes para los reflejos, casi sin luz ambiente. Usa la dirección, color e intensidad de la luz de cada pose. El tone mapping ahora va siempre (antes con Bloom los colores se quemaban).</div>
-                    <Slider label="Umbral bloom" min={0} max={1.5} step={0.01} value={postFx.bloomThreshold ?? 0.25} onChange={(v) => setPostFxField("bloomThreshold", v)} />
-                    <Switch label="Piso reflectante (extras.reflector del .glb)" checked={postFx.floorReflect !== false} onChange={(v) => setPostFxField("floorReflect", v)} />
-                    {postFx.floorReflect !== false && <Slider label="Reflejo" min={0} max={1.5} step={0.01} value={postFx.floorReflectStrength ?? 0.5} onChange={(v) => setPostFxField("floorReflectStrength", v)} />}
+                  </Group>
+                  <Group id="shadowsfx" title="Sombras de contacto y oclusión ambiental">
                     <Switch label="Sombra de contacto (sobre el piso reflectante)" checked={!!postFx.contactShadow} onChange={(v) => setPostFxField("contactShadow", v)} />
                     {postFx.contactShadow && <Slider label="Opacidad" min={0} max={1} step={0.01} value={postFx.contactShadowOpacity ?? 0.75} onChange={(v) => setPostFxField("contactShadowOpacity", v)} />}
                     <Switch label="Oclusión ambiental (huecos y encastres)" checked={!!postFx.aoEnabled} onChange={(v) => setPostFxField("aoEnabled", v)} />
                     {postFx.aoEnabled && <Slider label="Intensidad AO" min={0} max={5} step={0.05} value={postFx.aoIntensity ?? 2} onChange={(v) => setPostFxField("aoIntensity", v)} />}
                     {postFx.aoEnabled && <Slider label="Radio AO" min={0.05} max={2} step={0.01} value={postFx.aoRadius ?? 0.35} onChange={(v) => setPostFxField("aoRadius", v)} />}
+                  </Group>
+                  <Group id="floorfx" title="Piso reflectante">
+                    <Switch label="Piso reflectante (extras.reflector del .glb)" checked={postFx.floorReflect !== false} onChange={(v) => setPostFxField("floorReflect", v)} />
+                    {postFx.floorReflect !== false && <Slider label="Reflejo" min={0} max={1.5} step={0.01} value={postFx.floorReflectStrength ?? 0.5} onChange={(v) => setPostFxField("floorReflectStrength", v)} />}
                   </Group>
                   <Group id="beam" title="Rayo de luz" toggle={{ checked: postFx.beamEnabled, onChange: (v) => setPostFxField("beamEnabled", v) }}>
                     <Slider label="Opacidad" min={0} max={1} step={0.01} value={postFx.beamOpacity} onChange={(v) => setPostFxField("beamOpacity", v)} />
@@ -11838,6 +11863,25 @@ function App() {
                   <Btn icon="copy" title="Copia los giros del lado izquierdo al derecho (espejo)" onClick={() => mirrorBones("l")}>Espejar izq → der</Btn>
                   <Btn icon="copy" title="Copia los giros del lado derecho al izquierdo (espejo)" onClick={() => mirrorBones("r")}>Espejar der → izq</Btn>
                 </div>
+                <Group id="model" title="Modelo principal">
+                  <div className="row"><span className="lbl">Archivo</span>
+                    <PathInput value={modelUrl} onCommit={setModelUrl} placeholder="./assets/models/modelo.glb" />
+                    {modelUrl && <button className="mini danger" title="Quitar modelo" onClick={() => setModelUrl("")}><Icon name="trash" size={14} /></button>}
+                  </div>
+                  <Slider label="Escala" min={0.01} max={5} step={0.01} value={charScale} onChange={setCharScale} />
+                  <Slider label="Centro Y" min={-2} max={2} step={0.01} value={charCenterY} onChange={setCharCenterY} />
+                </Group>
+                <Group id="refl" title="Reflejo" toggle={{ checked: reflection.enabled, onChange: (v) => setReflectionField("enabled", v) }}>
+                  <SelectRow label="Resol." value={reflection.resolution} onChange={(v) => setReflectionField("resolution", Number(v))} options={[[128, "128"], [256, "256"], [512, "512"]]} />
+                  <Slider label="Cada" min={1} max={10} step={1} value={reflection.updateEvery} onChange={(v) => setReflectionField("updateEvery", v)} />
+                  <Slider label="Intens." min={0} max={3} step={0.05} value={reflection.intensity} onChange={(v) => setReflectionField("intensity", v)} />
+                </Group>
+                <Group id="trail" title="Estela del personaje (brillos al scrollear)" toggle={{ checked: trail.enabled, onChange: (v) => setTrailField("enabled", v) }}>
+                  <ColorRow label="Color" value={trail.color} onChange={(v) => setTrailField("color", v)} />
+                  <Slider label="Tamaño" min={0.005} max={0.3} step={0.005} value={trail.size} onChange={(v) => setTrailField("size", v)} />
+                  <Slider label="Vida" min={0.1} max={3} step={0.05} value={trail.life} onChange={(v) => setTrailField("life", v)} />
+                  <Slider label="Densidad" min={2} max={120} step={1} value={trail.rate} onChange={(v) => setTrailField("rate", v)} />
+                </Group>
               </>
             )}
 
@@ -11857,38 +11901,6 @@ function App() {
                   <Vec3 label="Mira a" value={cam.lookAt} onChange={(a, v) => setCamField("lookAt", a, v)} />
                   <Slider label="FOV" min={10} max={90} step={0.1} value={cam.fov} onChange={(v) => setCamField("fov", null, v)} />
                   <Slider label="Roll" min={-180} max={180} step={0.1} value={cam.roll || 0} onChange={(v) => setCamField("roll", null, v)} />
-                </Group>
-                <Group id="light" title="Luz principal">
-                  <ColorRow label="Color" value={fxs.light.color} onChange={(v) => setFxField("light", "color", v)} />
-                  <Slider label="Intens." min={0} max={5} step={0.05} value={fxs.light.intensity} onChange={(v) => setFxField("light", "intensity", v)} />
-                  <Slider label="Ambiente" min={0} max={3} step={0.01} value={fxs.light.ambient ?? 0.28} onChange={(v) => setFxField("light", "ambient", v)} />
-                  <Slider label="Azimut" min={0} max={360} step={1} value={fxs.light.azimuth ?? 45} onChange={(v) => setFxField("light", "azimuth", v)} />
-                  <Slider label="Altura" min={-90} max={90} step={1} value={fxs.light.elevation ?? 35} onChange={(v) => setFxField("light", "elevation", v)} />
-                </Group>
-                <Group id="rim" title="Luz de contorno">
-                  <ColorRow label="Color" value={fxs.light.rimColor} onChange={(v) => setFxField("light", "rimColor", v)} />
-                  <Slider label="Intens." min={0} max={5} step={0.05} value={fxs.light.rimIntensity} onChange={(v) => setFxField("light", "rimIntensity", v)} />
-                </Group>
-                <Group id="fog" title="Niebla" toggle={{ checked: fxs.fog.enabled !== false, onChange: (v) => setFxField("fog", "enabled", v) }}>
-                  <ColorRow label="Color" value={fxs.fog.color} onChange={(v) => setFxField("fog", "color", v)} />
-                  <Slider label="Alcance" min={0} max={300} step={0.5} value={fxs.fog.far} onChange={(v) => setFxField("fog", "far", v)} />
-                </Group>
-                <Group id="bg" title="Fondo">
-                  <Seg value={fxs.background.mode === "gradient" ? "gradient" : fxs.background.mode === "transparent" ? "transparent" : "solid"} onChange={setBackgroundMode} options={[["solid", "Sólido"], ["gradient", "Degradado"], ["transparent", "Transparente"]]} />
-                  {fxs.background.mode !== "transparent" && <ColorRow label={fxs.background.mode === "gradient" ? "Desde" : "Color"} value={fxs.background.from} onChange={(v) => setBackgroundColor("from", v)} />}
-                  {fxs.background.mode === "gradient" && (
-                    <>
-                      <Switch checked={!!fxs.background.midOn} onChange={toggleBackgroundMid} label="Color intermedio (3 colores)" />
-                      {fxs.background.midOn && (
-                        <>
-                          <ColorRow label="Medio" value={fxs.background.mid || "#808080"} onChange={(v) => setBackgroundColor("mid", v)} />
-                          <Slider label="Posición %" min={0} max={100} step={1} value={fxs.background.midPos == null ? 50 : fxs.background.midPos} onChange={(v) => setFxField("background", "midPos", v)} />
-                        </>
-                      )}
-                      <ColorRow label="Hasta" value={fxs.background.to} onChange={(v) => setBackgroundColor("to", v)} />
-                      <Slider label="Ángulo" min={0} max={360} step={1} value={fxs.background.angle ?? 180} onChange={(v) => setFxField("background", "angle", v)} />
-                    </>
-                  )}
                 </Group>
               </>
             )}
@@ -11911,9 +11923,6 @@ function App() {
                         <Switch label="Una pose por deslizamiento" checked={!!postFx.mobileSnap} onChange={(v) => setSc({ mobileSnap: v })} />
                         <SelectRow label="Scroll en las páginas 2D" value={postFx.scroll2d === "smooth" ? "smooth" : "native"} onChange={(v) => setSc({ scroll2d: v })} options={[["native", "Nativo del navegador (máxima fluidez, recomendado)"], ["smooth", "Amortiguado (como el 3D, más pesado)"]]} />
                         <Slider label={"Largo del recorrido 3D en celular (" + Math.round(postFx.mobileLength || 100) + "%)"} min={30} max={100} step={5} value={postFx.mobileLength || 100} onChange={(v) => setSc({ mobileLength: v })} />
-                        <Switch checked={!!postFx.spotsOnly} onChange={(v) => setSc({ spotsOnly: v })} label="Solo luz de los spots (sin luz ambiente, ni principal, ni relleno)" />
-                        <Switch checked={!!postFx.mobileShadows} onChange={(v) => setSc({ mobileShadows: v })} label="Sombras de los spots en celular (más pesado)" />
-                        <Slider label="Luces máximas en celular (0 = todas)" min={0} max={20} step={1} value={postFx.mobileLights ?? 6} onChange={(v) => setSc({ mobileLights: v })} />
                         {!postFx.mobileSnap && <Slider label={`Velocidad celular (0 = auto ×${Math.max(1, Math.round((postFx.scrollSpeed > 0 ? postFx.scrollSpeed : autoSpeed) * 0.4 * 2) / 2)})`} min={0} max={15} step={0.5} value={postFx.scrollSpeedMobile ?? 0} onChange={(v) => setSc({ scrollSpeedMobile: v })} />}
                         {!postFx.mobileSnap && <Slider label="Inercia del dedo" min={0} max={20} step={1} value={postFx.touchInertia ?? 6} onChange={(v) => setSc({ touchInertia: v })} />}
                       </Group>
