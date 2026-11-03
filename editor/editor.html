@@ -1417,8 +1417,13 @@ function CameraRig({ mouse, parallaxStrength = 0.18 }) {
   useFrame((_, delta) => {
     const progress = useScrollStore.getState().smoothProgress;
     const state = blendScenes(scenes, progress);
-    const [px, py, pz] = state.camera.position;
     const [lx, ly, lz] = state.camera.lookAt;
+    /* Tomas "maqueta" (fov chico, cámara lejos): el FOV está pensado para 9:16. En pantallas más anchas la cámara se acerca para que la maqueta
+       ocupe el mismo ancho en vez de quedar chiquita; con fov grandes (recorridos) no cambia nada. */
+    const fitK = Math.min(1, Math.max(0.3, 9 / 16 / (camera.aspect || 9 / 16)));
+    const wFit = Math.min(1, Math.max(0, (state.camera.fov - 26) / 8));
+    const dk = 1 - (1 - fitK) * (1 - wFit);
+    const px = lx + (state.camera.position[0] - lx) * dk, py = ly + (state.camera.position[1] - ly) * dk, pz = lz + (state.camera.position[2] - lz) * dk;
     const mx = mouse.current?.x ?? 0;
     const my = mouse.current?.y ?? 0;
 
