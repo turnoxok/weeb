@@ -11545,12 +11545,6 @@ function App() {
                     </>
                   )}
                 </Group>
-                  <Group id="screen" title="Pantalla y cámara">
-                  <Slider label="Plano cercano de la cámara" min={0.02} max={1} step={0.01} value={postFx.camNear ?? 0.1} onChange={(v) => setPostFxField("camNear", v)} />
-                  <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.4 }}>Si la cámara "atraviesa" paredes o objetos cercanos, bajalo (0.05–0.1). Si ves parpadeos en bordes lejanos, subilo. Vale igual en el editor y en el sitio exportado.</div>
-                    <Switch label="Columna 9:16 también en PC" checked={postFx.phoneColumn === true} onChange={(v) => setPostFxField("phoneColumn", v)} />
-                    <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Apagado (lo normal): en la compu el sitio ocupa toda la ventana. Prendido: se ve como en el visor 9:16 (una columna centrada). En celulares más altos que 9:16 el sitio abre un poco el encuadre vertical para no cortar los costados.</div>
-                  </Group>
                   <Group id="floorfx" title="Piso reflectante">
                     <Switch label="Piso reflectante (extras.reflector del .glb)" checked={postFx.floorReflect !== false} onChange={(v) => setPostFxField("floorReflect", v)} />
                     {postFx.floorReflect !== false && <Slider label="Reflejo" min={0} max={1.5} step={0.01} value={postFx.floorReflectStrength ?? 0.5} onChange={(v) => setPostFxField("floorReflectStrength", v)} />}
@@ -11623,6 +11617,12 @@ function App() {
                   <Slider label="FOV" min={10} max={90} step={0.1} value={cam.fov} onChange={(v) => setCamField("fov", null, v)} />
                   <Slider label="Roll" min={-180} max={180} step={0.1} value={cam.roll || 0} onChange={(v) => setCamField("roll", null, v)} />
                 </Group>
+                <Group id="screen" title="Pantalla (PC y celular)">
+                  <Slider label="Plano cercano de la cámara" min={0.02} max={1} step={0.01} value={postFx.camNear ?? 0.1} onChange={(v) => setPostFxField("camNear", v)} />
+                  <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.4 }}>Si la cámara "atraviesa" paredes o objetos cercanos, bajalo (0.05–0.1). Si ves parpadeos en bordes lejanos, subilo. Vale igual en el editor y en el sitio exportado.</div>
+                    <Switch label="Columna 9:16 también en PC" checked={postFx.phoneColumn === true} onChange={(v) => setPostFxField("phoneColumn", v)} />
+                    <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Apagado (lo normal): en la compu el sitio ocupa toda la ventana. Prendido: se ve como en el visor 9:16 (una columna centrada). En celulares más altos que 9:16 el sitio abre un poco el encuadre vertical para no cortar los costados.</div>
+                  </Group>
               </>
             )}
 
