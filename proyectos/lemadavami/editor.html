@@ -1021,29 +1021,8 @@ function lerpBgMid(ba, bb, t) {
   return { mid: lerpColor(ca, cb, t), midPos: lerp(pa, pb, t) };
 }
 
-const LOOK_PAIRS = [["bloomEnabled", "bloomIntensity"], ["vignetteEnabled", "vignetteDarkness"], ["aoEnabled", "aoIntensity"], ["contactShadow", "contactShadowOpacity"], ["envEnabled", "envIntensity"]];
-function blendLook(la, lb, t) {
-  if (!la && !lb) return undefined;
-  const A = la || lb, B = lb || la, out = {}, done = {};
-  for (const [en, val] of LOOK_PAIRS) {
-    done[en] = 1; done[val] = 1;
-    if (A[en] === undefined && B[en] === undefined && A[val] === undefined && B[val] === undefined) continue;
-    const va = A[en] === false ? 0 : (A[val] ?? 0), vb = B[en] === false ? 0 : (B[val] ?? 0);
-    const v = lerp(va, vb, t);
-    out[val] = v; out[en] = v > 0.003;
-  }
-  const keys = Object.keys(Object.assign({}, A, B));
-  for (const k of keys) {
-    if (done[k]) continue;
-    const x = A[k], y = B[k];
-    out[k] = (typeof x === "number" && typeof y === "number") ? lerp(x, y, t) : (t < 0.5 ? (x ?? y) : (y ?? x));
-  }
-  return out;
-}
-
 function sceneToState(kf) {
   return {
-    look: kf.look,
     camera: kf.camera,
     light: kf.light,
     fog: kf.fog,
@@ -1065,7 +1044,6 @@ function blendScenes(list, rawProgress) {
   const t = applyEasing(clamp((progress - a.progress) / span), b.easing);
 
   return {
-    look: blendLook(a.look, b.look, t),
     camera: {
       position: b.camera.arc ? lerpOrbit(a.camera, b.camera, t) : lerpVec3(a.camera.position, b.camera.position, t),
       lookAt: lerpVec3(a.camera.lookAt, b.camera.lookAt, t),
@@ -3762,7 +3740,7 @@ function SceneObjectModel({ data }) {
   const envTex = useStudioEnv();
   const envCfg = React.useContext(EnvSettingsCtx);
   const perf = React.useContext(PerfCtx);
-  const labRefl = useLab((st) =&gt; st.refl), labShadow = useLab((st) =&gt; st.shadow), labShadowO = useLab((st) =&gt; st.shadowO);
+  const labRefl = useLab((st) =&gt; st.refl), labShadow = useLab((st) =&gt; st.shadow);
   useEffect(() =&gt; {
     applyScreenGlass(scene, data.glass || 0, data.glassMatch, (p) =&gt; { if (hasFade) patchFadeMaterial(p, fade); });
     applyStudioEnv(scene, envTex, envCfg.enabled, envCfg.intensity);
@@ -3773,7 +3751,7 @@ function SceneObjectModel({ data }) {
     &lt;group ref={groupRef}&gt;
       &lt;primitive object={scene} /&gt;
       &lt;ReflectorFloors scene={scene} enabled={labRefl &amp;&amp; perf.tier &gt;= 1 &amp;&amp; perf.safe &lt; 3 &amp;&amp; !perf.off.ref} strength={FLOOR_REFLECT_STRENGTH}
-        mobile={perf.tier &lt; 2} contact={labShadow &amp;&amp; perf.tier &gt;= 2 &amp;&amp; perf.safe &lt; 3 &amp;&amp; !perf.off.contact} contactOpacity={labShadowO} grade={gradeOf(data)} glow={data.glow || 0} /&gt;
+        mobile={perf.tier &lt; 2} contact={false} contactOpacity={0} grade={gradeOf(data)} glow={data.glow || 0} /&gt;
     &lt;/group&gt;
   );
 }
@@ -4677,7 +4655,7 @@ const OFF_FLAGS = (() =&gt; { try { const v = new URLSearchParams(window.locatio
    Sin ?lab no cambia nada: todo arranca con los valores del proyecto. */
 const LAB_ON = (() =&gt; { try { return new URLSearchParams(window.location.search).has("lab"); } catch (e) { return false; } })();
 const LAB_DEF = { post: true, vig: VIGNETTE_ENABLED, vigD: VIGNETTE_DARKNESS, vigO: VIGNETTE_OFFSET, bloom: BLOOM_ENABLED, bloomI: BLOOM_INTENSITY, bloomT: BLOOM_THRESHOLD, ao: AO_ENABLED, dof: DOF_ENABLED,
-  exp: EXPOSURE, nat: NATURAL_LIGHT, env: ENV_ENABLED, envI: ENV_INTENSITY, spots: 1, fog: true, trail: TRAIL_ENABLED, part: PART_ENABLED, beam: BEAM_ENABLED, refl: FLOOR_REFLECT, shadow: CONTACT_SHADOW, bright: 1, contrast: 1, aoI: AO_INTENSITY, aoR: AO_RADIUS, shadowO: CONTACT_SHADOW_OPACITY, halo: HALO };
+  exp: EXPOSURE, nat: NATURAL_LIGHT, env: ENV_ENABLED, envI: ENV_INTENSITY, spots: 1, fog: true, trail: TRAIL_ENABLED, part: PART_ENABLED, beam: BEAM_ENABLED, refl: FLOOR_REFLECT, shadow: CONTACT_SHADOW, bright: 1, contrast: 1 };
 const useLab = create((set) =&gt; ({ ...LAB_DEF, put: (p) =&gt; set(p), reset: () =&gt; set({ ...LAB_DEF }) }));
 const labv = (k) =&gt; useLab.getState()[k];
 const LAB_ROWS = [
@@ -4772,70 +4750,6 @@ function BlackFrameGuard({ active, renderDirect, onBlack, onOk }) {
   }, 3);
   return null;
 }
-function Lighting() {
-  return LIGHT_RIG === "studio" ? &lt;StudioLighting /&gt; : &lt;ClassicLighting /&gt;;
-}
-function StudioLighting() {
-  const labExp = useLab((st) =&gt; st.exp);
-  const get = () =&gt; blendScenes(scenes, useScrollStore.getState().smoothProgress);
-  return &lt;StudioRigLights getLight={() =&gt; get().light} getLookAt={() =&gt; get().camera.lookAt} getCamPos={() =&gt; get().camera.position} exposure={labExp} mobile={false} accent={ACCENT} /&gt;;
-}
-function ClassicLighting() {
-  const labNat = useLab((st) =&gt; st.nat), labExp = useLab((st) =&gt; st.exp);
-  const keyRef = useRef(null);
-  const rimRef = useRef(null);
-  const dampedPos = useRef(new THREE.Vector3(...lightDirFromAngles(45, 35, 6)));
-  const ambRef = useRef();
-  const hemiRef = useRef();
-
-  useFrame((_, delta) =&gt; {
-    const progress = useScrollStore.getState().smoothProgress;
-    const state = blendScenes(scenes, progress);
-    const LL = lookLight(state.light, labv("nat"), labv("exp"));
-    if (keyRef.current) {
-      keyRef.current.color.set(state.light.color);
-      keyRef.current.intensity = damp(keyRef.current.intensity, LL.key, 4, delta);
-      const target = lightDirFromAngles(state.light.azimuth, state.light.elevation, 6);
-      dampedPos.current.x = damp(dampedPos.current.x, target[0], 5, delta);
-      dampedPos.current.y = damp(dampedPos.current.y, target[1], 5, delta);
-      dampedPos.current.z = damp(dampedPos.current.z, target[2], 5, delta);
-      keyRef.current.position.copy(dampedPos.current);
-    }
-    if (rimRef.current) {
-      rimRef.current.color.set(ACCENT || state.light.rimColor);
-      rimRef.current.intensity = damp(rimRef.current.intensity, LL.rim, 4, delta);
-    }
-    if (ambRef.current) ambRef.current.intensity = damp(ambRef.current.intensity, LL.amb, 4, delta);
-    if (hemiRef.current) hemiRef.current.intensity = damp(hemiRef.current.intensity, LL.hemi, 4, delta);
-  });
-
-  return (
-    &lt;&gt;
-      {!SPOTS_ONLY &amp;&amp; &lt;&gt;
-      &lt;hemisphereLight ref={hemiRef} color="#cfe8ff" groundColor="#1a1410" intensity={0.35} /&gt;
-      &lt;ambientLight ref={ambRef} intensity={0.28} /&gt;
-      &lt;directionalLight
-        ref={keyRef}
-        intensity={0.9}
-        castShadow={!SPOTS_ONLY}
-        shadow-mapSize={[2048, 2048]}
-        shadow-bias={-0.0003}
-        shadow-normalBias={0.02}
-        shadow-camera-left={-9}
-        shadow-camera-right={9}
-        shadow-camera-top={9}
-        shadow-camera-bottom={-9}
-        shadow-camera-near={1}
-        shadow-camera-far={20}
-      /&gt;
-      &lt;directionalLight position={[-3, 2, -2]} intensity={SPOTS_ONLY ? 0 : 0.5} /&gt;
-      &lt;pointLight ref={rimRef} position={[-2.5, -1, -2]} intensity={1.4} distance={12} /&gt;
-      &lt;NaturalFill intensity={labNat * 0.85 * labExp} /&gt;
-      &lt;/&gt;}
-    &lt;/&gt;
-  );
-}
-
 function SceneEnvironment() {
   const { scene } = useThree();
   const fog = useRef(new THREE.FogExp2("#05070a", 0.12));
@@ -4880,29 +4794,9 @@ function MenuFreeze() {
   return null;
 }
 
-const LOOK_TO_LAB = { exposure: "exp", naturalLight: "nat", halo: "halo", bloomEnabled: "bloom", bloomIntensity: "bloomI", bloomThreshold: "bloomT", vignetteEnabled: "vig", vignetteDarkness: "vigD", vignetteOffset: "vigO", aoEnabled: "ao", aoIntensity: "aoI", aoRadius: "aoR", contactShadow: "shadow", contactShadowOpacity: "shadowO", envEnabled: "env", envIntensity: "envI", dofEnabled: "dof", beamEnabled: "beam", partEnabled: "part" };
-/* Look por pose: cada pose guarda su look; con el scroll se mezclan y se vuelcan al store (solo cambia lo que cambió, redondeado). */
-function PoseLookDriver() {
-  useFrame(() => {
-    if (LAB_ON) return;
-    const lk = blendScenes(scenes, useScrollStore.getState().smoothProgress).look;
-    if (!lk) return;
-    const cur = useLab.getState(), patch = {};
-    for (const k in LOOK_TO_LAB) {
-      if (lk[k] === undefined) continue;
-      let v = lk[k];
-      if (typeof v === "number") v = Math.round(v * 100) / 100;
-      const lab = LOOK_TO_LAB[k];
-      if (cur[lab] !== v) patch[lab] = v;
-    }
-    for (const k in patch) { useLab.setState(patch); break; }
-  });
-  return null;
-}
-
 function Experience({ device }) {
   const Lb = useLab();
-  const envCtx = useMemo(() =&gt; ({ enabled: Lb.env, intensity: Lb.envI * Lb.exp * (1 + 0.35 * Lb.nat), rig: LIGHT_RIG, accent: ACCENT }), [Lb.env, Lb.envI, Lb.exp, Lb.nat]);
+  const envCtx = useMemo(() => ({ enabled: false, intensity: 0, rig: "classic", accent: "" }), []);
   const mouse = useMouseParallax();
   const charAnchorRef = useRef(null);
   // ?q=0|1|2 en la URL fuerza el nivel de calidad (útil para probar); sin eso arranca solo y baja si hace falta.
@@ -4962,7 +4856,6 @@ function Experience({ device }) {
       &lt;MenuFreeze /&gt;
       &lt;SceneEnvironment /&gt;
       &lt;CameraRig mouse={mouse} /&gt;
-      &lt;Lighting /&gt;
       &lt;Suspense fallback={null}&gt;
         &lt;SceneObjects /&gt;
         &lt;ObjectBoundary&gt;
@@ -4988,23 +4881,11 @@ function Experience({ device }) {
         intensity={REFLECTION_INTENSITY}
       /&gt;
 
-      &lt;LightBeam enabled={Lb.beam &amp;&amp; BEAM_OPACITY &gt; 0.02 &amp;&amp; !OFF_FLAGS.beam} opacity={BEAM_OPACITY} width={BEAM_WIDTH} height={BEAM_HEIGHT} soft={BEAM_SOFT} glow={BEAM_GLOW} target={BEAM_TARGET} /&gt;
-      &lt;AmbientParticles
-        enabled={Lb.part &amp;&amp; !OFF_FLAGS.part} count={tier &gt;= 2 ? PART_COUNT : tier &gt;= 1 ? Math.min(PART_COUNT, 450) : Math.min(PART_COUNT, 120)} size={PART_SIZE} opacity={PART_OPACITY} speed={PART_SPEED} blur={PART_BLUR} range={PART_RANGE}
-        beam={Lb.beam ? PART_BEAM : 0} beamWidth={BEAM_WIDTH} beamHeight={BEAM_HEIGHT} beamTarget={BEAM_TARGET}
-        getLight={() =&gt; blendScenes(scenes, useScrollStore.getState().smoothProgress).light}
-        getLookAt={() =&gt; blendScenes(scenes, useScrollStore.getState().smoothProgress).camera.lookAt}
-      /&gt;
-  
       {/* En celular (&lt;=768 px): sin MSAA, AO en calidad baja, reflejo/sombras a menor resolución y
           dpr máx. 1.5 — se ve casi igual y no se traba. Con EffectComposer three.js NO aplica el tone mapping del renderer (solo lo hace al dibujar directo
           a pantalla). Por eso el ToneMapping va siempre: sin él, con Bloom los colores se queman. */}
-      &lt;PoseLookDriver /&gt;
       {safe &lt; 2 &amp;&amp; Lb.post &amp;&amp; (   /* celular en nivel 0: igual queda el brillo (a baja resolución, muy barato) para que no se vea pálido */
         &lt;EffectComposer multisampling={tier &gt;= 2 &amp;&amp; (AA_MODE === "msaa" || AA_MODE === "both") ? 4 : 0}&gt;
-          {Lb.ao &amp;&amp; tier &gt;= 2 &amp;&amp; safe &lt; 1 &amp;&amp; !OFF_FLAGS.ao &amp;&amp; &lt;N8AO aoRadius={Lb.aoR} intensity={Lb.aoI} distanceFalloff={0.6} halfRes quality={IS_MOBILE_VIEW ? "medium" : "high"} /&gt;}
-          {Lb.dof &amp;&amp; tier &gt;= 2 &amp;&amp; safe &lt; 1 &amp;&amp; !OFF_FLAGS.dof &amp;&amp; &lt;DepthFocus getTarget={() =&gt; blendScenes(scenes, useScrollStore.getState().smoothProgress).camera.lookAt} follow={DOF_FOLLOW} offset={DOF_OFFSET} distance={DOF_DISTANCE} range={DOF_RANGE} blur={DOF_BLUR} back={DOF_BACK} /&gt;}
-          {Lb.bloom &amp;&amp; Lb.bloomI &gt; 0.01 &amp;&amp; !OFF_FLAGS.bloom &amp;&amp; &lt;Bloom intensity={Lb.bloomI} luminanceThreshold={Lb.bloomT} luminanceSmoothing={0.9} mipmapBlur height={tier &gt;= 1 ? 240 : 120} /&gt;}
           &lt;ToneMapping mode={ToneMappingMode.ACES_FILMIC} /&gt;
           {(AA_MODE === "smaa" || AA_MODE === "both") &amp;&amp; tier &gt;= 1 &amp;&amp; &lt;SMAA /&gt;}
         &lt;/EffectComposer&gt;
@@ -6368,7 +6249,7 @@ function FrameGate({ active }) {
 }
 
 function App() {
-  const labHalo = useLab((st) =&gt; st.halo), labVig = useLab((st) =&gt; st.vig), labVigD = useLab((st) =&gt; st.vigD), labVigO = useLab((st) =&gt; st.vigO);
+  const labVig = useLab((st) =&gt; st.vig), labVigD = useLab((st) =&gt; st.vigD), labVigO = useLab((st) =&gt; st.vigO);
   const stageRef = useRef(null);
   useScrollProgress();
   useScrollTuning();
@@ -6424,19 +6305,6 @@ function App() {
           &lt;/Canvas&gt;
         &lt;/div&gt;
         &lt;BackgroundGradient stageRef={stageRef} /&gt;
-        {labHalo &gt; 0 &amp;&amp; &lt;div aria-hidden="true" style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none", background: `radial-gradient(ellipse 75% 48% at 20% 0%, ${accentHalo(ACCENT, labHalo)[0]} 0%, ${accentHalo(ACCENT, labHalo)[1]} 42%, rgba(0,0,0,0) 74%)` }} /&gt;}
-        {labVig &amp;&amp; (
-          &lt;div
-            aria-hidden="true"
-            style={{
-              position: "absolute",
-              inset: 0,
-              zIndex: 3,
-              pointerEvents: "none",
-              background: `radial-gradient(ellipse farthest-corner at center, transparent ${(1 - labVigO) * 100}%, rgba(0,0,0,${labVigD}) 100%)`,
-            }}
-          /&gt;
-        )}
         {CURSOR.enabled &amp;&amp; !IS_TOUCH_DEVICE &amp;&amp; &lt;CursorTrail /&gt;}
         &lt;SceneText /&gt;
         &lt;ProgressIndicator /&gt;
@@ -6683,8 +6551,6 @@ function sampleObjectTransform(transformsByStage, progress, stages, easings) {
 
 //@@use hexToRgba
 //@@use backgroundCss
-//@@use LOOK_PAIRS
-//@@use blendLook
 function lerpColorHex(a, b, t) {
   const ca = new THREE.Color(a);
   const cb = new THREE.Color(b);
@@ -6736,7 +6602,6 @@ function sampleFx(fxByKf, progress, stages, easings) {
   const t = applyEasing(clamp((p - a.progress) / span), easings[i]);
   const fa = fxByKf[a.id], fb = fxByKf[b.id];
   return {
-    look: blendLook(fa.look, fb.look, t),
     light: {
       color: lerpColorHex(fa.light.color, fb.light.color, t),
       intensity: lerp(fa.light.intensity, fb.light.intensity, t),
@@ -7525,50 +7390,21 @@ function BlenderGrid() {
    follow = el foco acompaña al punto al que mira la cámara (+ ajuste); si no, distancia fija desde la cámara. */
 //@@use DepthFocus
 function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate, movement, objects, showObjects, showGrid, fx, showFx, orbitRef, liveCameraRef, modelUrl, postFx, charScale, charCenterY, charAnchorRef, trail, reflection, markers, selectedObjectId, onSelectObject }) {
-  const envOn = !!showFx && !(postFx && postFx.envEnabled === false);
-  const envInt = (postFx && postFx.envIntensity != null ? postFx.envIntensity : 0.8) * (postFx && postFx.exposure != null ? postFx.exposure : 1) * (1 + 0.35 * ((postFx && postFx.naturalLight) || 0));
-  const LL = showFx ? lookLight(fx.light, postFx && postFx.naturalLight, postFx && postFx.exposure) : null;
-  const rig = showFx && postFx && postFx.lightRig === "studio" ? "studio" : "classic";
+  const envOn = false;
+  const envInt = 0;
+  const rig = "classic";
   const floorCfg = {
     enabled: !(postFx && postFx.floorReflect === false),
     strength: (postFx && postFx.floorReflectStrength) ?? 0.5,
-    contact: !!(showFx && postFx && postFx.contactShadow),
+    contact: false,
     contactOpacity: (postFx && postFx.contactShadowOpacity) ?? 0.75,
   };
-  const accentC = (showFx && postFx && postFx.accent) || "";
+  const accentC = "";
   const envCtx = useMemo(() => ({ enabled: envOn, intensity: envInt, rig, accent: accentC, floor: floorCfg }),
     [envOn, envInt, rig, accentC, floorCfg.enabled, floorCfg.strength, floorCfg.contact, floorCfg.contactOpacity]);
   return (
     <EnvSettingsCtx.Provider value={envCtx}>
       {showFx && fx.fog.enabled !== false && <fogExp2 attach="fog" args={[fx.fog.color, 1 / Math.max(fx.fog.far, 1)]} />}
-      {rig === "studio" ? (
-        <StudioRigLights accent={postFx && postFx.accent} getLight={() => fx.light} getLookAt={() => (cameraTarget && cameraTarget.lookAt) || [0, 0.5, 0]}
-          getCamPos={() => (cameraTarget && cameraTarget.position) || [0, 0, 9]}
-          exposure={postFx && postFx.exposure != null ? postFx.exposure : 1} />
-      ) : (<>
-      {!(postFx && postFx.spotsOnly) && <>
-      <hemisphereLight color="#cfe8ff" groundColor="#1a1410" intensity={LL ? LL.hemi : 0.35} />
-      <ambientLight intensity={LL ? LL.amb : 0.28} />
-      <directionalLight
-        color={showFx ? fx.light.color : "#ffffff"}
-        position={showFx ? lightDirFromAngles(fx.light.azimuth ?? 45, fx.light.elevation ?? 35, 6) : [3, 4, 5]}
-        intensity={LL ? LL.key : 0.9}
-        castShadow={!(postFx && postFx.spotsOnly)}
-        shadow-mapSize={[2048, 2048]}
-        shadow-bias={-0.0003}
-        shadow-normalBias={0.02}
-        shadow-camera-left={-9}
-        shadow-camera-right={9}
-        shadow-camera-top={9}
-        shadow-camera-bottom={-9}
-        shadow-camera-near={1}
-        shadow-camera-far={20}
-      />
-      <directionalLight position={[-3, 2, -2]} intensity={postFx && postFx.spotsOnly ? 0 : 0.4} />
-      <pointLight color={showFx ? ((postFx && postFx.accent) || fx.light.rimColor) : "#ffffff"} position={[-2.5, -1, -2]} intensity={LL ? LL.rim : 0} distance={12} />
-      <NaturalFill intensity={LL ? LL.fill : 0} />
-      </>}
-      </>)}
       {showGrid && <BlenderGrid />}
       {showObjects &&
         objects.filter((o) => o.visible).map((o) => (
@@ -7604,30 +7440,6 @@ function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate
           intensity={reflection.intensity}
         />
       )}
-      {showFx && postFx && postFx.beamEnabled && (
-        <LightBeamEditor
-          enabled={postFx.beamEnabled}
-          opacity={postFx.beamOpacity ?? 0.5}
-          width={postFx.beamWidth ?? 2.5}
-          height={postFx.beamHeight ?? 14}
-          soft={postFx.beamSoft ?? 0.5}
-          glow={postFx.beamGlow ?? 0.35}
-          target={[postFx.beamTx ?? 0, postFx.beamTy ?? 0, postFx.beamTz ?? 0]}
-          fx={fx}
-        />
-      )}
-      {showFx && postFx && postFx.partEnabled && (
-        <AmbientParticles
-          enabled
-          count={postFx.partCount ?? 650} size={postFx.partSize ?? 1} opacity={postFx.partOpacity ?? 0.65}
-          speed={postFx.partSpeed ?? 1} blur={postFx.partBlur ?? 0.6} range={postFx.partRange ?? 16}
-          beam={postFx.beamEnabled ? (postFx.partBeam ?? 0.6) : 0}
-          beamWidth={postFx.beamWidth ?? 2.5} beamHeight={postFx.beamHeight ?? 14}
-          beamTarget={[postFx.beamTx ?? 0, postFx.beamTy ?? 0, postFx.beamTz ?? 0]}
-          getLight={() => (fx && fx.light) || { color: "#ffffff", azimuth: 45, elevation: 35 }}
-          getLookAt={() => (cameraTarget && cameraTarget.lookAt) || [0, 0.5, 0]}
-        />
-      )}
       {markers && <ObjectMarkers markers={markers} selectedId={selectedObjectId} onSelect={onSelectObject} />}
       {sceneCameraActive ? (
         <SceneCameraDriver target={cameraTarget} active={true} />
@@ -7651,9 +7463,6 @@ function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate
       {/* Igual que en el sitio exportado: el ToneMapping va siempre (con EffectComposer three.js no lo aplica solo). */}
       {postFx && (
         <EffectComposer multisampling={4}>
-          {showFx && postFx.aoEnabled && <N8AO aoRadius={postFx.aoRadius ?? 0.35} intensity={postFx.aoIntensity ?? 2} distanceFalloff={0.6} halfRes quality="high" />}
-          {showFx && postFx.dofEnabled && <DepthFocus getTarget={() => (orbitRef && orbitRef.current && orbitRef.current.target ? orbitRef.current.target.toArray() : (cameraTarget && cameraTarget.lookAt) || [0, 0.5, 0])} follow={postFx.dofFollow !== false} offset={postFx.dofOffset ?? 0} distance={postFx.dofDistance ?? 8} range={postFx.dofRange ?? 8} blur={postFx.dofBlur ?? 3} back={postFx.dofBack !== false} />}
-          {postFx.bloomEnabled && postFx.bloomIntensity > 0.01 && <Bloom intensity={postFx.bloomIntensity} luminanceThreshold={postFx.bloomThreshold ?? 0.25} luminanceSmoothing={0.9} mipmapBlur height={240} />}
           <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
         </EffectComposer>
       )}
@@ -8118,7 +7927,7 @@ function generateScenesArrayCode(camsByKf, fxByKf, stages, easings) {
     easing: "${easing}",
     camera: { position: ${fmtVec(cam.position)}, lookAt: ${fmtVec(cam.lookAt)}, fov: ${fmtNum(cam.fov)}, roll: ${fmtNum(cam.roll || 0)}${cam.arc ? ", arc: true" : ""} },
     light: { color: "${f.light.color}", intensity: ${f.light.intensity}, azimuth: ${fmtNum(f.light.azimuth)}, elevation: ${fmtNum(f.light.elevation)}, rimColor: "${f.light.rimColor}", rimIntensity: ${f.light.rimIntensity}, ambient: ${fmtNum(f.light.ambient ?? 0.28)} },
-    fog: { enabled: ${f.fog.enabled === false ? "false" : "true"}, color: "${f.fog.color}", far: ${f.fog.far} },${f.look ? "\n    look: " + JSON.stringify(f.look) + "," : ""}
+    fog: { enabled: ${f.fog.enabled === false ? "false" : "true"}, color: "${f.fog.color}", far: ${f.fog.far} },
     background: { from: "${f.background.from}", to: "${f.background.to}", angle: ${fmtNum(f.background.angle)}, alpha: ${f.background.mode === "transparent" ? 0 : fmtNum(f.background.alpha ?? 1)}${f.background.mode === "gradient" && f.background.midOn && f.background.mid ? `, mid: "${f.background.mid}", midPos: ${fmtNum(f.background.midPos == null ? 50 : f.background.midPos)}` : ""} },
   },`;
   }).join("\n");
@@ -9487,10 +9296,6 @@ function Btn({ icon, kind, children, ...rest }) {
 function IBtn({ icon, kind, ...rest }) {
   return <button className={`ibtn ${kind || ""}`} {...rest}><Icon name={icon} size={16} /></button>;
 }
-/* Look por pose: estas claves se guardan en cada pose (fxByKf[pose].look); una pose nueva hereda de la anterior. */
-const LOOK_KEYS = ["exposure", "naturalLight", "halo", "bloomEnabled", "bloomIntensity", "bloomThreshold", "vignetteEnabled", "vignetteDarkness", "vignetteOffset", "aoEnabled", "aoIntensity", "aoRadius", "contactShadow", "contactShadowOpacity", "envEnabled", "envIntensity", "dofEnabled", "beamEnabled", "partEnabled"];
-const LOOK_DEFAULTS = { exposure: 1, naturalLight: 0, halo: 0, bloomEnabled: false, bloomIntensity: 0.5, bloomThreshold: 0.25, vignetteEnabled: false, vignetteDarkness: 0.5, vignetteOffset: 0.15, aoEnabled: false, aoIntensity: 2, aoRadius: 0.35, contactShadow: false, contactShadowOpacity: 0.75, envEnabled: true, envIntensity: 0.8, dofEnabled: false, beamEnabled: false, partEnabled: false };
-const pickLook = (p) => { const o = {}; for (const k of LOOK_KEYS) o[k] = p && p[k] !== undefined ? p[k] : LOOK_DEFAULTS[k]; return o; };
 function Group({ id, title, defaultOpen = true, toggle, children }) {
   const [open, setOpen] = useState(() => groupOpenState[id] ?? defaultOpen);
   const set = (v) => { groupOpenState[id] = v; setOpen(v); };
@@ -10406,16 +10211,6 @@ function App() {
       [activeStage]: { position: live.position, lookAt: live.lookAt, fov: live.fov, roll: prev[activeStage].roll || 0, ...(prev[activeStage].arc ? { arc: true } : {}) },
     }));
   };
-  /* Look por pose: la primera vez que se toca, todas las poses quedan con el look actual; después cada una cambia por separado. */
-  const setLookField = (key, value) => {
-    setFxByKf((prev) => {
-      const base = pickLook(postFx), next = {};
-      for (const id in prev) next[id] = { ...prev[id], look: { ...base, ...(prev[id].look || {}) } };
-      const cur = next[activeStage] || { look: base };
-      next[activeStage] = { ...cur, look: { ...cur.look, [key]: value } };
-      return next;
-    });
-  };
   const setFxField = (group, field, value) => {
     setFxByKf((prev) => {
       const fx = { ...prev[activeStage] };
@@ -10556,7 +10351,6 @@ function App() {
   const currentCamTarget = sampled ? sampleCamera(camsByKf, scrubV, stagesComputed, easings) : camsByKf[activeStage];
   const currentMovement = sampled ? sampleMovement(movesByKf, scrubV, stagesComputed, easings) : movesByKf[activeStage];
   const renderFx = sampled ? sampleFx(fxByKf, scrubV, stagesComputed, easings) : fxByKf[activeStage];
-  const scenePostFx = useMemo(() => (renderFx && renderFx.look ? { ...postFx, ...renderFx.look } : postFx), [postFx, renderFx]);
   // Progreso de scroll que ve el video en el visor: en Preview es el del slider; en edición, el de la pose activa.
   const scrollProgressNow = sampled ? scrubV : ((stagesComputed.find((st) => st.id === activeStage) || {}).progress || 0);
   const worldTf = useMemo(() => composeGroups(objects, objectTransformsByKf, stagesComputed), [objects, objectTransformsByKf, stagesComputed]);
@@ -10918,12 +10712,9 @@ function App() {
         const vids = window.__wsVideos ? Array.from(window.__wsVideos) : [];
         if (vids.length) { await vxUntil(() => vids.every((v) => !v.seeking), 120); await vxFrames(2); }
 
-        const fxE = sampleFx(fxByKf, t, stagesComputed, easings), lkE = fxE.look ? { ...postFx, ...fxE.look } : postFx;
-        const bg = fxE.background;
+        const bg = sampleFx(fxByKf, t, stagesComputed, easings).background;
         paintVideoBackground(ctx, rw, rh, bg);
         ctx.drawImage(b.canvas, 0, 0, rw, rh);
-        if ((lkE.halo || 0) > 0) paintVideoHalo(ctx, rw, rh, lkE.halo, lkE.accent);
-        if (lkE.vignetteEnabled) paintVideoVignette(ctx, rw, rh, lkE.vignetteOffset == null ? 0.15 : lkE.vignetteOffset, lkE.vignetteDarkness == null ? 0.5 : lkE.vignetteDarkness);
         if (full !== out) octx.drawImage(full, 0, cropSy, w, h, 0, 0, w, h);   // 4:5 = recorte del 9:16
 
         const frame = new VideoFrame(out, { timestamp: Math.round((i * 1e6) / fps), duration: Math.round(1e6 / fps) });
@@ -10998,7 +10789,6 @@ function App() {
   const cam = camsByKf[activeStage] || defaultCamera();
   const mv = movesByKf[activeStage] || defaultMovement();
   const fxs = fxByKf[activeStage] || defaultFx();
-  const lk = { ...pickLook(postFx), ...(fxs.look || {}) };
   const nStages = stagesComputed.length;
   const goStage = (d) => { const t = stagesComputed[clamp(stageIndex + d, 0, nStages - 1, )]; if (t) setActiveStage(t.id); };
   const colorOf = (o, i) => o.color || PALETTE[i % PALETTE.length];
@@ -11426,17 +11216,13 @@ function App() {
         </div>
         <div className="scene-box" style={vidBox ? { position: "fixed", inset: "auto", left: 0, top: 0, width: vidBox.w, height: vidBox.h } : (section === "pages" ? { visibility: "hidden" } : undefined)}>
         <Canvas key={canvasKey} onCreated={onCanvasCreated} shadows="soft" camera={{ position: [0, 0.3, 3.5], fov: 35, near: Math.min(2, Math.max(0.01, +postFx.camNear || 0.1)) }} dpr={exporting ? 1 : [1, 1.5]} gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}>
-          <Scene pose={currentPose} onBonesFound={setFoundMap} cameraTarget={currentCamTarget} sceneCameraActive={sceneCameraActive} autoRotate={!exporting && autoRotate} movement={currentMovement} objects={exporting ? renderObjects : viewObjects} showObjects={exporting || showObjects} showGrid={!exporting && showGrid} fx={renderFx} showFx={exporting || showFx} orbitRef={orbitRef} liveCameraRef={liveCameraRef} modelUrl={modelUrl} postFx={scenePostFx} charScale={charScale} charCenterY={charCenterY} charAnchorRef={charAnchorRef} trail={trail} reflection={reflection}
+          <Scene pose={currentPose} onBonesFound={setFoundMap} cameraTarget={currentCamTarget} sceneCameraActive={sceneCameraActive} autoRotate={!exporting && autoRotate} movement={currentMovement} objects={exporting ? renderObjects : viewObjects} showObjects={exporting || showObjects} showGrid={!exporting && showGrid} fx={renderFx} showFx={exporting || showFx} orbitRef={orbitRef} liveCameraRef={liveCameraRef} modelUrl={modelUrl} postFx={postFx} charScale={charScale} charCenterY={charCenterY} charAnchorRef={charAnchorRef} trail={trail} reflection={reflection}
             markers={!exporting && section === "objects" && showObjects && labelMode !== "none" ? markers : (!exporting && section === "objects" && showObjects && selObj ? markers.filter((m) => m.id === selObj.id) : null)} selectedObjectId={selectedObj} onSelectObject={setSelectedObj} />
           <CamNearSync near={Math.min(2, Math.max(0.01, +postFx.camNear || 0.1))} />
           {!exporting && <LoadMeterProbe />}
           <VideoExportBridge tag={exportT} bridgeRef={vidBridge} />
         </Canvas>
         </div>
-        {showFx && (scenePostFx.halo || 0) > 0 && <div aria-hidden="true" style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none", background: `radial-gradient(ellipse 75% 48% at 20% 0%, ${accentHalo(scenePostFx.accent, scenePostFx.halo)[0]} 0%, ${accentHalo(scenePostFx.accent, scenePostFx.halo)[1]} 42%, rgba(0,0,0,0) 74%)` }} />}
-        {showFx && scenePostFx.vignetteEnabled && (
-          <div aria-hidden="true" style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none", background: `radial-gradient(ellipse farthest-corner at center, transparent ${(1 - scenePostFx.vignetteOffset) * 100}%, rgba(0,0,0,${scenePostFx.vignetteDarkness}) 100%)` }} />
-        )}
         {showMobileFrame && <MobileFrameOverlay box={phoneBox} />}
         {cursor.enabled && <CursorTrailPreview cfg={cursor} targetRef={viewportRef} />}
         {menu.logoUrl && !exporting && (
@@ -11732,24 +11518,11 @@ function App() {
 
             {section === "look" && (
               <>
-                <div style={{ fontSize: 10.5, opacity: 0.7, lineHeight: 1.45 }}>Todo es manual: no hay looks prearmados. Abajo, primero lo que cambia por pose y después lo que queda fijo.</div>
-                <div style={{ fontSize: 12, fontWeight: 700, marginTop: 6 }}>Por pose</div>
-                <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Cambian de una pose a otra: elegí la pose arriba. Una pose nueva arranca con lo de la anterior.</div>
-                <Group id="lookmaster" title="Luz y exposición">
-                  <Slider label="Luz natural" min={0} max={1} step={0.01} value={lk.naturalLight ?? 0} onChange={(v) => setLookField("naturalLight", v)} />
-                  <Slider label="Exposición" min={0.5} max={2} step={0.01} value={lk.exposure ?? 1} onChange={(v) => setLookField("exposure", v)} />
-                  <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Luz natural: relleno suave y cálido desde arriba que aclara las sombras (no cambia el fondo ni el neón). Exposición: multiplica todas las luces a la vez. Salen igual en el index.html y en el MP4.</div>
-                </Group>
-                <Group id="light" title="Luz principal">
-                  <ColorRow label="Color" value={fxs.light.color} onChange={(v) => setFxField("light", "color", v)} />
-                  <Slider label="Intens." min={0} max={5} step={0.05} value={fxs.light.intensity} onChange={(v) => setFxField("light", "intensity", v)} />
-                  <Slider label="Ambiente" min={0} max={3} step={0.01} value={fxs.light.ambient ?? 0.28} onChange={(v) => setFxField("light", "ambient", v)} />
-                  <Slider label="Azimut" min={0} max={360} step={1} value={fxs.light.azimuth ?? 45} onChange={(v) => setFxField("light", "azimuth", v)} />
-                  <Slider label="Altura" min={-90} max={90} step={1} value={fxs.light.elevation ?? 35} onChange={(v) => setFxField("light", "elevation", v)} />
-                </Group>
-                <Group id="rim" title="Luz de contorno">
-                  <ColorRow label="Color" value={fxs.light.rimColor} onChange={(v) => setFxField("light", "rimColor", v)} />
-                  <Slider label="Intens." min={0} max={5} step={0.05} value={fxs.light.rimIntensity} onChange={(v) => setFxField("light", "rimIntensity", v)} />
+                <div style={{ fontSize: 10.5, opacity: 0.7, lineHeight: 1.45 }}>Solo queda lo de los spots (en cada objeto), más niebla y fondo por pose y lo de abajo, que vale para todo el sitio.</div>
+                <Group id="phonelights" title="Spots: sombras y límite en celular">
+                  <Switch checked={!!postFx.mobileShadows} onChange={(v) => setPostFxField("mobileShadows", v)} label="Sombras de los spots en celular (más pesado)" />
+                  <Slider label="Luces máximas en celular (0 = todas)" min={0} max={20} step={1} value={postFx.mobileLights ?? 6} onChange={(v) => setPostFxField("mobileLights", v)} />
+                  <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Los spots de los objetos son los que dan la luz puntual. Cada luz y cada sombra suma peso en el celular: mirá el medidor "Peso celu" arriba a la derecha del visor.</div>
                 </Group>
                 <Group id="fog" title="Niebla" toggle={{ checked: fxs.fog.enabled !== false, onChange: (v) => setFxField("fog", "enabled", v) }}>
                   <ColorRow label="Color" value={fxs.fog.color} onChange={(v) => setFxField("fog", "color", v)} />
@@ -11772,79 +11545,11 @@ function App() {
                     </>
                   )}
                 </Group>
-                  <Group id="halo" title="Foco de luz">
-                    <Slider label="Intensidad" min={0} max={1.5} step={0.01} value={lk.halo || 0} onChange={(v) => setLookField("halo", v)} />
-                    <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Un resplandor suave arriba a la izquierda, como la luz de un estudio. Es solo un degradé: no pesa nada en el celular.</div>
-                  </Group>
-                  <Group id="vig" title="Viñeta" toggle={{ checked: lk.vignetteEnabled, onChange: (v) => setLookField("vignetteEnabled", v) }}>
-                    <Slider label="Oscuridad" min={0} max={1} step={0.01} value={lk.vignetteDarkness} onChange={(v) => setLookField("vignetteDarkness", v)} />
-                    <Slider label="Alcance" min={0} max={1} step={0.01} value={lk.vignetteOffset} onChange={(v) => setLookField("vignetteOffset", v)} />
-                  </Group>
-                  <Group id="bloom" title="Bloom" toggle={{ checked: lk.bloomEnabled, onChange: (v) => setLookField("bloomEnabled", v) }}>
-                    <Slider label="Intens." min={0} max={2} step={0.01} value={lk.bloomIntensity} onChange={(v) => setLookField("bloomIntensity", v)} />
-                    <Slider label="Umbral bloom" min={0} max={1.5} step={0.01} value={lk.bloomThreshold ?? 0.25} onChange={(v) => setLookField("bloomThreshold", v)} />
-                  </Group>
-                  <Group id="dof" title="Desenfoque (por pose: encendido · el detalle es de todo el sitio)" toggle={{ checked: !!lk.dofEnabled, onChange: (v) => setLookField("dofEnabled", v) }}>
-                    <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Desenfoca según la distancia a la cámara. Con "Solo el fondo" queda nítido todo lo que está entre la cámara y el plano de foco, y se desenfoca lo que queda detrás. Solo en equipos con calidad alta (en celulares se apaga solo).</div>
-                    <Switch label="Solo desenfocar el fondo (lo de atrás)" checked={postFx.dofBack !== false} onChange={(v) => setPostFxField("dofBack", v)} />
-                    <Switch label="Enfocar donde mira la cámara" checked={postFx.dofFollow !== false} onChange={(v) => setPostFxField("dofFollow", v)} />
-                    {postFx.dofFollow !== false
-                      ? <Slider label="Profundidad nítida (detrás del objetivo)" min={-10} max={200} step={0.1} value={postFx.dofOffset ?? 1} onChange={(v) => setPostFxField("dofOffset", v)} />
-                      : <Slider label="Distancia de foco (desde la cámara)" min={0.5} max={300} step={0.1} value={postFx.dofDistance ?? 8} onChange={(v) => setPostFxField("dofDistance", v)} />}
-                    <Slider label="Transición (suavidad)" min={0.2} max={300} step={0.1} value={postFx.dofRange ?? 8} onChange={(v) => setPostFxField("dofRange", v)} />
-                    <Slider label="Intensidad del desenfoque" min={0} max={10} step={0.1} value={postFx.dofBlur ?? 3} onChange={(v) => setPostFxField("dofBlur", v)} />
-                  </Group>
-                  <Group id="env" title="Entorno de reflejos" toggle={{ checked: lk.envEnabled ?? true, onChange: (v) => setLookField("envEnabled", v) }}>
-                    <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Un "estudio" invisible (softboxes) que los materiales metálicos reflejan desde cualquier ángulo. No se ve de fondo: el fondo no cambia. Se aplica a los modelos .glb de la pestaña Objetos. Sale igual en el index.html y en el MP4.</div>
-                    <Slider label="Intensidad" min={0} max={3} step={0.05} value={lk.envIntensity ?? 0.8} onChange={(v) => setLookField("envIntensity", v)} />
-                  </Group>
-                  <Group id="shadowsfx" title="Sombras de contacto y oclusión">
-                    <Switch label="Sombra de contacto (sobre el piso reflectante)" checked={!!lk.contactShadow} onChange={(v) => setLookField("contactShadow", v)} />
-                    {lk.contactShadow && <Slider label="Opacidad" min={0} max={1} step={0.01} value={lk.contactShadowOpacity ?? 0.75} onChange={(v) => setLookField("contactShadowOpacity", v)} />}
-                    <Switch label="Oclusión ambiental (huecos y encastres)" checked={!!lk.aoEnabled} onChange={(v) => setLookField("aoEnabled", v)} />
-                    {lk.aoEnabled && <Slider label="Intensidad AO" min={0} max={5} step={0.05} value={lk.aoIntensity ?? 2} onChange={(v) => setLookField("aoIntensity", v)} />}
-                    {lk.aoEnabled && <Slider label="Radio AO" min={0.05} max={2} step={0.01} value={lk.aoRadius ?? 0.35} onChange={(v) => setLookField("aoRadius", v)} />}
-                  </Group>
-                  <Group id="beam" title="Rayo de luz (por pose: encendido · el detalle es de todo el sitio)" toggle={{ checked: lk.beamEnabled, onChange: (v) => setLookField("beamEnabled", v) }}>
-                    <Slider label="Opacidad" min={0} max={1} step={0.01} value={postFx.beamOpacity} onChange={(v) => setPostFxField("beamOpacity", v)} />
-                    <Slider label="Ancho" min={0.2} max={10} step={0.1} value={postFx.beamWidth} onChange={(v) => setPostFxField("beamWidth", v)} />
-                    <Slider label="Largo" min={2} max={40} step={0.5} value={postFx.beamHeight} onChange={(v) => setPostFxField("beamHeight", v)} />
-                    <Slider label="Difuminado final" min={0} max={1} step={0.01} value={postFx.beamSoft ?? 0.5} onChange={(v) => setPostFxField("beamSoft", v)} />
-                    <Slider label="Halo del final" min={0} max={1} step={0.01} value={postFx.beamGlow ?? 0.35} onChange={(v) => setPostFxField("beamGlow", v)} />
-                    <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Dónde termina el rayo (donde "cae"). Altura: subila para que termine en el aire, bajala para que atraviese la grilla.</div>
-                    <Slider label="Final · X" min={-10} max={10} step={0.1} value={postFx.beamTx ?? 0} onChange={(v) => setPostFxField("beamTx", v)} />
-                    <Slider label="Final · Altura" min={-10} max={10} step={0.1} value={postFx.beamTy ?? 0} onChange={(v) => setPostFxField("beamTy", v)} />
-                    <Slider label="Final · Z" min={-10} max={10} step={0.1} value={postFx.beamTz ?? 0} onChange={(v) => setPostFxField("beamTz", v)} />
-                  </Group>
-                  <Group id="particles" title="Partículas (por pose: encendido · el detalle es de todo el sitio)" toggle={{ checked: !!lk.partEnabled, onChange: (v) => setLookField("partEnabled", v) }}>
-                    <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Polvo en suspensión como en el cine: flota en el espacio 3D (tiene parallax con el scroll) y se desenfoca según la distancia al punto que mira la cámara. Sale igual en el index.html y en el MP4.</div>
-                    <Slider label="Cantidad" min={50} max={2500} step={10} value={postFx.partCount ?? 650} onChange={(v) => setPostFxField("partCount", v)} />
-                    <Slider label="Intensidad" min={0} max={1} step={0.01} value={postFx.partOpacity ?? 0.65} onChange={(v) => setPostFxField("partOpacity", v)} />
-                    <Slider label="Tamaño" min={0.3} max={3} step={0.05} value={postFx.partSize ?? 1} onChange={(v) => setPostFxField("partSize", v)} />
-                    <Slider label="Desenfoque (bokeh)" min={0} max={1} step={0.01} value={postFx.partBlur ?? 0.6} onChange={(v) => setPostFxField("partBlur", v)} />
-                    <Slider label="Velocidad" min={0} max={3} step={0.05} value={postFx.partSpeed ?? 1} onChange={(v) => setPostFxField("partSpeed", v)} />
-                    <Slider label="Alcance" min={6} max={40} step={0.5} value={postFx.partRange ?? 16} onChange={(v) => setPostFxField("partRange", v)} />
-                    <Slider label="Brillo en el rayo" min={0} max={1} step={0.01} value={postFx.partBeam ?? 0.6} onChange={(v) => setPostFxField("partBeam", v)} />
-                  </Group>
-                <div style={{ fontSize: 12, fontWeight: 700, marginTop: 14 }}>Fijo para todo el sitio</div>
-                <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Valen igual en todas las poses.</div>
-                <Group id="phonelights" title="Luces y sombras">
-                  <Switch checked={!!postFx.spotsOnly} onChange={(v) => setPostFxField("spotsOnly", v)} label="Solo luz de los spots (sin luz ambiente, ni principal, ni relleno)" />
-                  <Switch checked={!!postFx.mobileShadows} onChange={(v) => setPostFxField("mobileShadows", v)} label="Sombras de los spots en celular (más pesado)" />
-                  <Slider label="Luces máximas en celular (0 = todas)" min={0} max={20} step={1} value={postFx.mobileLights ?? 6} onChange={(v) => setPostFxField("mobileLights", v)} />
-                  <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Los spots de los objetos son los que dan la luz puntual. Cada luz y cada sombra suma peso en el celular: mirá el medidor "Peso celu" arriba a la derecha del visor.</div>
-                </Group>
-                  <Group id="screen" title="Pantalla">
+                  <Group id="screen" title="Pantalla y cámara">
                   <Slider label="Plano cercano de la cámara" min={0.02} max={1} step={0.01} value={postFx.camNear ?? 0.1} onChange={(v) => setPostFxField("camNear", v)} />
                   <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.4 }}>Si la cámara "atraviesa" paredes o objetos cercanos, bajalo (0.05–0.1). Si ves parpadeos en bordes lejanos, subilo. Vale igual en el editor y en el sitio exportado.</div>
                     <Switch label="Columna 9:16 también en PC" checked={postFx.phoneColumn === true} onChange={(v) => setPostFxField("phoneColumn", v)} />
                     <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Apagado (lo normal): en la compu el sitio ocupa toda la ventana. Prendido: se ve como en el visor 9:16 (una columna centrada). En celulares más altos que 9:16 el sitio abre un poco el encuadre vertical para no cortar los costados.</div>
-                  </Group>
-                  <Group id="rig" title="Estilo de luz">
-                    <ColorRow label="Color de acento" value={postFx.accent || "#ffffff"} onChange={(v) => setPostFxField("accent", v)} />
-                    <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Cambia de una vez el color del contraluz, del entorno de reflejos y del foco de fondo (el lila/magenta de Estudio). Blanco = neutro. <span style={{ color: "var(--acc)", cursor: "pointer", textDecoration: "underline" }} onClick={() => setPostFxField("accent", "")}>Volver al color original (por pose)</span>{postFx.accent ? ` · Activo: ${postFx.accent}` : " · Activo: original"}</div>
-                    <Seg value={postFx.lightRig === "studio" ? "studio" : "classic"} onChange={(v) => setPostFxField("lightRig", v)} options={[["classic", "Clásica"], ["studio", "Estudio"]]} />
-                    <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Estudio: un spot con sombra suave + rim de color atrás + softboxes para los reflejos, casi sin luz ambiente. Usa la dirección, color e intensidad de la luz de cada pose. El tone mapping ahora va siempre (antes con Bloom los colores se quemaban).</div>
                   </Group>
                   <Group id="floorfx" title="Piso reflectante">
                     <Switch label="Piso reflectante (extras.reflector del .glb)" checked={postFx.floorReflect !== false} onChange={(v) => setPostFxField("floorReflect", v)} />
