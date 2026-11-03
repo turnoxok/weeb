@@ -3898,6 +3898,99 @@ function projectUVs(g, tile) {
   }
   g.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
 }
+/* Extrusión con bisel propio (reemplaza el bisel de three.js, que mueve todos los puntos la misma distancia y se rompe en partes finas, puntas y empalmes).
+   Cada punto del contorno se corre hacia adentro solo lo que cabe según el grosor local (rayo hacia adentro hasta el lado opuesto), con anillos conectados. */
+function bevelExtrudeGeometry(shapes, depth, b, nSeg, curveSeg, H) {
+  const eps = Math.max(1e-9, H * 1e-5);
+  const P = [], N = [], capP = [], sideP = [];
+  const pushTri = (arr, a, b2, c) => { arr.push(a[0], a[1], a[2], b2[0], b2[1], b2[2], c[0], c[1], c[2]); };
+  const clean = (pts) => {
+    const out = [];
+    pts.forEach((v) => { const l = out[out.length - 1]; if (!l || Math.abs(v.x - l.x) + Math.abs(v.y - l.y) > eps) out.push(v); });
+    while (out.length > 1 && Math.abs(out[0].x - out[out.length - 1].x) + Math.abs(out[0].y - out[out.length - 1].y) <= eps) out.pop();
+    return out;
+  };
+  shapes.forEach((shape) => {
+    const ex = shape.extractPoints(curveSeg);
+    let outer = clean(ex.shape);
+    let holes = ex.holes.map(clean).filter((h) => h.length >= 3);
+    if (outer.length < 3) return;
+    const ccw = (pts) => THREE.ShapeUtils.area(pts) > 0;
+    if (!ccw(outer)) outer = outer.slice().reverse();
+    holes = holes.map((h) => (ccw(h) ? h.slice().reverse() : h));
+    const loops = [outer, ...holes];
+    /* segmentos de todos los contornos, para medir el grosor local con un rayo hacia adentro */
+    const segs = [];
+    loops.forEach((lp, li) => { for (let i = 0; i < lp.length; i++) { const a = lp[i], c = lp[(i + 1) % lp.length]; segs.push({ ax: a.x, ay: a.y, bx: c.x, by: c.y, li, i }); } });
+    const rings = loops.map((lp, li) => {
+      const n = lp.length, mv = new Array(n), dd = new Array(n);
+      for (let i = 0; i < n; i++) {
+        const p0 = lp[(i + n - 1) % n], p1 = lp[i], p2 = lp[(i + 1) % n];
+        let e1x = p1.x - p0.x, e1y = p1.y - p0.y, l1 = Math.hypot(e1x, e1y) || 1; e1x /= l1; e1y /= l1;
+        let e2x = p2.x - p1.x, e2y = p2.y - p1.y, l2 = Math.hypot(e2x, e2y) || 1; e2x /= l2; e2y /= l2;
+        const n1x = -e1y, n1y = e1x, n2x = -e2y, n2y = e2x;
+        let mx = n1x + n2x, my = n1y + n2y, ml = Math.hypot(mx, my);
+        if (ml < 1e-6) { mx = n1x; my = n1y; ml = 1; }
+        mx /= ml; my /= ml;
+        const c = Math.max(0.35, mx * n1x + my * n1y);   // 1/c = alargue del vértice en esquinas (limitado)
+        /* rayo hacia adentro: distancia hasta el primer lado que se cruza */
+        let t = Infinity;
+        const ox = p1.x + mx * eps, oy = p1.y + my * eps;
+        for (let s = 0; s < segs.length; s++) {
+          const q = segs[s];
+          if (q.li === li && (q.i === i || q.i === (i + n - 1) % n)) continue;
+          const sx = q.bx - q.ax, sy = q.by - q.ay, den = mx * sy - my * sx;
+          if (Math.abs(den) < 1e-12) continue;
+          const wx = q.ax - ox, wy = q.ay - oy;
+          const tt = (wx * sy - wy * sx) / den, uu = (wx * my - wy * mx) / den;
+          if (tt > 0 && uu >= 0 && uu <= 1 && tt < t) t = tt;
+        }
+        mv[i] = [mx / c, my / c];
+        dd[i] = Math.min(b, 0.4 * t * c);
+      }
+      /* suavizar: mínimo en ventana y luego promedio (nunca supera el valor original de cada punto) */
+      let d1 = dd.map((_, i) => { let m = Infinity; for (let k = -2; k <= 2; k++) m = Math.min(m, dd[(i + k + n * 4) % n]); return m; });
+      for (let pass = 0; pass < 3; pass++) d1 = d1.map((_, i) => 0.25 * d1[(i + n - 1) % n] + 0.5 * d1[i] + 0.25 * d1[(i + 1) % n]);
+      return { pts: lp, mv, d: d1, n };
+    });
+    /* anillos del bisel */
+    const fz = (th, front) => (front ? depth + b * Math.sin(th) : -b * Math.sin(th));
+    const ringPos = (rg, th, front) => rg.pts.map((p, i) => { const k = rg.d[i] * (1 - Math.cos(th)); return [p.x + rg.mv[i][0] * k, p.y + rg.mv[i][1] * k, fz(th, front)]; });
+    rings.forEach((rg) => {
+      const n = rg.n;
+      const stripes = [];
+      const wallF = ringPos(rg, 0, true), wallB = ringPos(rg, 0, false);
+      stripes.push([wallB, wallF]);
+      let prev = wallF;
+      for (let r = 1; r <= nSeg; r++) { const cur = ringPos(rg, (r / nSeg) * Math.PI / 2, true); stripes.push([prev, cur]); prev = cur; }
+      prev = wallB;
+      for (let r = 1; r <= nSeg; r++) { const cur = ringPos(rg, (r / nSeg) * Math.PI / 2, false); stripes.push([cur, prev]); prev = cur; }
+      stripes.forEach(([A, B]) => {
+        for (let i = 0; i < n; i++) { const j = (i + 1) % n; pushTri(sideP, A[i], A[j], B[j]); pushTri(sideP, A[i], B[j], B[i]); }
+      });
+    });
+    /* tapas: polígono interior (último anillo) triangulado con huecos */
+    const topRings = rings.map((rg) => ringPos(rg, Math.PI / 2, true));
+    const v2 = (arr) => arr.map((q) => new THREE.Vector2(q[0], q[1]));
+    const outer2 = v2(topRings[0]), holes2 = topRings.slice(1).map(v2);
+    const all = [...topRings[0], ...topRings.slice(1).flat()];
+    const tris = THREE.ShapeUtils.triangulateShape(outer2, holes2);
+    tris.forEach((f) => {
+      const a = all[f[0]], c = all[f[1]], d2 = all[f[2]];
+      pushTri(capP, [a[0], a[1], depth + b], [c[0], c[1], depth + b], [d2[0], d2[1], depth + b]);
+      pushTri(capP, [a[0], a[1], -b], [d2[0], d2[1], -b], [c[0], c[1], -b]);
+    });
+  });
+  const nc = capP.length / 3, ns = sideP.length / 3;
+  const pos = new Float32Array((nc + ns) * 3), nor = new Float32Array((nc + ns) * 3);
+  pos.set(capP, 0); pos.set(sideP, nc * 3);
+  for (let i = 0; i < nc; i++) nor[i * 3 + 2] = (capP[i * 3 + 2] > depth * 0.5 ? 1 : -1);   // tapa delantera / trasera
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  g.setAttribute("normal", new THREE.BufferAttribute(nor, 3));
+  g.addGroup(0, nc, 0); g.addGroup(nc, ns, 1);
+  return g;
+}
 function buildSvgExtrude(text, depthK, bevK, segK, lite, rev, arc) {
   const data = new SVGLoader().parse(text);
   const parts = [];
@@ -3940,19 +4033,11 @@ function buildSvgExtrude(text, depthK, bevK, segK, lite, rev, arc) {
     return { parts, aspect: (box.max.x - box.min.x) / H, rev: true };
   }
   parts.forEach((pt) => {
-    /* El bisel nunca puede superar una parte del grosor real de la pieza (2·área/perímetro): en paredes y arcos finitos un bisel fijo se dobla sobre sí mismo y deforma los bordes. */
-    let ar = 0, pe = 0;
-    pt.shapes.forEach((sh) => {
-      const op = sh.getPoints(8);
-      let a = Math.abs(THREE.ShapeUtils.area(op)), p = 0;
-      for (let i = 0; i < op.length; i++) p += op[i].distanceTo(op[(i + 1) % op.length]);
-      (sh.holes || []).forEach((hl) => { const hp = hl.getPoints(8); a -= Math.abs(THREE.ShapeUtils.area(hp)); for (let i = 0; i < hp.length; i++) p += hp[i].distanceTo(hp[(i + 1) % hp.length]); });
-      ar += Math.max(0, a); pe += p;
-    });
-    const thick = pe > 1e-9 ? (2 * ar) / pe : H;
-    const b = Math.min(b0, thick * 0.3);
-    const g = new THREE.ExtrudeGeometry(pt.shapes, { depth, curveSegments: curveSeg, bevelEnabled: b > 0.0001, bevelThickness: b, bevelSize: b, bevelOffset: -b, bevelSegments: lite ? 2 : 5 });
-    g.translate(-cx, -cy, -(depth / 2 + b));
+    /* Bisel propio (ver bevelExtrudeGeometry): cada punto se corre según el grosor local, sin puntas ni cruces. Si algo falla, queda la pieza sin bisel. */
+    let g = null;
+    if (b0 > 0.0001) { try { g = bevelExtrudeGeometry(pt.shapes, depth, b0, lite ? 3 : 6, curveSeg, H); if (!g.attributes.position.count) g = null; } catch (e) { g = null; } }
+    if (g) g.translate(-cx, -cy, -(depth / 2 + b0));
+    else { g = new THREE.ExtrudeGeometry(pt.shapes, { depth, curveSegments: curveSeg, bevelEnabled: false }); g.translate(-cx, -cy, -depth / 2); }
     g.scale(1 / H, 1 / H, 1 / H);
     pt.geo = creaseSides(g);
     projectUVs(pt.geo, 1.6);
