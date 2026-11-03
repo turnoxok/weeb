@@ -4791,6 +4791,7 @@ function ClassicLighting() {
 
   return (
     <>
+      {!SPOTS_ONLY && <>
       <hemisphereLight ref={hemiRef} color="#cfe8ff" groundColor="#1a1410" intensity={0.35} />
       <ambientLight ref={ambRef} intensity={0.28} />
       <directionalLight
@@ -4810,6 +4811,7 @@ function ClassicLighting() {
       <directionalLight position={[-3, 2, -2]} intensity={SPOTS_ONLY ? 0 : 0.5} />
       <pointLight ref={rimRef} position={[-2.5, -1, -2]} intensity={1.4} distance={12} />
       <NaturalFill intensity={labNat * 0.85 * labExp} />
+      </>}
     </>
   );
 }
@@ -7500,6 +7502,7 @@ function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate
           getCamPos={() => (cameraTarget && cameraTarget.position) || [0, 0, 9]}
           exposure={postFx && postFx.exposure != null ? postFx.exposure : 1} />
       ) : (<>
+      {!(postFx && postFx.spotsOnly) && <>
       <hemisphereLight color="#cfe8ff" groundColor="#1a1410" intensity={LL ? LL.hemi : 0.35} />
       <ambientLight intensity={LL ? LL.amb : 0.28} />
       <directionalLight
@@ -7520,6 +7523,7 @@ function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate
       <directionalLight position={[-3, 2, -2]} intensity={postFx && postFx.spotsOnly ? 0 : 0.4} />
       <pointLight color={showFx ? ((postFx && postFx.accent) || fx.light.rimColor) : "#ffffff"} position={[-2.5, -1, -2]} intensity={LL ? LL.rim : 0} distance={12} />
       <NaturalFill intensity={LL ? LL.fill : 0} />
+      </>}
       </>)}
       {showGrid && <BlenderGrid />}
       {showObjects &&
