@@ -15,7 +15,7 @@
   .grow { flex:1; }
 
   /* viewport overlays */
-  .vp-bar { position:absolute; top:10px; left:10px; z-index:5; display:flex; gap:4px; flex-wrap:wrap; }
+  .vp-bar { position:absolute; top:96px; left:10px; z-index:5; display:flex; flex-direction:column; align-items:flex-start; gap:4px; }   /* una arriba de la otra sobre el lateral izquierdo, debajo del logo del sitio */
   .vchip { padding:4px 9px; font-size:11px; border-radius:6px; cursor:pointer; user-select:none; color:var(--tx2); background:rgba(10,12,17,.75); border:1px solid var(--line2); backdrop-filter:blur(6px); }
   .vchip.on { color:#04212b; background:var(--acc); border-color:var(--acc); font-weight:600; }
   .vp-hud { position:absolute; left:10px; bottom:10px; z-index:5; font:600 11px ui-monospace, Menlo, monospace; color:var(--acc); background:rgba(10,12,17,.75); border:1px solid var(--line2); padding:4px 9px; border-radius:6px; }
