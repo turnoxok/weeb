@@ -618,7 +618,7 @@ function smoothstep(edge0, edge1, x) {
    muy lento, o pasan en cámara lenta por el centro, sin tener que agregar más vh. */
 function applyEasing(t, kind) {
   switch (kind) {
-    case "linear": return t;
+    case "linear": case "spline": return t;
     case "easeIn": return t * t;
     case "easeOut": return 1 - (1 - t) * (1 - t);
     case "inOutCubic": return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -1047,7 +1047,7 @@ function blendScenes(list, rawProgress) {
   const t = applyEasing(clamp((progress - a.progress) / span), b.easing);
 
   return {
-    camera: {
+    camera: b.easing === "spline" ? splineCam(i > 0 && a.easing === "spline" ? list[i - 1].camera : null, a.camera, b.camera, i + 2 < list.length && list[i + 2].easing === "spline" ? list[i + 2].camera : null, i > 0 ? a.progress - list[i - 1].progress || 1 : 1, span, i + 2 < list.length ? list[i + 2].progress - b.progress || 1 : 1, t) : {
       position: b.camera.arc ? lerpOrbit(a.camera, b.camera, t) : lerpVec3(a.camera.position, b.camera.position, t),
       lookAt: lerpVec3(a.camera.lookAt, b.camera.lookAt, t),
       fov: lerp(a.camera.fov, b.camera.fov, t),
@@ -2832,6 +2832,34 @@ function applyShapeLights(mat, lit, base) {
   U.uLN.value = n;
 }
 
+/* Continuidad entre poses ("Continuo" en Tiempo): Catmull-Rom con tiempos desiguales. Entre dos poses con easing "spline" la curva pasa por todas las poses
+   y la velocidad no se corta en cada una (útil con cámara lineal y para exportar a video). p0 / p3 = vecinos (o null), h0/h1/h2 = duraciones. */
+function splineV(p0, p1, p2, p3, h0, h1, h2, t) {
+  const m1 = p0 == null ? p2 - p1 : (((p2 - p1) / h1 + (p1 - p0) / h0) * 0.5) * h1;
+  const m2 = p3 == null ? p2 - p1 : (((p3 - p2) / h2 + (p2 - p1) / h1) * 0.5) * h1;
+  const t2 = t * t, t3 = t2 * t;
+  return (2 * t3 - 3 * t2 + 1) * p1 + (t3 - 2 * t2 + t) * m1 + (-2 * t3 + 3 * t2) * p2 + (t3 - t2) * m2;
+}
+function splineVec3(g, c0, c1, c2, c3, h0, h1, h2, t) {
+  const S = (k) => splineV(c0 ? g(c0)[k] : null, g(c1)[k], g(c2)[k], c3 ? g(c3)[k] : null, h0, h1, h2, t);
+  return [S(0), S(1), S(2)];
+}
+function splineCam(c0, c1, c2, c3, h0, h1, h2, t) {
+  const S = (g) => splineV(c0 ? g(c0) : null, g(c1), g(c2), c3 ? g(c3) : null, h0, h1, h2, t);
+  const look = splineVec3((c) => c.lookAt, c0, c1, c2, c3, h0, h1, h2, t);
+  let position;
+  if (c2.arc) {
+    const pol = (c) => { const dx = c.position[0] - c.lookAt[0], dz = c.position[2] - c.lookAt[2]; return { a: Math.atan2(dx, dz), r: Math.hypot(dx, dz), dy: c.position[1] - c.lookAt[1] }; };
+    const un = (a, ref) => { let d = a - ref; d = Math.atan2(Math.sin(d), Math.cos(d)); return ref + d; };
+    const P0 = c0 ? pol(c0) : null, P1 = pol(c1), P2 = pol(c2), P3 = c3 ? pol(c3) : null;
+    const a1 = P1.a, a2 = un(P2.a, a1), a0 = P0 ? un(P0.a, a1) : null, a3 = P3 ? un(P3.a, a2) : null;
+    const ang = splineV(a0, a1, a2, a3, h0, h1, h2, t);
+    const r = splineV(P0 ? P0.r : null, P1.r, P2.r, P3 ? P3.r : null, h0, h1, h2, t);
+    const dy = splineV(P0 ? P0.dy : null, P1.dy, P2.dy, P3 ? P3.dy : null, h0, h1, h2, t);
+    position = [look[0] + r * Math.sin(ang), look[1] + dy, look[2] + r * Math.cos(ang)];
+  } else position = splineVec3((c) => c.position, c0, c1, c2, c3, h0, h1, h2, t);
+  return { position, lookAt: look, fov: S((c) => c.fov), roll: S((c) => c.roll || 0) };
+}
 function sampleObjectKeyframes(keyframes, progress) {
   const list = keyframes;
   const p = clamp(progress, 0, 1);
@@ -2843,19 +2871,23 @@ function sampleObjectKeyframes(keyframes, progress) {
   const a = list[i], b = list[i + 1];
   const span = b.progress - a.progress || 1;
   const t = applyEasing(clamp((p - a.progress) / span), b.easing);
+  const sp = b.easing === "spline";
+  const pv = sp && i > 0 && a.easing === "spline" ? list[i - 1] : null, nx = sp && i + 2 < list.length && list[i + 2].easing === "spline" ? list[i + 2] : null;
+  const h0 = pv ? a.progress - pv.progress || 1 : 1, h2 = nx ? nx.progress - b.progress || 1 : 1;
+  const SP = (k, d) => splineV(pv ? pv[k] ?? d : null, a[k] ?? d, b[k] ?? d, nx ? nx[k] ?? d : null, h0, span, h2, t);
   return {
-    position: lerpVec3(a.position, b.position, t),
-    scale: lerp(a.scale, b.scale, t),
-    rotationY: lerpAngle(a.rotationY, b.rotationY, t),
-    sx: lerp(a.sx ?? 1, b.sx ?? 1, t),
-    sy: lerp(a.sy ?? 1, b.sy ?? 1, t),
+    position: sp ? splineVec3((k) => k.position, pv, a, b, nx, h0, span, h2, t) : lerpVec3(a.position, b.position, t),
+    scale: sp ? SP("scale", 1) : lerp(a.scale, b.scale, t),
+    rotationY: sp ? SP("rotationY", 0) : lerpAngle(a.rotationY, b.rotationY, t),
+    sx: sp ? SP("sx", 1) : lerp(a.sx ?? 1, b.sx ?? 1, t),
+    sy: sp ? SP("sy", 1) : lerp(a.sy ?? 1, b.sy ?? 1, t),
     rv: lerp(a.rv ?? 1, b.rv ?? 1, t),
-    rz: lerp(a.rz || 0, b.rz || 0, t),
-    rx: lerp(a.rx || 0, b.rx || 0, t),
+    rz: sp ? SP("rz", 0) : lerp(a.rz || 0, b.rz || 0, t),
+    rx: sp ? SP("rx", 0) : lerp(a.rx || 0, b.rx || 0, t),
     tk: lerp(a.tk || 0, b.tk || 0, t),
     lh: lerp(a.lh || 0, b.lh || 0, t),
     sh: a.sh || b.sh ? shapeLerp(a.sh, b.sh, t) : null,
-    lt: lerpVec3(a.lt || [0, 0, 0], b.lt || [0, 0, 0], t),
+    lt: sp ? splineVec3((k) => k.lt || [0, 0, 0], pv, a, b, nx, h0, span, h2, t) : lerpVec3(a.lt || [0, 0, 0], b.lt || [0, 0, 0], t),
     li: lerp(a.li ?? 1, b.li ?? 1, t),
     bl: lerp(a.bl || 0, b.bl || 0, t),
     sm: a.sm || b.sm ? smokeLerp(a.sm, b.sm, t) : null,
@@ -6639,7 +6671,7 @@ function smoothstep(edge0, edge1, x) {
    muy lento, o pasan en cámara lenta por el centro, sin tener que agregar más vh. */
 function applyEasing(t, kind) {
   switch (kind) {
-    case "linear": return t;
+    case "linear": case "spline": return t;
     case "easeIn": return t * t;
     case "easeOut": return 1 - (1 - t) * (1 - t);
     case "inOutCubic": return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -6743,6 +6775,10 @@ function sampleCamera(camsByKf, progress, stages, easings) {
   const span = b.progress - a.progress || 1;
   const t = applyEasing(clamp((p - a.progress) / span), easings[i]);
   const ca = camsByKf[a.id], cb = camsByKf[b.id];
+  if (easings[i] === "spline") {
+    const pv = i > 0 && easings[i - 1] === "spline" ? camsByKf[stages[i - 1].id] : null, nx = i + 2 < stages.length && easings[i + 1] === "spline" ? camsByKf[stages[i + 2].id] : null;
+    return splineCam(pv, ca, cb, nx, i > 0 ? a.progress - stages[i - 1].progress || 1 : 1, span, i + 2 < stages.length ? stages[i + 2].progress - b.progress || 1 : 1, t);
+  }
   return { position: cb.arc ? lerpOrbit(ca, cb, t) : lerpVec3(ca.position, cb.position, t), lookAt: lerpVec3(ca.lookAt, cb.lookAt, t), fov: lerp(ca.fov, cb.fov, t), roll: lerp(ca.roll || 0, cb.roll || 0, t) };
 }
 
@@ -6775,19 +6811,23 @@ function sampleObjectTransform(transformsByStage, progress, stages, easings) {
   const span = b.progress - a.progress || 1;
   const t = applyEasing(clamp((p - a.progress) / span), easings[i]);
   const ta = transformsByStage[a.id], tb = transformsByStage[b.id];
+  const sp = easings[i] === "spline";
+  const pv = sp && i > 0 && easings[i - 1] === "spline" ? transformsByStage[stages[i - 1].id] : null, nx = sp && i + 2 < stages.length && easings[i + 1] === "spline" ? transformsByStage[stages[i + 2].id] : null;
+  const h0 = pv ? a.progress - stages[i - 1].progress || 1 : 1, h2 = nx ? stages[i + 2].progress - b.progress || 1 : 1;
+  const SP = (k, d) => splineV(pv ? pv[k] ?? d : null, ta[k] ?? d, tb[k] ?? d, nx ? nx[k] ?? d : null, h0, span, h2, t);
   return withFade({
-    position: lerpVec3(ta.position, tb.position, t),
-    scale: lerp(ta.scale, tb.scale, t),
-    rotationY: lerp(ta.rotationY, tb.rotationY, t),
-    sx: lerp(ta.sx ?? 1, tb.sx ?? 1, t),
-    sy: lerp(ta.sy ?? 1, tb.sy ?? 1, t),
+    position: sp ? splineVec3((k) => k.position, pv, ta, tb, nx, h0, span, h2, t) : lerpVec3(ta.position, tb.position, t),
+    scale: sp ? SP("scale", 1) : lerp(ta.scale, tb.scale, t),
+    rotationY: sp ? SP("rotationY", 0) : lerp(ta.rotationY, tb.rotationY, t),
+    sx: sp ? SP("sx", 1) : lerp(ta.sx ?? 1, tb.sx ?? 1, t),
+    sy: sp ? SP("sy", 1) : lerp(ta.sy ?? 1, tb.sy ?? 1, t),
     rv: lerp(ta.rv ?? 1, tb.rv ?? 1, t),
-    rz: lerp(ta.rz || 0, tb.rz || 0, t),
-    rx: lerp(ta.rx || 0, tb.rx || 0, t),
+    rz: sp ? SP("rz", 0) : lerp(ta.rz || 0, tb.rz || 0, t),
+    rx: sp ? SP("rx", 0) : lerp(ta.rx || 0, tb.rx || 0, t),
     tk: lerp(ta.tk || 0, tb.tk || 0, t),
     lh: lerp(ta.lh || 0, tb.lh || 0, t),
     sh: ta.sh || tb.sh ? shapeLerp(ta.sh, tb.sh, t) : null,
-    lt: lerpVec3(ta.lt || [0, 0, 0], tb.lt || [0, 0, 0], t),
+    lt: sp ? splineVec3((k) => k.lt || [0, 0, 0], pv, ta, tb, nx, h0, span, h2, t) : lerpVec3(ta.lt || [0, 0, 0], tb.lt || [0, 0, 0], t),
     li: lerp(ta.li ?? 1, tb.li ?? 1, t),
     bl: lerp(ta.bl || 0, tb.bl || 0, t),
     sm: ta.sm || tb.sm ? smokeLerp(ta.sm, tb.sm, t) : null,
@@ -7103,6 +7143,9 @@ function FadeGroup({ obj, fade, children }) {
 //@@use OvlPair
 //@@use ovlFold
 //@@use lerpOrbit
+//@@use splineV
+//@@use splineVec3
+//@@use splineCam
 //@@use useAlphaDepth
 //@@use TexMaterial
 //@@use WEEB_LIGHTS
@@ -12106,7 +12149,7 @@ function App() {
                         <optgroup label="Clásicas"><option value="smooth">Suave</option><option value="linear">Lineal</option><option value="easeIn">Entrada</option><option value="easeOut">Salida</option><option value="inOutCubic">Cúbica</option></optgroup>
                         <optgroup label="Cinematográficas"><option value="inOutQuart">Cinemática</option><option value="inOutQuint">Cinemática fuerte</option><option value="inOutExpo">Cinemática extrema</option><option value="inQuart">Arranque lento</option><option value="inExpo">Arranque larguísimo</option><option value="outQuart">Frenada larga</option><option value="outExpo">Frenada larguísima</option></optgroup>
                         <optgroup label="Cámara lenta al centro"><option value="slowMid">Cámara lenta</option><option value="slowMidStrong">Cámara lenta fuerte</option><option value="slowMidHold">Casi pausa en el centro</option></optgroup>
-                        <optgroup label="Con rebote"><option value="outBack">Rebote leve</option><option value="inOutBack">Rebote ida y vuelta</option><option value="outElastic">Elástico</option></optgroup>
+                        <optgroup label="Continuo (video)"><option value="spline">Continuo (curva suave entre poses)</option></optgroup><optgroup label="Con rebote"><option value="outBack">Rebote leve</option><option value="inOutBack">Rebote ida y vuelta</option><option value="outElastic">Elástico</option></optgroup>
                       </select>
                     </div>
                   ))}
