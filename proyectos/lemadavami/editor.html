@@ -4157,8 +4157,8 @@ function releaseSvgGeo(key) {
   if (--e.refs &lt;= 0) { e.built.parts.forEach((pt) =&gt; pt.geo.dispose()); SVG_GEO.delete(key); }
 }
 /* Cola de armado de geometrías: en vez de armar todos los SVG juntos (y congelar la pantalla / el loader), se arman de a pocos por cuadro, con un presupuesto de tiempo. */
-const SVG_Q = { jobs: [], on: false };
 function svgSchedule(job) {
+  const SVG_Q = (window.__svgQ = window.__svgQ || { jobs: [], on: false });
   SVG_Q.jobs.push(job);
   if (SVG_Q.on) return;
   SVG_Q.on = true;
