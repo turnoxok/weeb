@@ -5028,18 +5028,49 @@ function WarmUp() {
     };
     /* dibuja un cuadro mostrando SOLO estos grupos (a la fuerza visibles y sin recorte): compila shaders y sube geometrías/texturas */
     const warm = (batch) =&gt; {
-      const hid = [], fc = [], off = [];
+      const hid = [], fc = [], off = [], mv = [], cnt = [], dr = [];
       const set = new Set(batch);
       try {
         scene.children.forEach((c) =&gt; { if (!set.has(c) &amp;&amp; !c.isLight &amp;&amp; !c.isCamera &amp;&amp; c.visible) { off.push(c); c.visible = false; } });
-        batch.forEach((c) =&gt; c.traverse((o) =&gt; { if (!o.visible) { hid.push(o); o.visible = true; } if (o.frustumCulled) { fc.push(o); o.frustumCulled = false; } }));
+        batch.forEach((c) =&gt; c.traverse((o) =&gt; {
+          if (!o.visible) { hid.push(o); o.visible = true; } if (o.frustumCulled) { fc.push(o); o.frustumCulled = false; }
+          /* lo que está vacío o apagado (confeti con 0 piezas, chispas, brillos) tampoco se dibujaba, y su primer dibujo trababa al aparecer */
+          if (o.isInstancedMesh &amp;&amp; o.count === 0) { cnt.push([o, 0]); o.count = 1; }
+          if (o.isPoints &amp;&amp; o.geometry &amp;&amp; o.geometry.drawRange &amp;&amp; o.geometry.drawRange.count === 0) { dr.push([o.geometry, 0]); o.geometry.drawRange.count = 1; }
+          const ms = Array.isArray(o.material) ? o.material : (o.material ? [o.material] : []);
+          ms.forEach((m) =&gt; { if (m &amp;&amp; m.visible === false) { mv.push(m); m.visible = true; } });
+        }));
         gl.shadowMap.needsUpdate = true;
         gl.render(scene, camera);
       } catch (e) { /* si falla, se sigue */ }
       hid.forEach((o) =&gt; { o.visible = false; });
       fc.forEach((o) =&gt; { o.frustumCulled = true; });
+      cnt.forEach(([o, v]) =&gt; { o.count = v; }); dr.forEach(([g, v]) =&gt; { g.drawRange.count = v; }); mv.forEach((m) =&gt; { m.visible = false; });
       off.forEach((o) =&gt; { o.visible = true; });
       batch.forEach((c) =&gt; c.traverse((o) =&gt; warmed.add(o)));
+    };
+    /* sube a la placa TODA geometría y textura de la escena aunque el objeto esté apagado o vacío (confeti, chispas, brillos):
+       se dibuja una copia mínima en una escena aparte, así el primer dibujo real ya no tiene nada que subir */
+    const upl = new WeakSet(); let tmp = null, bm = null, pm = null;
+    const forceUpload = (max) =&gt; {
+      try {
+        if (!tmp) { tmp = new THREE.Scene(); bm = new THREE.MeshBasicMaterial(); pm = new THREE.PointsMaterial(); }
+        const add = [];
+        scene.traverse((o) =&gt; {
+          if (add.length &gt;= max) return;
+          const ms = Array.isArray(o.material) ? o.material : (o.material ? [o.material] : []);
+          ms.forEach((m) =&gt; { if (m &amp;&amp; !upl.has(m)) { upl.add(m); ["map", "alphaMap", "emissiveMap", "normalMap", "roughnessMap", "metalnessMap", "aoMap"].forEach((k) =&gt; { const t = m[k]; if (t &amp;&amp; t.isTexture &amp;&amp; !upl.has(t)) { upl.add(t); try { gl.initTexture(t); } catch (e) { /* sigue */ } } }); } });
+          const g = o.geometry;
+          if (g &amp;&amp; !upl.has(g) &amp;&amp; (o.isMesh || o.isPoints || o.isLine) &amp;&amp; !o.isSkinnedMesh) { upl.add(g); add.push(o.isPoints ? new THREE.Points(g, pm) : new THREE.Mesh(g, bm)); }
+        });
+        if (!add.length) return false;
+        add.forEach((m) =&gt; { m.frustumCulled = false; tmp.add(m); });
+        const prev = gl.autoClear; gl.autoClear = false;
+        gl.render(tmp, camera);
+        gl.autoClear = prev;
+        tmp.clear();
+        return true;
+      } catch (e) { return false; }
     };
     const STEPS = 44;
     const endRoll = () =&gt; {
@@ -5072,13 +5103,15 @@ function WarmUp() {
           while (queue.length &amp;&amp; (batch.length === 0 || performance.now() - t1 &lt; 4) &amp;&amp; batch.length &lt; 6) batch.push(queue.shift());
           if (batch.length) warm(batch);
           window.__wbWarmP = 1 - queue.length / Math.max(1, scene.children.length);
-          if (!queue.length) { if (IS_TOUCH_DEVICE) fin(); else roll = { f: 0, t0: now }; }
+          if (!queue.length) { while (forceUpload(12)) { /* hasta subir todo */ }
+            if (IS_TOUCH_DEVICE) fin(); else roll = { f: 0, t0: now }; }
         }
       } else if (now - lastScan &gt; 400) {
         /* objetos que se armaron después (SVG lentos de bajar o de armar): se calientan apenas aparecen */
         lastScan = now;
         const q = pickTops();
         if (q.length) { try { gl.compile(scene, camera); } catch (e) { /* sigue */ } warm(q.slice(0, 4)); }
+        forceUpload(12);
       }
     };
     tickRef.current = tick;
