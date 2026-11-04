@@ -6888,10 +6888,10 @@ function App() {
         {CURSOR.enabled &amp;&amp; !IS_TOUCH_DEVICE &amp;&amp; &lt;CursorTrail /&gt;}
         &lt;SceneText /&gt;
         &lt;ProgressIndicator /&gt;
-        &lt;div className="scroll-hint" aria-hidden="true"&gt;
+        {scenes.length &gt; 1 &amp;&amp; &lt;div className="scroll-hint" aria-hidden="true"&gt;
           &lt;span&gt;Scroll&lt;/span&gt;
           &lt;div className="scroll-hint__chev"&gt;&lt;i /&gt;&lt;i /&gt;&lt;/div&gt;
-        &lt;/div&gt;
+        &lt;/div&gt;}
       &lt;/div&gt;}
         &lt;/div&gt;
       ) : &lt;Block2D key={sec.id} s={sec} theme={SITE2D} /&gt;), SECTIONS)}

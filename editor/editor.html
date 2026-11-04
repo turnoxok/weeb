@@ -6890,10 +6890,10 @@ function App() {
         {CURSOR.enabled && !IS_TOUCH_DEVICE && <CursorTrail />}
         <SceneText />
         <ProgressIndicator />
-        <div className="scroll-hint" aria-hidden="true">
+        {scenes.length > 1 && <div className="scroll-hint" aria-hidden="true">
           <span>Scroll</span>
           <div className="scroll-hint__chev"><i /><i /></div>
-        </div>
+        </div>}
       </div>}
         </div>
       ) : <Block2D key={sec.id} s={sec} theme={SITE2D} />), SECTIONS)}
