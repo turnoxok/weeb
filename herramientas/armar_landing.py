@@ -3,8 +3,8 @@
 
 Uso:  python3 herramientas/armar_landing.py lemadavami [nombre-de-carpeta]
 Resultado: landing/<nombre>/ con solo lo que el sitio usa de verdad:
-  index.html, invitacion.html, reservar/ y los archivos de assets/ que se nombran en esas páginas.
-NO se copia: editor.html, panel/, el proyecto .json ni los archivos que no usa nadie.
+  index.html, invitacion.html, reservar/, panel/ y los archivos de assets/ que se nombran en esas páginas.
+NO se copia: editor.html, el proyecto .json ni los archivos que no usa nadie.
 Todas las rutas del sitio son relativas, así que la carpeta funciona colgada de cualquier dirección.
 """
 import os, re, shutil, sys
@@ -25,6 +25,8 @@ def main():
         shutil.copytree(os.path.join(src, 'reservar'), os.path.join(dst, 'reservar'))
         for dp, _, fs in os.walk(os.path.join(dst, 'reservar')):
             pages += [os.path.join(dp, x) for x in fs if x.endswith(('.html', '.js', '.json', '.css'))]
+    if os.path.isdir(os.path.join(src, 'panel')):
+        shutil.copytree(os.path.join(src, 'panel'), os.path.join(dst, 'panel'))
     text = ''
     for p in pages: text += open(p, encoding='utf-8', errors='ignore').read() + '\n'
     sa = os.path.join(src, 'assets'); kept = skipped = 0; size = 0
