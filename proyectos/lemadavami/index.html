@@ -185,7 +185,6 @@
   }
 
   /* ---- Botón "volver arriba": vidrio neutro, se ve sobre cualquier fondo ---- */
-  @media (pointer: coarse) { .fab__btn { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: rgba(20,12,36,.86) !important; } }
   @media (pointer: coarse) { .backtop { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: var(--bt-bg, rgba(12,12,16,.78)) !important; } }
   .backtop { --bt-size: 46px; position: fixed; z-index: 9; bottom: calc(var(--bt-bottom, 24px) + env(safe-area-inset-bottom));
     width: var(--bt-size); height: var(--bt-size); margin: 0; padding: 0; border-radius: 50%; cursor: pointer; display: grid; place-items: center;
