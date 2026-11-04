@@ -4631,11 +4631,64 @@ function SceneObjectBalloons({ data }) {
   const { groupRef, fade } = useObjectTransformRef(data.keyframes, false, false, data);
   return <group ref={groupRef}><BalloonsBody data={data} fade={fade} /></group>;
 }
+/* Molinete de colores: gira solo y se acelera cuando se scrollea (la velocidad sale de cuánto cambia el avance del scroll). El centro del eje es el origen. */
+function PinwheelBody({ data, fade, getProgress }) {
+  const nb = Math.max(3, Math.min(14, Math.round(data.pwBlades ?? 8)));
+  const idle = data.pwSpeed ?? 1, boostK = data.pwBoost ?? 1, stickL = data.pwStick ?? 1.5;
+  const cols = data.pwColors && data.pwColors.length ? data.pwColors : ["#F7E02B", "#3AA0EE", "#F04F68", "#4EDB2E", "#F2C57A"];
+  const geo = useMemo(() => {
+    const nu = 12, nv = 6, pos = [], idx = [];
+    for (let i = 0; i <= nu; i++) for (let j = 0; j <= nv; j++) {
+      const u = i / nu, v = (j / nv) * 2 - 1;
+      const w = u < 0.6 ? 0.1 + 0.3 * (u / 0.6) : 0.4 * (1 - u) / 0.4;
+      pos.push(0.07 + 0.93 * u, 0.13 * u + v * w + 0.02, 0.07 * u * u + 0.05 * Math.max(0, v) * (1 - 0.5 * u));
+    }
+    for (let i = 0; i < nu; i++) for (let j = 0; j < nv; j++) { const a = i * (nv + 1) + j, b = a + nv + 1; idx.push(a, b, a + 1, b, b + 1, a + 1); }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+    return g;
+  }, []);
+  const mats = useMemo(() => cols.map((c) => { const m = new THREE.MeshPhysicalMaterial({ color: c, roughness: 0.35, metalness: 0, clearcoat: 0.6, clearcoatRoughness: 0.25, side: THREE.DoubleSide }); patchFadeMaterial(m, fade); return m; }), [cols.join(","), fade]);
+  const wood = useMemo(() => { const m = new THREE.MeshStandardMaterial({ color: "#c58f56", roughness: 0.6 }); patchFadeMaterial(m, fade); return m; }, [fade]);
+  const wheel = useRef(null);
+  const st = useRef({ a: 0, p: null, boost: 0 });
+  useFrame((_, delta) => {
+    const s = st.current, dt = Math.min(delta, 0.05);
+    const p = getProgress ? getProgress() : 0;
+    if (s.p != null && dt > 0) {
+      const v = Math.abs(p - s.p) / dt;
+      s.boost += (Math.min(28, v * 60 * boostK) - s.boost) * (1 - Math.exp(-(v * 60 * boostK > s.boost ? 6 : 1.6) * dt));
+    }
+    s.p = p;
+    s.a -= (idle * 1.2 + s.boost) * dt;
+    if (wheel.current) wheel.current.rotation.z = s.a;
+  });
+  return (
+    <group>
+      <mesh material={wood} position={[0, -stickL / 2 - 0.05, -0.06]}><cylinderGeometry args={[0.055, 0.055, stickL, 14]} /></mesh>
+      <group ref={wheel}>
+        {Array.from({ length: nb }, (_, i) => (
+          <group key={i} rotation={[0, 0, (i / nb) * Math.PI * 2]} position={[0, 0, i * 0.004]}>
+            <mesh geometry={geo} material={mats[i % mats.length]} rotation={[0.2, 0, 0]} />
+          </group>
+        ))}
+      </group>
+      <mesh material={wood} rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0.1]}><cylinderGeometry args={[0.14, 0.14, 0.07, 24]} /></mesh>
+      <mesh material={wood} rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0.14]}><torusGeometry args={[0.055, 0.022, 10, 20]} /></mesh>
+    </group>
+  );
+}
+const getPwProgress = () => useScrollStore.getState().smoothProgress;
+function SceneObjectPinwheel({ data }) {
+  const { groupRef, fade } = useObjectTransformRef(data.keyframes, false, false, data);
+  return <group ref={groupRef}><PinwheelBody data={data} fade={fade} getProgress={getPwProgress} /></group>;
+}
 function SceneObject({ data }) {
   if (data.type === "light") return <SceneObjectLight data={data} />;
   if (data.type === "smoke") return <SceneObjectSmoke data={data} />;
   if (data.type === "confetti") return <SceneObjectConfetti data={data} />;
   if (data.type === "balloons") return <SceneObjectBalloons data={data} />;
+  if (data.type === "pinwheel") return <SceneObjectPinwheel data={data} />;
   if (data.type === "shape") return <SceneObjectShape data={data} />;
   if (data.type === "text") return <SceneObjectText data={data} />;
   if (data.type === "video") return <SceneObjectVideo data={data} />;
@@ -4802,7 +4855,7 @@ function SceneObjects() {
   );
 }
 OBJECTS.forEach((obj) => {
-  if (obj.type === "text" || obj.type === "video" || obj.type === "light" || obj.type === "smoke" || obj.type === "confetti" || obj.type === "balloons") return; // texto y video no se precargan (el video se baja solo al montarse)
+  if (obj.type === "text" || obj.type === "video" || obj.type === "light" || obj.type === "smoke" || obj.type === "confetti" || obj.type === "balloons" || obj.type === "pinwheel") return; // texto y video no se precargan (el video se baja solo al montarse)
   if (obj.type === "image") { if (!isBallsUrl(obj.url)) useTexture.preload(obj.url); }
   else useGLTF.preload(obj.url);
 });
@@ -7441,6 +7494,15 @@ function ObjectPreviewShape({ obj, fade }) {
     : <group position={obj.position} rotation={[0, (obj.rotationY * Math.PI) / 180, 0]}>{mesh}</group>;
 }
 //@@use BalloonsBody
+//@@use PinwheelBody
+function ObjectPreviewPinwheel({ obj, fade }) {
+  const sc = obj.scale;
+  return (
+    <group scale={[sc, sc, sc]} position={obj.position} rotation={eulYXZ(obj.rx, obj.rotationY, obj.rz)}>
+      <PinwheelBody data={obj} fade={fade} getProgress={getCfProgress} />
+    </group>
+  );
+}
 function ObjectPreviewBalloons({ obj, fade }) {
   const sc = obj.scale;
   return (
@@ -7517,13 +7579,14 @@ function ObjectPreviewLight({ obj }) {
 function ObjectPreview({ obj }) {
   const fade = useMemo(() => makeFadeUniforms(), []);
   if (obj.type === "confetti") return <ObjectPreviewConfetti obj={obj} />;
-  if (obj.type !== "text" && obj.type !== "shape" && obj.type !== "light" && obj.type !== "smoke" && obj.type !== "balloons" && !(obj.previewUrl || obj.url)) return null;
+  if (obj.type !== "text" && obj.type !== "shape" && obj.type !== "light" && obj.type !== "smoke" && obj.type !== "balloons" && obj.type !== "pinwheel" && !(obj.previewUrl || obj.url)) return null;
   if (obj.type === "light") return <ObjectPreviewLight obj={obj} />;
   if (obj.type === "smoke") return <ObjectPreviewSmoke obj={obj} />;
   let inner;
   if (obj.type === "text") inner = <ObjectPreviewText obj={obj} fade={fade} />;
   else if (obj.type === "shape") inner = <ObjectPreviewShape obj={obj} fade={fade} />;
   else if (obj.type === "balloons") inner = <ObjectPreviewBalloons obj={obj} fade={fade} />;
+  else if (obj.type === "pinwheel") inner = <ObjectPreviewPinwheel obj={obj} fade={fade} />;
   else if (obj.type === "video") inner = <ObjectPreviewVideo obj={obj} fade={fade} />;
   else inner = obj.type === "image" ? <ObjectPreviewImage obj={obj} fade={fade} /> : <ObjectPreviewModel obj={obj} fade={fade} />;
   return <FadeGroup obj={obj} fade={fade}>{obj.float > 0 && obj.type !== "shape" ? <FloatWrap obj={obj}>{inner}</FloatWrap> : inner}</FadeGroup>;
@@ -8299,6 +8362,7 @@ const DEFAULT_PROGRESS_BAR = { enabled: true, color: "" };
 const DEFAULT_FAB = { enabled: false, position: "right", book: true, label: "Reservar", reservarUrl: "./reservar/", newTab: false, wa: true, waText: "Hola! Quiero consultar por una reserva.", map: true, color: "", showAfter: 0 };
 const DEFAULT_BACKTOP = { enabled: true, position: "right", style: "dark", size: 46, showAfter: 0.06, duration: 1.8, ring: true, color: "" };
 /* Bloque @GEN:EXTRAS de la plantilla: estela del mouse y barra de progreso lateral. */
+const PINWHEEL_COLORS = ["#F7E02B", "#3AA0EE", "#F04F68", "#4EDB2E", "#F2C57A"];
 const BALLOON_COLORS = ["#FFB719", "#FF6A00", "#CB000F", "#A60064", "#0071CE"];
 const CONFETTI_COLORS = ["#FFB719", "#FF6A00", "#CB000F", "#A60064", "#9379D3", "#709749", "#0071CE"];
 const CONFETTI_DEFAULTS = { cfFrom: "", cfTo: "", cfCount: 260, cfSize: 0.2, cfPos: [0, 5, -10], cfRotY: 0, cfW: 10, cfH: 4, cfFloor: 0, cfColors: CONFETTI_COLORS };
@@ -8379,7 +8443,7 @@ function reparentObject(objects, tfByKf, stages, id, parentId) {
 }
 function generateObjectsCode(objects, transformsByKf, stages, easings) {
   transformsByKf = composeGroups(objects, transformsByKf, stages);
-  objects = objects.filter((o) => o.type === "text" || o.type === "shape" || o.type === "light" || o.type === "smoke" || o.type === "confetti" || o.type === "balloons" || (o.url && o.url.trim()));
+  objects = objects.filter((o) => o.type === "text" || o.type === "shape" || o.type === "light" || o.type === "smoke" || o.type === "confetti" || o.type === "balloons" || o.type === "pinwheel" || (o.url && o.url.trim()));
   const fmtNum = (n) => (Math.abs(n) < 0.0001 ? 0 : Math.round(n * 1000) / 1000);
   const fmtVec = (v) => `[${v.map(fmtNum).join(", ")}]`;
   const esc = (s) => JSON.stringify(s == null ? "" : s);
@@ -8409,6 +8473,19 @@ function generateObjectsCode(objects, transformsByKf, stages, easings) {
     litBase: ${fmtNum(o.litBase ?? 0.2)},
     shCast: ${o.shCast ? "true" : "false"},
     billboard: ${o.billboard ? "true" : "false"},
+    float: ${fmtNum(o.float || 0)},
+    floatSpeed: ${fmtNum(o.floatSpeed || 1)},
+    keyframes: [
+${kfLines}
+    ],
+  },`;
+    }
+    if (o.type === "pinwheel") {
+      return `  {
+    type: "pinwheel",
+    pwBlades: ${fmtNum(o.pwBlades ?? 8)}, pwSpeed: ${fmtNum(o.pwSpeed ?? 1)}, pwBoost: ${fmtNum(o.pwBoost ?? 1)}, pwStick: ${fmtNum(o.pwStick ?? 1.5)},
+    pwColors: ${JSON.stringify(o.pwColors && o.pwColors.length ? o.pwColors : PINWHEEL_COLORS)},
+    billboard: false,
     float: ${fmtNum(o.float || 0)},
     floatSpeed: ${fmtNum(o.floatSpeed || 1)},
     keyframes: [
@@ -10147,7 +10224,7 @@ function App() {
       const miss = [];
       for (const o of objects) {
         const u = o.url || "";
-        if (!u || o.previewUrl || u.indexOf("balls:") === 0 || /^(blob:|data:)/.test(u) || ["text", "shape", "light", "smoke", "confetti", "balloons"].includes(o.type)) continue;
+        if (!u || o.previewUrl || u.indexOf("balls:") === 0 || /^(blob:|data:)/.test(u) || ["text", "shape", "light", "smoke", "confetti", "balloons", "pinwheel"].includes(o.type)) continue;
         let ok = fileCheckRef.current[u];
         if (ok === undefined) {
           try { const r = await fetch(new URL(u, window.location.href).href, { method: "HEAD", cache: "no-store" }); ok = r.ok; } catch (e) { ok = false; }
@@ -10170,10 +10247,11 @@ function App() {
     const newId = `obj-${Date.now()}`;
     const used = objects.map((o, k) => o.color || PALETTE[k % PALETTE.length]);
     const color = PALETTE.find((c) => !used.includes(c)) || PALETTE[objects.length % PALETTE.length];
-    const base = { id: newId, label: `${{ model: "Modelo", image: "Imagen", video: "Video", text: "Texto", shape: "Forma", light: "Luz", smoke: "Humo", confetti: "Confeti", balloons: "Globos" }[type]} ${objects.length + 1}`, type, url: "", previewUrl: null, billboard: type !== "model" && type !== "light" && type !== "smoke" && type !== "confetti", visible: true, color };
+    const base = { id: newId, label: `${{ model: "Modelo", image: "Imagen", video: "Video", text: "Texto", shape: "Forma", light: "Luz", smoke: "Humo", confetti: "Confeti", balloons: "Globos", pinwheel: "Molinete" }[type]} ${objects.length + 1}`, type, url: "", previewUrl: null, billboard: type !== "model" && type !== "light" && type !== "smoke" && type !== "confetti" && type !== "balloons" && type !== "pinwheel", visible: true, color };
     if (type === "light") Object.assign(base, LIGHT_DEFAULTS);
     if (type === "smoke") Object.assign(base, SMOKE_DEFAULTS);
     if (type === "confetti") Object.assign(base, CONFETTI_DEFAULTS, { cfPos: [0, 5, -10] });
+    if (type === "pinwheel") Object.assign(base, { pwBlades: 8, pwSpeed: 1, pwBoost: 1, pwStick: 1.5, pwColors: PINWHEEL_COLORS });
     if (type === "balloons") Object.assign(base, { bCount: 5, bSize: 0.32, bLen: 1.9, bSpread: 16, bSway: 1, bTail: 0.6, bColors: BALLOON_COLORS });
     if (type === "video") Object.assign(base, { loop: true, videoMode: "scroll", scrubFrom: 0, scrubTo: 100 });
     if (type === "shape") Object.assign(base, { shapeKind: "rect", shapeCap: "round", shapeCols: 8, shapeRows: 4 });
@@ -11122,6 +11200,30 @@ function App() {
         <Seg value={o.type || "model"} onChange={(v) => setObjectType(o.id, v)} options={[["model", "Modelo"], ["image", "Imagen / SVG"], ["video", "Video"], ["text", "Texto"], ["shape", "Forma"], ["light", "Luz"], ["smoke", "Humo"]]} />
       </>
     );
+    if (o.type === "pinwheel") {
+      const U = (k, v) => updateObject(o.id, { [k]: v });
+      const g = (k, d) => (o[k] ?? d);
+      const cols = (o.pwColors && o.pwColors.length ? o.pwColors : PINWHEEL_COLORS);
+      return (
+        <div className="oed" style={{ "--oc": c }}>
+          {head}
+          <Vec3 label="Centro del molinete" value={t.position} onChange={(a2, v) => setObjectTransform(o.id, "position", a2, v)} />
+          <Slider label="Escala" min={0.05} max={20} step={0.01} value={t.scale} onChange={(v) => setObjectTransform(o.id, "scale", null, v)} />
+          <Slider label="Giro Y" min={-180} max={180} step={0.1} value={t.rotationY} onChange={(v) => setObjectTransform(o.id, "rotationY", null, v)} />
+          <Switch checked={!!t.hidden} onChange={(v) => setObjectTransform(o.id, "hidden", null, v)} label="Oculto en esta pose (aparece / desaparece al pasar)" />
+          <Slider label="Paletas" min={3} max={14} step={1} value={g("pwBlades", 8)} onChange={(v) => U("pwBlades", v)} />
+          <Slider label="Giro en reposo" min={0} max={4} step={0.05} value={g("pwSpeed", 1)} onChange={(v) => U("pwSpeed", v)} />
+          <Slider label="Aceleración con el scroll" min={0} max={4} step={0.05} value={g("pwBoost", 1)} onChange={(v) => U("pwBoost", v)} />
+          <Slider label="Largo del palo" min={0} max={5} step={0.05} value={g("pwStick", 1.5)} onChange={(v) => U("pwStick", v)} />
+          <div className="grp-t" style={{ marginTop: 6 }}>Colores de las paletas (se repiten en orden)</div>
+          {cols.map((col, i) => (
+            <div className="row" key={i}><span className="lbl">Color {i + 1}</span><HexColor value={col} onChange={(v) => U("pwColors", cols.map((x, k) => (k === i ? v : x)))} /></div>
+          ))}
+          <div className="tools"><Btn onClick={() => U("pwColors", [...cols, "#ffffff"])}>+ Color</Btn>{cols.length > 1 && <Btn onClick={() => U("pwColors", cols.slice(0, -1))}>− Color</Btn>}<Btn onClick={() => U("pwColors", PINWHEEL_COLORS)}>Colores por defecto</Btn></div>
+          <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Gira solo y se acelera cuanto más rápido scrolleás; al parar de scrollear vuelve a su giro tranquilo. En el editor se acelera al previsualizar.</div>
+        </div>
+      );
+    }
     if (o.type === "balloons") {
       const U = (k, v) => updateObject(o.id, { [k]: v });
       const g = (k, d) => (o[k] ?? d);
@@ -12011,6 +12113,7 @@ function App() {
                   <Btn icon="smoke" onClick={() => addObject("smoke")}>Humo</Btn>
                   <Btn icon="shape" onClick={() => addObject("confetti")}>Confeti</Btn>
                   <Btn icon="shape" onClick={() => addObject("balloons")}>Globos</Btn>
+                  <Btn icon="shape" onClick={() => addObject("pinwheel")}>Molinete</Btn>
                   <Btn icon="shape" onClick={addBalls}>Pelotas</Btn>
                   <span className="grow" />
                   <IBtn icon="copy" title="Todos desde la pose anterior" disabled={stageIndex <= 0 || !objects.length} onClick={copyAllObjectTransformsFromPrev} />
@@ -12026,7 +12129,7 @@ function App() {
                 <div className="outliner">
                   {objects.map((o, i) => (hiddenByGroup(o) && !objSearch.trim() && !(selObj && selObj.id === o.id)) || (objOnlyVisible && !isVisibleHere(o) && !(selObj && selObj.id === o.id)) || (objSearch.trim() && !String(o.label).toLowerCase().includes(objSearch.trim().toLowerCase()) && !(selObj && selObj.id === o.id)) ? null : (
                     <div key={o.id} className={`orow ${selObj && selObj.id === o.id ? "sel" : ""} ${o.visible && !(objectTransformsByKf[o.id] && objectTransformsByKf[o.id][activeStage] && objectTransformsByKf[o.id][activeStage].hidden) ? "" : "off"}`} style={{ "--oc": colorOf(o, i) }} onClick={() => setSelectedObj(o.id)}>
-                      <span className="oico"><Icon name={o.type === "text" ? "text" : o.type === "shape" ? "shape" : o.type === "light" ? "light" : o.type === "smoke" ? "smoke" : o.type === "confetti" || o.type === "balloons" ? "shape" : o.type === "image" ? "image" : o.type === "video" ? "video" : "cube"} size={15} /></span>
+                      <span className="oico"><Icon name={o.type === "text" ? "text" : o.type === "shape" ? "shape" : o.type === "light" ? "light" : o.type === "smoke" ? "smoke" : o.type === "confetti" || o.type === "balloons" || o.type === "pinwheel" ? "shape" : o.type === "image" ? "image" : o.type === "video" ? "video" : "cube"} size={15} /></span>
                       {objects.some((q) => q.parent === o.id) && <button className="mini" title="Plegar / desplegar el grupo" onClick={(e) => { e.stopPropagation(); setOpenGroups((g) => { const n = new Set(g); if (n.has(o.id)) n.delete(o.id); else n.add(o.id); return n; }); }}>{openGroups.has(o.id) ? "▾" : "▸"}</button>}
                       <span className="oname">{o.parent && objects.some((q) => q.id === o.parent) ? "↳ " : ""}{o.label}{objects.some((q) => q.parent === o.id) ? " ⛓ " + objects.filter((q) => q.parent === o.id).length : ""}{missingFiles.some((m) => m.id === o.id) ? " ⚠" : ""}</span>
                       <button className="mini" title="Visible" onClick={(e) => { e.stopPropagation(); updateObject(o.id, { visible: !o.visible }); }}><Icon name={o.visible ? "eye" : "eyeoff"} size={14} /></button>
