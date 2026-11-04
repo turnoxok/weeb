@@ -4942,7 +4942,11 @@ function ConfettiSim({ cfg: C, from: fromP, to: toP, getProgress, lite }) {
     if (!m) return;
     const prog = getProgress();
     if (!S.ready) { if (prog >= fromP - 0.12) scan(m); return; }
-    const dt = Math.min(delta, 0.05);
+    /* MP4: el tiempo es el del video (cada cuadro avanza exactamente 1/fps), así el confeti sale igual de fluido y repetible */
+    const ext = typeof window !== "undefined" ? window.__wsExportTime : null;
+    let dt;
+    if (ext != null) { const pv = S.lastExt; S.lastExt = ext; dt = pv == null ? 0 : Math.min(0.2, Math.max(0, ext - pv)); }
+    else { S.lastExt = null; dt = Math.min(delta, 0.05); }
     const want = Math.floor(N * Math.min(1, Math.max(0, (prog - fromP) / (toP - fromP))));
     if (want > S.n) {
       for (let i = S.n; i < want; i++) {
@@ -11446,7 +11450,7 @@ function App() {
     setObjects([]); setObjectTransformsByKf({}); setSelectedObj(null);
     setActiveStage(st[0].id); setScrub(0); setIsPlaying(false);
   };
-  window.__cfEd = { stages: stagesComputed, progress: isPreview ? scrub : ((stagesComputed[stageIndex] || {}).progress || 0) };
+  window.__cfEd = { stages: stagesComputed, progress: exporting ? exportT : isPreview ? scrub : ((stagesComputed[stageIndex] || {}).progress || 0) };
   const TABS = [
     ["cfg", "cfg", "Escena"], ["look", "look", "Look"], ["pose", "pose", "Personaje"], ["camera", "cam", "Cámara"],
     ["timing", "time", "Tiempo"], ["objects", "cube", "Objetos"], ["pages", "page", "Páginas"], ["seo", "search", "SEO"], ["preview", "play", "Preview"], ["file", "file", "Archivo"],
