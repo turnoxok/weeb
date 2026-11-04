@@ -4974,31 +4974,53 @@ function SceneObjectConfetti({ data }) {
 function WarmUp() {
   const { gl, scene, camera } = useThree();
   useEffect(() => {
-    let done = false, raf = 0, st = null; const t0 = performance.now();
+    let done = false, raf = 0, queue = null, lastScan = 0; const t0 = performance.now();
+    const warmed = new WeakSet();
     const fin = () => { if (done) return; done = true; window.__wbWarm = true; };
+    const isDrawable = (o) => o.isMesh || o.isPoints || o.isLine;
+    /* grupos de primer nivel que tienen alguna pieza que todavía no se dibujó nunca */
+    const pickTops = () => {
+      const tops = [];
+      scene.children.forEach((c) => {
+        if (c.isLight || c.isCamera) return;
+        let fresh = false;
+        c.traverse((o) => { if (isDrawable(o) && !warmed.has(o)) fresh = true; });
+        if (fresh) tops.push(c);
+      });
+      return tops;
+    };
+    /* dibuja un cuadro mostrando SOLO estos grupos (a la fuerza visibles y sin recorte): compila shaders y sube geometrías/texturas */
+    const warm = (batch) => {
+      const hid = [], fc = [], off = [];
+      const set = new Set(batch);
+      try {
+        scene.children.forEach((c) => { if (!set.has(c) && !c.isLight && !c.isCamera && c.visible) { off.push(c); c.visible = false; } });
+        batch.forEach((c) => c.traverse((o) => { if (!o.visible) { hid.push(o); o.visible = true; } if (o.frustumCulled) { fc.push(o); o.frustumCulled = false; } }));
+        gl.render(scene, camera);
+      } catch (e) { /* si falla, se sigue */ }
+      hid.forEach((o) => { o.visible = false; });
+      fc.forEach((o) => { o.frustumCulled = true; });
+      off.forEach((o) => { o.visible = true; });
+      batch.forEach((c) => c.traverse((o) => warmed.add(o)));
+    };
     const tick = () => {
-      if (done) return;
-      const el = performance.now() - t0;
-      if (el > 12000) return fin();
-      if ((window.__wbStarted || 0) > 0 && (window.__wbPend || 0) === 0 && el > 800) {
-        /* calentamiento repartido: de a un grupo de objetos por cuadro (antes era todo en un solo cuadro y congelaba el loader) */
-        if (!st) {
-          st = { top: scene.children.filter((c) => !c.isLight && !c.isCamera), i: 0 };
+      const now = performance.now(), el = now - t0;
+      if (!done) {
+        if (el > 12000) fin(); // no se espera más: lo que falte se calienta aparte apenas aparezca
+        else if ((window.__wbStarted || 0) > 0 && (window.__wbPend || 0) === 0 && el > 800) {
+          /* calentamiento repartido: de a un grupo de objetos por cuadro (antes era todo en un solo cuadro y congelaba el loader) */
+          if (!queue) queue = pickTops();
+          const t1 = performance.now(), batch = [];
+          while (queue.length && (batch.length === 0 || performance.now() - t1 < 4) && batch.length < 6) batch.push(queue.shift());
+          if (batch.length) warm(batch);
+          window.__wbWarmP = 1 - queue.length / Math.max(1, scene.children.length);
+          if (!queue.length) fin();
         }
-        const t1 = performance.now();
-        const hid = [], fc = [], off = [];
-        try {
-          const batch = new Set();
-          while (st.i < st.top.length && (batch.size === 0 || performance.now() - t1 < 4) && batch.size < 6) batch.add(st.top[st.i++]);
-          st.top.forEach((c) => { if (!batch.has(c)) { if (c.visible) { off.push(c); c.visible = false; } } });
-          batch.forEach((c) => c.traverse((o) => { if (!o.visible) { hid.push(o); o.visible = true; } if (o.frustumCulled) { fc.push(o); o.frustumCulled = false; } }));
-          gl.render(scene, camera);
-        } catch (e) {}
-        hid.forEach((o) => { o.visible = false; });
-        fc.forEach((o) => { o.frustumCulled = true; });
-        off.forEach((o) => { o.visible = true; });
-        window.__wbWarmP = st.i / Math.max(1, st.top.length);
-        if (st.i >= st.top.length) return fin();
+      } else if (now - lastScan > 400) {
+        /* objetos que se armaron después (SVG lentos de bajar o de armar): se calientan apenas aparecen, así no tironean al scrollear */
+        lastScan = now;
+        const q = pickTops();
+        if (q.length) warm(q.slice(0, 4));
       }
       raf = requestAnimationFrame(tick);
     };
