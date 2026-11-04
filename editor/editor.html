@@ -4881,17 +4881,26 @@ function ConfettiSim({ cfg: C, from: fromP, to: toP, getProgress, lite }) {
   const scan = (m) => {
     if (!S.meshes) {
       S.meshes = [];
+      scene.updateMatrixWorld(true);
+      /* sólo se revisan los objetos que están bajo la zona del confeti (antes: TODA la escena, y eso trababa al llegar a la pose) */
+      const ax = [], az = [];
+      [[G.x0, G.z0], [G.x0 + (G.nx - 1) * G.st, G.z0], [G.x0, G.z0 + (G.nz - 1) * G.st], [G.x0 + (G.nx - 1) * G.st, G.z0 + (G.nz - 1) * G.st]].forEach(([lx, lz]) => { ax.push(o[0] + lx * cs + lz * sn); az.push(o[2] - lx * sn + lz * cs); });
+      const gx0 = Math.min(...ax) - 0.5, gx1 = Math.max(...ax) + 0.5, gz0 = Math.min(...az) - 0.5, gz1 = Math.max(...az) + 0.5, gy = o[1] - H / 2 - 0.3;
+      const bb = new THREE.Box3();
       scene.traverse((ob) => {
         if (!ob.isMesh || ob.isInstancedMesh || ob.isSkinnedMesh || ob === m || !ob.geometry) return;
         for (let q = ob; q; q = q.parent) if (!q.visible) return;
         const mt = Array.isArray(ob.material) ? ob.material[0] : ob.material;
         if (mt && mt.opacity != null && mt.opacity < 0.5) return;
+        if (!ob.geometry.boundingBox) ob.geometry.computeBoundingBox();
+        bb.copy(ob.geometry.boundingBox).applyMatrix4(ob.matrixWorld);
+        if (bb.max.x < gx0 || bb.min.x > gx1 || bb.max.z < gz0 || bb.min.z > gz1 || bb.max.y < gy) return;
         S.meshes.push(ob);
       });
-      scene.updateMatrixWorld(true);
     }
     const y0 = o[1] - H / 2 - 0.3, tot = G.nx * G.nz;
-    for (let c = 0; c < 22 && S.hi < tot; c++, S.hi++) {
+    const tb = performance.now();
+    for (let c = 0; c < 60 && S.hi < tot && (c === 0 || performance.now() - tb < 2); c++, S.hi++) {
       const ix = S.hi % G.nx, iz = (S.hi / G.nx) | 0;
       const lx = G.x0 + ix * G.st, lz = G.z0 + iz * G.st;
       S.org.set(o[0] + lx * cs + lz * sn, y0, o[2] - lx * sn + lz * cs);
@@ -4917,7 +4926,7 @@ function ConfettiSim({ cfg: C, from: fromP, to: toP, getProgress, lite }) {
     const m = mref.current;
     if (!m) return;
     const prog = getProgress();
-    if (!S.ready) { if (prog >= fromP - 0.03) scan(m); return; }
+    if (!S.ready) { if (prog >= fromP - 0.12) scan(m); return; }
     const dt = Math.min(delta, 0.05);
     const want = Math.floor(N * Math.min(1, Math.max(0, (prog - fromP) / (toP - fromP))));
     if (want > S.n) {
@@ -4988,6 +4997,7 @@ function WarmUp() {
         hid.forEach((o) => { o.visible = false; });
         fc.forEach((o) => { o.frustumCulled = true; });
         off.forEach((o) => { o.visible = true; });
+        window.__wbWarmP = st.i / Math.max(1, st.top.length);
         if (st.i >= st.top.length) return fin();
       }
       raf = requestAnimationFrame(tick);
@@ -6113,12 +6123,27 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
     if (pre) pre.remove();
     const lock = (on) => { if (!contained) { document.documentElement.style.overflow = on ? "hidden" : ""; document.body.style.overflow = on ? "hidden" : ""; } };
     lock(true);
+    /* mientras carga no se puede scrollear (antes se podía adelantar poses con la rueda / el dedo) */
+    const stopEv = (e) => { e.preventDefault(); e.stopImmediatePropagation(); };
+    const stopKey = (e) => { if ([" ", "ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End"].includes(e.key)) stopEv(e); };
+    if (!contained) {
+      window.addEventListener("wheel", stopEv, { passive: false, capture: true });
+      window.addEventListener("touchmove", stopEv, { passive: false, capture: true });
+      window.addEventListener("keydown", stopKey, { capture: true });
+      try { window.__lenis && window.__lenis.stop(); } catch (e) { /* sin lenis */ }
+    }
+    const unlockScroll = () => {
+      window.removeEventListener("wheel", stopEv, { capture: true });
+      window.removeEventListener("touchmove", stopEv, { capture: true });
+      window.removeEventListener("keydown", stopKey, { capture: true });
+      if (!contained) { try { window.__lenis && window.__lenis.start(); } catch (e) { /* sin lenis */ } }
+    };
     ensureTextFont(cfg.font || "'Space Grotesk', sans-serif");
     const reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     const ctl = zoomRef.current ? ldrPrepare(zoomRef.current, cfg.svg, cfg.lineColor || "#ffffff", cfg.lineWidth || 1.4) : null;
     if (ctl) { ctl.setDraw(0); ctl.setZoom(1, 1); }
     let raf = 0, fontsOk = !!simulate, okSince = 0, finishAt = 0, exitStart = 0, shown = 0;
-    let last = performance.now();
+    let last = performance.now(), tmax = 0;
     const t0 = last;
     if (!simulate) {
       const fams = [];
@@ -6136,6 +6161,14 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       const el = now - t0, L = live.current;
       // progreso real de carga, pero sin avanzar más rápido que "duración mín." para que se llegue a ver la animación
       let target = simulate ? 100 : (L.total > 0 ? L.progress : Math.min(35, el / 80));
+      if (!simulate && L.total > 0) {
+        /* el 99% eterno: la barra ahora también cuenta el armado de los objetos 3D y el calentamiento de la GPU (60% descarga / 40% armado) */
+        const st0 = window.__wbStarted || 0;
+        const bf = window.__wbWarm ? 1 : (st0 > 0 ? (1 - (window.__wbPend || 0) / st0) * 0.5 : 0) + (window.__wbWarmP || 0) * 0.5;
+        target = target * 0.6 + 40 * Math.min(1, bf);
+        if (target > 99.5 && !(window.__wbWarm && L.progress >= 100)) target = 99.5;
+      }
+      tmax = Math.max(tmax, target); target = tmax;
       target = Math.min(target, (el / minMs) * 100);
       const loaded = simulate ? el >= minMs : (L.total > 0 ? L.progress >= 100 && !L.active : el > 3500);
       /* el logo no se va hasta que los objetos 3D (SVG extruidos) terminaron de armarse: antes aparecían recién después del loader */
@@ -6157,12 +6190,12 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
         if (bgRef.current) bgRef.current.style.opacity = String(1 - ldrClamp((x - 0.3) / 0.5));
         if (numRef.current) numRef.current.style.opacity = String(1 - ldrClamp(x / 0.2));
         if (rootRef.current && x > 0.8) rootRef.current.style.pointerEvents = "none";
-        if (x >= 1) { lock(false); setGone(true); if (onDone) onDone(); return; }
+        if (x >= 1) { lock(false); unlockScroll(); setGone(true); if (onDone) onDone(); return; }
       }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => { cancelAnimationFrame(raf); lock(false); };
+    return () => { cancelAnimationFrame(raf); lock(false); unlockScroll(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   if (gone) return null;
@@ -8278,12 +8311,27 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
     if (pre) pre.remove();
     const lock = (on) => { if (!contained) { document.documentElement.style.overflow = on ? "hidden" : ""; document.body.style.overflow = on ? "hidden" : ""; } };
     lock(true);
+    /* mientras carga no se puede scrollear (antes se podía adelantar poses con la rueda / el dedo) */
+    const stopEv = (e) => { e.preventDefault(); e.stopImmediatePropagation(); };
+    const stopKey = (e) => { if ([" ", "ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End"].includes(e.key)) stopEv(e); };
+    if (!contained) {
+      window.addEventListener("wheel", stopEv, { passive: false, capture: true });
+      window.addEventListener("touchmove", stopEv, { passive: false, capture: true });
+      window.addEventListener("keydown", stopKey, { capture: true });
+      try { window.__lenis && window.__lenis.stop(); } catch (e) { /* sin lenis */ }
+    }
+    const unlockScroll = () => {
+      window.removeEventListener("wheel", stopEv, { capture: true });
+      window.removeEventListener("touchmove", stopEv, { capture: true });
+      window.removeEventListener("keydown", stopKey, { capture: true });
+      if (!contained) { try { window.__lenis && window.__lenis.start(); } catch (e) { /* sin lenis */ } }
+    };
     ensureTextFont(cfg.font || "'Space Grotesk', sans-serif");
     const reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     const ctl = zoomRef.current ? ldrPrepare(zoomRef.current, cfg.svg, cfg.lineColor || "#ffffff", cfg.lineWidth || 1.4) : null;
     if (ctl) { ctl.setDraw(0); ctl.setZoom(1, 1); }
     let raf = 0, fontsOk = !!simulate, okSince = 0, finishAt = 0, exitStart = 0, shown = 0;
-    let last = performance.now();
+    let last = performance.now(), tmax = 0;
     const t0 = last;
     if (!simulate) {
       const fams = [];
@@ -8301,6 +8349,14 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       const el = now - t0, L = live.current;
       // progreso real de carga, pero sin avanzar más rápido que "duración mín." para que se llegue a ver la animación
       let target = simulate ? 100 : (L.total > 0 ? L.progress : Math.min(35, el / 80));
+      if (!simulate && L.total > 0) {
+        /* el 99% eterno: la barra ahora también cuenta el armado de los objetos 3D y el calentamiento de la GPU (60% descarga / 40% armado) */
+        const st0 = window.__wbStarted || 0;
+        const bf = window.__wbWarm ? 1 : (st0 > 0 ? (1 - (window.__wbPend || 0) / st0) * 0.5 : 0) + (window.__wbWarmP || 0) * 0.5;
+        target = target * 0.6 + 40 * Math.min(1, bf);
+        if (target > 99.5 && !(window.__wbWarm && L.progress >= 100)) target = 99.5;
+      }
+      tmax = Math.max(tmax, target); target = tmax;
       target = Math.min(target, (el / minMs) * 100);
       const loaded = simulate ? el >= minMs : (L.total > 0 ? L.progress >= 100 && !L.active : el > 3500);
       /* el logo no se va hasta que los objetos 3D (SVG extruidos) terminaron de armarse: antes aparecían recién después del loader */
@@ -8322,12 +8378,12 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
         if (bgRef.current) bgRef.current.style.opacity = String(1 - ldrClamp((x - 0.3) / 0.5));
         if (numRef.current) numRef.current.style.opacity = String(1 - ldrClamp(x / 0.2));
         if (rootRef.current && x > 0.8) rootRef.current.style.pointerEvents = "none";
-        if (x >= 1) { lock(false); setGone(true); if (onDone) onDone(); return; }
+        if (x >= 1) { lock(false); unlockScroll(); setGone(true); if (onDone) onDone(); return; }
       }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => { cancelAnimationFrame(raf); lock(false); };
+    return () => { cancelAnimationFrame(raf); lock(false); unlockScroll(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   if (gone) return null;
