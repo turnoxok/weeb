@@ -4910,7 +4910,7 @@ function ConfettiSim({ cfg: C, from: fromP, to: toP, getProgress, lite }) {
         if (!ob.geometry.boundingBox) ob.geometry.computeBoundingBox();
         bb.copy(ob.geometry.boundingBox).applyMatrix4(ob.matrixWorld);
         if (bb.max.x < gx0 || bb.min.x > gx1 || bb.max.z < gz0 || bb.min.z > gz1 || bb.max.y < gy) return;
-        S.meshes.push(ob);
+        S.meshes.push(ob); (S.bbs || (S.bbs = [])).push(bb.clone());
       });
     }
     const y0 = o[1] - H / 2 - 0.3, tot = G.nx * G.nz;
@@ -4920,7 +4920,10 @@ function ConfettiSim({ cfg: C, from: fromP, to: toP, getProgress, lite }) {
       const lx = G.x0 + ix * G.st, lz = G.z0 + iz * G.st;
       S.org.set(o[0] + lx * cs + lz * sn, y0, o[2] - lx * sn + lz * cs);
       S.rc.set(S.org, S.up); S.rc.far = 60;
-      const hits = S.rc.intersectObjects(S.meshes, false);
+      /* sólo se prueban los objetos cuya caja contiene esta columna (antes: todos, y los SVG pesados trababan la primera pasada) */
+      const px = S.org.x, pz = S.org.z, cand = [];
+      for (let q = 0; q < S.meshes.length; q++) { const b2 = S.bbs[q]; if (px >= b2.min.x && px <= b2.max.x && pz >= b2.min.z && pz <= b2.max.z) cand.push(S.meshes[q]); }
+      const hits = cand.length ? S.rc.intersectObjects(cand, false) : [];
       for (let h = 0; h < hits.length; h++) {
         const f = hits[h].face; if (!f) continue;
         S.nrm.copy(f.normal).transformDirection(hits[h].object.matrixWorld);
