@@ -4600,7 +4600,7 @@ function BalloonsBody({ data, fade }) {
     return new THREE.LatheGeometry(pts, 28);
   }, [R]);
   const knot = useMemo(() => new THREE.ConeGeometry(R * 0.14, R * 0.24, 10), [R]);
-  const mats = useMemo(() => cols.map((c) => { const m = new THREE.MeshPhysicalMaterial({ color: c, roughness: 0.32, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.12 }); patchFadeMaterial(m, fade); return m; }), [cols.join(","), fade]);
+  const mats = useMemo(() => cols.map((c) => { const m = new THREE.MeshStandardMaterial({ color: c, roughness: 0.92, metalness: 0 }); patchFadeMaterial(m, fade); return m; }), [cols.join(","), fade]);
   const strMat = useMemo(() => { const m = new THREE.MeshStandardMaterial({ color: "#f2f2f2", roughness: 0.8 }); patchFadeMaterial(m, fade); return m; }, [fade]);
   const items = useMemo(() => {
     const h = (k) => { const x = Math.sin(k * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
@@ -4648,8 +4648,8 @@ function PinwheelBody({ data, fade, getProgress }) {
     g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
     return g;
   }, []);
-  const mats = useMemo(() => cols.map((c) => { const m = new THREE.MeshPhysicalMaterial({ color: c, roughness: 0.35, metalness: 0, clearcoat: 0.6, clearcoatRoughness: 0.25, side: THREE.DoubleSide }); patchFadeMaterial(m, fade); return m; }), [cols.join(","), fade]);
-  const wood = useMemo(() => { const m = new THREE.MeshStandardMaterial({ color: "#c58f56", roughness: 0.6 }); patchFadeMaterial(m, fade); return m; }, [fade]);
+  const mats = useMemo(() => cols.map((c) => { const m = new THREE.MeshStandardMaterial({ color: c, roughness: 0.92, metalness: 0, side: THREE.DoubleSide }); patchFadeMaterial(m, fade); return m; }), [cols.join(","), fade]);
+  const wood = useMemo(() => { const m = new THREE.MeshStandardMaterial({ color: "#c58f56", roughness: 0.9 }); patchFadeMaterial(m, fade); return m; }, [fade]);
   const wheel = useRef(null);
   const st = useRef({ a: 0, p: null, boost: 0 });
   useFrame((_, delta) => {
@@ -10251,8 +10251,8 @@ function App() {
     if (type === "light") Object.assign(base, LIGHT_DEFAULTS);
     if (type === "smoke") Object.assign(base, SMOKE_DEFAULTS);
     if (type === "confetti") Object.assign(base, CONFETTI_DEFAULTS, { cfPos: [0, 5, -10] });
-    if (type === "pinwheel") Object.assign(base, { pwBlades: 8, pwSpeed: 1, pwBoost: 1, pwStick: 1.5, pwColors: PINWHEEL_COLORS });
-    if (type === "balloons") Object.assign(base, { bCount: 5, bSize: 0.32, bLen: 1.9, bSpread: 16, bSway: 1, bTail: 0.6, bColors: BALLOON_COLORS });
+    if (type === "pinwheel") Object.assign(base, { pwBlades: 8, pwSpeed: 1, pwBoost: 1, pwStick: 1.5, pwColors: PINWHEEL_COLORS, fixed: true });
+    if (type === "balloons") Object.assign(base, { bCount: 5, bSize: 0.32, bLen: 1.9, bSpread: 16, bSway: 1, bTail: 0.6, bColors: BALLOON_COLORS, fixed: true });
     if (type === "video") Object.assign(base, { loop: true, videoMode: "scroll", scrubFrom: 0, scrubTo: 100 });
     if (type === "shape") Object.assign(base, { shapeKind: "rect", shapeCap: "round", shapeCols: 8, shapeRows: 4 });
     if (type === "text") Object.assign(base, { text: "Texto", textEffect: "none", textColor: "#ffffff", fontFamily: "'Inter', sans-serif", fontWeight: 600, textAlign: "center", textOutline: false, textOutlineColor: "#000000", textGradient: { on: false, colors: ["#6ee7f9", "#a78bfa"], angle: 0 }, letterSpacing: 0, lineHeight: 1.2, wordStyles: {} });
@@ -10328,6 +10328,7 @@ function App() {
   };
   const updateObject = (id, patch) => setObjects((prev) => prev.map((o) => (o.id === id ? { ...o, ...patch } : o)));
   const setObjectTransform = (id, field, axis, value) => {
+    const fixedObj = !!(objects.find((q) => q.id === id) || {}).fixed && ["position", "scale", "rotationY", "rx", "rz"].includes(field);
     setObjectTransformsByKf((prev) => {
       const forObj = { ...prev[id] };
       const cur = { ...forObj[activeStage] };
@@ -10339,6 +10340,16 @@ function App() {
         cur[field] = value;
       }
       forObj[activeStage] = cur;
+      if (fixedObj) Object.keys(forObj).forEach((k) => { if (k !== activeStage) forObj[k] = { ...forObj[k], [field]: cur[field] }; });
+      return { ...prev, [id]: forObj };
+    });
+  };
+  const setObjectFixed = (id, on) => {
+    updateObject(id, { fixed: on });
+    if (!on) return;
+    setObjectTransformsByKf((prev) => {
+      const forObj = { ...prev[id] }, src = forObj[activeStage] || {};
+      Object.keys(forObj).forEach((k) => { forObj[k] = { ...forObj[k], position: [...(src.position || [0, 0, 0])], scale: src.scale ?? 1, rotationY: src.rotationY || 0, rx: src.rx || 0, rz: src.rz || 0 }; });
       return { ...prev, [id]: forObj };
     });
   };
@@ -11210,6 +11221,7 @@ function App() {
           <Vec3 label="Centro del molinete" value={t.position} onChange={(a2, v) => setObjectTransform(o.id, "position", a2, v)} />
           <Slider label="Escala" min={0.05} max={20} step={0.01} value={t.scale} onChange={(v) => setObjectTransform(o.id, "scale", null, v)} />
           <Slider label="Giro Y" min={-180} max={180} step={0.1} value={t.rotationY} onChange={(v) => setObjectTransform(o.id, "rotationY", null, v)} />
+          <Switch checked={!!o.fixed} onChange={(v) => setObjectFixed(o.id, v)} label="Mismo lugar en todas las poses (si lo mueves acá, se mueve en todas)" />
           <Switch checked={!!t.hidden} onChange={(v) => setObjectTransform(o.id, "hidden", null, v)} label="Oculto en esta pose (aparece / desaparece al pasar)" />
           <Slider label="Paletas" min={3} max={14} step={1} value={g("pwBlades", 8)} onChange={(v) => U("pwBlades", v)} />
           <Slider label="Giro en reposo" min={0} max={4} step={0.05} value={g("pwSpeed", 1)} onChange={(v) => U("pwSpeed", v)} />
@@ -11234,6 +11246,7 @@ function App() {
           <Vec3 label="Punto de atado" value={t.position} onChange={(a2, v) => setObjectTransform(o.id, "position", a2, v)} />
           <Slider label="Escala" min={0.05} max={20} step={0.01} value={t.scale} onChange={(v) => setObjectTransform(o.id, "scale", null, v)} />
           <Slider label="Giro Y" min={-180} max={180} step={0.1} value={t.rotationY} onChange={(v) => setObjectTransform(o.id, "rotationY", null, v)} />
+          <Switch checked={!!o.fixed} onChange={(v) => setObjectFixed(o.id, v)} label="Mismo lugar en todas las poses (si lo mueves acá, se mueve en todas)" />
           <Switch checked={!!t.hidden} onChange={(v) => setObjectTransform(o.id, "hidden", null, v)} label="Oculto en esta pose (aparece / desaparece al pasar)" />
           <Slider label="Cantidad de globos" min={1} max={12} step={1} value={g("bCount", 5)} onChange={(v) => U("bCount", v)} />
           <Slider label="Tamaño del globo" min={0.1} max={1} step={0.01} value={g("bSize", 0.32)} onChange={(v) => U("bSize", v)} />
