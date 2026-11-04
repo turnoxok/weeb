@@ -5037,7 +5037,7 @@ function WarmUp() {
   useFrame(() => { if (tickRef.current) tickRef.current(); });
   useEffect(() => {
     let done = false, queue = null, lastScan = 0, roll = null, cstate = 0; const t0 = performance.now();   // cstate: 0 = sin empezar, 1 = compilando, 2 = listo
-    const warmed = new WeakSet();
+    const warmed = new WeakSet(); let rtw = null;
     const fin = () => { if (done) return; done = true; window.__wbWarm = true; };
     const isDrawable = (o) => o.isMesh || o.isPoints || o.isLine;
     /* grupos de primer nivel que tienen alguna pieza que todavía no se dibujó nunca */
@@ -5067,6 +5067,13 @@ function WarmUp() {
         }));
         gl.shadowMap.needsUpdate = true;
         gl.render(scene, camera);
+        /* con postproceso/reflejo el sitio dibuja en un buffer aparte, y ahí three arma OTROS shaders (sin tono ni sRGB de pantalla):
+           si sólo se calienta contra la pantalla, esos shaders se compilan recién al scrollear (cortes de 150-250 ms). Se calientan acá también. */
+        if (!IS_PHONE) {
+          if (!rtw) rtw = new THREE.WebGLRenderTarget(64, 64, { type: THREE.HalfFloatType });
+          const prevRT = gl.getRenderTarget();
+          try { gl.setRenderTarget(rtw); gl.shadowMap.needsUpdate = true; gl.render(scene, camera); } finally { gl.setRenderTarget(prevRT); }
+        }
       } catch (e) { /* si falla, se sigue */ }
       hid.forEach((o) => { o.visible = false; });
       fc.forEach((o) => { o.frustumCulled = true; });
