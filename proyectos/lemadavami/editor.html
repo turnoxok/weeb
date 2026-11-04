@@ -545,7 +545,7 @@ import { createRoot } from "react-dom/client";
 import { create } from "zustand";
 import * as THREE from "three";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
-import { toCreasedNormals } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { toCreasedNormals, mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, Stars, useTexture, Billboard, useProgress, MeshReflectorMaterial, ContactShadows, PerformanceMonitor } from "@react-three/drei";
 import { EffectComposer, Bloom, ToneMapping, N8AO, SMAA, DepthOfField } from "@react-three/postprocessing";
@@ -4042,6 +4042,15 @@ function bevelExtrudeGeometry(shapes, depth, b, nSeg, curveSeg, H) {
   g.addGroup(0, nc, 0); g.addGroup(nc, ns, 1);
   return g;
 }
+/* Soldar vértices: las geometrías extruidas llegan "sin indexar" (3 vértices por triángulo). Se unen los vértices idénticos (misma posición, normal y UV),
+   sin cambiar nada de lo que se ve: menos memoria de video y menos trabajo de vértices por cuadro. */
+function weldParts(parts) {
+  parts.forEach((pt) =&gt; {
+    if (!pt.geo) return;
+    try { const m = mergeVertices(pt.geo, 1e-4); if (m &amp;&amp; m.index &amp;&amp; m.attributes.position.count &lt; pt.geo.attributes.position.count) { pt.geo.dispose(); pt.geo = m; } else if (m) m.dispose(); } catch (e) { /* queda sin soldar */ }
+  });
+  return parts;
+}
 function buildSvgExtrude(text, depthK, bevK, segK, lite, rev, arc) {
   const data = new SVGLoader().parse(text);
   const parts = [];
@@ -4081,6 +4090,7 @@ function buildSvgExtrude(text, depthK, bevK, segK, lite, rev, arc) {
       });
     });
     parts.length = 0; out.forEach((q) =&gt; parts.push(q));
+    weldParts(parts);
     return { parts, aspect: (box.max.x - box.min.x) / H, rev: true };
   }
   parts.forEach((pt) =&gt; {
@@ -4093,6 +4103,7 @@ function buildSvgExtrude(text, depthK, bevK, segK, lite, rev, arc) {
     g.scale(1 / H, 1 / H, 1 / H);
     if (own) { pt.geo = g; projectUVs(pt.geo, 1.6); } else { pt.geo = creaseSides(g); projectUVs(pt.geo, 1.6); g.dispose(); }
   });
+  weldParts(parts);
   return { parts, aspect: W / H };
 }
 function makeSvgMat(data, base, lite) {
@@ -4131,19 +4142,36 @@ function makeSvgMat(data, base, lite) {
   }
   return m;
 }
+/* Geometrías de SVG extruidos compartidas: todos los objetos con el mismo SVG y los mismos parámetros (ej.: las ~150 pelotas del pelotero) usan UNA sola
+   geometría en memoria y en la GPU en vez de una por objeto. Se ve exactamente igual; pesa y carga mucho menos. Se libera cuando nadie la usa. */
+const SVG_GEO = new Map();
+function acquireSvgGeo(key, make) {
+  let e = SVG_GEO.get(key);
+  if (!e) { e = { built: make(), refs: 0 }; SVG_GEO.set(key, e); }
+  e.refs++;
+  return e.built;
+}
+function releaseSvgGeo(key) {
+  const e = SVG_GEO.get(key);
+  if (!e) return;
+  if (--e.refs &lt;= 0) { e.built.parts.forEach((pt) =&gt; pt.geo.dispose()); SVG_GEO.delete(key); }
+}
 function SvgExtrudeBody({ url, data, fade, hasFade, shadows }) {
   const [built, setBuilt] = useState(null);
   const ext = data.ext || 0, bev = data.bev ?? 0.3, seg = data.seg || 0, rev = !!data.rev, arc = rev ? (data.revArc || 0) : 0;
   const lite = React.useContext(PerfCtx).tier &lt; 2;
   const gref = useRef(null);
+  const held = useRef(null);
+  useEffect(() =&gt; () =&gt; { if (held.current) { releaseSvgGeo(held.current); held.current = null; } }, []);
   useEffect(() =&gt; {
     let off = false;
     let tries = 0, timer = null;
+    const gkey = [url, ext, bev, seg, lite ? 1 : 0, rev ? 1 : 0, arc].join("|");
     window.__wbStarted = (window.__wbStarted || 0) + 1; window.__wbPend = (window.__wbPend || 0) + 1;
     let fin = false;
     const done = () =&gt; { if (fin) return; fin = true; requestAnimationFrame(() =&gt; requestAnimationFrame(() =&gt; { window.__wbPend = Math.max(0, (window.__wbPend || 1) - 1); })); };
     const load = () =&gt; {
-      fetchSvgText(url).then((t) =&gt; { if (off) return; done(); try { setBuilt((prev) =&gt; { if (prev) prev.parts.forEach((pt) =&gt; pt.geo.dispose()); return buildSvgExtrude(t, ext, bev, seg, lite, rev, arc); }); } catch (e) { console.warn("No se pudo extruir el SVG:", e &amp;&amp; e.message); } }).catch((e) =&gt; {
+      fetchSvgText(url).then((t) =&gt; { if (off) return; done(); try { const b2 = acquireSvgGeo(gkey, () =&gt; buildSvgExtrude(t, ext, bev, seg, lite, rev, arc)); const old = held.current; held.current = gkey; setBuilt(b2); if (old) releaseSvgGeo(old); } catch (e) { console.warn("No se pudo extruir el SVG:", e &amp;&amp; e.message); } }).catch((e) =&gt; {
         if (off) return;
         console.warn("SVG no disponible, reintentando:", e &amp;&amp; e.message);
         if (++tries &lt;= 6) timer = setTimeout(load, 2000 * tries); else done();
@@ -6709,7 +6737,7 @@ import { createRoot } from "react-dom/client";
 import { createPortal } from "react-dom";
 import * as THREE from "three";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
-import { toCreasedNormals } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { toCreasedNormals, mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, OrbitControls, Grid, useTexture, Billboard, Html, useProgress, MeshReflectorMaterial, ContactShadows } from "@react-three/drei";
 import { EffectComposer, Bloom, ToneMapping, N8AO, DepthOfField } from "@react-three/postprocessing";
@@ -7239,8 +7267,12 @@ function FadeGroup({ obj, fade, children }) {
 //@@use __svgTextCache
 //@@use fetchSvgText
 //@@use bevelExtrudeGeometry
+//@@use weldParts
 //@@use buildSvgExtrude
 //@@use makeSvgMat
+//@@use SVG_GEO
+//@@use acquireSvgGeo
+//@@use releaseSvgGeo
 //@@use SvgExtrudeBody
 //@@use isBallsUrl
 //@@use ballsLayout
