@@ -89,7 +89,7 @@ function pantallaLogin() {
   const f = h('form', { onsubmit: ev => { ev.preventDefault(); const d = datos(f), b = $('button', f); accion(b, async () => { const r = await llamar('login', { email: d.email, clave: d.clave }); S.token = r.token; S.user = r; localStorage.setItem('weeb_token', r.token); localStorage.setItem('weeb_email', d.email); await entrar(); }); } },
     campo('Mail', inp('email', { type: 'email', required: true, autocomplete: 'username', value: localStorage.getItem('weeb_email') || '' })),
     campo('Clave', inp('clave', { type: 'password', required: true, autocomplete: 'current-password' })), h('button', { class: 'btn block' }, 'Entrar'));
-  $app().replaceChildren(h('div', { class: 'login' }, logo(64), h('p', { class: 'sub' }, 'Entrá para gestionar tus reservas.'), f, firma()));
+  $app().replaceChildren(h('div', { class: 'login' }, logo(64), h('p', { class: 'sub' }, 'Entrá para gestionar tus reservas.'), f, h('button', { type: 'button', class: 'link', onclick: () => { const m = (datos(f).email || ''); window.open('https://wa.me/5493435020970?text=' + encodeURIComponent('Hola tuweeb, olvidé la clave del panel de ' + (S.pub.nombre || 'mi salón') + (m ? '. Mi mail: ' + m : '')), '_blank', 'noopener'); } }, '¿Olvidaste tu clave?'), h('a', { class: 'link', href: '../' }, '← Volver al sitio'), firma()));
 }
 function salir(vencida) { S.token = ''; S.user = null; localStorage.removeItem('weeb_token'); cerrar(true); if (vencida) toast('La sesión venció. Volvé a entrar.', 'err'); pantallaLogin(); }
 
@@ -104,11 +104,11 @@ function render() {
   const main = h('main', { class: 'wrap', id: 'vista' });
   const tabs = h('nav', { class: 'tabs' }, Object.entries(VISTAS).map(([k, [t]]) => h('button', { class: S.view === k ? 'on' : '', onclick: () => { S.view = k; render(); } }, svg(IC[k]), t)));
   $app().replaceChildren(
-    h('header', { class: 'top' }, logo(34), h('div', { class: 'name' }), h('button', { class: 'icon', title: 'Salir', 'aria-label': 'Salir', onclick: () => salir() }, '⎋')),
+    h('header', { class: 'top' }, h('button', { class: 'icon', title: 'Volver al sitio', 'aria-label': 'Volver al sitio', onclick: () => { location.href = '../'; } }, '←'), logo(34), h('div', { class: 'name' }), h('button', { class: 'icon', title: 'Salir', 'aria-label': 'Salir', onclick: () => salir() }, '⎋')),
     main, firma(), tabs);
   VISTAS[S.view][1](main);
 }
-const cargando = el => el.replaceChildren(h('p', { class: 'empty' }, h('span', { class: 'spin' })));
+const cargando = el => el.replaceChildren(h('p', { class: 'empty' }, h('img', { class: 'tw3d', src: 'tuweeb-icono.svg', alt: 'tuweeb' })));
 const fab = fn => h('button', { class: 'fab', 'aria-label': 'Nueva reserva', onclick: fn }, '+');
 
 /* ───── AGENDA ───── */
@@ -148,7 +148,7 @@ function diaSheet(f, ag) {
 
 /* ───── DETALLE DE RESERVA ───── */
 async function detalle(id) {
-  sheet('Reserva', h('p', { class: 'empty' }, h('span', { class: 'spin' })));
+  sheet('Reserva', h('p', { class: 'empty' }, h('img', { class: 'tw3d', src: 'tuweeb-icono.svg', alt: 'tuweeb' })));
   let d; try { d = await api('admin.reserva', { id }); } catch (e) { cerrar(); toast(e.message, 'err'); return; }
   const r = d.reserva, tel = r.telefono.replace(/\D/g, ''), pct = r.total ? Math.min(100, Math.round(r.pagado / r.total * 100)) : 0;
   const wa = tel ? 'https://wa.me/' + (tel.length <= 10 ? '54' + tel : tel) + '?text=' + encodeURIComponent(`Hola ${r.nombre.split(' ')[0]}! Te escribimos de ${S.pub.nombre} por tu reserva del ${flarga(r.fecha)} de ${r.inicio} a ${r.fin} hs.`) : '';
@@ -189,7 +189,7 @@ function editar(r) {
 }
 function moverUI(r) {
   const out = h('div', { class: 'slotbtns' }), fi = inp('nuevaFecha', { type: 'date', value: r.fecha });
-  const cargar = async () => { out.replaceChildren(h('span', { class: 'spin' })); try { const ag = await api('admin.agenda', { mes: mesDe(fi.value) }); const sl = (ag.dias[fi.value] || []).filter(s => s.estado === 'libre'); out.replaceChildren(...(sl.length ? sl.map(s => h('button', { type: 'button', onclick: e => { if (!confirm(`¿Mover la reserva al ${flarga(fi.value)} de ${s.inicio} a ${s.fin}?`)) return; accion(e.target, async () => { await api('admin.actualizarReserva', { id: r.id, fecha: fi.value, turnoId: s.turnoId }); toast('Reserva movida', 'ok'); await refrescar(); detalle(r.id); }); } }, `${s.inicio} a ${s.fin}`)) : [h('span', { class: 'muted small' }, 'No hay turnos libres ese día.')])); } catch (e) { out.replaceChildren(e.message); } };
+  const cargar = async () => { out.replaceChildren(h('img', { class: 'tw3d', src: 'tuweeb-icono.svg', alt: 'tuweeb' })); try { const ag = await api('admin.agenda', { mes: mesDe(fi.value) }); const sl = (ag.dias[fi.value] || []).filter(s => s.estado === 'libre'); out.replaceChildren(...(sl.length ? sl.map(s => h('button', { type: 'button', onclick: e => { if (!confirm(`¿Mover la reserva al ${flarga(fi.value)} de ${s.inicio} a ${s.fin}?`)) return; accion(e.target, async () => { await api('admin.actualizarReserva', { id: r.id, fecha: fi.value, turnoId: s.turnoId }); toast('Reserva movida', 'ok'); await refrescar(); detalle(r.id); }); } }, `${s.inicio} a ${s.fin}`)) : [h('span', { class: 'muted small' }, 'No hay turnos libres ese día.')])); } catch (e) { out.replaceChildren(e.message); } };
   fi.addEventListener('change', cargar); return h('div', null, campo('Nueva fecha', fi), out);
 }
 
@@ -206,7 +206,7 @@ function nuevaReserva(pre) {
     h('h3', { class: 'sec' }, '¿Ya pagó algo?'), h('div', { class: 'grid2' }, campo('Monto recibido', inp('pagoMonto', { type: 'number', placeholder: '0' })), campo('Medio', h('select', { name: 'pagoMetodo' }, h('option', { value: 'efectivo' }, 'Efectivo'), h('option', { value: 'transferencia' }, 'Transferencia'), h('option', { value: 'otro' }, 'Otro')))),
     h('button', { class: 'btn block' }, 'Guardar reserva'));
   const pintar = () => slotsEl.replaceChildren(...(st.slots.length ? st.slots.map(s => h('button', { type: 'button', class: st.turnoId === s.turnoId ? 'on' : '', onclick: () => { st.turnoId = s.turnoId; tot.value = s.precio; sen.value = s.sena; pintar(); } }, `${s.inicio} a ${s.fin}` + (S.salones.length > 1 ? ' · ' + salonDe(s.salonId) : ''))) : [h('span', { class: 'muted small' }, 'No hay turnos libres ese día. Probá con otra fecha o desbloqueá el turno.')]));
-  const cargar = async () => { slotsEl.replaceChildren(h('span', { class: 'spin' })); try { const ag = await api('admin.agenda', { mes: mesDe(fi.value) }); st.slots = (ag.dias[fi.value] || []).filter(s => s.estado === 'libre'); if (!st.slots.some(s => s.turnoId === st.turnoId)) st.turnoId = ''; else { const s = st.slots.find(s => s.turnoId === st.turnoId); tot.value = s.precio; sen.value = s.sena; } pintar(); } catch (e) { slotsEl.replaceChildren(e.message); } };
+  const cargar = async () => { slotsEl.replaceChildren(h('img', { class: 'tw3d', src: 'tuweeb-icono.svg', alt: 'tuweeb' })); try { const ag = await api('admin.agenda', { mes: mesDe(fi.value) }); st.slots = (ag.dias[fi.value] || []).filter(s => s.estado === 'libre'); if (!st.slots.some(s => s.turnoId === st.turnoId)) st.turnoId = ''; else { const s = st.slots.find(s => s.turnoId === st.turnoId); tot.value = s.precio; sen.value = s.sena; } pintar(); } catch (e) { slotsEl.replaceChildren(e.message); } };
   fi.addEventListener('change', cargar); cargar(); sheet('Nueva reserva', f);
 }
 

@@ -42,7 +42,7 @@ async function iniciar() {
 
 /* ───── 1. calendario y horarios ───── */
 async function calendario() {
-  pagina(1, h('h2', { class: 't' }, 'Elegí el día'), h('p', { class: 'empty' }, h('span', { class: 'spin' })));
+  pagina(1, h('h2', { class: 't' }, 'Elegí el día'), h('p', { class: 'empty' }, h('img', { class: 'tw3d', src: 'tuweeb-icono.svg', alt: 'tuweeb' })));
   let d; try { d = S.disp = await llamar('disponibilidad', { mes: S.mes }); } catch (e) { return pagina(1, h('div', { class: 'err' }, e.message)); }
   const [y, m] = S.mes.split('-').map(Number), n = new Date(y, m, 0).getDate(), off = (new Date(y, m - 1, 1).getDay() + 6) % 7;
   const ini = d.hoy.slice(0, 7), fin = d.hasta.slice(0, 7), cel = [...['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'].map(x => h('div', { class: 'dow' }, x)), ...Array(off).fill(0).map(() => h('div', { class: 'off' }))];
