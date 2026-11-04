@@ -4988,6 +4988,23 @@ function SceneObjectConfetti({ data }) {
 }
 /* Calienta la GPU detrás del loader: compila shaders y sube geometrías/texturas de TODO (incluso lo oculto por fade) una vez,
    así no hay tirones la primera vez que un objeto/luz aparece al scrollear. */
+/* PC: las sombras de las luces se recalculan una vez cada dos cuadros (en vez de cada cuadro). Las luces se mueven despacio, no se nota,
+   y se ahorra casi la mitad del trabajo de sombras. En celular no se toca nada. */
+function ShadowThrottle() {
+  const { gl } = useThree();
+  const n = useRef(0);
+  useEffect(() =&gt; {
+    if (IS_PHONE) return undefined;
+    gl.shadowMap.autoUpdate = false; gl.shadowMap.needsUpdate = true;
+    return () =&gt; { gl.shadowMap.autoUpdate = true; };
+  }, [gl]);
+  useFrame(() =&gt; {
+    if (IS_PHONE) return;
+    n.current++;
+    if (n.current % 2 === 0 || window.__wbWarm !== true) gl.shadowMap.needsUpdate = true;
+  });
+  return null;
+}
 function WarmUp() {
   const { gl, scene, camera } = useThree();
   const tickRef = useRef(null);
@@ -5016,6 +5033,7 @@ function WarmUp() {
       try {
         scene.children.forEach((c) =&gt; { if (!set.has(c) &amp;&amp; !c.isLight &amp;&amp; !c.isCamera &amp;&amp; c.visible) { off.push(c); c.visible = false; } });
         batch.forEach((c) =&gt; c.traverse((o) =&gt; { if (!o.visible) { hid.push(o); o.visible = true; } if (o.frustumCulled) { fc.push(o); o.frustumCulled = false; } }));
+        gl.shadowMap.needsUpdate = true;
         gl.render(scene, camera);
       } catch (e) { /* si falla, se sigue */ }
       hid.forEach((o) =&gt; { o.visible = false; });
@@ -5330,6 +5348,7 @@ function Experience({ device }) {
       &lt;Suspense fallback={null}&gt;
         &lt;SceneObjects /&gt;
         &lt;WarmUp /&gt;
+        &lt;ShadowThrottle /&gt;
         &lt;ObjectBoundary&gt;
           &lt;Suspense fallback={null}&gt;
             {CHARACTER_MODEL_URL ? &lt;AnimatedCharacter mouse={mouse} anchorRef={charAnchorRef} /&gt; : null}
