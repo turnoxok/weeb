@@ -947,7 +947,6 @@ const BACKTOP = {
 };
 const MENU = { "enabled": false };
 const FAB = { "enabled": false };
-const CONFETTI = { "enabled": false };
 /*@GEN:EXTRAS_END*/
 
 function damp(current, target, lambda, dt) {
@@ -4593,6 +4592,7 @@ function SceneObjectLight({ data }) {
 function SceneObject({ data }) {
   if (data.type === "light") return <SceneObjectLight data={data} />;
   if (data.type === "smoke") return <SceneObjectSmoke data={data} />;
+  if (data.type === "confetti") return <SceneObjectConfetti data={data} />;
   if (data.type === "shape") return <SceneObjectShape data={data} />;
   if (data.type === "text") return <SceneObjectText data={data} />;
   if (data.type === "video") return <SceneObjectVideo data={data} />;
@@ -4710,11 +4710,11 @@ function ConfettiSim({ cfg: C, from: fromP, to: toP, getProgress, lite }) {
   return <instancedMesh ref={mref} args={[geo, mat, N]} frustumCulled={false} />;
 }
 const getSmoothProgress = () => useScrollStore.getState().smoothProgress;
-function Confetti() {
-  const C = CONFETTI;
-  const f = C && scenes.find((x) => x.id === C.fromId), t = C && scenes.find((x) => x.id === C.toId);
-  if (!C || !C.enabled || !f || !t || t.progress <= f.progress) return null;
-  return <ConfettiSim cfg={C} from={f.progress} to={t.progress} lite={IS_TOUCH_DEVICE} getProgress={getSmoothProgress} />;
+function SceneObjectConfetti({ data }) {
+  const cfg = useMemo(() => ({ count: data.cfCount, size: data.cfSize, origin: data.cfPos, rotY: data.cfRotY, width: data.cfW, height: data.cfH, floorY: data.cfFloor, colors: data.cfColors }), [data]);
+  const f = scenes.find((x) => x.id === data.cfFrom), t = scenes.find((x) => x.id === data.cfTo);
+  if (!f || !t || t.progress <= f.progress) return null;
+  return <ConfettiSim cfg={cfg} from={f.progress} to={t.progress} lite={IS_TOUCH_DEVICE} getProgress={getSmoothProgress} />;
 }
 /* Calienta la GPU detrás del loader: compila shaders y sube geometrías/texturas de TODO (incluso lo oculto por fade) una vez,
    así no hay tirones la primera vez que un objeto/luz aparece al scrollear. */
@@ -4759,7 +4759,7 @@ function SceneObjects() {
   );
 }
 OBJECTS.forEach((obj) => {
-  if (obj.type === "text" || obj.type === "video" || obj.type === "light" || obj.type === "smoke") return; // texto y video no se precargan (el video se baja solo al montarse)
+  if (obj.type === "text" || obj.type === "video" || obj.type === "light" || obj.type === "smoke" || obj.type === "confetti") return; // texto y video no se precargan (el video se baja solo al montarse)
   if (obj.type === "image") { if (!isBallsUrl(obj.url)) useTexture.preload(obj.url); }
   else useGLTF.preload(obj.url);
 });
@@ -5014,7 +5014,6 @@ function Experience({ device }) {
       <Suspense fallback={null}>
         <SceneObjects />
         <WarmUp />
-        <Confetti />
         <ObjectBoundary>
           <Suspense fallback={null}>
             {CHARACTER_MODEL_URL ? <AnimatedCharacter mouse={mouse} anchorRef={charAnchorRef} /> : null}
@@ -7465,6 +7464,7 @@ function ObjectPreviewLight({ obj }) {
 }
 function ObjectPreview({ obj }) {
   const fade = useMemo(() => makeFadeUniforms(), []);
+  if (obj.type === "confetti") return <ObjectPreviewConfetti obj={obj} />;
   if (obj.type !== "text" && obj.type !== "shape" && obj.type !== "light" && obj.type !== "smoke" && !(obj.previewUrl || obj.url)) return null;
   if (obj.type === "light") return <ObjectPreviewLight obj={obj} />;
   if (obj.type === "smoke") return <ObjectPreviewSmoke obj={obj} />;
@@ -7647,12 +7647,13 @@ function ConfettiSim({ cfg: C, from: fromP, to: toP, getProgress, lite }) {
   });
   return <instancedMesh ref={mref} args={[geo, mat, N]} frustumCulled={false} />;
 }
-function ConfettiPreview({ cfg, stages, progress }) {
-  const pr = useRef(progress); pr.current = progress;
-  const gp = useMemo(() => () => pr.current, []);
-  const f = stages.find((x) => x.id === cfg.fromId), t = stages.find((x) => x.id === cfg.toId);
-  if (!cfg.enabled || !f || !t || t.progress <= f.progress) return null;
-  return <ConfettiSim key={JSON.stringify([cfg, f.progress, t.progress])} cfg={cfg} from={f.progress} to={t.progress} lite={false} getProgress={gp} />;
+const getCfProgress = () => (window.__cfEd ? window.__cfEd.progress : 0);
+function ObjectPreviewConfetti({ obj }) {
+  const cfg = useMemo(() => ({ count: obj.cfCount, size: obj.cfSize, origin: obj.cfPos, rotY: obj.cfRotY, width: obj.cfW, height: obj.cfH, floorY: obj.cfFloor, colors: obj.cfColors }), [obj.cfCount, obj.cfSize, JSON.stringify(obj.cfPos), obj.cfRotY, obj.cfW, obj.cfH, obj.cfFloor, JSON.stringify(obj.cfColors)]);
+  const st = (window.__cfEd && window.__cfEd.stages) || [];
+  const f = st.find((x) => x.id === obj.cfFrom), t = st.find((x) => x.id === obj.cfTo);
+  if (!f || !t || t.progress <= f.progress) return null;
+  return <ConfettiSim key={JSON.stringify([cfg, f.progress, t.progress])} cfg={cfg} from={f.progress} to={t.progress} lite={false} getProgress={getCfProgress} />;
 }
 function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate, movement, objects, showObjects, showGrid, fx, showFx, orbitRef, liveCameraRef, modelUrl, postFx, charScale, charCenterY, charAnchorRef, trail, reflection, markers, selectedObjectId, onSelectObject }) {
   const envOn = false;
@@ -8340,14 +8341,15 @@ const DEFAULT_PROGRESS_BAR = { enabled: true, color: "" };
 const DEFAULT_FAB = { enabled: false, position: "right", book: true, label: "Reservar", reservarUrl: "./reservar/", newTab: false, wa: true, waText: "Hola! Quiero consultar por una reserva.", map: true, color: "", showAfter: 0 };
 const DEFAULT_BACKTOP = { enabled: true, position: "right", style: "dark", size: 46, showAfter: 0.06, duration: 1.8, ring: true, color: "" };
 /* Bloque @GEN:EXTRAS de la plantilla: estela del mouse y barra de progreso lateral. */
-const DEFAULT_CONFETTI = { enabled: false, fromId: "", toId: "", count: 260, size: 0.2, origin: [0, 5, -10], rotY: 0, width: 10, height: 4, floorY: 0, colors: ["#FFB719", "#FF6A00", "#CB000F", "#A60064", "#9379D3", "#709749", "#0071CE"] };
+const CONFETTI_COLORS = ["#FFB719", "#FF6A00", "#CB000F", "#A60064", "#9379D3", "#709749", "#0071CE"];
+const CONFETTI_DEFAULTS = { cfFrom: "", cfTo: "", cfCount: 260, cfSize: 0.2, cfPos: [0, 5, -10], cfRotY: 0, cfW: 10, cfH: 4, cfFloor: 0, cfColors: CONFETTI_COLORS };
 const DEFAULT_MENU = MENU_DEFAULTS;
-function generateExtrasCode(cursor, progressBar, backTop, menu, stageProgress, fab, confetti) {
+function generateExtrasCode(cursor, progressBar, backTop, menu, stageProgress, fab) {
   const c = { ...DEFAULT_CURSOR, ...cursor }, p = { ...DEFAULT_PROGRESS_BAR, ...progressBar }, b = { ...DEFAULT_BACKTOP, ...backTop };
   const m0 = { ...DEFAULT_MENU, ...(menu || {}) };
   const sp = stageProgress || [0];
   const m = { ...m0, items: (m0.items || []).map((it) => ({ label: it.label || "", type: it.type === "pose" ? "pose" : it.type === "section" ? "section" : "url", href: it.href || "", newTab: !!it.newTab, ...(it.type === "section" ? { sec: it.sec || "" } : {}), ...(it.type === "pose" ? { pose: it.pose || 1, p: Math.round((sp[Math.min(sp.length - 1, Math.max(0, (it.pose || 1) - 1))] || 0) * 10000) / 10000 } : {}) })) };
-  return `const CURSOR = ${JSON.stringify(c, null, 2)};\nconst PROGRESS_BAR = ${JSON.stringify(p, null, 2)};\nconst BACKTOP = ${JSON.stringify(b, null, 2)};\nconst MENU = ${JSON.stringify(m, null, 2)};\nconst FAB = ${JSON.stringify({ ...DEFAULT_FAB, ...(fab || {}) }, null, 2)};\nconst CONFETTI = ${JSON.stringify({ ...DEFAULT_CONFETTI, ...(confetti || {}) }, null, 2)};`;
+  return `const CURSOR = ${JSON.stringify(c, null, 2)};\nconst PROGRESS_BAR = ${JSON.stringify(p, null, 2)};\nconst BACKTOP = ${JSON.stringify(b, null, 2)};\nconst MENU = ${JSON.stringify(m, null, 2)};\nconst FAB = ${JSON.stringify({ ...DEFAULT_FAB, ...(fab || {}) }, null, 2)};`;
 }
 const DEFAULT_LOADER = { enabled: true, svg: "", background: "#05070f", lineColor: "#ffffff", font: "'Space Grotesk', sans-serif", lineWidth: 1.4, minMs: 1800, showNumber: true };
 /* Bloques @GEN:LOADER y @GEN:LOADER_CSS de la plantilla: pantalla de carga con tu SVG y el contador 000 → 100. */
@@ -8418,7 +8420,7 @@ function reparentObject(objects, tfByKf, stages, id, parentId) {
 }
 function generateObjectsCode(objects, transformsByKf, stages, easings) {
   transformsByKf = composeGroups(objects, transformsByKf, stages);
-  objects = objects.filter((o) => o.type === "text" || o.type === "shape" || o.type === "light" || o.type === "smoke" || (o.url && o.url.trim()));
+  objects = objects.filter((o) => o.type === "text" || o.type === "shape" || o.type === "light" || o.type === "smoke" || o.type === "confetti" || (o.url && o.url.trim()));
   const fmtNum = (n) => (Math.abs(n) < 0.0001 ? 0 : Math.round(n * 1000) / 1000);
   const fmtVec = (v) => `[${v.map(fmtNum).join(", ")}]`;
   const esc = (s) => JSON.stringify(s == null ? "" : s);
@@ -8450,6 +8452,20 @@ function generateObjectsCode(objects, transformsByKf, stages, easings) {
     billboard: ${o.billboard ? "true" : "false"},
     float: ${fmtNum(o.float || 0)},
     floatSpeed: ${fmtNum(o.floatSpeed || 1)},
+    keyframes: [
+${kfLines}
+    ],
+  },`;
+    }
+    if (o.type === "confetti") {
+      return `  {
+    type: "confetti",
+    cfFrom: ${esc(o.cfFrom || "")}, cfTo: ${esc(o.cfTo || "")}, cfCount: ${fmtNum(o.cfCount ?? 260)}, cfSize: ${fmtNum(o.cfSize ?? 0.2)},
+    cfPos: ${fmtVec(o.cfPos || [0, 5, -10])}, cfRotY: ${fmtNum(o.cfRotY || 0)}, cfW: ${fmtNum(o.cfW ?? 10)}, cfH: ${fmtNum(o.cfH ?? 4)}, cfFloor: ${fmtNum(o.cfFloor ?? 0)},
+    cfColors: ${JSON.stringify(o.cfColors && o.cfColors.length ? o.cfColors : CONFETTI_COLORS)},
+    billboard: false,
+    float: 0,
+    floatSpeed: 1,
     keyframes: [
 ${kfLines}
     ],
@@ -9898,7 +9914,6 @@ function App() {
   const [cursor, setCursor] = useState(DEFAULT_CURSOR);
   const [progressBar, setProgressBar] = useState(DEFAULT_PROGRESS_BAR);
   const [backTop, setBackTop] = useState(DEFAULT_BACKTOP);
-  const [confetti, setConfetti] = useState(DEFAULT_CONFETTI);
   const [fab, setFab] = useState(DEFAULT_FAB);
   const setFabField = (field, value) => setFab((prev) => ({ ...prev, [field]: value }));
   const [menu, setMenu] = useState(DEFAULT_MENU);
@@ -9908,7 +9923,6 @@ function App() {
   const removeMenuItem = (i) => setMenu((prev) => ({ ...prev, items: prev.items.filter((_, k) => k !== i) }));
   const moveMenuItem = (i, d) => setMenu((prev) => { const a = [...prev.items]; const j = i + d; if (j < 0 || j >= a.length) return prev; [a[i], a[j]] = [a[j], a[i]]; return { ...prev, items: a }; });
   const setBackTopField = (field, value) => setBackTop((prev) => ({ ...prev, [field]: value }));
-  const setConfettiField = (field, value) => setConfetti((prev) => ({ ...prev, [field]: value }));
   const setCursorField = (field, value) => setCursor((prev) => ({ ...prev, [field]: value }));
   const setProgressField = (field, value) => setProgressBar((prev) => ({ ...prev, [field]: value }));
   const setLoaderField = (field, value) => setLoader((prev) => ({ ...prev, [field]: value }));
@@ -10161,7 +10175,7 @@ function App() {
       const miss = [];
       for (const o of objects) {
         const u = o.url || "";
-        if (!u || o.previewUrl || u.indexOf("balls:") === 0 || /^(blob:|data:)/.test(u) || ["text", "shape", "light", "smoke"].includes(o.type)) continue;
+        if (!u || o.previewUrl || u.indexOf("balls:") === 0 || /^(blob:|data:)/.test(u) || ["text", "shape", "light", "smoke", "confetti"].includes(o.type)) continue;
         let ok = fileCheckRef.current[u];
         if (ok === undefined) {
           try { const r = await fetch(new URL(u, window.location.href).href, { method: "HEAD", cache: "no-store" }); ok = r.ok; } catch (e) { ok = false; }
@@ -10184,9 +10198,10 @@ function App() {
     const newId = `obj-${Date.now()}`;
     const used = objects.map((o, k) => o.color || PALETTE[k % PALETTE.length]);
     const color = PALETTE.find((c) => !used.includes(c)) || PALETTE[objects.length % PALETTE.length];
-    const base = { id: newId, label: `${{ model: "Modelo", image: "Imagen", video: "Video", text: "Texto", shape: "Forma", light: "Luz", smoke: "Humo" }[type]} ${objects.length + 1}`, type, url: "", previewUrl: null, billboard: type !== "model" && type !== "light" && type !== "smoke", visible: true, color };
+    const base = { id: newId, label: `${{ model: "Modelo", image: "Imagen", video: "Video", text: "Texto", shape: "Forma", light: "Luz", smoke: "Humo", confetti: "Confeti" }[type]} ${objects.length + 1}`, type, url: "", previewUrl: null, billboard: type !== "model" && type !== "light" && type !== "smoke" && type !== "confetti", visible: true, color };
     if (type === "light") Object.assign(base, LIGHT_DEFAULTS);
     if (type === "smoke") Object.assign(base, SMOKE_DEFAULTS);
+    if (type === "confetti") Object.assign(base, CONFETTI_DEFAULTS, { cfPos: [0, 5, -10] });
     if (type === "video") Object.assign(base, { loop: true, videoMode: "scroll", scrubFrom: 0, scrubTo: 100 });
     if (type === "shape") Object.assign(base, { shapeKind: "rect", shapeCap: "round", shapeCols: 8, shapeRows: 4 });
     if (type === "text") Object.assign(base, { text: "Texto", textEffect: "none", textColor: "#ffffff", fontFamily: "'Inter', sans-serif", fontWeight: 600, textAlign: "center", textOutline: false, textOutlineColor: "#000000", textGradient: { on: false, colors: ["#6ee7f9", "#a78bfa"], angle: 0 }, letterSpacing: 0, lineHeight: 1.2, wordStyles: {} });
@@ -10657,7 +10672,7 @@ function App() {
   const sectionsCode = useMemo(() => generateSectionsCode(sections, site2d), [sections, site2d]);
   const loaderCode = useMemo(() => generateLoaderCode(loader), [loader]);
   const loaderCss = useMemo(() => generateLoaderCss(loader), [loader]);
-  const extrasCode = useMemo(() => generateExtrasCode(cursor, progressBar, backTop, menu, stagesComputed.map((st) => st.progress), { ...fab, phone: dock.whatsappPhone, address: dock.address, mapUrl: dock.mapUrl }, confetti), [cursor, progressBar, backTop, menu, stagesComputed, fab, dock, confetti]);
+  const extrasCode = useMemo(() => generateExtrasCode(cursor, progressBar, backTop, menu, stagesComputed.map((st) => st.progress), { ...fab, phone: dock.whatsappPhone, address: dock.address, mapUrl: dock.mapUrl }), [cursor, progressBar, backTop, menu, stagesComputed, fab, dock]);
 
   const copy = async (text, which) => {
     let ok = false;
@@ -10706,7 +10721,6 @@ function App() {
     cursor,
     progressBar,
     backTop,
-    confetti,
     fab,
     menu,
     sections,
@@ -10737,7 +10751,6 @@ function App() {
     setCursor({ ...DEFAULT_CURSOR, ...(p.cursor || {}) });
     setProgressBar({ ...DEFAULT_PROGRESS_BAR, ...(p.progressBar || {}) });
     setBackTop({ ...DEFAULT_BACKTOP, ...(p.backTop || {}) });
-    setConfetti({ ...DEFAULT_CONFETTI, ...(p.confetti || {}) });
     setFab({ ...DEFAULT_FAB, ...(p.fab || {}) });
     setMenu({ ...DEFAULT_MENU, ...(p.menu || {}), items: (p.menu && p.menu.items) || DEFAULT_MENU.items });
     setBrandColorsState(Array.isArray(p.brandColors) && p.brandColors.length ? p.brandColors : DEFAULT_BRAND);
@@ -11062,6 +11075,7 @@ function App() {
     setObjects([]); setObjectTransformsByKf({}); setSelectedObj(null);
     setActiveStage(st[0].id); setScrub(0); setIsPlaying(false);
   };
+  window.__cfEd = { stages: stagesComputed, progress: isPreview ? scrub : ((stagesComputed[stageIndex] || {}).progress || 0) };
   const TABS = [
     ["cfg", "cfg", "Escena"], ["look", "look", "Look"], ["pose", "pose", "Personaje"], ["camera", "cam", "Cámara"],
     ["timing", "time", "Tiempo"], ["objects", "cube", "Objetos"], ["pages", "page", "Páginas"], ["seo", "search", "SEO"], ["preview", "play", "Preview"], ["file", "file", "Archivo"],
@@ -11091,7 +11105,7 @@ function App() {
     }
     viewObjects = renderObjects.filter((o) => {
       if (selObj && o.id === selObj.id) return true;
-      if (o.type === "light") return true;
+      if (o.type === "light" || o.type === "confetti") return true;
       if (groupIds && !groupIds.has(o.id)) return false;
       if (!showGhosts && !sampled && o.editGhost) return false;
       return true;
@@ -11135,6 +11149,27 @@ function App() {
         <Seg value={o.type || "model"} onChange={(v) => setObjectType(o.id, v)} options={[["model", "Modelo"], ["image", "Imagen / SVG"], ["video", "Video"], ["text", "Texto"], ["shape", "Forma"], ["light", "Luz"], ["smoke", "Humo"]]} />
       </>
     );
+    if (o.type === "confetti") {
+      const U = (k, v) => updateObject(o.id, { [k]: v });
+      const g = (k, d) => (o[k] ?? d);
+      const pos = g("cfPos", [0, 5, -10]);
+      const stOpts = [["", "—"], ...stagesComputed.map((s) => [s.id, s.label])];
+      return (
+        <div className="oed" style={{ "--oc": c }}>
+          {head}
+          <SelectRow label="Empieza en la pose" value={g("cfFrom", "")} onChange={(v) => U("cfFrom", v)} options={stOpts} />
+          <SelectRow label="Hasta la pose" value={g("cfTo", "")} onChange={(v) => U("cfTo", v)} options={stOpts} />
+          <Slider label="Cantidad" min={40} max={600} step={10} value={g("cfCount", 260)} onChange={(v) => U("cfCount", v)} />
+          <Slider label="Tamaño" min={0.05} max={0.6} step={0.01} value={g("cfSize", 0.2)} onChange={(v) => U("cfSize", v)} />
+          <Vec3 label="Sale desde (centro del cartel)" value={pos} onChange={(a, v) => U("cfPos", pos.map((x, i) => (i === "xyz".indexOf(a) ? v : x)))} />
+          <Slider label="Ancho del cartel" min={1} max={30} step={0.1} value={g("cfW", 10)} onChange={(v) => U("cfW", v)} />
+          <Slider label="Alto del cartel" min={0.5} max={12} step={0.1} value={g("cfH", 4)} onChange={(v) => U("cfH", v)} />
+          <Slider label="Giro Y del cartel" min={-180} max={180} step={0.1} value={g("cfRotY", 0)} onChange={(v) => U("cfRotY", v)} />
+          <Slider label="Piso (si no lo detecta)" min={-10} max={15} step={0.05} value={g("cfFloor", 0)} onChange={(v) => U("cfFloor", v)} />
+          <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Papelitos de los colores de la marca que salen de atrás del cartel mientras se scrollea entre las dos poses y quedan en el piso. El piso se detecta solo. Se ve en el visor al pararte en la pose «hasta» o al previsualizar.</div>
+        </div>
+      );
+    }
     if (isSmoke) {
       const d0 = defaultSmokeParams(), sp = (k) => (t.sm && t.sm[k] != null ? t.sm[k] : d0[k]), set = (k) => (v) => setObjectSmoke(o.id, k, v), U = (k, v) => updateObject(o.id, { [k]: v });
       const g = (k, dflt) => (o[k] ?? dflt);
@@ -11394,7 +11429,7 @@ function App() {
         {!isLight && !isSmoke && objects.length > 1 && (() => {
           const desc = new Set([o.id]); let grew = true;
           while (grew) { grew = false; objects.forEach((q) => { if (q.parent && desc.has(q.parent) && !desc.has(q.id)) { desc.add(q.id); grew = true; } }); }
-          const opts = [["", "— ninguna (va sola) —"], ...objects.filter((q) => !desc.has(q.id) && q.type !== "light" && q.type !== "smoke").map((q) => [q.id, q.label])];
+          const opts = [["", "— ninguna (va sola) —"], ...objects.filter((q) => !desc.has(q.id) && q.type !== "light" && q.type !== "smoke" && q.type !== "confetti").map((q) => [q.id, q.label])];
           const kids = objects.filter((q) => q.parent === o.id);
           return (
             <>
@@ -11502,7 +11537,6 @@ function App() {
         <Canvas key={canvasKey} onCreated={onCanvasCreated} shadows="soft" camera={{ position: [0, 0.3, 3.5], fov: 35, near: Math.min(2, Math.max(0.01, +postFx.camNear || 0.1)) }} dpr={exporting ? 1 : [1, 1.5]} gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}>
           <Scene pose={currentPose} onBonesFound={setFoundMap} cameraTarget={currentCamTarget} sceneCameraActive={sceneCameraActive} autoRotate={!exporting && autoRotate} movement={currentMovement} objects={exporting ? renderObjects : viewObjects} showObjects={exporting || showObjects} showGrid={!exporting && showGrid} fx={renderFx} showFx={exporting || showFx} orbitRef={orbitRef} liveCameraRef={liveCameraRef} modelUrl={modelUrl} postFx={postFx} charScale={charScale} charCenterY={charCenterY} charAnchorRef={charAnchorRef} trail={trail} reflection={reflection}
             markers={!exporting && section === "objects" && showObjects && labelMode !== "none" ? markers : (!exporting && section === "objects" && showObjects && selObj ? markers.filter((m) => m.id === selObj.id) : null)} selectedObjectId={selectedObj} onSelectObject={setSelectedObj} />
-          {!exporting && section !== "pages" && confetti.enabled && <ConfettiPreview cfg={confetti} stages={stagesComputed} progress={isPreview ? scrub : ((stagesComputed[stageIndex] || {}).progress || 0)} />}
           <CamNearSync near={Math.min(2, Math.max(0.01, +postFx.camNear || 0.1))} />
           {!exporting && <LoadMeterProbe />}
           <VideoExportBridge tag={exportT} bridgeRef={vidBridge} />
@@ -11644,18 +11678,6 @@ function App() {
                     {backTop.color && <button className="mini" onClick={() => setBackTopField("color", "")}>Quitar</button>}
                   </div>
                   <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Aparece en el sitio al avanzar el scroll y vuelve al principio con inercia. Con el vidrio oscuro o claro se ve bien sobre cualquier fondo; queda abajo, a un costado o al centro. No se ve en el visor, probalo en el sitio exportado.</div>
-                </Group>
-                <Group id="confetti" title="Confeti" defaultOpen={false} toggle={{ checked: confetti.enabled, onChange: (v) => setConfettiField("enabled", v) }}>
-                  <SelectRow label="Empieza en la pose" value={confetti.fromId} onChange={(v) => setConfettiField("fromId", v)} options={[["", "—"], ...stagesComputed.map((s) => [s.id, s.label])]} />
-                  <SelectRow label="Hasta la pose" value={confetti.toId} onChange={(v) => setConfettiField("toId", v)} options={[["", "—"], ...stagesComputed.map((s) => [s.id, s.label])]} />
-                  <Slider label="Cantidad" min={40} max={600} step={10} value={confetti.count} onChange={(v) => setConfettiField("count", v)} />
-                  <Slider label="Tamaño" min={0.05} max={0.6} step={0.01} value={confetti.size} onChange={(v) => setConfettiField("size", v)} />
-                  <Vec3 label="Sale desde (centro del cartel)" value={confetti.origin} onChange={(a, v) => setConfettiField("origin", confetti.origin.map((x, i) => (i === "xyz".indexOf(a) ? v : x)))} />
-                  <Slider label="Ancho del cartel" min={1} max={30} step={0.1} value={confetti.width} onChange={(v) => setConfettiField("width", v)} />
-                  <Slider label="Alto del cartel" min={0.5} max={12} step={0.1} value={confetti.height} onChange={(v) => setConfettiField("height", v)} />
-                  <Slider label="Giro Y del cartel" min={-180} max={180} step={0.1} value={confetti.rotY} onChange={(v) => setConfettiField("rotY", v)} />
-                  <Slider label="Piso (si no lo detecta)" min={-10} max={15} step={0.05} value={confetti.floorY} onChange={(v) => setConfettiField("floorY", v)} />
-                  <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Papelitos de los colores de la marca que salen de atrás del cartel mientras se scrollea entre las dos poses y quedan en el piso. El piso se detecta solo. En el editor se ven al pararte en la pose «hasta» o al previsualizar.</div>
                 </Group>
                 <Group id="logo" title="Logo flotante" defaultOpen={false} toggle={{ checked: !!menu.logoUrl, onChange: (v) => setMenuField("logoUrl", v ? (menu.logoUrl || "./assets/img/logo.png") : "") }}>
                   <S2DField f={["logoUrl", "Imagen (PNG/SVG)", "img"]} s={menu} set={(patch) => setMenu((prev) => ({ ...prev, ...patch }))} toast={showMsg} />
@@ -11988,6 +12010,7 @@ function App() {
                   <Btn icon="shape" onClick={() => addObject("shape")}>Forma</Btn>
                   <Btn icon="light" onClick={() => addObject("light")}>Luz</Btn>
                   <Btn icon="smoke" onClick={() => addObject("smoke")}>Humo</Btn>
+                  <Btn icon="shape" onClick={() => addObject("confetti")}>Confeti</Btn>
                   <Btn icon="shape" onClick={addBalls}>Pelotas</Btn>
                   <span className="grow" />
                   <IBtn icon="copy" title="Todos desde la pose anterior" disabled={stageIndex <= 0 || !objects.length} onClick={copyAllObjectTransformsFromPrev} />
@@ -12003,7 +12026,7 @@ function App() {
                 <div className="outliner">
                   {objects.map((o, i) => (hiddenByGroup(o) && !objSearch.trim() && !(selObj && selObj.id === o.id)) || (objOnlyVisible && !isVisibleHere(o) && !(selObj && selObj.id === o.id)) || (objSearch.trim() && !String(o.label).toLowerCase().includes(objSearch.trim().toLowerCase()) && !(selObj && selObj.id === o.id)) ? null : (
                     <div key={o.id} className={`orow ${selObj && selObj.id === o.id ? "sel" : ""} ${o.visible && !(objectTransformsByKf[o.id] && objectTransformsByKf[o.id][activeStage] && objectTransformsByKf[o.id][activeStage].hidden) ? "" : "off"}`} style={{ "--oc": colorOf(o, i) }} onClick={() => setSelectedObj(o.id)}>
-                      <span className="oico"><Icon name={o.type === "text" ? "text" : o.type === "shape" ? "shape" : o.type === "light" ? "light" : o.type === "smoke" ? "smoke" : o.type === "image" ? "image" : o.type === "video" ? "video" : "cube"} size={15} /></span>
+                      <span className="oico"><Icon name={o.type === "text" ? "text" : o.type === "shape" ? "shape" : o.type === "light" ? "light" : o.type === "smoke" ? "smoke" : o.type === "confetti" ? "shape" : o.type === "image" ? "image" : o.type === "video" ? "video" : "cube"} size={15} /></span>
                       {objects.some((q) => q.parent === o.id) && <button className="mini" title="Plegar / desplegar el grupo" onClick={(e) => { e.stopPropagation(); setOpenGroups((g) => { const n = new Set(g); if (n.has(o.id)) n.delete(o.id); else n.add(o.id); return n; }); }}>{openGroups.has(o.id) ? "▾" : "▸"}</button>}
                       <span className="oname">{o.parent && objects.some((q) => q.id === o.parent) ? "↳ " : ""}{o.label}{objects.some((q) => q.parent === o.id) ? " ⛓ " + objects.filter((q) => q.parent === o.id).length : ""}{missingFiles.some((m) => m.id === o.id) ? " ⚠" : ""}</span>
                       <button className="mini" title="Visible" onClick={(e) => { e.stopPropagation(); updateObject(o.id, { visible: !o.visible }); }}><Icon name={o.visible ? "eye" : "eyeoff"} size={14} /></button>
