@@ -4158,6 +4158,19 @@ function releaseSvgGeo(key) {
   if (!e) return;
   if (--e.refs <= 0) { e.built.parts.forEach((pt) => pt.geo.dispose()); SVG_GEO.delete(key); }
 }
+/* Cola de armado de geometrías: en vez de armar todos los SVG juntos (y congelar la pantalla / el loader), se arman de a pocos por cuadro, con un presupuesto de tiempo. */
+const SVG_Q = { jobs: [], on: false };
+function svgSchedule(job) {
+  SVG_Q.jobs.push(job);
+  if (SVG_Q.on) return;
+  SVG_Q.on = true;
+  const pump = () => {
+    const t0 = performance.now();
+    while (SVG_Q.jobs.length && performance.now() - t0 < 7) { const j = SVG_Q.jobs.shift(); try { j(); } catch (e) { /* un SVG con error no frena al resto */ } }
+    if (SVG_Q.jobs.length) requestAnimationFrame(pump); else SVG_Q.on = false;
+  };
+  requestAnimationFrame(pump);
+}
 function SvgExtrudeBody({ url, data, fade, hasFade, shadows }) {
   const [built, setBuilt] = useState(null);
   const ext = data.ext || 0, bev = data.bev ?? 0.3, seg = data.seg || 0, rev = !!data.rev, arc = rev ? (data.revArc || 0) : 0;
@@ -4173,7 +4186,7 @@ function SvgExtrudeBody({ url, data, fade, hasFade, shadows }) {
     let fin = false;
     const done = () => { if (fin) return; fin = true; requestAnimationFrame(() => requestAnimationFrame(() => { window.__wbPend = Math.max(0, (window.__wbPend || 1) - 1); })); };
     const load = () => {
-      fetchSvgText(url).then((t) => { if (off) return; done(); try { const b2 = acquireSvgGeo(gkey, () => buildSvgExtrude(t, ext, bev, seg, lite, rev, arc)); const old = held.current; held.current = gkey; setBuilt(b2); if (old) releaseSvgGeo(old); } catch (e) { console.warn("No se pudo extruir el SVG:", e && e.message); } }).catch((e) => {
+      fetchSvgText(url).then((t) => { if (off) return; svgSchedule(() => { if (off) { done(); return; } done(); try { const b2 = acquireSvgGeo(gkey, () => buildSvgExtrude(t, ext, bev, seg, lite, rev, arc)); const old = held.current; held.current = gkey; setBuilt(b2); if (old) releaseSvgGeo(old); } catch (e) { console.warn("No se pudo extruir el SVG:", e && e.message); } }); }).catch((e) => {
         if (off) return;
         console.warn("SVG no disponible, reintentando:", e && e.message);
         if (++tries <= 6) timer = setTimeout(load, 2000 * tries); else done();
@@ -4952,22 +4965,30 @@ function SceneObjectConfetti({ data }) {
 function WarmUp() {
   const { gl, scene, camera } = useThree();
   useEffect(() => {
-    let done = false, raf = 0; const t0 = performance.now();
+    let done = false, raf = 0, st = null; const t0 = performance.now();
     const fin = () => { if (done) return; done = true; window.__wbWarm = true; };
     const tick = () => {
       if (done) return;
       const el = performance.now() - t0;
       if (el > 12000) return fin();
       if ((window.__wbStarted || 0) > 0 && (window.__wbPend || 0) === 0 && el > 800) {
-        const hid = [], fc = [];
+        /* calentamiento repartido: de a un grupo de objetos por cuadro (antes era todo en un solo cuadro y congelaba el loader) */
+        if (!st) {
+          st = { top: scene.children.filter((c) => !c.isLight && !c.isCamera), i: 0 };
+        }
+        const t1 = performance.now();
+        const hid = [], fc = [], off = [];
         try {
-          scene.traverse((o) => { if (!o.visible) { hid.push(o); o.visible = true; } if (o.frustumCulled) { fc.push(o); o.frustumCulled = false; } });
-          gl.compile(scene, camera);
+          const batch = new Set();
+          while (st.i < st.top.length && (batch.size === 0 || performance.now() - t1 < 4) && batch.size < 6) batch.add(st.top[st.i++]);
+          st.top.forEach((c) => { if (!batch.has(c)) { if (c.visible) { off.push(c); c.visible = false; } } });
+          batch.forEach((c) => c.traverse((o) => { if (!o.visible) { hid.push(o); o.visible = true; } if (o.frustumCulled) { fc.push(o); o.frustumCulled = false; } }));
           gl.render(scene, camera);
         } catch (e) {}
         hid.forEach((o) => { o.visible = false; });
         fc.forEach((o) => { o.frustumCulled = true; });
-        return fin();
+        off.forEach((o) => { o.visible = true; });
+        if (st.i >= st.top.length) return fin();
       }
       raf = requestAnimationFrame(tick);
     };
@@ -7275,6 +7296,7 @@ function FadeGroup({ obj, fade, children }) {
 //@@use SVG_GEO
 //@@use acquireSvgGeo
 //@@use releaseSvgGeo
+//@@use svgSchedule
 //@@use SvgExtrudeBody
 //@@use isBallsUrl
 //@@use ballsLayout
@@ -11351,7 +11373,7 @@ function App() {
   const markers = viewObjects
     .map((o) => ({ o, i: renderObjects.indexOf(o) }))
     .filter(({ o }) => labelMode === "all" || (labelMode === "visible" && !o.hidden && o.visible) || (selObj && o.id === selObj.id))
-    .map(({ o, i }) => ({ id: o.id, label: o.label, color: colorOf(o, i), position: o.position, visible: o.visible, hidden: !!o.hidden }));
+    .map(({ o, i }) => ({ id: o.id, label: o.label, color: colorOf(o, i), position: o.type === "confetti" && o.cfPos ? o.cfPos : o.position, visible: o.visible, hidden: !!o.hidden }));
   const toast = msgToast ? msgToast : projectLoaded ? "Proyecto cargado" : downloaded ? "index.html descargado" : copiedWhich === "editor" ? "Editor copiado: pegalo en el archivo del repo" : copiedWhich ? "Copiado" : null;
   const fileName = (projectName || "proyecto").trim().replace(/[^a-zA-Z0-9._-]+/g, "_") || "proyecto";
 
