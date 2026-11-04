@@ -4587,10 +4587,53 @@ function SceneObjectLight({ data }) {
   if (data.lightKind === "point") return &lt;pointLight ref={ref} {...common} castShadow={shadow} /&gt;;
   return &lt;spotLight ref={ref} {...common} angle={Math.min(1.5, Math.max(0.05, ((data.lightAngle ?? 35) * Math.PI) / 180))} penumbra={data.lightPenumbra ?? 0.5} castShadow={shadow} shadow-mapSize={phoneSh ? [512, 512] : [1024, 1024]} shadow-bias={-0.0004} shadow-normalBias={0.02} /&gt;;
 }
+/* Globos con helio: manojo de globos (colores de la marca) atados en un punto con hilo; se mecen suave. El punto de atado es el origen del objeto. */
+function BalloonsBody({ data, fade }) {
+  const n = Math.max(1, Math.min(12, Math.round(data.bCount ?? 5)));
+  const R = data.bSize ?? 0.32, L = data.bLen ?? 1.9, spread = ((data.bSpread ?? 16) * Math.PI) / 180, sway = data.bSway ?? 1, tail = data.bTail ?? 0.6;
+  const cols = data.bColors &amp;&amp; data.bColors.length ? data.bColors : ["#FFB719", "#FF6A00", "#CB000F", "#A60064", "#9379D3", "#709749", "#0071CE"];
+  const geo = useMemo(() =&gt; {
+    const pts = [];
+    for (let i = 0; i &lt;= 26; i++) { const a = (i / 26) * Math.PI; pts.push(new THREE.Vector2(Math.max(0.0001, R * Math.sin(a) * (1 - 0.13 * Math.cos(a))), -R * 1.2 * Math.cos(a))); }
+    return new THREE.LatheGeometry(pts, 28);
+  }, [R]);
+  const knot = useMemo(() =&gt; new THREE.ConeGeometry(R * 0.14, R * 0.24, 10), [R]);
+  const mats = useMemo(() =&gt; cols.map((c) =&gt; { const m = new THREE.MeshPhysicalMaterial({ color: c, roughness: 0.32, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.12 }); patchFadeMaterial(m, fade); return m; }), [cols.join(","), fade]);
+  const strMat = useMemo(() =&gt; { const m = new THREE.MeshStandardMaterial({ color: "#f2f2f2", roughness: 0.8 }); patchFadeMaterial(m, fade); return m; }, [fade]);
+  const items = useMemo(() =&gt; {
+    const h = (k) =&gt; { const x = Math.sin(k * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+    return Array.from({ length: n }, (_, i) =&gt; ({ az: n === 1 ? 0 : (i / n) * Math.PI * 2 + h(i + 1) * 0.5, tilt: i === 0 &amp;&amp; n &gt; 2 ? 0 : spread * (0.55 + 0.45 * h(i + 7)), len: L * (0.8 + 0.3 * h(i + 13)), ph: h(i + 21) * 6.28, mi: i % mats.length }));
+  }, [n, spread, L, mats.length]);
+  const refs = useRef([]);
+  useFrame((state) =&gt; {
+    const t = state.clock.elapsedTime;
+    items.forEach((it, i) =&gt; { const g = refs.current[i]; if (!g) return; g.rotation.z = it.tilt + Math.sin(t * 0.9 + it.ph) * 0.055 * sway; g.rotation.x = Math.cos(t * 0.7 + it.ph) * 0.05 * sway; });
+  });
+  return (
+    &lt;group&gt;
+      &lt;mesh castShadow material={strMat} position={[0, -tail / 2, 0]}&gt;&lt;cylinderGeometry args={[0.011, 0.011, tail, 5]} /&gt;&lt;/mesh&gt;
+      &lt;mesh material={strMat}&gt;&lt;sphereGeometry args={[0.03, 10, 8]} /&gt;&lt;/mesh&gt;
+      {items.map((it, i) =&gt; (
+        &lt;group key={i} rotation={[0, it.az, 0]}&gt;
+          &lt;group ref={(el) =&gt; { refs.current[i] = el; }} rotation={[0, 0, it.tilt]}&gt;
+            &lt;mesh material={strMat} position={[0, it.len / 2, 0]}&gt;&lt;cylinderGeometry args={[0.008, 0.008, it.len, 5]} /&gt;&lt;/mesh&gt;
+            &lt;mesh geometry={knot} material={mats[it.mi]} position={[0, it.len - R * 0.05, 0]} rotation={[Math.PI, 0, 0]} /&gt;
+            &lt;mesh geometry={geo} material={mats[it.mi]} position={[0, it.len + R * 1.2, 0]} castShadow /&gt;
+          &lt;/group&gt;
+        &lt;/group&gt;
+      ))}
+    &lt;/group&gt;
+  );
+}
+function SceneObjectBalloons({ data }) {
+  const { groupRef, fade } = useObjectTransformRef(data.keyframes, false, false, data);
+  return &lt;group ref={groupRef}&gt;&lt;BalloonsBody data={data} fade={fade} /&gt;&lt;/group&gt;;
+}
 function SceneObject({ data }) {
   if (data.type === "light") return &lt;SceneObjectLight data={data} /&gt;;
   if (data.type === "smoke") return &lt;SceneObjectSmoke data={data} /&gt;;
   if (data.type === "confetti") return &lt;SceneObjectConfetti data={data} /&gt;;
+  if (data.type === "balloons") return &lt;SceneObjectBalloons data={data} /&gt;;
   if (data.type === "shape") return &lt;SceneObjectShape data={data} /&gt;;
   if (data.type === "text") return &lt;SceneObjectText data={data} /&gt;;
   if (data.type === "video") return &lt;SceneObjectVideo data={data} /&gt;;
@@ -4757,7 +4800,7 @@ function SceneObjects() {
   );
 }
 OBJECTS.forEach((obj) =&gt; {
-  if (obj.type === "text" || obj.type === "video" || obj.type === "light" || obj.type === "smoke" || obj.type === "confetti") return; // texto y video no se precargan (el video se baja solo al montarse)
+  if (obj.type === "text" || obj.type === "video" || obj.type === "light" || obj.type === "smoke" || obj.type === "confetti" || obj.type === "balloons") return; // texto y video no se precargan (el video se baja solo al montarse)
   if (obj.type === "image") { if (!isBallsUrl(obj.url)) useTexture.preload(obj.url); }
   else useGLTF.preload(obj.url);
 });
@@ -7395,6 +7438,15 @@ function ObjectPreviewShape({ obj, fade }) {
     ? <Billboard position={obj.position}>{mesh}</Billboard>
     : <group position={obj.position} rotation={[0, (obj.rotationY * Math.PI) / 180, 0]}>{mesh}</group>;
 }
+//@@use BalloonsBody
+function ObjectPreviewBalloons({ obj, fade }) {
+  const sc = obj.scale;
+  return (
+    <group scale={[sc, sc, sc]} position={obj.position} rotation={eulYXZ(obj.rx, obj.rotationY, obj.rz)}>
+      <BalloonsBody data={obj} fade={fade} />
+    </group>
+  );
+}
 function ObjectPreviewBalls({ obj, fade }) {
   const sc = obj.scale;
   return (
@@ -7463,12 +7515,13 @@ function ObjectPreviewLight({ obj }) {
 function ObjectPreview({ obj }) {
   const fade = useMemo(() => makeFadeUniforms(), []);
   if (obj.type === "confetti") return <ObjectPreviewConfetti obj={obj} />;
-  if (obj.type !== "text" && obj.type !== "shape" && obj.type !== "light" && obj.type !== "smoke" && !(obj.previewUrl || obj.url)) return null;
+  if (obj.type !== "text" && obj.type !== "shape" && obj.type !== "light" && obj.type !== "smoke" && obj.type !== "balloons" && !(obj.previewUrl || obj.url)) return null;
   if (obj.type === "light") return <ObjectPreviewLight obj={obj} />;
   if (obj.type === "smoke") return <ObjectPreviewSmoke obj={obj} />;
   let inner;
   if (obj.type === "text") inner = <ObjectPreviewText obj={obj} fade={fade} />;
   else if (obj.type === "shape") inner = <ObjectPreviewShape obj={obj} fade={fade} />;
+  else if (obj.type === "balloons") inner = <ObjectPreviewBalloons obj={obj} fade={fade} />;
   else if (obj.type === "video") inner = <ObjectPreviewVideo obj={obj} fade={fade} />;
   else inner = obj.type === "image" ? <ObjectPreviewImage obj={obj} fade={fade} /> : <ObjectPreviewModel obj={obj} fade={fade} />;
   return <FadeGroup obj={obj} fade={fade}>{obj.float > 0 && obj.type !== "shape" ? <FloatWrap obj={obj}>{inner}</FloatWrap> : inner}</FadeGroup>;
@@ -7549,102 +7602,7 @@ function BlenderGrid() {
 /* Desenfoque de profundidad (DOF cinematográfico): lo más lejano/cercano al plano de foco se desenfoca.
    follow = el foco acompaña al punto al que mira la cámara (+ ajuste); si no, distancia fija desde la cámara. */
 //@@use DepthFocus
-/* Confeti de la marca (una sola malla instanciada). Sale de atrás del cartel mientras se scrollea entre dos poses y los papelitos
-   quedan en el piso: el piso se mide una vez con rayos hacia abajo (cuadrícula) contra las piezas visibles de la escena. */
-function ConfettiSim({ cfg: C, from: fromP, to: toP, getProgress, lite }) {
-  const { scene } = useThree();
-  const N = Math.max(1, Math.round((C.count || 260) * (lite ? 0.55 : 1)));
-  const mref = useRef(null);
-  const o = C.origin || [0, 5, -10], ry = ((C.rotY || 0) * Math.PI) / 180, cs = Math.cos(ry), sn = Math.sin(ry);
-  const W = C.width || 10, H = C.height || 4, sizeK = C.size || 0.2;
-  const G = useMemo(() => { const st = 0.8, x0 = -(W / 2 + 3), x1 = W / 2 + 3, z0 = -3, z1 = 12; return { st, x0, z0, nx: Math.ceil((x1 - x0) / st) + 1, nz: Math.ceil((z1 - z0) / st) + 1 }; }, [W]);
-  const S = useMemo(() => ({ n: 0, p: new Float32Array(N * 3), v: new Float32Array(N * 3), r: new Float32Array(N * 3), w: new Float32Array(N * 3), ph: new Float32Array(N), vt: new Float32Array(N), sz: new Float32Array(N * 2), yaw: new Float32Array(N), land: new Uint8Array(N), t: 0, hf: new Float32Array(G.nx * G.nz).fill(NaN), hi: 0, ready: false, meshes: null, rc: new THREE.Raycaster(), up: new THREE.Vector3(0, -1, 0), org: new THREE.Vector3(), nrm: new THREE.Vector3() }), [N, G]);
-  const geo = useMemo(() => new THREE.PlaneGeometry(1, 1), []);
-  const mat = useMemo(() => new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, toneMapped: false }), []);
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-  useEffect(() => {
-    const m = mref.current; if (!m) return;
-    const cols = (C.colors && C.colors.length ? C.colors : ["#FFB719", "#FF6A00", "#CB000F", "#A60064", "#9379D3", "#709749", "#0071CE"]).map((c) => new THREE.Color(c));
-    for (let i = 0; i < N; i++) m.setColorAt(i, cols[(Math.random() * cols.length) | 0]);
-    if (m.instanceColor) m.instanceColor.needsUpdate = true;
-    m.count = 0; m.visible = false;
-  }, [N]);
-  const toWorld = (lx, ly, lz, out, k) => { out[k] = o[0] + lx * cs + lz * sn; out[k + 1] = o[1] + ly; out[k + 2] = o[2] - lx * sn + lz * cs; };
-  const scan = (m) => {
-    if (!S.meshes) {
-      S.meshes = [];
-      scene.traverse((ob) => {
-        if (!ob.isMesh || ob.isInstancedMesh || ob.isSkinnedMesh || ob === m || !ob.geometry) return;
-        for (let q = ob; q; q = q.parent) if (!q.visible) return;
-        const mt = Array.isArray(ob.material) ? ob.material[0] : ob.material;
-        if (mt && mt.opacity != null && mt.opacity < 0.5) return;
-        S.meshes.push(ob);
-      });
-      scene.updateMatrixWorld(true);
-    }
-    const y0 = o[1] - H / 2 - 0.3, tot = G.nx * G.nz;
-    for (let c = 0; c < 22 && S.hi < tot; c++, S.hi++) {
-      const ix = S.hi % G.nx, iz = (S.hi / G.nx) | 0;
-      const lx = G.x0 + ix * G.st, lz = G.z0 + iz * G.st;
-      S.org.set(o[0] + lx * cs + lz * sn, y0, o[2] - lx * sn + lz * cs);
-      S.rc.set(S.org, S.up); S.rc.far = 60;
-      const hits = S.rc.intersectObjects(S.meshes, false);
-      for (let h = 0; h < hits.length; h++) {
-        const f = hits[h].face; if (!f) continue;
-        S.nrm.copy(f.normal).transformDirection(hits[h].object.matrixWorld);
-        if (S.nrm.y > 0.5) { S.hf[S.hi] = hits[h].point.y; break; }
-      }
-    }
-    if (S.hi >= tot) S.ready = true;
-  };
-  const dflt = (C.floorY == null ? 0 : C.floorY) + 0.02;
-  const floorAt = (x, z) => {
-    const dx = x - o[0], dz = z - o[2];
-    const ix = Math.round((dx * cs - dz * sn - G.x0) / G.st), iz = Math.round((dx * sn + dz * cs - G.z0) / G.st);
-    if (ix < 0 || iz < 0 || ix >= G.nx || iz >= G.nz) return dflt;
-    const v = S.hf[iz * G.nx + ix];
-    return v === v ? v + 0.02 : dflt;
-  };
-  useFrame((_, delta) => {
-    const m = mref.current;
-    if (!m) return;
-    const prog = getProgress();
-    if (!S.ready) { if (prog >= fromP - 0.03) scan(m); return; }
-    const dt = Math.min(delta, 0.05);
-    const want = Math.floor(N * Math.min(1, Math.max(0, (prog - fromP) / (toP - fromP))));
-    if (want > S.n) {
-      for (let i = S.n; i < want; i++) {
-        const lx = (Math.random() - 0.5) * W, ly = H * (0.15 + Math.random() * 0.4), lz = -(0.25 + Math.random() * 0.5);
-        toWorld(lx, ly, lz, S.p, i * 3);
-        const vx = (lx / W) * 3.2 + (Math.random() - 0.5) * 1.6, vz = 1.4 + Math.random() * 2.4;
-        S.v[i * 3] = vx * cs + vz * sn; S.v[i * 3 + 1] = 2.2 + Math.random() * 3.6; S.v[i * 3 + 2] = -vx * sn + vz * cs;
-        for (let a = 0; a < 3; a++) { S.r[i * 3 + a] = Math.random() * 6.28; S.w[i * 3 + a] = (Math.random() - 0.5) * 12; }
-        S.ph[i] = Math.random() * 6.28; S.vt[i] = 1.4 + Math.random() * 1.0;
-        const k = 0.7 + Math.random() * 0.7; S.sz[i * 2] = sizeK * k; S.sz[i * 2 + 1] = sizeK * k * (0.5 + Math.random() * 0.35);
-        S.yaw[i] = Math.random() * 6.28; S.land[i] = 0;
-      }
-    }
-    S.n = want; S.t += dt;
-    const vd = 1 - Math.exp(-1.8 * dt), hd = Math.exp(-1.4 * dt);
-    for (let i = 0; i < S.n; i++) {
-      const k = i * 3;
-      if (!S.land[i]) {
-        S.v[k + 1] += (-S.vt[i] - S.v[k + 1]) * vd; S.v[k] *= hd; S.v[k + 2] *= hd;
-        S.p[k] += (S.v[k] + Math.sin(S.t * 2.2 + S.ph[i]) * 0.55) * dt; S.p[k + 1] += S.v[k + 1] * dt; S.p[k + 2] += (S.v[k + 2] + Math.cos(S.t * 1.9 + S.ph[i]) * 0.45) * dt;
-        S.r[k] += S.w[k] * dt; S.r[k + 1] += S.w[k + 1] * dt; S.r[k + 2] += S.w[k + 2] * dt;
-        const fl = floorAt(S.p[k], S.p[k + 2]);
-        if (S.p[k + 1] <= fl) { S.p[k + 1] = fl + Math.random() * 0.012; S.land[i] = 1; }
-      }
-      dummy.position.set(S.p[k], S.p[k + 1], S.p[k + 2]);
-      if (S.land[i]) dummy.rotation.set(-Math.PI / 2, 0, S.yaw[i]); else dummy.rotation.set(S.r[k], S.r[k + 1], S.r[k + 2]);
-      dummy.scale.set(S.sz[i * 2], S.sz[i * 2 + 1], 1);
-      dummy.updateMatrix();
-      m.setMatrixAt(i, dummy.matrix);
-    }
-    m.count = S.n; m.visible = S.n > 0; m.instanceMatrix.needsUpdate = true;
-  });
-  return <instancedMesh ref={mref} args={[geo, mat, N]} frustumCulled={false} />;
-}
+//@@use ConfettiSim
 const getCfProgress = () => (window.__cfEd ? window.__cfEd.progress : 0);
 function ObjectPreviewConfetti({ obj }) {
   const cfg = useMemo(() => ({ count: obj.cfCount, size: obj.cfSize, origin: obj.cfPos, rotY: obj.cfRotY, width: obj.cfW, height: obj.cfH, floorY: obj.cfFloor, colors: obj.cfColors }), [obj.cfCount, obj.cfSize, JSON.stringify(obj.cfPos), obj.cfRotY, obj.cfW, obj.cfH, obj.cfFloor, JSON.stringify(obj.cfColors)]);
@@ -8339,6 +8297,7 @@ const DEFAULT_PROGRESS_BAR = { enabled: true, color: "" };
 const DEFAULT_FAB = { enabled: false, position: "right", book: true, label: "Reservar", reservarUrl: "./reservar/", newTab: false, wa: true, waText: "Hola! Quiero consultar por una reserva.", map: true, color: "", showAfter: 0 };
 const DEFAULT_BACKTOP = { enabled: true, position: "right", style: "dark", size: 46, showAfter: 0.06, duration: 1.8, ring: true, color: "" };
 /* Bloque @GEN:EXTRAS de la plantilla: estela del mouse y barra de progreso lateral. */
+const BALLOON_COLORS = ["#FFB719", "#FF6A00", "#CB000F", "#A60064", "#0071CE"];
 const CONFETTI_COLORS = ["#FFB719", "#FF6A00", "#CB000F", "#A60064", "#9379D3", "#709749", "#0071CE"];
 const CONFETTI_DEFAULTS = { cfFrom: "", cfTo: "", cfCount: 260, cfSize: 0.2, cfPos: [0, 5, -10], cfRotY: 0, cfW: 10, cfH: 4, cfFloor: 0, cfColors: CONFETTI_COLORS };
 const DEFAULT_MENU = MENU_DEFAULTS;
@@ -8418,7 +8377,7 @@ function reparentObject(objects, tfByKf, stages, id, parentId) {
 }
 function generateObjectsCode(objects, transformsByKf, stages, easings) {
   transformsByKf = composeGroups(objects, transformsByKf, stages);
-  objects = objects.filter((o) => o.type === "text" || o.type === "shape" || o.type === "light" || o.type === "smoke" || o.type === "confetti" || (o.url && o.url.trim()));
+  objects = objects.filter((o) => o.type === "text" || o.type === "shape" || o.type === "light" || o.type === "smoke" || o.type === "confetti" || o.type === "balloons" || (o.url && o.url.trim()));
   const fmtNum = (n) => (Math.abs(n) < 0.0001 ? 0 : Math.round(n * 1000) / 1000);
   const fmtVec = (v) => `[${v.map(fmtNum).join(", ")}]`;
   const esc = (s) => JSON.stringify(s == null ? "" : s);
@@ -8448,6 +8407,19 @@ function generateObjectsCode(objects, transformsByKf, stages, easings) {
     litBase: ${fmtNum(o.litBase ?? 0.2)},
     shCast: ${o.shCast ? "true" : "false"},
     billboard: ${o.billboard ? "true" : "false"},
+    float: ${fmtNum(o.float || 0)},
+    floatSpeed: ${fmtNum(o.floatSpeed || 1)},
+    keyframes: [
+${kfLines}
+    ],
+  },`;
+    }
+    if (o.type === "balloons") {
+      return `  {
+    type: "balloons",
+    bCount: ${fmtNum(o.bCount ?? 5)}, bSize: ${fmtNum(o.bSize ?? 0.32)}, bLen: ${fmtNum(o.bLen ?? 1.9)}, bSpread: ${fmtNum(o.bSpread ?? 16)}, bSway: ${fmtNum(o.bSway ?? 1)}, bTail: ${fmtNum(o.bTail ?? 0.6)},
+    bColors: ${JSON.stringify(o.bColors && o.bColors.length ? o.bColors : BALLOON_COLORS)},
+    billboard: false,
     float: ${fmtNum(o.float || 0)},
     floatSpeed: ${fmtNum(o.floatSpeed || 1)},
     keyframes: [
@@ -10173,7 +10145,7 @@ function App() {
       const miss = [];
       for (const o of objects) {
         const u = o.url || "";
-        if (!u || o.previewUrl || u.indexOf("balls:") === 0 || /^(blob:|data:)/.test(u) || ["text", "shape", "light", "smoke", "confetti"].includes(o.type)) continue;
+        if (!u || o.previewUrl || u.indexOf("balls:") === 0 || /^(blob:|data:)/.test(u) || ["text", "shape", "light", "smoke", "confetti", "balloons"].includes(o.type)) continue;
         let ok = fileCheckRef.current[u];
         if (ok === undefined) {
           try { const r = await fetch(new URL(u, window.location.href).href, { method: "HEAD", cache: "no-store" }); ok = r.ok; } catch (e) { ok = false; }
@@ -10196,10 +10168,11 @@ function App() {
     const newId = `obj-${Date.now()}`;
     const used = objects.map((o, k) => o.color || PALETTE[k % PALETTE.length]);
     const color = PALETTE.find((c) => !used.includes(c)) || PALETTE[objects.length % PALETTE.length];
-    const base = { id: newId, label: `${{ model: "Modelo", image: "Imagen", video: "Video", text: "Texto", shape: "Forma", light: "Luz", smoke: "Humo", confetti: "Confeti" }[type]} ${objects.length + 1}`, type, url: "", previewUrl: null, billboard: type !== "model" && type !== "light" && type !== "smoke" && type !== "confetti", visible: true, color };
+    const base = { id: newId, label: `${{ model: "Modelo", image: "Imagen", video: "Video", text: "Texto", shape: "Forma", light: "Luz", smoke: "Humo", confetti: "Confeti", balloons: "Globos" }[type]} ${objects.length + 1}`, type, url: "", previewUrl: null, billboard: type !== "model" && type !== "light" && type !== "smoke" && type !== "confetti", visible: true, color };
     if (type === "light") Object.assign(base, LIGHT_DEFAULTS);
     if (type === "smoke") Object.assign(base, SMOKE_DEFAULTS);
     if (type === "confetti") Object.assign(base, CONFETTI_DEFAULTS, { cfPos: [0, 5, -10] });
+    if (type === "balloons") Object.assign(base, { bCount: 5, bSize: 0.32, bLen: 1.9, bSpread: 16, bSway: 1, bTail: 0.6, bColors: BALLOON_COLORS });
     if (type === "video") Object.assign(base, { loop: true, videoMode: "scroll", scrubFrom: 0, scrubTo: 100 });
     if (type === "shape") Object.assign(base, { shapeKind: "rect", shapeCap: "round", shapeCols: 8, shapeRows: 4 });
     if (type === "text") Object.assign(base, { text: "Texto", textEffect: "none", textColor: "#ffffff", fontFamily: "'Inter', sans-serif", fontWeight: 600, textAlign: "center", textOutline: false, textOutlineColor: "#000000", textGradient: { on: false, colors: ["#6ee7f9", "#a78bfa"], angle: 0 }, letterSpacing: 0, lineHeight: 1.2, wordStyles: {} });
@@ -11147,6 +11120,32 @@ function App() {
         <Seg value={o.type || "model"} onChange={(v) => setObjectType(o.id, v)} options={[["model", "Modelo"], ["image", "Imagen / SVG"], ["video", "Video"], ["text", "Texto"], ["shape", "Forma"], ["light", "Luz"], ["smoke", "Humo"]]} />
       </>
     );
+    if (o.type === "balloons") {
+      const U = (k, v) => updateObject(o.id, { [k]: v });
+      const g = (k, d) => (o[k] ?? d);
+      const cols = (o.bColors && o.bColors.length ? o.bColors : BALLOON_COLORS);
+      return (
+        <div className="oed" style={{ "--oc": c }}>
+          {head}
+          <Vec3 label="Punto de atado" value={t.position} onChange={(a2, v) => setObjectTransform(o.id, "position", a2, v)} />
+          <Slider label="Escala" min={0.05} max={20} step={0.01} value={t.scale} onChange={(v) => setObjectTransform(o.id, "scale", null, v)} />
+          <Slider label="Giro Y" min={-180} max={180} step={0.1} value={t.rotationY} onChange={(v) => setObjectTransform(o.id, "rotationY", null, v)} />
+          <Switch checked={!!t.hidden} onChange={(v) => setObjectTransform(o.id, "hidden", null, v)} label="Oculto en esta pose (aparece / desaparece al pasar)" />
+          <Slider label="Cantidad de globos" min={1} max={12} step={1} value={g("bCount", 5)} onChange={(v) => U("bCount", v)} />
+          <Slider label="Tamaño del globo" min={0.1} max={1} step={0.01} value={g("bSize", 0.32)} onChange={(v) => U("bSize", v)} />
+          <Slider label="Largo del hilo" min={0.4} max={5} step={0.05} value={g("bLen", 1.9)} onChange={(v) => U("bLen", v)} />
+          <Slider label="Apertura del manojo (°)" min={0} max={50} step={1} value={g("bSpread", 16)} onChange={(v) => U("bSpread", v)} />
+          <Slider label="Vaivén" min={0} max={3} step={0.05} value={g("bSway", 1)} onChange={(v) => U("bSway", v)} />
+          <Slider label="Hilo que cuelga" min={0} max={3} step={0.05} value={g("bTail", 0.6)} onChange={(v) => U("bTail", v)} />
+          <div className="grp-t" style={{ marginTop: 6 }}>Colores (en orden)</div>
+          {cols.map((col, i) => (
+            <div className="row" key={i}><span className="lbl">Globo {i + 1}</span><HexColor value={col} onChange={(v) => U("bColors", cols.map((x, k) => (k === i ? v : x)))} /></div>
+          ))}
+          <div className="tools"><Btn onClick={() => U("bColors", [...cols, "#ffffff"])}>+ Color</Btn>{cols.length > 1 && <Btn onClick={() => U("bColors", cols.slice(0, -1))}>− Color</Btn>}<Btn onClick={() => U("bColors", BALLOON_COLORS)}>Colores de la marca</Btn></div>
+          <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Manojo de globos con helio atados en un punto con hilo. Se ubica por el punto de atado y se mece solo. Para que flote también el conjunto, usá «Flotar siempre».</div>
+        </div>
+      );
+    }
     if (o.type === "confetti") {
       const U = (k, v) => updateObject(o.id, { [k]: v });
       const g = (k, d) => (o[k] ?? d);
@@ -12009,6 +12008,7 @@ function App() {
                   <Btn icon="light" onClick={() => addObject("light")}>Luz</Btn>
                   <Btn icon="smoke" onClick={() => addObject("smoke")}>Humo</Btn>
                   <Btn icon="shape" onClick={() => addObject("confetti")}>Confeti</Btn>
+                  <Btn icon="shape" onClick={() => addObject("balloons")}>Globos</Btn>
                   <Btn icon="shape" onClick={addBalls}>Pelotas</Btn>
                   <span className="grow" />
                   <IBtn icon="copy" title="Todos desde la pose anterior" disabled={stageIndex <= 0 || !objects.length} onClick={copyAllObjectTransformsFromPrev} />
@@ -12024,7 +12024,7 @@ function App() {
                 <div className="outliner">
                   {objects.map((o, i) => (hiddenByGroup(o) && !objSearch.trim() && !(selObj && selObj.id === o.id)) || (objOnlyVisible && !isVisibleHere(o) && !(selObj && selObj.id === o.id)) || (objSearch.trim() && !String(o.label).toLowerCase().includes(objSearch.trim().toLowerCase()) && !(selObj && selObj.id === o.id)) ? null : (
                     <div key={o.id} className={`orow ${selObj && selObj.id === o.id ? "sel" : ""} ${o.visible && !(objectTransformsByKf[o.id] && objectTransformsByKf[o.id][activeStage] && objectTransformsByKf[o.id][activeStage].hidden) ? "" : "off"}`} style={{ "--oc": colorOf(o, i) }} onClick={() => setSelectedObj(o.id)}>
-                      <span className="oico"><Icon name={o.type === "text" ? "text" : o.type === "shape" ? "shape" : o.type === "light" ? "light" : o.type === "smoke" ? "smoke" : o.type === "confetti" ? "shape" : o.type === "image" ? "image" : o.type === "video" ? "video" : "cube"} size={15} /></span>
+                      <span className="oico"><Icon name={o.type === "text" ? "text" : o.type === "shape" ? "shape" : o.type === "light" ? "light" : o.type === "smoke" ? "smoke" : o.type === "confetti" || o.type === "balloons" ? "shape" : o.type === "image" ? "image" : o.type === "video" ? "video" : "cube"} size={15} /></span>
                       {objects.some((q) => q.parent === o.id) && <button className="mini" title="Plegar / desplegar el grupo" onClick={(e) => { e.stopPropagation(); setOpenGroups((g) => { const n = new Set(g); if (n.has(o.id)) n.delete(o.id); else n.add(o.id); return n; }); }}>{openGroups.has(o.id) ? "▾" : "▸"}</button>}
                       <span className="oname">{o.parent && objects.some((q) => q.id === o.parent) ? "↳ " : ""}{o.label}{objects.some((q) => q.parent === o.id) ? " ⛓ " + objects.filter((q) => q.parent === o.id).length : ""}{missingFiles.some((m) => m.id === o.id) ? " ⚠" : ""}</span>
                       <button className="mini" title="Visible" onClick={(e) => { e.stopPropagation(); updateObject(o.id, { visible: !o.visible }); }}><Icon name={o.visible ? "eye" : "eyeoff"} size={14} /></button>
