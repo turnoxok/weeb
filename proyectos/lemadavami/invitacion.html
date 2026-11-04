@@ -78,6 +78,8 @@
     button{flex:1 1 140px}
   }
 </style>
+<link rel="icon" type="image/png" href="./assets/models/favicon-l.png" />
+<link rel="apple-touch-icon" href="./assets/models/favicon-l.png" />
 </head>
 <body>
 <div class="wrap">
@@ -300,7 +302,7 @@
   // Fondo: video de una toma recorriendo la escena 3D (una sola vez; al final queda el último cuadro)
   var VID = document.createElement('video');
   VID.muted = true; VID.defaultMuted = true; VID.playsInline = true; VID.setAttribute('playsinline', ''); VID.setAttribute('webkit-playsinline', ''); VID.preload = 'auto';
-  ['mp4', 'webm'].forEach(function (x) { var so = document.createElement('source'); so.src = './assets/inv/fondo.' + x; so.type = 'video/' + x; VID.appendChild(so); });
+  ['mp4'].forEach(function (x) { var so = document.createElement('source'); so.src = './assets/inv/fondo.' + x; so.type = 'video/' + x; VID.appendChild(so); });
   VID.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none'; document.body.appendChild(VID);
   function vidOk() { return VID.readyState >= 2 && VID.videoWidth > 0; }
   function vidEnd() { try { if (VID.duration && VID.currentTime < VID.duration - .3) VID.currentTime = Math.max(0, VID.duration - .04); } catch (e) {} }
