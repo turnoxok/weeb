@@ -4990,16 +4990,36 @@ function SceneObjectConfetti({ data }) {
    así no hay tirones la primera vez que un objeto/luz aparece al scrollear. */
 /* PC: las sombras de las luces se recalculan una vez cada dos cuadros (en vez de cada cuadro). Las luces se mueven despacio, no se nota,
    y se ahorra casi la mitad del trabajo de sombras. En celular no se toca nada. */
+/* Diagnóstico (sólo si la dirección termina en ?perf): muestra en pantalla los cuadros lentos y en qué parte del scroll pasaron */
+function PerfProbe() {
+  const { gl } = useThree();
+  const st = useRef({ el: null, last: 0, log: [], worst: 0 });
+  useFrame(() =&gt; {
+    if (typeof location === "undefined" || !/[?&amp;]perf/.test(location.search)) return;
+    const S = st.current, now = performance.now();
+    if (!S.el) { S.el = document.createElement("pre"); S.el.style.cssText = "position:fixed;left:6px;bottom:6px;z-index:99999;margin:0;padding:6px 8px;background:rgba(0,0,0,.75);color:#7CFC9A;font:11px/1.35 monospace;pointer-events:none;max-width:92vw;white-space:pre-wrap"; document.body.appendChild(S.el); }
+    const dt = S.last ? now - S.last : 0; S.last = now;
+    let p = 0; try { p = useScrollStore.getState().progress || 0; } catch (e) { /* sin store */ }
+    if (dt &gt; 45 &amp;&amp; window.__wbWarm) {
+      const i = gl.info;
+      S.log.push((p * 100).toFixed(0) + "%  " + dt.toFixed(0) + "ms  calls " + i.render.calls + "  tri " + (i.render.triangles / 1000).toFixed(0) + "k  prog " + (i.programs ? i.programs.length : "?") + "  tex " + i.memory.textures + "  geo " + i.memory.geometries);
+      if (S.log.length &gt; 9) S.log.shift();
+    }
+    const fps = dt ? (1000 / dt).toFixed(0) : "-";
+    S.el.textContent = "perf  fps " + fps + "  scroll " + (p * 100).toFixed(0) + "%\n" + (S.log.length ? S.log.join("\n") : "(sin cuadros lentos)");
+  });
+  return null;
+}
 function ShadowThrottle() {
   const { gl } = useThree();
   const n = useRef(0);
   useEffect(() =&gt; {
-    if (IS_PHONE) return undefined;
+    return undefined;   // desactivado: actualizar las sombras cada 2 cuadros hacía titilar las luces
     gl.shadowMap.autoUpdate = false; gl.shadowMap.needsUpdate = true;
     return () =&gt; { gl.shadowMap.autoUpdate = true; };
   }, [gl]);
   useFrame(() =&gt; {
-    if (IS_PHONE) return;
+    return;
     n.current++;
     if (n.current % 2 === 0 || window.__wbWarm !== true) gl.shadowMap.needsUpdate = true;
   });
@@ -5389,6 +5409,7 @@ function Experience({ device }) {
         &lt;SceneObjects /&gt;
         &lt;WarmUp /&gt;
         &lt;ShadowThrottle /&gt;
+        &lt;PerfProbe /&gt;
         &lt;ObjectBoundary&gt;
           &lt;Suspense fallback={null}&gt;
             {CHARACTER_MODEL_URL ? &lt;AnimatedCharacter mouse={mouse} anchorRef={charAnchorRef} /&gt; : null}
