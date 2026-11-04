@@ -1370,11 +1370,14 @@ function ScrollSmoother() {
     // al abrir la página ya scrolleada (recarga) se salta directo, sin "viajar" por todas las poses
     if (!started.current) { started.current = true; if (progress > 0) { setSmoothProgress(progress); window.__wsSnap = false; return; } }
     if (window.__wsSnap) { window.__wsSnap = false; if (Math.abs(progress - smoothProgress) > 0.0005) { setSmoothProgress(progress); return; } }
-    let next = damp(smoothProgress, progress, IS_TOUCH_DEVICE ? 7 : 4, delta);   // en celular Lenis ya suaviza el dedo: menos doble suavizado = menos "arrastre"
+    /* Cerca del final del 3D la imagen alcanza al scroll mucho más rápido: así no queda "muerta" la rueda esperando a la última pose. */
+    let nearEnd = false;
+    try { const b0 = wsBlock(), t0 = window.__wsScrollTop, tt0 = window.__wsScrollTotal; nearEnd = !!(b0 && tt0 > 0 && window.scrollY > t0 + tt0 - (window.innerHeight || 800) * 0.6); } catch (e) { /* sin bloque */ }
+    let next = damp(smoothProgress, progress, IS_TOUCH_DEVICE ? 7 : (nearEnd ? 8 : 4), delta);   // en celular Lenis ya suaviza el dedo: menos doble suavizado = menos "arrastre"
     /* Límite de velocidad: una sacudida fuerte del dedo/rueda ya no hace pasar todo "volando". La imagen avanza como
        mucho SCROLL_MAX_PPS poses por segundo y alcanza al scroll real apenas se frena. 0 = sin límite. */
     if (SCROLL_MAX_PPS > 0) {
-      const maxStep = (SCROLL_MAX_PPS * (IS_TOUCH_DEVICE ? 1.6 : 1) * Math.min(delta, 0.1)) / Math.max(1, scenes.length - 1);
+      const maxStep = (SCROLL_MAX_PPS * (IS_TOUCH_DEVICE ? 1.6 : 1) * (nearEnd ? 3.5 : 1) * Math.min(delta, 0.1)) / Math.max(1, scenes.length - 1);
       next = smoothProgress + Math.max(-maxStep, Math.min(maxStep, next - smoothProgress));
     }
     setSmoothProgress(next);
@@ -1382,7 +1385,7 @@ function ScrollSmoother() {
        La barra del visor ya marca el final, pero la escena va un poco atrás (suavizado): se espera a que la alcance. */
     try {
       const b = wsBlock(), top = window.__wsScrollTop, tot = window.__wsScrollTotal;
-      if (b && tot > 0 && !window.__wsJump && next < b.mt - 0.004) {
+      if (b && tot > 0 && !window.__wsJump && next < b.mt - 0.35 / Math.max(1, scenes.length - 1)) {
         const end = top + tot, y = window.scrollY, vh = window.innerHeight || 800;
         if (y > end + 1 && y < end + vh * 1.5) {
           if (window.__lenis && window.__lenis.scrollTo) window.__lenis.scrollTo(end, { immediate: true, force: true });
