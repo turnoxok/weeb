@@ -5011,7 +5011,7 @@ function WarmUp() {
   /* dentro del bucle de r3f (antes del dibujo normal de cada cuadro): lo que se dibuja de más queda tapado por el cuadro real y no titila */
   useFrame(() =&gt; { if (tickRef.current) tickRef.current(); });
   useEffect(() =&gt; {
-    let done = false, queue = null, lastScan = 0, roll = null; const t0 = performance.now();
+    let done = false, queue = null, lastScan = 0, roll = null, cstate = 0; const t0 = performance.now();   // cstate: 0 = sin empezar, 1 = compilando, 2 = listo
     const warmed = new WeakSet();
     const fin = () =&gt; { if (done) return; done = true; window.__wbWarm = true; };
     const isDrawable = (o) =&gt; o.isMesh || o.isPoints || o.isLine;
@@ -5060,6 +5060,13 @@ function WarmUp() {
         if (el &gt; 12000) fin(); // no se espera más: lo que falte se calienta aparte apenas aparezca
         else if ((window.__wbStarted || 0) &gt; 0 &amp;&amp; (window.__wbPend || 0) === 0 &amp;&amp; el &gt; 800) {
           /* calentamiento repartido: de a un grupo de objetos por cuadro (antes era todo en un solo cuadro y congelaba el loader) */
+          /* 1) compilar TODOS los shaders (también los de objetos ocultos o vacíos, como el confeti y la bengala), sin trabar la pantalla si el navegador lo permite */
+          if (cstate === 0) {
+            cstate = 1;
+            const ok = () =&gt; { cstate = 2; };
+            try { if (gl.compileAsync) gl.compileAsync(scene, camera).then(ok, ok); else { gl.compile(scene, camera); ok(); } } catch (e) { ok(); }
+          }
+          if (cstate &lt; 2) return;
           if (!queue) queue = pickTops();
           const t1 = performance.now(), batch = [];
           while (queue.length &amp;&amp; (batch.length === 0 || performance.now() - t1 &lt; 4) &amp;&amp; batch.length &lt; 6) batch.push(queue.shift());
@@ -5071,7 +5078,7 @@ function WarmUp() {
         /* objetos que se armaron después (SVG lentos de bajar o de armar): se calientan apenas aparecen */
         lastScan = now;
         const q = pickTops();
-        if (q.length) warm(q.slice(0, 4));
+        if (q.length) { try { gl.compile(scene, camera); } catch (e) { /* sigue */ } warm(q.slice(0, 4)); }
       }
     };
     tickRef.current = tick;
