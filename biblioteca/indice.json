@@ -179,5 +179,13 @@
    "silla_3",
    "silla_4"
   ]
+ },
+ {
+  "nombre": "media_esfera",
+  "titulo": "Media esfera transparente",
+  "partes": 1,
+  "roles": [
+   "cupula"
+  ]
  }
 ]

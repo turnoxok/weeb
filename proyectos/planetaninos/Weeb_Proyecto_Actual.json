@@ -690,6 +690,46 @@
    "litBase": 0.12,
    "bev": 0.16,
    "seg": 64
+  },
+  {
+   "type": "image",
+   "url": "./assets/models/tw_media_esfera.svg",
+   "videoMode": "scroll",
+   "scrollFrom": 0,
+   "scrollTo": 1,
+   "loop": true,
+   "glow": 0,
+   "glass": 0,
+   "hue": 0,
+   "sat": 1,
+   "light": 1,
+   "tint": "#ffffff",
+   "tintAmt": 0,
+   "glassMatch": "",
+   "shadows": false,
+   "lit": false,
+   "litBase": 0.2,
+   "cornerRadius": 0,
+   "borderWidth": 0,
+   "borderColor": "#ffffff",
+   "billboard": false,
+   "ext": 0.01,
+   "bev": 0,
+   "seg": 0,
+   "rev": true,
+   "mat": "clearplastic",
+   "matColor": "#bfe6ff",
+   "matRough": null,
+   "float": 0.28,
+   "floatSpeed": 2.9,
+   "label": "cupula_cupula_00",
+   "visible": true,
+   "color": "#7ee787",
+   "previewUrl": null,
+   "scrubFrom": 0,
+   "scrubTo": 100,
+   "shCast": false,
+   "id": "obj-1793835866786-0"
   }
  ],
  "objectTransformsByKf": {
@@ -912,6 +952,23 @@
     "sy": 1,
     "rx": 0,
     "rz": 0
+   }
+  },
+  "obj-1793835866786-0": {
+   "pose-1": {
+    "position": [
+     -7.5,
+     1.4,
+     1.0
+    ],
+    "scale": 2.0,
+    "rotationY": 0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "rx": 0,
+    "rz": 0,
+    "sx": 1,
+    "sy": 1
    }
   }
  }

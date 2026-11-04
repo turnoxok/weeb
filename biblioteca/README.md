@@ -10,6 +10,7 @@ Cada pieza = carpeta con `pieza.json` + `svg/` (las partes). Catálogo en `indic
 | rayuela | 5 | contorno, base, fondo_numeros, numeros_color, numeros |
 | esfera | 1 | esfera (color y tamaño con --color / --escala) |
 | tubo_cuarto | 1 | tubo (cuarto de aro hueco, pared fina) |
+| media_esfera | 1 | cupula (media esfera hueca de vidrio / plástico transparente; --escala = diámetro) |
 | pelotero | 5 | reja, tubo (marco de 4 tubos + reja) |
 | pelotero_gigante | 119 | pelotero completo: cuerpos, pelotas, contenedores, puente, tobogán, palo y tubos, UN grupo plano |
 | tejo | 16 | juego del tejo (mesa, patas, fichas, mandos), un grupo |

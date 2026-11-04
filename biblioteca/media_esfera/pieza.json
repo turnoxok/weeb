@@ -1,0 +1,72 @@
+{
+ "nombre": "media_esfera",
+ "titulo": "Media esfera transparente",
+ "version": 1,
+ "origen": "tuweeb",
+ "madre": "media_esfera_00",
+ "nota": "Cúpula (media esfera) hueca de pared fina, hecha por revolución, con material vidrio (plástico transparente). Rol \"cupula\" = color del vidrio (claro = más transparente). --escala = diámetro de la cúpula (1 = diámetro 1; el centro queda a media altura de la cúpula). Para taparla con una base, usar la pieza plataforma o un círculo. En celular/nivel liviano el vidrio se dibuja con opacidad en vez de transmisión (más liviano).",
+ "roles": {
+  "cupula": "#e6f6ff"
+ },
+ "partes": [
+  {
+   "clave": "media_esfera_00",
+   "rol": "cupula",
+   "esMadre": true,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/tw_media_esfera.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": false,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.01,
+    "bev": 0,
+    "seg": 0,
+    "rev": true,
+    "mat": "clearplastic",
+    "matColor": "#bfe6ff",
+    "matRough": null,
+    "float": 0.28,
+    "floatSpeed": 2.9,
+    "label": "media_esfera",
+    "visible": true,
+    "color": "#7ee787",
+    "previewUrl": null,
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": false
+   },
+   "pose": {
+    "position": [
+     0,
+     0,
+     0
+    ],
+    "scale": 0.5,
+    "rotationY": 0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "rx": 0,
+    "rz": 0,
+    "sx": 1,
+    "sy": 1
+   }
+  }
+ ]
+}

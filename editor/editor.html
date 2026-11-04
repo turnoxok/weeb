@@ -3842,6 +3842,7 @@ const SVG_MATS = {
   magma:     { label: "Magma (roca con grietas encendidas)", rough: 1, metal: 0, tex: "magma", neonTex: true },
   /* especiales */
   glass:     { label: "Vidrio", rough: 0.05, metal: 0, glass: true },
+  clearplastic: { label: "Plástico transparente (liviano)", rough: 0.1, metal: 0, clear: 1, alpha: 0.4 },   // translúcido sin transmisión: se ve bien sobre cualquier fondo y pesa poco
   frosted:   { label: "Vidrio esmerilado", rough: 0.55, metal: 0, glass: true, frost: true },
   iris:      { label: "Iridiscente / holográfico", rough: 0.1, metal: 0.9, color: "#b9b9d6", iris: 1 },
   pearl:     { label: "Perla nacarada", rough: 0.25, metal: 0, color: "#f4efe8", clear: 1, iris: 0.6, sheen: 1 },
@@ -4131,6 +4132,7 @@ function makeSvgMat(data, base, lite) {
     const bc = pr.tex ? (pr.useBase ? new THREE.Color("#ffffff") : (data.matColor ? new THREE.Color(data.matColor) : new THREE.Color("#ffffff"))) : new THREE.Color(data.matColor || pr.color || base);
     const oo = { roughness: pr.glass ? Math.min(rough, 0.35) : rough, metalness: pr.metal, color: bc };
     if (pr.glass) { oo.transparent = true; oo.opacity = pr.frost ? 0.62 : 0.4; }
+    if (pr.alpha) { oo.transparent = true; oo.opacity = pr.alpha; oo.depthWrite = false; oo.side = THREE.DoubleSide; }
     if (pr.iris) { oo.color = new THREE.Color("#b9b9d6"); oo.metalness = 0.85; oo.roughness = 0.2; }
     const ml = new THREE.MeshStandardMaterial(oo);
     if (pr.neon) { ml.emissive = bc.clone(); ml.emissiveIntensity = 2.2; }
@@ -4149,6 +4151,7 @@ function makeSvgMat(data, base, lite) {
   if (pr.sheen) { o.sheen = 1; o.sheenColor = new THREE.Color("#ffd9f0"); o.sheenRoughness = 0.4; }
   o.color = pr.tex ? (pr.useBase ? new THREE.Color("#ffffff") : (data.matColor ? baseCol : new THREE.Color("#ffffff"))) : baseCol;
   const m = new THREE.MeshPhysicalMaterial(o);
+  if (pr.alpha) { m.transparent = true; m.opacity = pr.alpha; m.depthWrite = false; m.side = THREE.DoubleSide; }
   if (pr.neon) { m.emissive = baseCol.clone(); m.emissiveIntensity = 2.2; }
   if (pr.tex) {
     const T = getMatTex(pr.tex, pr.useBase ? "#" + baseCol.getHexString() : "");
