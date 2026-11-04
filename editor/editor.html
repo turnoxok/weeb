@@ -4106,15 +4106,18 @@ function SvgExtrudeBody({ url, data, fade, hasFade, shadows }) {
   useEffect(() => {
     let off = false;
     let tries = 0, timer = null;
+    window.__wbStarted = (window.__wbStarted || 0) + 1; window.__wbPend = (window.__wbPend || 0) + 1;
+    let fin = false;
+    const done = () => { if (fin) return; fin = true; requestAnimationFrame(() => requestAnimationFrame(() => { window.__wbPend = Math.max(0, (window.__wbPend || 1) - 1); })); };
     const load = () => {
-      fetchSvgText(url).then((t) => { if (off) return; try { setBuilt((prev) => { if (prev) prev.parts.forEach((pt) => pt.geo.dispose()); return buildSvgExtrude(t, ext, bev, seg, lite, rev, arc); }); } catch (e) { console.warn("No se pudo extruir el SVG:", e && e.message); } }).catch((e) => {
+      fetchSvgText(url).then((t) => { if (off) return; done(); try { setBuilt((prev) => { if (prev) prev.parts.forEach((pt) => pt.geo.dispose()); return buildSvgExtrude(t, ext, bev, seg, lite, rev, arc); }); } catch (e) { console.warn("No se pudo extruir el SVG:", e && e.message); } }).catch((e) => {
         if (off) return;
         console.warn("SVG no disponible, reintentando:", e && e.message);
-        if (++tries <= 6) timer = setTimeout(load, 2000 * tries);
+        if (++tries <= 6) timer = setTimeout(load, 2000 * tries); else done();
       });
     };
     load();
-    return () => { off = true; if (timer) clearTimeout(timer); };
+    return () => { off = true; done(); if (timer) clearTimeout(timer); };
   }, [url, ext, bev, seg, lite, rev, arc]);
   const mats = useMemo(() => (built ? built.parts.map((pt) => { const m = makeSvgMat(data, pt.color, lite); if (arc > 0 && arc < 360) m.side = THREE.DoubleSide; return m; }) : []), [built, data.mat, data.matColor, data.matRough, lite, arc]);
   useEffect(() => () => mats.forEach((m) => m.dispose()), [mats]);
@@ -4142,7 +4145,7 @@ function ballsLayout(d, lite) {
   const W = Math.max(0.1, d.ballW ?? 4), D = Math.max(0.1, d.ballD ?? 2), L = Math.max(1, Math.round(d.ballL ?? 3));
   const dia = Math.max(0.02, d.ballR ?? 0.16), jit = Math.min(1, Math.max(0, d.ballJit ?? 0.5)), dark = Math.min(0.9, Math.max(0, d.ballDark ?? 0.35));
   const cols = (Array.isArray(d.ballCols) && d.ballCols.length ? d.ballCols : ["#8149bd", "#fc9835", "#78c944"]).map((c) => new THREE.Color(c));
-  const cap = lite ? 450 : 5000;
+  const cap = lite ? 1200 : 5000;
   const step = dia * 0.94, nx = Math.max(1, Math.floor(W / step)), nz = Math.max(1, Math.floor(D / step));
   const cx = W / nx, cz = D / nz;
   let sd = (Math.round(d.ballSeed ?? 1) * 2654435761) >>> 0;
@@ -4168,7 +4171,7 @@ function BallsBody({ data, fade, hasFade, shadows }) {
   const key = JSON.stringify([data.ballW, data.ballD, data.ballL, data.ballR, data.ballJit, data.ballDark, data.ballSeed, data.ballCols, lite]);
   const list = useMemo(() => ballsLayout(data, lite), [key]);
   const dia = Math.max(0.02, data.ballR ?? 0.16);
-  const geo = useMemo(() => new THREE.SphereGeometry(dia / 2, lite ? 14 : 20, lite ? 10 : 14), [dia, lite]);
+  const geo = useMemo(() => new THREE.SphereGeometry(dia / 2, lite ? 10 : 20, lite ? 7 : 14), [dia, lite]);
   const mat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: data.ballRough ?? 0.3, metalness: 0 }), [data.ballRough]);
   const gref = useRef(null), mref = useRef(null);
   useEffect(() => () => geo.dispose(), [geo]);
@@ -5746,8 +5749,10 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       let target = simulate ? 100 : (L.total > 0 ? L.progress : Math.min(35, el / 80));
       target = Math.min(target, (el / minMs) * 100);
       const loaded = simulate ? el >= minMs : (L.total > 0 ? L.progress >= 100 && !L.active : el > 3500);
-      if (loaded && fontsOk && target >= 99.9) { if (!okSince) okSince = now; } else okSince = 0;
-      if (!finishAt && ((okSince && now - okSince > (simulate ? 0 : 350)) || el > 14000)) finishAt = now;
+      /* el logo no se va hasta que los objetos 3D (SVG extruidos) terminaron de armarse: antes aparecían recién después del loader */
+      const built = simulate || el > 15000 || (((window.__wbStarted || 0) > 0 || el > 6000) && (window.__wbPend || 0) === 0);
+      if (loaded && built && fontsOk && target >= 99.9) { if (!okSince) okSince = now; } else okSince = 0;
+      if (!finishAt && ((okSince && now - okSince > (simulate ? 0 : 700)) || el > 14000)) finishAt = now;
       if (finishAt) target = 100;
       shown += (target - shown) * (1 - Math.exp(-dt * (finishAt ? 14 : 5)));
       const disp = finishAt ? Math.round(shown) : Math.min(99, Math.floor(shown));
@@ -7852,8 +7857,10 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       let target = simulate ? 100 : (L.total > 0 ? L.progress : Math.min(35, el / 80));
       target = Math.min(target, (el / minMs) * 100);
       const loaded = simulate ? el >= minMs : (L.total > 0 ? L.progress >= 100 && !L.active : el > 3500);
-      if (loaded && fontsOk && target >= 99.9) { if (!okSince) okSince = now; } else okSince = 0;
-      if (!finishAt && ((okSince && now - okSince > (simulate ? 0 : 350)) || el > 14000)) finishAt = now;
+      /* el logo no se va hasta que los objetos 3D (SVG extruidos) terminaron de armarse: antes aparecían recién después del loader */
+      const built = simulate || el > 15000 || (((window.__wbStarted || 0) > 0 || el > 6000) && (window.__wbPend || 0) === 0);
+      if (loaded && built && fontsOk && target >= 99.9) { if (!okSince) okSince = now; } else okSince = 0;
+      if (!finishAt && ((okSince && now - okSince > (simulate ? 0 : 700)) || el > 14000)) finishAt = now;
       if (finishAt) target = 100;
       shown += (target - shown) * (1 - Math.exp(-dt * (finishAt ? 14 : 5)));
       const disp = finishAt ? Math.round(shown) : Math.min(99, Math.floor(shown));
