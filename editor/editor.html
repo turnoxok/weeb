@@ -30,6 +30,13 @@
   .ldr__stage { position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%); display: grid; place-items: center; }
   .ldr__zoom { width: min(64vw, 420px, calc(46vh * var(--ar, 1))); aspect-ratio: var(--ar, 1); transform-origin: 50% 50%; }
   .ldr__zoom svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes ldrBreath { 0%, 100% { opacity: 0.74; } 50% { opacity: 1; } }
+    @keyframes ldrWait { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+    .ldr__zoom svg { animation: ldrBreath 1.7s ease-in-out infinite; }
+    .ldr__zoom.ldr__exit svg { animation: none; }
+    .ldr__num.ldr__wait { animation: ldrWait 1.1s ease-in-out infinite; }
+  }
   .ldr__num { position: absolute; left: 0; right: 0; bottom: 10%; text-align: center; color: var(--ldr-line, #fff); user-select: none;
     font-family: var(--ldr-font, 'Space Grotesk', system-ui, sans-serif); font-weight: 300; font-size: clamp(60px, 8vw, 104px); line-height: 1; letter-spacing: .04em; font-variant-numeric: tabular-nums; }
   .vp-trail { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:6; mix-blend-mode:screen; }
@@ -484,6 +491,13 @@
   .ldr__stage { position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%); display: grid; place-items: center; }
   .ldr__zoom { width: min(64vw, 420px, calc(46vh * var(--ar, 1))); aspect-ratio: var(--ar, 1); transform-origin: 50% 50%; }
   .ldr__zoom svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes ldrBreath { 0%, 100% { opacity: 0.74; } 50% { opacity: 1; } }
+    @keyframes ldrWait { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+    .ldr__zoom svg { animation: ldrBreath 1.7s ease-in-out infinite; }
+    .ldr__zoom.ldr__exit svg { animation: none; }
+    .ldr__num.ldr__wait { animation: ldrWait 1.1s ease-in-out infinite; }
+  }
   .ldr__num { position: absolute; left: 0; right: 0; bottom: 10%; text-align: center; color: var(--ldr-line, #fff); user-select: none;
     font-family: var(--ldr-font, 'Space Grotesk', system-ui, sans-serif); font-weight: 300; font-size: clamp(60px, 8vw, 104px); line-height: 1; letter-spacing: .04em; font-variant-numeric: tabular-nums; }
 </style>
@@ -1366,6 +1380,7 @@ function useArrowKeyScroll(step = 140) {
 function ScrollSmoother() {
   const started = useRef(false);
   useFrame((_, delta) => {
+    if (window.__wbRoll != null) { useScrollStore.getState().setSmoothProgress(window.__wbRoll); return; }   // recorrido previo detrás del loader
     const { progress, smoothProgress, setSmoothProgress } = useScrollStore.getState();
     // al abrir la página ya scrolleada (recarga) se salta directo, sin "viajar" por todas las poses
     if (!started.current) { started.current = true; if (progress > 0) { setSmoothProgress(progress); window.__wsSnap = false; return; } }
@@ -4973,8 +4988,11 @@ function SceneObjectConfetti({ data }) {
    así no hay tirones la primera vez que un objeto/luz aparece al scrollear. */
 function WarmUp() {
   const { gl, scene, camera } = useThree();
+  const tickRef = useRef(null);
+  /* dentro del bucle de r3f (antes del dibujo normal de cada cuadro): lo que se dibuja de más queda tapado por el cuadro real y no titila */
+  useFrame(() => { if (tickRef.current) tickRef.current(); });
   useEffect(() => {
-    let done = false, raf = 0, queue = null, lastScan = 0; const t0 = performance.now();
+    let done = false, queue = null, lastScan = 0, roll = null; const t0 = performance.now();
     const warmed = new WeakSet();
     const fin = () => { if (done) return; done = true; window.__wbWarm = true; };
     const isDrawable = (o) => o.isMesh || o.isPoints || o.isLine;
@@ -5003,8 +5021,21 @@ function WarmUp() {
       off.forEach((o) => { o.visible = true; });
       batch.forEach((c) => c.traverse((o) => warmed.add(o)));
     };
+    const STEPS = 44;
+    const endRoll = () => {
+      window.__wbRoll = null;
+      try { const s = useScrollStore.getState(); s.setSmoothProgress(s.progress); } catch (e) { /* sin store */ }
+      roll = null; fin();
+    };
     const tick = () => {
       const now = performance.now(), el = now - t0;
+      if (roll) {
+        /* recorrido previo de todas las poses detrás del loader: así cada estado (luces, sombras, fades) ya se usó una vez antes de que scrollees */
+        roll.f++;
+        window.__wbRoll = Math.min(1, Math.floor(roll.f / 2) / STEPS);
+        if (roll.f > STEPS * 2 + 2 || now - roll.t0 > 9000) endRoll();
+        return;
+      }
       if (!done) {
         if (el > 12000) fin(); // no se espera más: lo que falte se calienta aparte apenas aparezca
         else if ((window.__wbStarted || 0) > 0 && (window.__wbPend || 0) === 0 && el > 800) {
@@ -5014,18 +5045,17 @@ function WarmUp() {
           while (queue.length && (batch.length === 0 || performance.now() - t1 < 4) && batch.length < 6) batch.push(queue.shift());
           if (batch.length) warm(batch);
           window.__wbWarmP = 1 - queue.length / Math.max(1, scene.children.length);
-          if (!queue.length) fin();
+          if (!queue.length) { if (IS_TOUCH_DEVICE) fin(); else roll = { f: 0, t0: now }; }
         }
       } else if (now - lastScan > 400) {
-        /* objetos que se armaron después (SVG lentos de bajar o de armar): se calientan apenas aparecen, así no tironean al scrollear */
+        /* objetos que se armaron después (SVG lentos de bajar o de armar): se calientan apenas aparecen */
         lastScan = now;
         const q = pickTops();
         if (q.length) warm(q.slice(0, 4));
       }
-      raf = requestAnimationFrame(tick);
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    tickRef.current = tick;
+    return () => { tickRef.current = null; window.__wbRoll = null; };
   }, [gl, scene, camera]);
   return null;
 }
@@ -6202,8 +6232,10 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       const disp = finishAt ? Math.round(shown) : Math.min(99, Math.floor(shown));
       if (numRef.current) numRef.current.textContent = String(disp).padStart(3, "0");
       if (ctl) ctl.setDraw(Math.min(1, shown / 100));
+      if (numRef.current) numRef.current.classList.toggle("ldr__wait", !finishAt && shown > 97);
       if (finishAt && !exitStart && now - finishAt > 700) exitStart = now; // se queda un instante en 100 y recién ahí hace zoom
       if (exitStart) {
+        if (zoomRef.current) zoomRef.current.classList.add("ldr__exit");
         const x = Math.min(1, (now - exitStart) / ZOOM_MS);
         const e = reduce ? 0 : Math.pow(x, 2.2);
         const z = Math.exp(Math.log(LDR_ZOOM_MAX) * e);
@@ -8390,8 +8422,10 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       const disp = finishAt ? Math.round(shown) : Math.min(99, Math.floor(shown));
       if (numRef.current) numRef.current.textContent = String(disp).padStart(3, "0");
       if (ctl) ctl.setDraw(Math.min(1, shown / 100));
+      if (numRef.current) numRef.current.classList.toggle("ldr__wait", !finishAt && shown > 97);
       if (finishAt && !exitStart && now - finishAt > 700) exitStart = now; // se queda un instante en 100 y recién ahí hace zoom
       if (exitStart) {
+        if (zoomRef.current) zoomRef.current.classList.add("ldr__exit");
         const x = Math.min(1, (now - exitStart) / ZOOM_MS);
         const e = reduce ? 0 : Math.pow(x, 2.2);
         const z = Math.exp(Math.log(LDR_ZOOM_MAX) * e);
