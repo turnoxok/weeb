@@ -4610,6 +4610,35 @@ class ObjectBoundary extends React.Component {
     return this.props.children;
   }
 }
+/* Calienta la GPU detrás del loader: compila shaders y sube geometrías/texturas de TODO (incluso lo oculto por fade) una vez,
+   así no hay tirones la primera vez que un objeto/luz aparece al scrollear. */
+function WarmUp() {
+  const { gl, scene, camera } = useThree();
+  useEffect(() =&gt; {
+    let done = false, raf = 0; const t0 = performance.now();
+    const fin = () =&gt; { if (done) return; done = true; window.__wbWarm = true; };
+    const tick = () =&gt; {
+      if (done) return;
+      const el = performance.now() - t0;
+      if (el &gt; 12000) return fin();
+      if ((window.__wbStarted || 0) &gt; 0 &amp;&amp; (window.__wbPend || 0) === 0 &amp;&amp; el &gt; 800) {
+        const hid = [], fc = [];
+        try {
+          scene.traverse((o) =&gt; { if (!o.visible) { hid.push(o); o.visible = true; } if (o.frustumCulled) { fc.push(o); o.frustumCulled = false; } });
+          gl.compile(scene, camera);
+          gl.render(scene, camera);
+        } catch (e) {}
+        hid.forEach((o) =&gt; { o.visible = false; });
+        fc.forEach((o) =&gt; { o.frustumCulled = true; });
+        return fin();
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () =&gt; cancelAnimationFrame(raf);
+  }, [gl, scene, camera]);
+  return null;
+}
 function SceneObjects() {
   return (
     &lt;&gt;
@@ -4878,6 +4907,7 @@ function Experience({ device }) {
       &lt;GlobalLights /&gt;
       &lt;Suspense fallback={null}&gt;
         &lt;SceneObjects /&gt;
+        &lt;WarmUp /&gt;
         &lt;ObjectBoundary&gt;
           &lt;Suspense fallback={null}&gt;
             {CHARACTER_MODEL_URL ? &lt;AnimatedCharacter mouse={mouse} anchorRef={charAnchorRef} /&gt; : null}
@@ -5751,7 +5781,7 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       target = Math.min(target, (el / minMs) * 100);
       const loaded = simulate ? el &gt;= minMs : (L.total &gt; 0 ? L.progress &gt;= 100 &amp;&amp; !L.active : el &gt; 3500);
       /* el logo no se va hasta que los objetos 3D (SVG extruidos) terminaron de armarse: antes aparecían recién después del loader */
-      const built = simulate || el &gt; 15000 || (((window.__wbStarted || 0) &gt; 0 || el &gt; 6000) &amp;&amp; (window.__wbPend || 0) === 0);
+      const built = simulate || el &gt; 15000 || (((window.__wbStarted || 0) &gt; 0 || el &gt; 6000) &amp;&amp; (window.__wbPend || 0) === 0 && (window.__wbWarm || el > 13000));
       if (loaded &amp;&amp; built &amp;&amp; fontsOk &amp;&amp; target &gt;= 99.9) { if (!okSince) okSince = now; } else okSince = 0;
       if (!finishAt &amp;&amp; ((okSince &amp;&amp; now - okSince &gt; (simulate ? 0 : 700)) || el &gt; 14000)) finishAt = now;
       if (finishAt) target = 100;
@@ -7859,7 +7889,7 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       target = Math.min(target, (el / minMs) * 100);
       const loaded = simulate ? el >= minMs : (L.total > 0 ? L.progress >= 100 && !L.active : el > 3500);
       /* el logo no se va hasta que los objetos 3D (SVG extruidos) terminaron de armarse: antes aparecían recién después del loader */
-      const built = simulate || el > 15000 || (((window.__wbStarted || 0) > 0 || el > 6000) && (window.__wbPend || 0) === 0);
+      const built = simulate || el > 15000 || (((window.__wbStarted || 0) > 0 || el > 6000) && (window.__wbPend || 0) === 0 && (window.__wbWarm || el > 13000));
       if (loaded && built && fontsOk && target >= 99.9) { if (!okSince) okSince = now; } else okSince = 0;
       if (!finishAt && ((okSince && now - okSince > (simulate ? 0 : 700)) || el > 14000)) finishAt = now;
       if (finishAt) target = 100;
