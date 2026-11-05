@@ -187,5 +187,13 @@
   "roles": [
    "cupula"
   ]
+ },
+ {
+  "nombre": "anillo",
+  "titulo": "Anillo fino",
+  "partes": 1,
+  "roles": [
+   "anillo"
+  ]
  }
 ]

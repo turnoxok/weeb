@@ -1,0 +1,73 @@
+{
+ "nombre": "anillo",
+ "titulo": "Anillo fino",
+ "version": 1,
+ "origen": "tuweeb",
+ "madre": "anillo_00",
+ "nota": "Anillo (dona) de sección redonda y fino: el radio del anillo es 5 veces el diámetro del tubo. --escala = diámetro del tubo (1 = tubo de 1; el anillo mide 11 de punta a punta). Sale acostado en el plano XZ al girarlo -90 en X (rx).",
+ "roles": {
+  "anillo": "#f1bc19"
+ },
+ "partes": [
+  {
+   "clave": "anillo_00",
+   "rol": "anillo",
+   "esMadre": true,
+   "objeto": {
+    "type": "image",
+    "url": "./assets/models/tw_anillo.svg",
+    "videoMode": "scroll",
+    "scrollFrom": 0,
+    "scrollTo": 1,
+    "loop": true,
+    "glow": 0,
+    "glass": 0,
+    "hue": 0,
+    "sat": 1,
+    "light": 1,
+    "tint": "#ffffff",
+    "tintAmt": 0,
+    "glassMatch": "",
+    "shadows": true,
+    "lit": false,
+    "litBase": 0.2,
+    "cornerRadius": 0,
+    "borderWidth": 0,
+    "borderColor": "#ffffff",
+    "billboard": false,
+    "ext": 0.01,
+    "bev": 0,
+    "seg": 0,
+    "rev": true,
+    "mat": "matte",
+    "matColor": "#f1bc19",
+    "matRough": null,
+    "float": 0,
+    "floatSpeed": 0,
+    "label": "anillo",
+    "visible": true,
+    "color": "#7ee787",
+    "previewUrl": null,
+    "scrubFrom": 0,
+    "scrubTo": 100,
+    "shCast": true,
+    "revArc": 0
+   },
+   "pose": {
+    "position": [
+     0,
+     0,
+     0
+    ],
+    "scale": 0.125,
+    "rotationY": 0,
+    "hidden": false,
+    "fadeDir": "ltr",
+    "rx": 0,
+    "rz": 0,
+    "sx": 1,
+    "sy": 1
+   }
+  }
+ ]
+}

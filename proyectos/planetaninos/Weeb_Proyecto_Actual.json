@@ -2922,7 +2922,7 @@
   },
   {
    "type": "image",
-   "url": "./assets/models/tw_tubo_cuarto.svg",
+   "url": "./assets/models/tw_anillo.svg",
    "videoMode": "scroll",
    "scrollFrom": 0,
    "scrollTo": 1,
@@ -2958,7 +2958,7 @@
    "scrubFrom": 0,
    "scrubTo": 100,
    "shCast": true,
-   "revArc": 360,
+   "revArc": 0,
    "id": "obj-1793876728535-0"
   },
   {
@@ -9559,7 +9559,7 @@
      1.0,
      4.0
     ],
-    "scale": 0.5,
+    "scale": 0.125,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
@@ -9574,7 +9574,7 @@
      1.0,
      4.0
     ],
-    "scale": 0.5,
+    "scale": 0.125,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
@@ -9589,7 +9589,7 @@
      1.0,
      4.0
     ],
-    "scale": 0.5,
+    "scale": 0.125,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
@@ -9604,7 +9604,7 @@
      1.0,
      4.0
     ],
-    "scale": 0.5,
+    "scale": 0.125,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
@@ -9619,7 +9619,7 @@
      1.0,
      4.0
     ],
-    "scale": 0.5,
+    "scale": 0.125,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
@@ -9634,7 +9634,7 @@
      1.0,
      4.0
     ],
-    "scale": 0.5,
+    "scale": 0.125,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
@@ -9649,7 +9649,7 @@
      1.0,
      4.0
     ],
-    "scale": 0.5,
+    "scale": 0.125,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
@@ -9664,7 +9664,7 @@
      1.0,
      4.0
     ],
-    "scale": 0.5,
+    "scale": 0.125,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
@@ -9679,7 +9679,7 @@
      1.0,
      4.0
     ],
-    "scale": 0.5,
+    "scale": 0.125,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
@@ -9694,7 +9694,7 @@
      1.0,
      4.0
     ],
-    "scale": 0.5,
+    "scale": 0.125,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
