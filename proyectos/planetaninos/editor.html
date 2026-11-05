@@ -4234,7 +4234,8 @@ function SvgExtrudeBody({ url, data, fade, hasFade, shadows }) {
    ============================================================ */
 function isBallsUrl(u) { return typeof u === "string" &amp;&amp; u.indexOf("balls:") === 0; }
 function ballsLayout(d, lite) {
-  const W = Math.max(0.1, d.ballW ?? 4), D = Math.max(0.1, d.ballD ?? 2), L = Math.max(1, Math.round(d.ballL ?? 3));
+  const shape = d.ballShape === "round" || d.ballShape === "oval" ? d.ballShape : "rect";
+  const W = Math.max(0.1, d.ballW ?? 4), D = shape === "round" ? W : Math.max(0.1, d.ballD ?? 2), L = Math.max(1, Math.round(d.ballL ?? 3));
   const dia = Math.max(0.02, d.ballR ?? 0.16), jit = Math.min(1, Math.max(0, d.ballJit ?? 0.5)), dark = Math.min(0.9, Math.max(0, d.ballDark ?? 0.35));
   const cols = (Array.isArray(d.ballCols) &amp;&amp; d.ballCols.length ? d.ballCols : ["#8149bd", "#fc9835", "#78c944"]).map((c) =&gt; new THREE.Color(c));
   const cap = lite ? 1200 : 5000;
@@ -4250,6 +4251,7 @@ function ballsLayout(d, lite) {
       for (let j = 0; j &lt; nz &amp;&amp; out.length &lt; cap; j++) {
         const x = Math.max(-mx, Math.min(mx, -W / 2 + (i + 0.5) * cx + (k % 2 ? cx * 0.3 : 0) + (rnd() - 0.5) * jit * cx * 0.8));
         const z = Math.max(-mz, Math.min(mz, -D / 2 + (j + 0.5) * cz + (k % 2 ? cz * 0.3 : 0) + (rnd() - 0.5) * jit * cz * 0.8));
+        if (shape !== "rect" &amp;&amp; Math.hypot(mx ? x / mx : 0, mz ? z / mz : 0) &gt; 1) continue;   // redonda / ovalada: se descartan las que quedan fuera del óvalo
         const y = dia / 2 + k * dia * 0.8 + (k === L - 1 ? rnd() * jit * dia * 0.7 : 0);
         const c = cols[Math.floor(rnd() * cols.length) % cols.length].clone().multiplyScalar(sh * (0.94 + rnd() * 0.1));
         out.push({ x, y, z, c });
@@ -4260,7 +4262,7 @@ function ballsLayout(d, lite) {
 }
 function BallsBody({ data, fade, hasFade, shadows }) {
   const lite = React.useContext(PerfCtx).tier &lt; 2;
-  const key = JSON.stringify([data.ballW, data.ballD, data.ballL, data.ballR, data.ballJit, data.ballDark, data.ballSeed, data.ballCols, lite]);
+  const key = JSON.stringify([data.ballW, data.ballD, data.ballL, data.ballR, data.ballJit, data.ballDark, data.ballSeed, data.ballCols, data.ballShape, lite]);
   const list = useMemo(() =&gt; ballsLayout(data, lite), [key]);
   const dia = Math.max(0.02, data.ballR ?? 0.16);
   const geo = useMemo(() =&gt; new THREE.SphereGeometry(dia / 2, lite ? 10 : 20, lite ? 7 : 14), [dia, lite]);
@@ -7300,6 +7302,66 @@ function SceneCameraDriver({ target, active }) {
   return null;
 }
 
+/* Cámara libre tipo videojuego (reemplaza al OrbitControls): W A S D para moverte, Q / E para bajar y subir, Shift para ir más rápido,
+   arrastrar con el mouse para mirar (sin tope para girar) y la rueda para cambiar la velocidad. Parte de donde estaba la cámara de la pose.
+   Deja en orbitRef.current.target un punto 10 unidades al frente, que es lo que usa «Capturar vista». */
+function FlyControls({ orbitRef, autoRotate }) {
+  const { camera, gl } = useThree();
+  const st = useRef({ yaw: 0, pitch: 0, keys: {}, speed: 5, drag: null, target: new THREE.Vector3() });
+  useEffect(() => {
+    const s = st.current;
+    const e0 = new THREE.Euler().setFromQuaternion(camera.quaternion, "YXZ");
+    s.yaw = e0.y; s.pitch = e0.x;
+    s.target.copy(camera.position).addScaledVector(new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion), 10);
+    orbitRef.current = { target: s.target };
+    const el = gl.domElement;
+    const typing = () => { const a = document.activeElement; return !!a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA" || a.tagName === "SELECT" || a.isContentEditable); };
+    const KEYS = ["KeyW", "KeyA", "KeyS", "KeyD", "KeyQ", "KeyE", "ShiftLeft", "ShiftRight"];
+    const kd = (ev) => { if (typing() || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (KEYS.includes(ev.code)) s.keys[ev.code] = true; };
+    const ku = (ev) => { delete s.keys[ev.code]; };
+    const bl = () => { s.keys = {}; s.drag = null; };
+    const pd = (ev) => { if (ev.button === 1) return; s.drag = { x: ev.clientX, y: ev.clientY }; try { el.setPointerCapture(ev.pointerId); } catch (err) {} };
+    const pm = (ev) => {
+      const d = s.drag; if (!d) return;
+      const dx = ev.clientX - d.x, dy = ev.clientY - d.y; d.x = ev.clientX; d.y = ev.clientY;
+      const k = 0.0025 * ((camera.fov || 50) / 50);
+      s.yaw -= dx * k; s.pitch = Math.max(-1.5, Math.min(1.5, s.pitch - dy * k));
+    };
+    const pu = (ev) => { s.drag = null; try { el.releasePointerCapture(ev.pointerId); } catch (err) {} };
+    const wh = (ev) => { ev.preventDefault(); s.speed = Math.max(0.3, Math.min(60, s.speed * (ev.deltaY < 0 ? 1.2 : 1 / 1.2))); };
+    const cm = (ev) => ev.preventDefault();
+    window.addEventListener("keydown", kd); window.addEventListener("keyup", ku); window.addEventListener("blur", bl);
+    el.addEventListener("pointerdown", pd); el.addEventListener("pointermove", pm); el.addEventListener("pointerup", pu); el.addEventListener("pointercancel", pu);
+    el.addEventListener("wheel", wh, { passive: false }); el.addEventListener("contextmenu", cm);
+    return () => {
+      window.removeEventListener("keydown", kd); window.removeEventListener("keyup", ku); window.removeEventListener("blur", bl);
+      el.removeEventListener("pointerdown", pd); el.removeEventListener("pointermove", pm); el.removeEventListener("pointerup", pu); el.removeEventListener("pointercancel", pu);
+      el.removeEventListener("wheel", wh); el.removeEventListener("contextmenu", cm);
+      orbitRef.current = null;
+    };
+  }, [camera, gl, orbitRef]);
+  useFrame((_, delta) => {
+    const s = st.current, dt = Math.min(delta, 0.1);
+    if (autoRotate) {   // «Rotar»: da vueltas alrededor del punto que estás mirando
+      const a = 0.35 * dt, c = Math.cos(a), sn = Math.sin(a), p = camera.position, t = s.target;
+      const dx = p.x - t.x, dz = p.z - t.z;
+      p.x = t.x + dx * c + dz * sn; p.z = t.z - dx * sn + dz * c; s.yaw += a;
+    }
+    camera.rotation.set(s.pitch, s.yaw, 0, "YXZ");
+    camera.updateMatrixWorld();
+    const k = s.keys, sp = s.speed * ((k.ShiftLeft || k.ShiftRight) ? 3 : 1) * dt;
+    const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion), right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+    if (k.KeyW) camera.position.addScaledVector(fwd, sp);
+    if (k.KeyS) camera.position.addScaledVector(fwd, -sp);
+    if (k.KeyD) camera.position.addScaledVector(right, sp);
+    if (k.KeyA) camera.position.addScaledVector(right, -sp);
+    if (k.KeyE) camera.position.y += sp;
+    if (k.KeyQ) camera.position.y -= sp;
+    s.target.copy(camera.position).addScaledVector(fwd, 10);
+  });
+  return null;
+}
+
 /* Mientras "Cámara libre" está activa, este componente lee en cada
    frame la posición/target/fov real de la cámara orbitada a mano y los
    guarda en liveCameraRef — así el botón "Capturar cámara libre" (en
@@ -8107,13 +8169,7 @@ function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate
               peleaban por la cámara → sensación de "traba" al activar
               Cámara libre. Ahora solo uno de los dos está montado a la
               vez, así nunca compiten. */}
-          <OrbitControls
-            ref={orbitRef}
-            makeDefault
-            target={cameraTarget ? cameraTarget.lookAt : [0, 0.5, 0]}
-            autoRotate={autoRotate}
-            autoRotateSpeed={2.2}
-          />
+          <FlyControls orbitRef={orbitRef} autoRotate={autoRotate} />
           <LiveCameraTracker orbitRef={orbitRef} liveCameraRef={liveCameraRef} active={true} />
         </>
       )}
@@ -9009,7 +9065,7 @@ ${kfLines}
     ext: ${(o.ext || 0) > 0 ? Math.max(0.00001, Math.round(o.ext * 100000) / 100000) : 0},
     bev: ${fmtNum(o.bev ?? 0.3)},
     seg: ${fmtNum(o.seg || 0)},
-${o.url && o.url.indexOf("balls:") === 0 ? `    ballW: ${fmtNum(o.ballW ?? 4)}, ballD: ${fmtNum(o.ballD ?? 2)}, ballL: ${fmtNum(o.ballL ?? 3)}, ballR: ${fmtNum(o.ballR ?? 0.16)}, ballJit: ${fmtNum(o.ballJit ?? 0.5)}, ballDark: ${fmtNum(o.ballDark ?? 0.35)}, ballSeed: ${fmtNum(o.ballSeed ?? 1)}, ballRough: ${fmtNum(o.ballRough ?? 0.3)}, ballCols: ${JSON.stringify(o.ballCols || ["#8149bd", "#fc9835", "#78c944"])},\n` : ""}    rev: ${o.rev ? "true" : "false"},
+${o.url && o.url.indexOf("balls:") === 0 ? `    ballW: ${fmtNum(o.ballW ?? 4)}, ballD: ${fmtNum(o.ballD ?? 2)}, ballL: ${fmtNum(o.ballL ?? 3)}, ballR: ${fmtNum(o.ballR ?? 0.16)}, ballJit: ${fmtNum(o.ballJit ?? 0.5)}, ballDark: ${fmtNum(o.ballDark ?? 0.35)}, ballSeed: ${fmtNum(o.ballSeed ?? 1)}, ballRough: ${fmtNum(o.ballRough ?? 0.3)}, ballCols: ${JSON.stringify(o.ballCols || ["#8149bd", "#fc9835", "#78c944"])}, ballShape: ${JSON.stringify(o.ballShape || "rect")},\n` : ""}    rev: ${o.rev ? "true" : "false"},
     revArc: ${fmtNum(o.revArc || 0)},
     mat: ${JSON.stringify(o.mat || "plastic")},
     matColor: ${JSON.stringify(o.matColor || "")},
@@ -11893,12 +11949,13 @@ function App() {
           const U = (k) => (v) => updateObject(o.id, { [k]: v });
           const setCol = (i, v) => updateObject(o.id, { ballCols: cols.map((c, j) => (j === i ? v : c)) });
           const dia = Math.max(0.02, o.ballR ?? 0.16), st = dia * 0.94;
-          const est = Math.min(5000, Math.max(1, Math.floor((o.ballW ?? 4) / st)) * Math.max(1, Math.floor((o.ballD ?? 2) / st)) * Math.max(1, Math.round(o.ballL ?? 3)));
+          const est = Math.min(5000, Math.round(Math.max(1, Math.floor((o.ballW ?? 4) / st)) * Math.max(1, Math.floor(((o.ballShape === "round" ? o.ballW : o.ballD) ?? 2) / st)) * Math.max(1, Math.round(o.ballL ?? 3)) * (o.ballShape === "round" || o.ballShape === "oval" ? 0.785 : 1)));
           return (
             <>
               <div className="grp-t" style={{ marginTop: 4 }}>Relleno de pelotas · unas {est} (en celular se bajan solas)</div>
-              <Slider label="Ancho de la caja" min={0.3} max={30} step={0.05} value={o.ballW ?? 4} onChange={U("ballW")} />
-              <Slider label="Largo de la caja" min={0.3} max={30} step={0.05} value={o.ballD ?? 2} onChange={U("ballD")} />
+              <SelectRow label="Forma" value={o.ballShape || "rect"} onChange={U("ballShape")} options={[["rect", "Cuadrada"], ["round", "Redonda"], ["oval", "Ovalada"]]} />
+              <Slider label={o.ballShape === "round" ? "Diámetro" : "Ancho de la caja"} min={0.3} max={30} step={0.05} value={o.ballW ?? 4} onChange={U("ballW")} />
+              {o.ballShape !== "round" && <Slider label="Largo de la caja" min={0.3} max={30} step={0.05} value={o.ballD ?? 2} onChange={U("ballD")} />}
               <Slider label="Capas de pelotas" min={1} max={8} step={1} value={o.ballL ?? 3} onChange={U("ballL")} />
               <Slider label="Tamaño de cada pelota" min={0.04} max={0.6} step={0.005} value={o.ballR ?? 0.16} onChange={U("ballR")} />
               <Slider label="Desorden / relieve" min={0} max={1} step={0.01} value={o.ballJit ?? 0.5} onChange={U("ballJit")} />
@@ -12075,6 +12132,11 @@ function App() {
             </>
           )}
         </div>
+        {freeOrbit && !exporting && (
+          <div style={{ position: "absolute", left: "50%", bottom: 12, transform: "translateX(-50%)", zIndex: 20, pointerEvents: "none", background: "rgba(10,12,20,.72)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 8, padding: "6px 10px", color: "#cfd6e6", fontSize: 11, whiteSpace: "nowrap" }}>
+            W A S D mover · Q / E bajar y subir · Shift rápido · arrastrá para mirar · rueda = velocidad
+          </div>
+        )}
         <div className="scene-box" style={vidBox ? { position: "fixed", inset: "auto", left: 0, top: 0, width: vidBox.w, height: vidBox.h } : (section === "pages" ? { visibility: "hidden" } : undefined)}>
         <Canvas key={canvasKey} onCreated={onCanvasCreated} shadows="soft" camera={{ position: [0, 0.3, 3.5], fov: 35, near: Math.min(2, Math.max(0.01, +postFx.camNear || 0.1)) }} dpr={exporting ? 1 : [1, 1.5]} gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}>
           <Scene pose={currentPose} onBonesFound={setFoundMap} cameraTarget={currentCamTarget} sceneCameraActive={sceneCameraActive} autoRotate={!exporting && autoRotate} movement={currentMovement} objects={exporting ? renderObjects : viewObjects} showObjects={exporting || showObjects} showGrid={!exporting && showGrid} fx={renderFx} showFx={exporting || showFx} orbitRef={orbitRef} liveCameraRef={liveCameraRef} modelUrl={modelUrl} postFx={postFx} charScale={charScale} charCenterY={charCenterY} charAnchorRef={charAnchorRef} trail={trail} reflection={reflection}
