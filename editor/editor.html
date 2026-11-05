@@ -3383,7 +3383,7 @@ function SceneObjectText({ data }) {
   if (!texture) return <group ref={groupRef} />;
   const refH = texture.userData.refH || texture.image.height;
   const mesh = (
-    <group ref={zRef}><mesh key={geo ? "g" : "p"} renderOrder={10} frustumCulled={!geo} geometry={geo || undefined} castShadow={!!sd} receiveShadow={!!data.lit} customDepthMaterial={sd ? sd.depth : undefined} customDistanceMaterial={sd ? sd.dist : undefined} scale={[texture.image.width / refH, texture.image.height / refH, 1]}>
+    <group ref={zRef}><mesh key={geo ? "g" : "p"} renderOrder={((SVG_MATS[data.mat] || {}).alpha || (SVG_MATS[data.mat] || {}).glass) ? 12 : 10} frustumCulled={!geo} geometry={geo || undefined} castShadow={!!sd} receiveShadow={!!data.lit} customDepthMaterial={sd ? sd.depth : undefined} customDistanceMaterial={sd ? sd.dist : undefined} scale={[texture.image.width / refH, texture.image.height / refH, 1]}>
       {!geo && <planeGeometry args={[1, 1]} />}
       <TexMaterial map={texture} lit={data.lit} litBase={data.litBase} shadowCut={!!data.shCast} matRef={(m) => { discardClearPixels(m); sharpenTextAlpha(m); if (hasFade) patchFadeMaterial(m, fade); if (geo) patchTextAnimMaterial(m, ta); }} />
     </mesh></group>
@@ -7758,7 +7758,7 @@ function ObjectPreviewText({ obj, fade }) {
   if (!texture) return null;
   const refH = texture.userData.refH || texture.image.height;
   const mesh = (
-    <mesh key={geo ? "g" : "p"} renderOrder={10} frustumCulled={!geo} geometry={geo || undefined} castShadow={!!sd} receiveShadow={!!obj.lit} customDepthMaterial={sd ? sd.depth : undefined} customDistanceMaterial={sd ? sd.dist : undefined}
+    <mesh key={geo ? "g" : "p"} renderOrder={((SVG_MATS[obj.mat] || {}).alpha || (SVG_MATS[obj.mat] || {}).glass) ? 12 : 10} frustumCulled={!geo} geometry={geo || undefined} castShadow={!!sd} receiveShadow={!!obj.lit} customDepthMaterial={sd ? sd.depth : undefined} customDistanceMaterial={sd ? sd.dist : undefined}
       scale={[(obj.scale * (obj.sx ?? 1) * texture.image.width) / refH, (obj.scale * (obj.sy ?? 1) * texture.image.height) / refH, 1]}
       position={obj.billboard ? [0, 0, 0] : obj.position}
       rotation={obj.billboard ? [0, 0, ((obj.rz || 0) * Math.PI) / 180] : eulYXZ(obj.rx, obj.rotationY, obj.rz)}
