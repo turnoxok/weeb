@@ -2928,6 +2928,9 @@ function floatOffset(data, clockT) {
   _FLO.rz = rot * 0.6 * Math.sin(t * w * 0.61 + ph * 2.3);
   return _FLO;
 }
+/* Orden de giro/estirado: true = el estirado (ancho/alto) se aplica ANTES del giro en Z, igual que en el editor (lo que ves en el editor es lo que sale en el sitio).
+   false = orden anterior (se deja así en Lemadavami para no mover lo que ya está publicado). */
+const ROT_RS = true;
 function useObjectTransformRef(keyframes, billboard, own, data) {
   const groupRef = useRef(null);
   const fade = useMemo(() => makeFadeUniforms(), []);
@@ -2961,10 +2964,11 @@ function useObjectTransformRef(keyframes, billboard, own, data) {
       g.rotation.order = "YXZ";
       g.rotation.y = damp(g.rotation.y, (kf.rotationY * Math.PI) / 180 + fl.ry, dk, delta);
       g.rotation.x = damp(g.rotation.x, ((kf.rx || 0) * Math.PI) / 180, dk, delta);   // inclinación (acostar como piso)
+      if (ROT_RS) g.rotation.z = damp(g.rotation.z, ((kf.rz || 0) * Math.PI) / 180 + fl.rz, dk, delta);   // el giro en Z va junto con los otros giros (igual que en el editor)
     }
     if (hasFade) driveFade(g, state.camera, fade, kf.fade, own);
     fade.uBlr.value = hasBlur ? Math.max(0, kf.bl || 0) * 0.01 : 0;
-    if (zRef.current) zRef.current.rotation.z = damp(zRef.current.rotation.z, ((kf.rz || 0) * Math.PI) / 180 + fl.rz, dk, delta);
+    if (zRef.current) zRef.current.rotation.z = (ROT_RS && !billboard) ? 0 : damp(zRef.current.rotation.z, ((kf.rz || 0) * Math.PI) / 180 + fl.rz, dk, delta);
   });
   return { groupRef, fade, hasFade, live, zRef };
 }
