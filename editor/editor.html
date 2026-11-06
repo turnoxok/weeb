@@ -2954,7 +2954,9 @@ function useObjectTransformRef(keyframes, billboard, own, data) {
     const an = hasFadeOnly && !own ? animFor(kf.fade.dir, kf.fade.amt, kf.fade.out) : _ANIM_ID;
     const fl = floatOffset(data, state.clock.elapsedTime);
     g.position.set(b.x + an.dx, b.y + an.dy + fl.dy, b.z);
-    g.scale.set(b.s * b.sx * an.s * an.sx, b.s * b.sy * an.s * an.sy, b.s * an.s);
+    // Las pelotas no se estiran (su forma se define con ancho/largo/forma); el editor tampoco aplica el estirado a las pelotas.
+    const ns = String((data || {}).url || "").indexOf("balls:") === 0;
+    g.scale.set(b.s * (ns ? 1 : b.sx) * an.s * an.sx, b.s * (ns ? 1 : b.sy) * an.s * an.sy, b.s * an.s);
     if (!billboard) {
       g.rotation.order = "YXZ";
       g.rotation.y = damp(g.rotation.y, (kf.rotationY * Math.PI) / 180 + fl.ry, dk, delta);
