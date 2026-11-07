@@ -10841,6 +10841,50 @@ function App() {
       return n;
     });
   };
+  /* Mientras se arrastra, si el puntero se acerca al borde de arriba/abajo del panel, la lista se desplaza sola. */
+  const autoScrollDrag = (e) => {
+    if (!dragInfo) return;
+    let el = e.currentTarget;
+    while (el && el !== document.body && !(el.scrollHeight > el.clientHeight + 4 && /(auto|scroll)/.test(getComputedStyle(el).overflowY))) el = el.parentElement;
+    if (!el || el === document.body) return;
+    const r = el.getBoundingClientRect(), zone = 70;
+    if (e.clientY < r.top + zone) el.scrollTop -= Math.ceil((1 - Math.max(0, e.clientY - r.top) / zone) * 22);
+    else if (e.clientY > r.bottom - zone) el.scrollTop += Math.ceil((1 - Math.max(0, r.bottom - e.clientY) / zone) * 22);
+  };
+  const folderSubtree = (fid) => { const ids = new Set([fid]); let grew = true; while (grew) { grew = false; folders.forEach((f) => { if (f.parent && ids.has(f.parent) && !ids.has(f.id)) { ids.add(f.id); grew = true; } }); } return ids; };
+  const folderMembers = (fid) => { const ids = folderSubtree(fid); return objects.filter((o) => ids.has(folderOf(o))); };
+  const folderHiddenHere = (fid) => { const m = folderMembers(fid); return m.length > 0 && m.every((o) => { const t = objectTransformsByKf[o.id] && objectTransformsByKf[o.id][activeStage]; return !!(t && t.hidden); }); };
+  /* Ojo de la carpeta: oculta / muestra TODO lo de adentro, solo en la pose actual. */
+  const toggleFolderHere = (fid) => {
+    const hide = !folderHiddenHere(fid), m = folderMembers(fid);
+    setObjectTransformsByKf((prev) => { const n = { ...prev }; m.forEach((o) => { if (n[o.id] && n[o.id][activeStage]) n[o.id] = { ...n[o.id], [activeStage]: { ...n[o.id][activeStage], hidden: hide } }; }); return n; });
+  };
+  /* Duplicar carpeta: copia las subcarpetas y todos los objetos (con sus hijos) y los corre 0,6 en X para verlos. */
+  const duplicateFolder = (fid) => {
+    const f0 = folders.find((x) => x.id === fid);
+    if (!f0) return;
+    const ids = folderSubtree(fid), stamp = Date.now(), fmap = {};
+    [...ids].forEach((id, k) => { fmap[id] = `fld-${stamp}-${k}`; });
+    const newFolders = folders.filter((f) => ids.has(f.id)).map((f) => ({ id: fmap[f.id], name: f.id === fid ? f.name + " (copia)" : f.name, parent: f.id === fid ? f.parent || null : fmap[f.parent] }));
+    const members = objects.filter((o) => ids.has(folderOf(o)));
+    const omap = {}; members.forEach((o, k) => { omap[o.id] = `obj-${stamp}-${k}`; });
+    const used = objects.map((o, k) => o.color || PALETTE[k % PALETTE.length]);
+    const copies = [], newTr = {};
+    members.forEach((o) => {
+      const c = JSON.parse(JSON.stringify(o));
+      c.id = omap[o.id]; c.previewUrl = o.previewUrl;
+      const isRoot = !o.parent || !omap[o.parent];
+      if (!isRoot) c.parent = omap[o.parent]; else { delete c.parent; c.folder = fmap[o.folder]; }
+      const col = PALETTE.find((q) => !used.includes(q)) || o.color; c.color = col; used.push(col);
+      const tr = JSON.parse(JSON.stringify(objectTransformsByKf[o.id] || {}));
+      if (isRoot) Object.values(tr).forEach((t) => { if (t && Array.isArray(t.position)) t.position[0] += 0.6; });
+      copies.push(c); newTr[c.id] = tr;
+    });
+    setFolders((prev) => [...prev, ...newFolders]);
+    setObjects((prev) => [...prev, ...copies]);
+    setObjectTransformsByKf((prev) => ({ ...prev, ...newTr }));
+    setSelFolder(fmap[fid]);
+  };
   const dropOnFolder = (fid) => {   // fid null = sacar de toda carpeta (queda suelto)
     const d = dragInfo;
     setDragInfo(null);
@@ -10854,7 +10898,6 @@ function App() {
       if (o.parent && objects.some((x) => x.id === o.parent)) setObjectParent(o.id, "");   // se suelta de su madre y queda donde estaba
       updateObject(o.id, { folder: fid || null });
     }
-    if (fid) setOpenFolders((s) => new Set(s).add(fid));
   };
   const dropOnObject = (targetId) => {   // soltar un objeto sobre otro = pasa a ser hijo de esa madre
     const d = dragInfo;
@@ -10863,7 +10906,6 @@ function App() {
     for (let c = objects.find((x) => x.id === targetId), n = 0; c && n++ < 12; c = objects.find((x) => x.id === c.parent)) if (c.id === d.id) return;   // no meter una madre dentro de su propio hijo
     setObjectParent(d.id, targetId);
     updateObject(d.id, { folder: null });
-    setOpenGroups((g) => new Set(g).add(targetId));
   };
   const setObjectTransform = (id, field, axis, value) => {
     const fixedObj = !!(objects.find((q) => q.id === id) || {}).fixed && ["position", "scale", "rotationY", "rx", "rz"].includes(field);
@@ -12712,7 +12754,7 @@ function App() {
                   </div>
                 )}
                 {objects.length > 6 && <input type="text" placeholder={`Buscar entre ${objects.length} objetos…`} value={objSearch} onChange={(e) => setObjSearch(e.target.value)} style={{ width: "100%", marginBottom: 6 }} />}
-                <div className="outliner">
+                <div className="outliner" onDragOver={autoScrollDrag}>
                   {(() => {
                     const q = objSearch.trim().toLowerCase();
                     const rowHidden = (o) => (hiddenByGroup(o) && !q && !(selObj && selObj.id === o.id)) || (objOnlyVisible && !isVisibleHere(o) && !(selObj && selObj.id === o.id)) || (q && !String(o.label).toLowerCase().includes(q) && !(selObj && selObj.id === o.id));
@@ -12739,6 +12781,8 @@ function App() {
                             onDragOver={(e) => { if (dragInfo) e.preventDefault(); }} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); dropOnFolder(f.id); }}>
                             <span className="oico" style={{ color: "#38bdf8" }}>{open ? "▾" : "▸"}</span>
                             <span className="oname" style={{ color: "#38bdf8", fontWeight: 600 }}>{f.name} <span style={{ opacity: 0.6, fontWeight: 400 }}>({countIn(f.id)})</span></span>
+                            <button className="mini" title="Mostrar / ocultar toda la carpeta en esta pose" onClick={(e) => { e.stopPropagation(); toggleFolderHere(f.id); }}><Icon name={folderHiddenHere(f.id) ? "eyeoff" : "eye"} size={14} /></button>
+                            <button className="mini" title="Duplicar la carpeta con todo lo de adentro" onClick={(e) => { e.stopPropagation(); duplicateFolder(f.id); }}><Icon name="copy" size={14} /></button>
                             <button className="mini" title="Cambiar nombre" onClick={(e) => { e.stopPropagation(); renameFolder(f.id); }}><Icon name="text" size={14} /></button>
                             <button className="mini danger" title="Borrar la carpeta (lo de adentro no se borra, queda suelto o en la carpeta de arriba)" onClick={(e) => { e.stopPropagation(); removeFolder(f.id); }}><Icon name="trash" size={14} /></button>
                           </div>
