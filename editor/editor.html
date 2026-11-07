@@ -8116,7 +8116,7 @@ function ObjectPreviewConfetti({ obj }) {
   if (!f || !t || t.progress <= f.progress) return null;
   return <ConfettiSim key={JSON.stringify([cfg, f.progress, t.progress])} cfg={cfg} from={f.progress} to={t.progress} lite={false} getProgress={getCfProgress} />;
 }
-function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate, movement, objects, showObjects, showGrid, fx, showFx, orbitRef, liveCameraRef, modelUrl, postFx, charScale, charCenterY, charAnchorRef, trail, reflection, markers, selectedObjectId, onSelectObject, gizmo, freeSpeed, freeLook, onFreeSpeed }) {
+function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate, movement, objects, showObjects, showGrid, fx, showFx, orbitRef, liveCameraRef, modelUrl, postFx, charScale, charCenterY, charAnchorRef, trail, reflection, markers, selectedObjectId, onSelectObject, gizmo, freeSpeed, freeLook, onFreeSpeed, pickRef }) {
   const envOn = false;
   const envInt = 0;
   const rig = "classic";
@@ -8140,12 +8140,15 @@ function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate
       {showGrid && <BlenderGrid />}
       {showObjects &&
         objects.filter((o) => o.visible).map((o) => (
-          <ObjectBoundary key={o.id + "|" + o.url + "|" + (o.previewUrl || "")}>
-            <Suspense fallback={null}>
-              <ObjectPreview obj={o} />
-            </Suspense>
-          </ObjectBoundary>
+          <group key={o.id + "|" + o.url + "|" + (o.previewUrl || "")} userData={{ objId: o.id }}>
+            <ObjectBoundary>
+              <Suspense fallback={null}>
+                <ObjectPreview obj={o} />
+              </Suspense>
+            </ObjectBoundary>
+          </group>
         ))}
+      {pickRef && <ClickPicker pickRef={pickRef} />}
       <MovedGroup movement={movement} anchorRef={charAnchorRef}>
         <ObjectBoundary key={modelUrl}>
           <Suspense fallback={null}>
@@ -10144,11 +10147,40 @@ function ObjectGizmo({ g }) {
     <>
       <group ref={inner} position={g.pos} rotation={new THREE.Euler(g.rot[0] * D, g.rot[1] * D, g.rot[2] * D, "YXZ")} />
       <TransformControls object={inner} mode={g.mode} space={g.space || "world"} size={0.9}
-        onMouseDown={() => { window.__gizDrag = true; }}
+        onMouseDown={() => { window.__gizDrag = true; window.__gizUsed = true; }}
         onMouseUp={() => { window.__gizDrag = false; cancelAnimationFrame(raf.current); flush(); }}
         onObjectChange={() => { if (!raf.current) raf.current = requestAnimationFrame(flush); }} />
     </>
   );
+}
+
+/* Click corto sobre un objeto en el visor = elegirlo (pickRef.current(id) decide si ese objeto se puede elegir).
+   Arrastrar sigue moviendo la cámara; tocar una flecha del gizmo no cambia la selección. */
+function ClickPicker({ pickRef }) {
+  const { gl, camera, scene } = useThree();
+  useEffect(() => {
+    const el = gl.domElement;
+    let d = null;
+    const down = (e) => { if (e.button === 0) d = { x: e.clientX, y: e.clientY, t: performance.now() }; };
+    const up = (e) => {
+      const s0 = d; d = null;
+      if (!s0 || e.button !== 0) return;
+      if (window.__gizUsed) { window.__gizUsed = false; return; }
+      if (Math.hypot(e.clientX - s0.x, e.clientY - s0.y) > 5 || performance.now() - s0.t > 450) return;
+      const r = el.getBoundingClientRect();
+      const rc = new THREE.Raycaster();
+      rc.setFromCamera(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), camera);
+      const hits = rc.intersectObjects(scene.children, true);
+      for (const h of hits) {
+        let o = h.object, id = null, vis = true;
+        while (o) { if (!o.visible) vis = false; if (!id && o.userData && o.userData.objId) id = o.userData.objId; o = o.parent; }
+        if (vis && id && pickRef.current && pickRef.current(id)) break;
+      }
+    };
+    el.addEventListener("pointerdown", down); el.addEventListener("pointerup", up);
+    return () => { el.removeEventListener("pointerdown", down); el.removeEventListener("pointerup", up); };
+  }, [gl, camera, scene, pickRef]);
+  return null;
 }
 
 function ObjectMarkers({ markers, selectedId, onSelect }) {
@@ -10717,6 +10749,7 @@ function App() {
   const setFreeLook = (v) => { setFreeLookS(v); try { localStorage.setItem("weeb-free-look", String(v)); } catch (e) {} };
   const [gizmoMode, setGizmoMode] = useState("translate");   // flechas del visor: translate | rotate | off
   const gizmoApplyRef = useRef(null);
+  const pickRef = useRef(null);
   const [animOnly, setAnimOnly] = useState(false);   // filtro «Solo para animar»: muestra únicamente las carpetas llamadas «Para animar»
   const [dragInfo, setDragInfo] = useState(null);   // { kind: "obj" | "folder", id }
   const [isolate, setIsolate] = useState(false);              // solo el objeto seleccionado y su grupo
@@ -11819,6 +11852,28 @@ function App() {
     }
     setObjectTransformsByKf((prev) => { const ts = prev[selObj.id] || {}; const cur = ts[activeStage] || defaultObjectTransform(); return { ...prev, [selObj.id]: selObj.fixed ? Object.fromEntries(Object.entries(ts).map(([k, t]) => [k, { ...t, ...patch }])) : { ...ts, [activeStage]: { ...cur, ...patch } } }; });
   };
+  /* Click en el visor: con «Solo para animar» solo se eligen cosas de carpetas «Para animar» y se elige la madre entera;
+     sin el filtro se elige la pieza exacta. Abre las carpetas hasta ese objeto y lo muestra en la lista. */
+  const pickEnabled = !exporting && section === "objects" && showObjects;
+  pickRef.current = (id) => {
+    const o0 = objects.find((x) => x.id === id);
+    if (!o0) return false;
+    const t = objectTransformsByKf[id] && objectTransformsByKf[id][activeStage];
+    if (!o0.visible || (t && t.hidden)) return false;
+    let target = o0;
+    if (animOnly) {
+      const ok = new Set(); folders.filter((f) => /^\s*para animar/i.test(f.name)).forEach((f) => folderSubtree(f.id).forEach((x) => ok.add(x)));
+      if (!ok.has(folderOf(o0))) return false;
+      for (let n = 0; target.parent && n++ < 12;) { const par = objects.find((x) => x.id === target.parent); if (!par) break; target = par; }
+    }
+    const chain = new Set(); for (let c = folderOf(target), n = 0; c && n++ < 30;) { chain.add(c); const f = folders.find((x) => x.id === c); c = f ? f.parent : null; }
+    setSelKind("obj"); setSelectedObj(target.id);
+    if (!animOnly) setOpenFolders(chain);
+    const anc = new Set(); for (let c = target, n = 0; c && c.parent && n++ < 12;) { anc.add(c.parent); c = objects.find((x) => x.id === c.parent); }
+    if (anc.size) setOpenGroups((g) => new Set([...g, ...anc]));
+    setTimeout(() => { const el = document.querySelector(".outliner .orow.sel"); if (el && el.scrollIntoView) el.scrollIntoView({ block: "center", behavior: "smooth" }); }, 150);
+    return true;
+  };
   let gizmoProps = null;
   if (!exporting && section === "objects" && showObjects && gizmoMode !== "off") {
     if (gizmoFolderRoots && gizmoFolderRoots.length) {
@@ -12335,7 +12390,7 @@ function App() {
         <div className="scene-box" style={vidBox ? { position: "fixed", inset: "auto", left: 0, top: 0, width: vidBox.w, height: vidBox.h } : (section === "pages" ? { visibility: "hidden" } : undefined)}>
         <Canvas key={canvasKey} onCreated={onCanvasCreated} shadows="soft" camera={{ position: [0, 0.3, 3.5], fov: 35, near: Math.min(2, Math.max(0.01, +postFx.camNear || 0.1)) }} dpr={exporting ? 1 : [1, 1.5]} gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}>
           <Scene pose={currentPose} onBonesFound={setFoundMap} cameraTarget={currentCamTarget} sceneCameraActive={sceneCameraActive} autoRotate={!exporting && autoRotate} movement={currentMovement} objects={exporting ? renderObjects : viewObjects} showObjects={exporting || showObjects} showGrid={!exporting && showGrid} fx={renderFx} showFx={exporting || showFx} orbitRef={orbitRef} liveCameraRef={liveCameraRef} modelUrl={modelUrl} postFx={postFx} charScale={charScale} charCenterY={charCenterY} charAnchorRef={charAnchorRef} trail={trail} reflection={reflection}
-            markers={!exporting && section === "objects" && showObjects && labelMode !== "none" ? markers : null} selectedObjectId={selectedObj} onSelectObject={(id) => { setSelKind("obj"); setSelectedObj(id); }} gizmo={gizmoProps} freeSpeed={freeSpeed} freeLook={freeLook} onFreeSpeed={setFreeSpeed} />
+            markers={!exporting && section === "objects" && showObjects && labelMode !== "none" ? markers : null} selectedObjectId={selectedObj} onSelectObject={(id) => { setSelKind("obj"); setSelectedObj(id); }} gizmo={gizmoProps} freeSpeed={freeSpeed} freeLook={freeLook} onFreeSpeed={setFreeSpeed} pickRef={pickEnabled ? pickRef : null} />
           <CamNearSync near={Math.min(2, Math.max(0.01, +postFx.camNear || 0.1))} />
           {!exporting && <LoadMeterProbe />}
           <VideoExportBridge tag={exportT} bridgeRef={vidBridge} />
