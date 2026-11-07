@@ -10143,7 +10143,7 @@ function ObjectGizmo({ g }) {
   return (
     <>
       <group ref={inner} position={g.pos} rotation={new THREE.Euler(g.rot[0] * D, g.rot[1] * D, g.rot[2] * D, "YXZ")} />
-      <TransformControls object={inner} mode={g.mode} space="world" size={0.9}
+      <TransformControls object={inner} mode={g.mode} space={g.space || "world"} size={0.9}
         onMouseDown={() => { window.__gizDrag = true; }}
         onMouseUp={() => { window.__gizDrag = false; cancelAnimationFrame(raf.current); flush(); }}
         onObjectChange={() => { if (!raf.current) raf.current = requestAnimationFrame(flush); }} />
@@ -11810,7 +11810,7 @@ function App() {
     const Pm = par ? tfMatrix(tfNow(par.id)) : new THREE.Matrix4();
     const inv = Pm.clone().invert();
     const patch = {};
-    if (gizmoMode === "translate") { const lp = V(pos).applyMatrix4(inv); patch.position = [lp.x, lp.y, lp.z]; }
+    if (gizmoMode !== "rotate" && gizmoMode !== "rotateLocal") { const lp = V(pos).applyMatrix4(inv); patch.position = [lp.x, lp.y, lp.z]; }
     else {
       const ml = inv.clone().multiply(new THREE.Matrix4().compose(new THREE.Vector3(), new THREE.Quaternion(...quat), new THREE.Vector3(1, 1, 1)));
       const pp = new THREE.Vector3(), qq = new THREE.Quaternion(), ss = new THREE.Vector3(); ml.decompose(pp, qq, ss);
@@ -11826,8 +11826,9 @@ function App() {
       gizmoProps = { key: "f" + selFolder, mode: "translate", pos: c, rot: [0, 0, 0], onChange: (p, q) => gizmoApplyRef.current && gizmoApplyRef.current(p, q) };
     } else if (selObj && selKind === "obj" && selObj.type !== "confetti") {
       const t = tfNow(selObj.id);
-      const mode = selObj.type === "light" || selObj.fixed ? "translate" : gizmoMode;
-      gizmoProps = { key: "o" + selObj.id + mode, mode, pos: [...t.position], rot: [t.rx || 0, t.rotationY || 0, t.rz || 0], onChange: (p, q) => gizmoApplyRef.current && gizmoApplyRef.current(p, q) };
+      const mode = selObj.type === "light" || selObj.fixed ? "translate" : gizmoMode === "rotateLocal" ? "rotate" : gizmoMode;
+      const space = gizmoMode === "rotateLocal" && mode === "rotate" ? "local" : "world";
+      gizmoProps = { key: "o" + selObj.id + mode + space, mode, space, pos: [...t.position], rot: [t.rx || 0, t.rotationY || 0, t.rz || 0], onChange: (p, q) => gizmoApplyRef.current && gizmoApplyRef.current(p, q) };
     }
   }
   const toast = msgToast ? msgToast : projectLoaded ? "Proyecto cargado" : downloaded ? "index.html descargado" : copiedWhich === "editor" ? "Editor copiado: pegalo en el archivo del repo" : copiedWhich ? "Copiado" : null;
@@ -12320,7 +12321,7 @@ function App() {
             <>
               <span className="vchip" style={{ opacity: 0.35, padding: 0, width: 1 }} />
               <span className={`vchip ${isolate ? "on" : ""}`} title="Muestra solo el objeto seleccionado con su grupo (madre e hijos)" onClick={() => setIsolate(!isolate)}>Aislar</span>
-              <span className={`vchip ${gizmoMode !== "off" ? "on" : ""}`} title="Flechas en el visor para mover o girar con el mouse el objeto (o la carpeta) elegido, solo en la pose actual" onClick={() => setGizmoMode(gizmoMode === "translate" ? "rotate" : gizmoMode === "rotate" ? "off" : "translate")}>Mouse: {gizmoMode === "translate" ? "mover" : gizmoMode === "rotate" ? "girar" : "apagado"}</span>
+              <span className={`vchip ${gizmoMode !== "off" ? "on" : ""}`} title="Flechas en el visor para mover o girar con el mouse el objeto (o la carpeta) elegido, solo en la pose actual. «Girar en su eje» gira sobre los ejes propios del objeto (ej.: la palanca girando en el lugar)" onClick={() => setGizmoMode(gizmoMode === "translate" ? "rotate" : gizmoMode === "rotate" ? "rotateLocal" : gizmoMode === "rotateLocal" ? "off" : "translate")}>Mouse: {gizmoMode === "translate" ? "mover" : gizmoMode === "rotate" ? "girar (ejes del mundo)" : gizmoMode === "rotateLocal" ? "girar en su eje" : "apagado"}</span>
               <span className={`vchip ${showGhosts ? "on" : ""}`} title="Dibuja tenues los objetos que están ocultos en esta pose" onClick={() => setShowGhosts(!showGhosts)}>Fantasmas</span>
               <span className="vchip on" title="Qué etiquetas se ven en el visor: todas, solo los visibles en esta pose, solo el seleccionado o ninguna" onClick={() => setLabelMode(labelMode === "all" ? "visible" : labelMode === "visible" ? "sel" : labelMode === "sel" ? "none" : "all")}>Etiquetas: {labelMode === "all" ? "todas" : labelMode === "visible" ? "visibles" : labelMode === "sel" ? "selección" : "ninguna"}</span>
             </>
