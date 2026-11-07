@@ -10685,6 +10685,7 @@ function App() {
   const [folders, setFolders] = useState([]);
   const [openFolders, setOpenFolders] = useState(() => new Set());
   const [selFolder, setSelFolder] = useState(null);
+  const [animOnly, setAnimOnly] = useState(false);   // filtro «Solo para animar»: muestra únicamente las carpetas llamadas «Para animar»
   const [dragInfo, setDragInfo] = useState(null);   // { kind: "obj" | "folder", id }
   const [isolate, setIsolate] = useState(false);              // solo el objeto seleccionado y su grupo
   const [objSearch, setObjSearch] = useState("");
@@ -12747,6 +12748,7 @@ function App() {
                   <IBtn icon="copy" title="Todos desde la pose anterior" disabled={stageIndex <= 0 || !objects.length} onClick={copyAllObjectTransformsFromPrev} />
                   <IBtn icon="pin" title="Fijar todos en todas las poses" disabled={!objects.length} onClick={applyAllObjectTransformsToAllStages} />
                 </div>
+                {folders.some((f) => /^\s*para animar/i.test(f.name)) && <Switch checked={animOnly} onChange={setAnimOnly} label="Solo para animar (muestra únicamente las carpetas «Para animar»)" />}
                 {objects.length > 3 && <Switch checked={objOnlyVisible} onChange={setObjOnlyVisible} label={`Solo los visibles en esta pose (${objects.filter(isVisibleHere).length} de ${objects.length})`} />}
                 {missingFiles.length > 0 && (
                   <div className="err" style={{ fontSize: 11, lineHeight: 1.4, marginBottom: 6 }}>
@@ -12773,14 +12775,14 @@ function App() {
                     const rowsIn = (fid, depth) => objects.map((o, i) => (folderOf(o) === fid && !rowHidden(o) ? renderRow(o, i, depth) : null));
                     const countIn = (fid) => objects.filter((o) => !o.parent || !objects.some((x) => x.id === o.parent)).filter((o) => folderOf(o) === fid).length + folders.filter((f) => f.parent === fid).reduce((n, f) => n + countIn(f.id), 0);
                     const renderFolder = (f, depth) => {
-                      const open = openFolders.has(f.id) || !!q;
+                      const open = openFolders.has(f.id) || !!q || animOnly;
                       return (
                         <React.Fragment key={f.id}>
                           <div className={`orow ofolder ${selFolder === f.id ? "sel" : ""} ${dragInfo ? "dropok" : ""}`} style={{ marginLeft: depth * 12, "--oc": "#38bdf8" }} onClick={() => toggleFolder(f.id)}
                             draggable onDragStart={(e) => { e.dataTransfer.setData("text/plain", f.id); e.dataTransfer.effectAllowed = "move"; setDragInfo({ kind: "folder", id: f.id }); }} onDragEnd={() => setDragInfo(null)}
                             onDragOver={(e) => { if (dragInfo) e.preventDefault(); }} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); dropOnFolder(f.id); }}>
                             <span className="oico" style={{ color: "#38bdf8" }}>{open ? "▾" : "▸"}</span>
-                            <span className="oname" style={{ color: "#38bdf8", fontWeight: 600 }}>{f.name} <span style={{ opacity: 0.6, fontWeight: 400 }}>({countIn(f.id)})</span></span>
+                            <span className="oname" style={{ color: "#38bdf8", fontWeight: 600 }}>{animOnly && f.parent && folders.some((x) => x.id === f.parent) ? folders.find((x) => x.id === f.parent).name + " › " : ""}{f.name} <span style={{ opacity: 0.6, fontWeight: 400 }}>({countIn(f.id)})</span></span>
                             <button className="mini" title="Mostrar / ocultar toda la carpeta en esta pose" onClick={(e) => { e.stopPropagation(); toggleFolderHere(f.id); }}><Icon name={folderHiddenHere(f.id) ? "eyeoff" : "eye"} size={14} /></button>
                             <button className="mini" title="Duplicar la carpeta con todo lo de adentro" onClick={(e) => { e.stopPropagation(); duplicateFolder(f.id); }}><Icon name="copy" size={14} /></button>
                             <button className="mini" title="Cambiar nombre" onClick={(e) => { e.stopPropagation(); renameFolder(f.id); }}><Icon name="text" size={14} /></button>
@@ -12793,6 +12795,10 @@ function App() {
                       );
                     };
                     const rootFolders = folders.filter((f) => !f.parent || !folders.some((x) => x.id === f.parent));
+                    if (animOnly) {
+                      const af = folders.filter((f) => /^\s*para animar/i.test(f.name));
+                      return <>{af.map((f) => renderFolder(f, 0))}{!af.length && <div className="empty">No hay carpetas «Para animar»</div>}</>;
+                    }
                     return (
                       <>
                         {rootFolders.map((f) => renderFolder(f, 0))}
