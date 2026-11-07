@@ -174,6 +174,8 @@
   .orow:hover { border-color:var(--line2); border-left-color:var(--oc); }
   .orow.sel { background:color-mix(in srgb, var(--oc) 18%, var(--bg2)); border-color:var(--oc); }
   .orow.off { opacity:.45; }
+  .orow.dropok:hover { outline:2px dashed #38bdf8; outline-offset:-2px; }
+  .orow.ofolder { background:color-mix(in srgb, #38bdf8 10%, var(--bg2)); }
   .oico { color:var(--oc); display:flex; }
   .oname { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; }
   .oed { border:1px solid var(--oc); border-top-width:3px; border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:7px; background:var(--bg2); }
@@ -10675,6 +10677,13 @@ function App() {
   const [labelMode, setLabelMode] = useState("visible");     // etiquetas del visor: all | visible | sel | none
   const [openGroups, setOpenGroups] = useState(() => new Set());   // grupos desplegados en la lista (por defecto plegados)
   const hiddenByGroup = (o) => { let q = o, n = 0; while (q && q.parent && n++ < 12) { const par = objects.find((x) => x.id === q.parent); if (!par) return false; if (!openGroups.has(par.id)) return true; q = par; } return false; };
+  /* Carpetas de la lista de Objetos: solo ORGANIZACIÓN. No mueven nada ni cambian el sitio exportado.
+     folders = [{id,name,parent}] (parent = id de otra carpeta o null). Cada objeto "raíz" (sin madre) puede tener o.folder;
+     sus hijos (madre → hijos) siguen a su madre. Proyectos viejos: sin carpetas, todo suelto. */
+  const [folders, setFolders] = useState([]);
+  const [openFolders, setOpenFolders] = useState(() => new Set());
+  const [selFolder, setSelFolder] = useState(null);
+  const [dragInfo, setDragInfo] = useState(null);   // { kind: "obj" | "folder", id }
   const [isolate, setIsolate] = useState(false);              // solo el objeto seleccionado y su grupo
   const [objSearch, setObjSearch] = useState("");
   /* Archivos que el proyecto usa pero no están en la carpeta del sitio (al reabrir un proyecto, lo subido con «Subir archivo» no se conserva:
@@ -10793,6 +10802,67 @@ function App() {
     setObjectTransformsByKf(nextTf);
   };
   const updateObject = (id, patch) => setObjects((prev) => prev.map((o) => (o.id === id ? { ...o, ...patch } : o)));
+  /* ---- Carpetas (solo organización) ---- */
+  const folderOf = (o) => { let q = o, n = 0; while (q && q.parent && n++ < 12) { const par = objects.find((x) => x.id === q.parent); if (!par) break; q = par; } const f = q && q.folder; return f && folders.some((x) => x.id === f) ? f : null; };
+  const folderIsInside = (fid, ancestorId) => { let c = fid, n = 0; while (c && n++ < 30) { if (c === ancestorId) return true; const f = folders.find((x) => x.id === c); c = f ? f.parent : null; } return false; };
+  const createFolder = () => {
+    const name = (window.prompt("Nombre del grupo (carpeta):", "Grupo nuevo") || "").trim();
+    if (!name) return;
+    const id = `fld-${Date.now()}`;
+    const parent = selFolder && folders.some((f) => f.id === selFolder) ? selFolder : null;
+    setFolders((prev) => [...prev, { id, name, parent }]);
+    setOpenFolders((s) => { const n = new Set(s); if (parent) n.add(parent); return n; });
+    setSelFolder(id);
+  };
+  const renameFolder = (id) => {
+    const f = folders.find((x) => x.id === id);
+    const name = f && (window.prompt("Nombre del grupo:", f.name) || "").trim();
+    if (name) setFolders((prev) => prev.map((x) => (x.id === id ? { ...x, name } : x)));
+  };
+  /* Borrar una carpeta no borra nada: lo que tenía adentro pasa a la carpeta de arriba (o queda suelto). */
+  const removeFolder = (id) => {
+    const f = folders.find((x) => x.id === id);
+    if (!f) return;
+    setObjects((prev) => prev.map((o) => (o.folder === id ? { ...o, folder: f.parent || null } : o)));
+    setFolders((prev) => prev.filter((x) => x.id !== id).map((x) => (x.parent === id ? { ...x, parent: f.parent || null } : x)));
+    if (selFolder === id) setSelFolder(null);
+  };
+  /* Acordeón: al abrir una carpeta se pliegan las otras del mismo nivel. */
+  const toggleFolder = (id) => {
+    setSelFolder(id);
+    setOpenFolders((s) => {
+      const n = new Set(s);
+      if (n.has(id)) { n.delete(id); return n; }
+      const me = folders.find((x) => x.id === id);
+      folders.forEach((x) => { if (x.id !== id && (x.parent || null) === ((me && me.parent) || null)) n.delete(x.id); });
+      n.add(id);
+      return n;
+    });
+  };
+  const dropOnFolder = (fid) => {   // fid null = sacar de toda carpeta (queda suelto)
+    const d = dragInfo;
+    setDragInfo(null);
+    if (!d) return;
+    if (d.kind === "folder") {
+      if (d.id === fid || (fid && folderIsInside(fid, d.id))) return;
+      setFolders((prev) => prev.map((x) => (x.id === d.id ? { ...x, parent: fid || null } : x)));
+    } else {
+      const o = objects.find((x) => x.id === d.id);
+      if (!o) return;
+      if (o.parent && objects.some((x) => x.id === o.parent)) setObjectParent(o.id, "");   // se suelta de su madre y queda donde estaba
+      updateObject(o.id, { folder: fid || null });
+    }
+    if (fid) setOpenFolders((s) => new Set(s).add(fid));
+  };
+  const dropOnObject = (targetId) => {   // soltar un objeto sobre otro = pasa a ser hijo de esa madre
+    const d = dragInfo;
+    setDragInfo(null);
+    if (!d || d.kind !== "obj" || d.id === targetId) return;
+    for (let c = objects.find((x) => x.id === targetId), n = 0; c && n++ < 12; c = objects.find((x) => x.id === c.parent)) if (c.id === d.id) return;   // no meter una madre dentro de su propio hijo
+    setObjectParent(d.id, targetId);
+    updateObject(d.id, { folder: null });
+    setOpenGroups((g) => new Set(g).add(targetId));
+  };
   const setObjectTransform = (id, field, axis, value) => {
     const fixedObj = !!(objects.find((q) => q.id === id) || {}).fixed && ["position", "scale", "rotationY", "rx", "rz"].includes(field);
     setObjectTransformsByKf((prev) => {
@@ -11262,6 +11332,7 @@ function App() {
     fxByKf,
     objects: objects.map((o) => ({ ...o, previewUrl: null })),
     objectTransformsByKf,
+    folders,
   });
 
   const restoreProjectState = (p, keep) => {
@@ -11295,6 +11366,8 @@ function App() {
     setFxByKf(p.fxByKf || {});
     setObjects((p.objects || []).map((o) => (keep && histRef.current.prev[o.id] && !o.previewUrl ? { ...o, previewUrl: histRef.current.prev[o.id] } : o)));
     setObjectTransformsByKf(p.objectTransformsByKf || {});
+    setFolders(Array.isArray(p.folders) ? p.folders : []);
+    if (!keep) { setOpenFolders(new Set()); setSelFolder(null); }
     if (keep) {
       if (!loadedStages.some((st) => st.id === activeStage)) setActiveStage(loadedStages[0].id);
       if (selectedObj && !(p.objects || []).some((o) => o.id === selectedObj)) setSelectedObj(null);
@@ -11335,7 +11408,7 @@ function App() {
     const t = setTimeout(histCapture, 450);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [objects, stages, objectTransformsByKf, posesByKf, camsByKf, movesByKf, fxByKf, durationsVh, easings, brandColors, sections, projectName, charScale, charCenterY, postFx, site2d, menu, seo]);
+  }, [objects, folders, stages, objectTransformsByKf, posesByKf, camsByKf, movesByKf, fxByKf, durationsVh, easings, brandColors, sections, projectName, charScale, charCenterY, postFx, site2d, menu, seo]);
   const histGo = (dir) => {
     const h = histRef.current;
     if (!h.reset) { const now = histSnap(); if (now !== h.cur) { h.stack = h.stack.slice(0, h.idx + 1); h.stack.push(now); h.idx = h.stack.length - 1; h.cur = now; } }
@@ -11600,7 +11673,7 @@ function App() {
     setSections(DEFAULT_SECTIONS); setSite2d(DEFAULT_SITE2D); setSelSec(null);
     setStages(st); setDurationsVh([]); setEasings([]);
     setPosesByKf(initialPoses(st)); setCamsByKf(initialCameras(st)); setMovesByKf(initialMovements(st)); setFxByKf(initialFx(st));
-    setObjects([]); setObjectTransformsByKf({}); setSelectedObj(null);
+    setObjects([]); setObjectTransformsByKf({}); setSelectedObj(null); setFolders([]); setSelFolder(null);
     setActiveStage(st[0].id); setScrub(0); setIsPlaying(false);
   };
   window.__cfEd = { stages: stagesComputed, progress: exporting ? exportT : isPreview ? scrub : ((stagesComputed[stageIndex] || {}).progress || 0) };
@@ -12625,6 +12698,7 @@ function App() {
                   <Btn icon="shape" onClick={() => addObject("pinwheel")}>Molinete</Btn>
                   <Btn icon="shape" onClick={() => addObject("sparkler")}>Bengala</Btn>
                   <Btn icon="shape" onClick={addBalls}>Pelotas</Btn>
+                  <button className="btn" style={{ background: "#38bdf8", color: "#04202e", fontWeight: 600 }} title="Crea una carpeta para ordenar objetos (si tenés una carpeta elegida, se crea adentro). No mueve nada del sitio." onClick={createFolder}>Crear grupo</button>
                   <span className="grow" />
                   <IBtn icon="copy" title="Todos desde la pose anterior" disabled={stageIndex <= 0 || !objects.length} onClick={copyAllObjectTransformsFromPrev} />
                   <IBtn icon="pin" title="Fijar todos en todas las poses" disabled={!objects.length} onClick={applyAllObjectTransformsToAllStages} />
@@ -12637,16 +12711,50 @@ function App() {
                 )}
                 {objects.length > 6 && <input type="text" placeholder={`Buscar entre ${objects.length} objetos…`} value={objSearch} onChange={(e) => setObjSearch(e.target.value)} style={{ width: "100%", marginBottom: 6 }} />}
                 <div className="outliner">
-                  {objects.map((o, i) => (hiddenByGroup(o) && !objSearch.trim() && !(selObj && selObj.id === o.id)) || (objOnlyVisible && !isVisibleHere(o) && !(selObj && selObj.id === o.id)) || (objSearch.trim() && !String(o.label).toLowerCase().includes(objSearch.trim().toLowerCase()) && !(selObj && selObj.id === o.id)) ? null : (
-                    <div key={o.id} className={`orow ${selObj && selObj.id === o.id ? "sel" : ""} ${o.visible && !(objectTransformsByKf[o.id] && objectTransformsByKf[o.id][activeStage] && objectTransformsByKf[o.id][activeStage].hidden) ? "" : "off"}`} style={{ "--oc": colorOf(o, i) }} onClick={() => setSelectedObj(o.id)}>
-                      <span className="oico"><Icon name={o.type === "text" ? "text" : o.type === "shape" ? "shape" : o.type === "light" ? "light" : o.type === "smoke" ? "smoke" : o.type === "confetti" || o.type === "balloons" || o.type === "pinwheel" || o.type === "sparkler" ? "shape" : o.type === "image" ? "image" : o.type === "video" ? "video" : "cube"} size={15} /></span>
-                      {objects.some((q) => q.parent === o.id) && <button className="mini" title="Plegar / desplegar el grupo" onClick={(e) => { e.stopPropagation(); setOpenGroups((g) => { const n = new Set(g); if (n.has(o.id)) n.delete(o.id); else n.add(o.id); return n; }); }}>{openGroups.has(o.id) ? "▾" : "▸"}</button>}
-                      <span className="oname">{o.parent && objects.some((q) => q.id === o.parent) ? "↳ " : ""}{o.label}{objects.some((q) => q.parent === o.id) ? " ⛓ " + objects.filter((q) => q.parent === o.id).length : ""}{missingFiles.some((m) => m.id === o.id) ? " ⚠" : ""}</span>
-                      <button className="mini" title="Visible" onClick={(e) => { e.stopPropagation(); updateObject(o.id, { visible: !o.visible }); }}><Icon name={o.visible ? "eye" : "eyeoff"} size={14} /></button>
-                      <button className="mini" title="Duplicar (usa el mismo archivo)" onClick={(e) => { e.stopPropagation(); duplicateObject(o.id); }}><Icon name="copy" size={14} /></button>
-                      <button className="mini danger" title="Eliminar" onClick={(e) => { e.stopPropagation(); removeObject(o.id); }}><Icon name="trash" size={14} /></button>
-                    </div>
-                  ))}
+                  {(() => {
+                    const q = objSearch.trim().toLowerCase();
+                    const rowHidden = (o) => (hiddenByGroup(o) && !q && !(selObj && selObj.id === o.id)) || (objOnlyVisible && !isVisibleHere(o) && !(selObj && selObj.id === o.id)) || (q && !String(o.label).toLowerCase().includes(q) && !(selObj && selObj.id === o.id));
+                    const renderRow = (o, i, depth) => (
+                      <div key={o.id} className={`orow ${selObj && selObj.id === o.id ? "sel" : ""} ${o.visible && !(objectTransformsByKf[o.id] && objectTransformsByKf[o.id][activeStage] && objectTransformsByKf[o.id][activeStage].hidden) ? "" : "off"} ${dragInfo && dragInfo.kind === "obj" && dragInfo.id !== o.id ? "dropok" : ""}`} style={{ "--oc": colorOf(o, i), marginLeft: depth * 12 }} onClick={() => setSelectedObj(o.id)}
+                        draggable onDragStart={(e) => { e.dataTransfer.setData("text/plain", o.id); e.dataTransfer.effectAllowed = "move"; setDragInfo({ kind: "obj", id: o.id }); }} onDragEnd={() => setDragInfo(null)}
+                        onDragOver={(e) => { if (dragInfo && dragInfo.kind === "obj" && dragInfo.id !== o.id) e.preventDefault(); }} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); dropOnObject(o.id); }}>
+                        <span className="oico"><Icon name={o.type === "text" ? "text" : o.type === "shape" ? "shape" : o.type === "light" ? "light" : o.type === "smoke" ? "smoke" : o.type === "confetti" || o.type === "balloons" || o.type === "pinwheel" || o.type === "sparkler" ? "shape" : o.type === "image" ? "image" : o.type === "video" ? "video" : "cube"} size={15} /></span>
+                        {objects.some((q2) => q2.parent === o.id) && <button className="mini" title="Plegar / desplegar el grupo" onClick={(e) => { e.stopPropagation(); setOpenGroups((g) => { const n = new Set(g); if (n.has(o.id)) n.delete(o.id); else n.add(o.id); return n; }); }}>{openGroups.has(o.id) ? "▾" : "▸"}</button>}
+                        <span className="oname">{o.parent && objects.some((q2) => q2.id === o.parent) ? "↳ " : ""}{o.label}{objects.some((q2) => q2.parent === o.id) ? " ⛓ " + objects.filter((q2) => q2.parent === o.id).length : ""}{missingFiles.some((m) => m.id === o.id) ? " ⚠" : ""}</span>
+                        <button className="mini" title="Visible" onClick={(e) => { e.stopPropagation(); updateObject(o.id, { visible: !o.visible }); }}><Icon name={o.visible ? "eye" : "eyeoff"} size={14} /></button>
+                        <button className="mini" title="Duplicar (usa el mismo archivo)" onClick={(e) => { e.stopPropagation(); duplicateObject(o.id); }}><Icon name="copy" size={14} /></button>
+                        <button className="mini danger" title="Eliminar" onClick={(e) => { e.stopPropagation(); removeObject(o.id); }}><Icon name="trash" size={14} /></button>
+                      </div>
+                    );
+                    const rowsIn = (fid, depth) => objects.map((o, i) => (folderOf(o) === fid && !rowHidden(o) ? renderRow(o, i, depth) : null));
+                    const countIn = (fid) => objects.filter((o) => !o.parent || !objects.some((x) => x.id === o.parent)).filter((o) => folderOf(o) === fid).length + folders.filter((f) => f.parent === fid).reduce((n, f) => n + countIn(f.id), 0);
+                    const renderFolder = (f, depth) => {
+                      const open = openFolders.has(f.id) || !!q;
+                      return (
+                        <React.Fragment key={f.id}>
+                          <div className={`orow ofolder ${selFolder === f.id ? "sel" : ""} ${dragInfo ? "dropok" : ""}`} style={{ marginLeft: depth * 12, "--oc": "#38bdf8" }} onClick={() => toggleFolder(f.id)}
+                            draggable onDragStart={(e) => { e.dataTransfer.setData("text/plain", f.id); e.dataTransfer.effectAllowed = "move"; setDragInfo({ kind: "folder", id: f.id }); }} onDragEnd={() => setDragInfo(null)}
+                            onDragOver={(e) => { if (dragInfo) e.preventDefault(); }} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); dropOnFolder(f.id); }}>
+                            <span className="oico" style={{ color: "#38bdf8" }}>{open ? "▾" : "▸"}</span>
+                            <span className="oname" style={{ color: "#38bdf8", fontWeight: 600 }}>{f.name} <span style={{ opacity: 0.6, fontWeight: 400 }}>({countIn(f.id)})</span></span>
+                            <button className="mini" title="Cambiar nombre" onClick={(e) => { e.stopPropagation(); renameFolder(f.id); }}><Icon name="text" size={14} /></button>
+                            <button className="mini danger" title="Borrar la carpeta (lo de adentro no se borra, queda suelto o en la carpeta de arriba)" onClick={(e) => { e.stopPropagation(); removeFolder(f.id); }}><Icon name="trash" size={14} /></button>
+                          </div>
+                          {open && folders.filter((c) => c.parent === f.id).map((c) => renderFolder(c, depth + 1))}
+                          {open && rowsIn(f.id, depth + 1)}
+                          {open && !countIn(f.id) && <div className="empty" style={{ marginLeft: (depth + 1) * 12 }}>Vacía: arrastrá objetos acá</div>}
+                        </React.Fragment>
+                      );
+                    };
+                    const rootFolders = folders.filter((f) => !f.parent || !folders.some((x) => x.id === f.parent));
+                    return (
+                      <>
+                        {rootFolders.map((f) => renderFolder(f, 0))}
+                        {dragInfo && folders.length > 0 && <div className="orow dropok" style={{ justifyContent: "center", opacity: 0.8, fontSize: 11 }} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); dropOnFolder(null); }}>Soltar acá para sacar de la carpeta</div>}
+                        {rowsIn(null, 0)}
+                      </>
+                    );
+                  })()}
                   {!objects.length && <div className="empty">Sin objetos</div>}
                 </div>
                 {selObj && renderObjectEditor(selObj, objects.indexOf(selObj))}
