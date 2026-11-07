@@ -6956,7 +6956,7 @@ import * as THREE from "three";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 import { toCreasedNormals, mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useGLTF, OrbitControls, Grid, useTexture, Billboard, Html, useProgress, MeshReflectorMaterial, ContactShadows } from "@react-three/drei";
+import { useGLTF, OrbitControls, TransformControls, Grid, useTexture, Billboard, Html, useProgress, MeshReflectorMaterial, ContactShadows } from "@react-three/drei";
 import { EffectComposer, Bloom, ToneMapping, N8AO, DepthOfField } from "@react-three/postprocessing";
 import { ToneMappingMode } from "postprocessing";
 
@@ -7334,6 +7334,7 @@ function FlyControls({ orbitRef, autoRotate }) {
     const pm = (ev) => {
       const d = s.drag; if (!d) return;
       const dx = ev.clientX - d.x, dy = ev.clientY - d.y; d.x = ev.clientX; d.y = ev.clientY;
+      if (window.__gizDrag) return;   // se está arrastrando una flecha de mover/girar objeto: la cámara no se mueve
       const k = 0.0025 * ((camera.fov || 50) / 50);
       s.yaw -= dx * k; s.pitch = Math.max(-1.5, Math.min(1.5, s.pitch - dy * k));
     };
@@ -8113,7 +8114,7 @@ function ObjectPreviewConfetti({ obj }) {
   if (!f || !t || t.progress <= f.progress) return null;
   return <ConfettiSim key={JSON.stringify([cfg, f.progress, t.progress])} cfg={cfg} from={f.progress} to={t.progress} lite={false} getProgress={getCfProgress} />;
 }
-function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate, movement, objects, showObjects, showGrid, fx, showFx, orbitRef, liveCameraRef, modelUrl, postFx, charScale, charCenterY, charAnchorRef, trail, reflection, markers, selectedObjectId, onSelectObject }) {
+function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate, movement, objects, showObjects, showGrid, fx, showFx, orbitRef, liveCameraRef, modelUrl, postFx, charScale, charCenterY, charAnchorRef, trail, reflection, markers, selectedObjectId, onSelectObject, gizmo }) {
   const envOn = false;
   const envInt = 0;
   const rig = "classic";
@@ -8170,6 +8171,7 @@ function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate
         />
       )}
       {markers && <ObjectMarkers markers={markers} selectedId={selectedObjectId} onSelect={onSelectObject} />}
+      {gizmo && <ObjectGizmo key={gizmo.key} g={gizmo} />}
       {sceneCameraActive ? (
         <SceneCameraDriver target={cameraTarget} active={true} />
       ) : (
@@ -10127,6 +10129,25 @@ function PathInput({ value, onCommit, placeholder }) {
   );
 }
 /* Marcadores de color en el visor: identifican cada objeto (mismo color que en la lista). */
+/* Flechas (mover) o aros (girar) sobre el objeto elegido. Se arrastran con el mouse y el cambio se guarda en la pose actual.
+   La posición/giro que se pasa es la de MUNDO; el editor lo convierte a lo relativo a la madre. */
+function ObjectGizmo({ g }) {
+  const inner = useRef();
+  const raf = useRef(0);
+  const last = useRef(null);
+  useEffect(() => () => { window.__gizDrag = false; cancelAnimationFrame(raf.current); }, []);
+  const flush = () => { raf.current = 0; const o = inner.current; if (o && g.onChange) g.onChange([o.position.x, o.position.y, o.position.z], [o.quaternion.x, o.quaternion.y, o.quaternion.z, o.quaternion.w]); };
+  const D = Math.PI / 180;
+  return (
+    <TransformControls mode={g.mode} space="world" size={0.9}
+      onMouseDown={() => { window.__gizDrag = true; }}
+      onMouseUp={() => { window.__gizDrag = false; cancelAnimationFrame(raf.current); flush(); }}
+      onObjectChange={() => { if (!raf.current) raf.current = requestAnimationFrame(flush); }}>
+      <group ref={inner} position={g.pos} rotation={new THREE.Euler(g.rot[0] * D, g.rot[1] * D, g.rot[2] * D, "YXZ")} />
+    </TransformControls>
+  );
+}
+
 function ObjectMarkers({ markers, selectedId, onSelect }) {
   return markers.map((m) => (
     <group key={m.id} position={m.position}>
@@ -10685,6 +10706,9 @@ function App() {
   const [folders, setFolders] = useState([]);
   const [openFolders, setOpenFolders] = useState(() => new Set());
   const [selFolder, setSelFolder] = useState(null);
+  const [selKind, setSelKind] = useState("obj");   // lo último que se eligió: un objeto o una carpeta (para las flechas del visor)
+  const [gizmoMode, setGizmoMode] = useState("translate");   // flechas del visor: translate | rotate | off
+  const gizmoApplyRef = useRef(null);
   const [animOnly, setAnimOnly] = useState(false);   // filtro «Solo para animar»: muestra únicamente las carpetas llamadas «Para animar»
   const [dragInfo, setDragInfo] = useState(null);   // { kind: "obj" | "folder", id }
   const [isolate, setIsolate] = useState(false);              // solo el objeto seleccionado y su grupo
@@ -10832,7 +10856,7 @@ function App() {
   };
   /* Acordeón: al abrir una carpeta se pliegan las otras del mismo nivel. */
   const toggleFolder = (id) => {
-    setSelFolder(id);
+    setSelFolder(id); setSelKind("folder");
     setOpenFolders((s) => {
       const n = new Set(s);
       if (n.has(id)) { n.delete(id); return n; }
@@ -11761,6 +11785,43 @@ function App() {
     .map((o) => ({ o, i: renderObjects.indexOf(o) }))
     .filter(({ o }) => labelMode === "all" || (labelMode === "visible" && !o.hidden && o.visible) || (selObj && o.id === selObj.id))
     .map(({ o, i }) => ({ id: o.id, label: o.label, color: colorOf(o, i), position: o.type === "confetti" && o.cfPos ? o.cfPos : o.position, visible: o.visible, hidden: !!o.hidden }));
+  /* ---- Flechas en el visor (mover / girar con el mouse) ----
+     Un objeto: se mueve o gira él (con sus hijos si es madre). Una carpeta: se mueven juntos todos sus objetos sueltos (las madres arrastran a sus hijos). */
+  const gizmoFolderRoots = selKind === "folder" && selFolder && folders.some((f) => f.id === selFolder) ? folderMembers(selFolder).filter((o) => !o.parent || !objects.some((x) => x.id === o.parent)) : null;
+  const tfNow = (id) => (worldTf[id] && worldTf[id][activeStage]) || defaultObjectTransform();
+  gizmoApplyRef.current = (pos, quat) => {
+    const V = (a) => new THREE.Vector3(...a);
+    if (gizmoFolderRoots && gizmoFolderRoots.length) {
+      const c = new THREE.Vector3(); gizmoFolderRoots.forEach((o) => c.add(V(tfNow(o.id).position))); c.multiplyScalar(1 / gizmoFolderRoots.length);
+      const d = V(pos).sub(c);
+      setObjectTransformsByKf((prev) => { const n = { ...prev }; gizmoFolderRoots.forEach((o) => { const ts = n[o.id] || {}; const cur = ts[activeStage]; if (!cur) return; const np = [cur.position[0] + d.x, cur.position[1] + d.y, cur.position[2] + d.z]; n[o.id] = o.fixed ? Object.fromEntries(Object.entries(ts).map(([k, t]) => [k, { ...t, position: [...np] }])) : { ...ts, [activeStage]: { ...cur, position: np } }; }); return n; });
+      return;
+    }
+    if (!selObj) return;
+    const par = selObj.parent && objects.some((x) => x.id === selObj.parent) ? objects.find((x) => x.id === selObj.parent) : null;
+    const Pm = par ? tfMatrix(tfNow(par.id)) : new THREE.Matrix4();
+    const inv = Pm.clone().invert();
+    const patch = {};
+    if (gizmoMode === "translate") { const lp = V(pos).applyMatrix4(inv); patch.position = [lp.x, lp.y, lp.z]; }
+    else {
+      const ml = inv.clone().multiply(new THREE.Matrix4().compose(new THREE.Vector3(), new THREE.Quaternion(...quat), new THREE.Vector3(1, 1, 1)));
+      const pp = new THREE.Vector3(), qq = new THREE.Quaternion(), ss = new THREE.Vector3(); ml.decompose(pp, qq, ss);
+      const e = new THREE.Euler().setFromQuaternion(qq, "YXZ");
+      patch.rx = (e.x * 180) / Math.PI; patch.rotationY = (e.y * 180) / Math.PI; patch.rz = (e.z * 180) / Math.PI;
+    }
+    setObjectTransformsByKf((prev) => { const ts = prev[selObj.id] || {}; const cur = ts[activeStage] || defaultObjectTransform(); return { ...prev, [selObj.id]: selObj.fixed ? Object.fromEntries(Object.entries(ts).map(([k, t]) => [k, { ...t, ...patch }])) : { ...ts, [activeStage]: { ...cur, ...patch } } }; });
+  };
+  let gizmoProps = null;
+  if (!exporting && section === "objects" && showObjects && gizmoMode !== "off") {
+    if (gizmoFolderRoots && gizmoFolderRoots.length) {
+      const c = [0, 0, 0]; gizmoFolderRoots.forEach((o) => tfNow(o.id).position.forEach((v, k) => { c[k] += v / gizmoFolderRoots.length; }));
+      gizmoProps = { key: "f" + selFolder, mode: "translate", pos: c, rot: [0, 0, 0], onChange: (p, q) => gizmoApplyRef.current && gizmoApplyRef.current(p, q) };
+    } else if (selObj && selKind === "obj" && selObj.type !== "confetti") {
+      const t = tfNow(selObj.id);
+      const mode = selObj.type === "light" || selObj.fixed ? "translate" : gizmoMode;
+      gizmoProps = { key: "o" + selObj.id + mode, mode, pos: [...t.position], rot: [t.rx || 0, t.rotationY || 0, t.rz || 0], onChange: (p, q) => gizmoApplyRef.current && gizmoApplyRef.current(p, q) };
+    }
+  }
   const toast = msgToast ? msgToast : projectLoaded ? "Proyecto cargado" : downloaded ? "index.html descargado" : copiedWhich === "editor" ? "Editor copiado: pegalo en el archivo del repo" : copiedWhich ? "Copiado" : null;
   const fileName = (projectName || "proyecto").trim().replace(/[^a-zA-Z0-9._-]+/g, "_") || "proyecto";
 
@@ -12251,6 +12312,7 @@ function App() {
             <>
               <span className="vchip" style={{ opacity: 0.35, padding: 0, width: 1 }} />
               <span className={`vchip ${isolate ? "on" : ""}`} title="Muestra solo el objeto seleccionado con su grupo (madre e hijos)" onClick={() => setIsolate(!isolate)}>Aislar</span>
+              <span className={`vchip ${gizmoMode !== "off" ? "on" : ""}`} title="Flechas en el visor para mover o girar con el mouse el objeto (o la carpeta) elegido, solo en la pose actual" onClick={() => setGizmoMode(gizmoMode === "translate" ? "rotate" : gizmoMode === "rotate" ? "off" : "translate")}>Mouse: {gizmoMode === "translate" ? "mover" : gizmoMode === "rotate" ? "girar" : "apagado"}</span>
               <span className={`vchip ${showGhosts ? "on" : ""}`} title="Dibuja tenues los objetos que están ocultos en esta pose" onClick={() => setShowGhosts(!showGhosts)}>Fantasmas</span>
               <span className="vchip on" title="Qué etiquetas se ven en el visor: todas, solo los visibles en esta pose, solo el seleccionado o ninguna" onClick={() => setLabelMode(labelMode === "all" ? "visible" : labelMode === "visible" ? "sel" : labelMode === "sel" ? "none" : "all")}>Etiquetas: {labelMode === "all" ? "todas" : labelMode === "visible" ? "visibles" : labelMode === "sel" ? "selección" : "ninguna"}</span>
             </>
@@ -12264,7 +12326,7 @@ function App() {
         <div className="scene-box" style={vidBox ? { position: "fixed", inset: "auto", left: 0, top: 0, width: vidBox.w, height: vidBox.h } : (section === "pages" ? { visibility: "hidden" } : undefined)}>
         <Canvas key={canvasKey} onCreated={onCanvasCreated} shadows="soft" camera={{ position: [0, 0.3, 3.5], fov: 35, near: Math.min(2, Math.max(0.01, +postFx.camNear || 0.1)) }} dpr={exporting ? 1 : [1, 1.5]} gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}>
           <Scene pose={currentPose} onBonesFound={setFoundMap} cameraTarget={currentCamTarget} sceneCameraActive={sceneCameraActive} autoRotate={!exporting && autoRotate} movement={currentMovement} objects={exporting ? renderObjects : viewObjects} showObjects={exporting || showObjects} showGrid={!exporting && showGrid} fx={renderFx} showFx={exporting || showFx} orbitRef={orbitRef} liveCameraRef={liveCameraRef} modelUrl={modelUrl} postFx={postFx} charScale={charScale} charCenterY={charCenterY} charAnchorRef={charAnchorRef} trail={trail} reflection={reflection}
-            markers={!exporting && section === "objects" && showObjects && labelMode !== "none" ? markers : (!exporting && section === "objects" && showObjects && selObj ? markers.filter((m) => m.id === selObj.id) : null)} selectedObjectId={selectedObj} onSelectObject={setSelectedObj} />
+            markers={!exporting && section === "objects" && showObjects && labelMode !== "none" ? markers : null} selectedObjectId={selectedObj} onSelectObject={(id) => { setSelKind("obj"); setSelectedObj(id); }} gizmo={gizmoProps} />
           <CamNearSync near={Math.min(2, Math.max(0.01, +postFx.camNear || 0.1))} />
           {!exporting && <LoadMeterProbe />}
           <VideoExportBridge tag={exportT} bridgeRef={vidBridge} />
@@ -12761,7 +12823,7 @@ function App() {
                     const q = objSearch.trim().toLowerCase();
                     const rowHidden = (o) => (hiddenByGroup(o) && !q && !(selObj && selObj.id === o.id)) || (objOnlyVisible && !isVisibleHere(o) && !(selObj && selObj.id === o.id)) || (q && !String(o.label).toLowerCase().includes(q) && !(selObj && selObj.id === o.id));
                     const renderRow = (o, i, depth) => (
-                      <div key={o.id} className={`orow ${selObj && selObj.id === o.id ? "sel" : ""} ${o.visible && !(objectTransformsByKf[o.id] && objectTransformsByKf[o.id][activeStage] && objectTransformsByKf[o.id][activeStage].hidden) ? "" : "off"} ${dragInfo && dragInfo.kind === "obj" && dragInfo.id !== o.id ? "dropok" : ""}`} style={{ "--oc": colorOf(o, i), marginLeft: depth * 12 }} onClick={() => setSelectedObj(o.id)}
+                      <div key={o.id} className={`orow ${selObj && selObj.id === o.id ? "sel" : ""} ${o.visible && !(objectTransformsByKf[o.id] && objectTransformsByKf[o.id][activeStage] && objectTransformsByKf[o.id][activeStage].hidden) ? "" : "off"} ${dragInfo && dragInfo.kind === "obj" && dragInfo.id !== o.id ? "dropok" : ""}`} style={{ "--oc": colorOf(o, i), marginLeft: depth * 12 }} onClick={() => { setSelKind("obj"); setSelectedObj(o.id); }}
                         draggable onDragStart={(e) => { e.dataTransfer.setData("text/plain", o.id); e.dataTransfer.effectAllowed = "move"; setDragInfo({ kind: "obj", id: o.id }); }} onDragEnd={() => setDragInfo(null)}
                         onDragOver={(e) => { if (dragInfo && dragInfo.kind === "obj" && dragInfo.id !== o.id) e.preventDefault(); }} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); dropOnObject(o.id); }}>
                         <span className="oico"><Icon name={o.type === "text" ? "text" : o.type === "shape" ? "shape" : o.type === "light" ? "light" : o.type === "smoke" ? "smoke" : o.type === "confetti" || o.type === "balloons" || o.type === "pinwheel" || o.type === "sparkler" ? "shape" : o.type === "image" ? "image" : o.type === "video" ? "video" : "cube"} size={15} /></span>
