@@ -7315,8 +7315,10 @@ function SceneCameraDriver({ target, active }) {
 /* Cámara libre tipo videojuego (reemplaza al OrbitControls): W A S D para moverte, Q / E para bajar y subir, Shift para ir más rápido,
    arrastrar con el mouse para mirar (sin tope para girar) y la rueda para cambiar la velocidad. Parte de donde estaba la cámara de la pose.
    Deja en orbitRef.current.target un punto 10 unidades al frente, que es lo que usa «Capturar vista». */
-function FlyControls({ orbitRef, autoRotate }) {
+function FlyControls({ orbitRef, autoRotate, speed, look, onSpeed }) {
   const { camera, gl } = useThree();
+  const cfg = useRef({ speed, look, onSpeed });
+  cfg.current = { speed, look, onSpeed };
   const st = useRef({ yaw: 0, pitch: 0, keys: {}, speed: 5, drag: null, target: new THREE.Vector3() });
   useEffect(() => {
     const s = st.current;
@@ -7335,11 +7337,11 @@ function FlyControls({ orbitRef, autoRotate }) {
       const d = s.drag; if (!d) return;
       const dx = ev.clientX - d.x, dy = ev.clientY - d.y; d.x = ev.clientX; d.y = ev.clientY;
       if (window.__gizDrag) return;   // se está arrastrando una flecha de mover/girar objeto: la cámara no se mueve
-      const k = 0.0025 * ((camera.fov || 50) / 50);
+      const k = 0.0025 * (cfg.current.look || 1) * ((camera.fov || 50) / 50);
       s.yaw -= dx * k; s.pitch = Math.max(-1.5, Math.min(1.5, s.pitch - dy * k));
     };
     const pu = (ev) => { s.drag = null; try { el.releasePointerCapture(ev.pointerId); } catch (err) {} };
-    const wh = (ev) => { ev.preventDefault(); s.speed = Math.max(0.3, Math.min(60, s.speed * (ev.deltaY < 0 ? 1.2 : 1 / 1.2))); };
+    const wh = (ev) => { ev.preventDefault(); const c = cfg.current; if (c.onSpeed) c.onSpeed(Math.max(0.1, Math.min(60, (c.speed || 2) * (ev.deltaY < 0 ? 1.2 : 1 / 1.2)))); };
     const cm = (ev) => ev.preventDefault();
     window.addEventListener("keydown", kd); window.addEventListener("keyup", ku); window.addEventListener("blur", bl);
     el.addEventListener("pointerdown", pd); el.addEventListener("pointermove", pm); el.addEventListener("pointerup", pu); el.addEventListener("pointercancel", pu);
@@ -7360,7 +7362,7 @@ function FlyControls({ orbitRef, autoRotate }) {
     }
     camera.rotation.set(s.pitch, s.yaw, 0, "YXZ");
     camera.updateMatrixWorld();
-    const k = s.keys, sp = s.speed * ((k.ShiftLeft || k.ShiftRight) ? 3 : 1) * dt;
+    const k = s.keys, sp = (cfg.current.speed || 2) * ((k.ShiftLeft || k.ShiftRight) ? 3 : 1) * dt;
     const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion), right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
     if (k.KeyW) camera.position.addScaledVector(fwd, sp);
     if (k.KeyS) camera.position.addScaledVector(fwd, -sp);
@@ -8114,7 +8116,7 @@ function ObjectPreviewConfetti({ obj }) {
   if (!f || !t || t.progress <= f.progress) return null;
   return <ConfettiSim key={JSON.stringify([cfg, f.progress, t.progress])} cfg={cfg} from={f.progress} to={t.progress} lite={false} getProgress={getCfProgress} />;
 }
-function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate, movement, objects, showObjects, showGrid, fx, showFx, orbitRef, liveCameraRef, modelUrl, postFx, charScale, charCenterY, charAnchorRef, trail, reflection, markers, selectedObjectId, onSelectObject, gizmo }) {
+function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate, movement, objects, showObjects, showGrid, fx, showFx, orbitRef, liveCameraRef, modelUrl, postFx, charScale, charCenterY, charAnchorRef, trail, reflection, markers, selectedObjectId, onSelectObject, gizmo, freeSpeed, freeLook, onFreeSpeed }) {
   const envOn = false;
   const envInt = 0;
   const rig = "classic";
@@ -8181,7 +8183,7 @@ function Scene({ pose, onBonesFound, cameraTarget, sceneCameraActive, autoRotate
               peleaban por la cámara → sensación de "traba" al activar
               Cámara libre. Ahora solo uno de los dos está montado a la
               vez, así nunca compiten. */}
-          <FlyControls orbitRef={orbitRef} autoRotate={autoRotate} />
+          <FlyControls orbitRef={orbitRef} autoRotate={autoRotate} speed={freeSpeed} look={freeLook} onSpeed={onFreeSpeed} />
           <LiveCameraTracker orbitRef={orbitRef} liveCameraRef={liveCameraRef} active={true} />
         </>
       )}
@@ -10139,12 +10141,13 @@ function ObjectGizmo({ g }) {
   const flush = () => { raf.current = 0; const o = inner.current; if (o && g.onChange) g.onChange([o.position.x, o.position.y, o.position.z], [o.quaternion.x, o.quaternion.y, o.quaternion.z, o.quaternion.w]); };
   const D = Math.PI / 180;
   return (
-    <TransformControls mode={g.mode} space="world" size={0.9}
-      onMouseDown={() => { window.__gizDrag = true; }}
-      onMouseUp={() => { window.__gizDrag = false; cancelAnimationFrame(raf.current); flush(); }}
-      onObjectChange={() => { if (!raf.current) raf.current = requestAnimationFrame(flush); }}>
+    <>
       <group ref={inner} position={g.pos} rotation={new THREE.Euler(g.rot[0] * D, g.rot[1] * D, g.rot[2] * D, "YXZ")} />
-    </TransformControls>
+      <TransformControls object={inner} mode={g.mode} space="world" size={0.9}
+        onMouseDown={() => { window.__gizDrag = true; }}
+        onMouseUp={() => { window.__gizDrag = false; cancelAnimationFrame(raf.current); flush(); }}
+        onObjectChange={() => { if (!raf.current) raf.current = requestAnimationFrame(flush); }} />
+    </>
   );
 }
 
@@ -10707,6 +10710,11 @@ function App() {
   const [openFolders, setOpenFolders] = useState(() => new Set());
   const [selFolder, setSelFolder] = useState(null);
   const [selKind, setSelKind] = useState("obj");   // lo último que se eligió: un objeto o una carpeta (para las flechas del visor)
+  const lsGet = (k, d) => { try { const v = parseFloat(localStorage.getItem(k)); return Number.isFinite(v) && v > 0 ? v : d; } catch (e) { return d; } };
+  const [freeSpeed, setFreeSpeedS] = useState(() => lsGet("weeb-free-speed", 2));   // velocidad de la cámara libre (WASD)
+  const [freeLook, setFreeLookS] = useState(() => lsGet("weeb-free-look", 1));       // sensibilidad al mirar con el mouse
+  const setFreeSpeed = (v) => { setFreeSpeedS(v); try { localStorage.setItem("weeb-free-speed", String(v)); } catch (e) {} };
+  const setFreeLook = (v) => { setFreeLookS(v); try { localStorage.setItem("weeb-free-look", String(v)); } catch (e) {} };
   const [gizmoMode, setGizmoMode] = useState("translate");   // flechas del visor: translate | rotate | off
   const gizmoApplyRef = useRef(null);
   const [animOnly, setAnimOnly] = useState(false);   // filtro «Solo para animar»: muestra únicamente las carpetas llamadas «Para animar»
@@ -12326,7 +12334,7 @@ function App() {
         <div className="scene-box" style={vidBox ? { position: "fixed", inset: "auto", left: 0, top: 0, width: vidBox.w, height: vidBox.h } : (section === "pages" ? { visibility: "hidden" } : undefined)}>
         <Canvas key={canvasKey} onCreated={onCanvasCreated} shadows="soft" camera={{ position: [0, 0.3, 3.5], fov: 35, near: Math.min(2, Math.max(0.01, +postFx.camNear || 0.1)) }} dpr={exporting ? 1 : [1, 1.5]} gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}>
           <Scene pose={currentPose} onBonesFound={setFoundMap} cameraTarget={currentCamTarget} sceneCameraActive={sceneCameraActive} autoRotate={!exporting && autoRotate} movement={currentMovement} objects={exporting ? renderObjects : viewObjects} showObjects={exporting || showObjects} showGrid={!exporting && showGrid} fx={renderFx} showFx={exporting || showFx} orbitRef={orbitRef} liveCameraRef={liveCameraRef} modelUrl={modelUrl} postFx={postFx} charScale={charScale} charCenterY={charCenterY} charAnchorRef={charAnchorRef} trail={trail} reflection={reflection}
-            markers={!exporting && section === "objects" && showObjects && labelMode !== "none" ? markers : null} selectedObjectId={selectedObj} onSelectObject={(id) => { setSelKind("obj"); setSelectedObj(id); }} gizmo={gizmoProps} />
+            markers={!exporting && section === "objects" && showObjects && labelMode !== "none" ? markers : null} selectedObjectId={selectedObj} onSelectObject={(id) => { setSelKind("obj"); setSelectedObj(id); }} gizmo={gizmoProps} freeSpeed={freeSpeed} freeLook={freeLook} onFreeSpeed={setFreeSpeed} />
           <CamNearSync near={Math.min(2, Math.max(0.01, +postFx.camNear || 0.1))} />
           {!exporting && <LoadMeterProbe />}
           <VideoExportBridge tag={exportT} bridgeRef={vidBridge} />
@@ -12726,6 +12734,11 @@ function App() {
 
             {section === "camera" && (
               <>
+                <Group id="freecam" title="Cámara libre (velocidad)" defaultOpen={false}>
+                  <Slider label={`Velocidad al moverte (W A S D): ${Math.round(freeSpeed * 10) / 10}`} min={0.1} max={20} step={0.1} value={Math.min(20, freeSpeed)} onChange={setFreeSpeed} />
+                  <Slider label={`Sensibilidad al mirar con el mouse: ${Math.round(freeLook * 100) / 100}`} min={0.1} max={2} step={0.05} value={freeLook} onChange={setFreeLook} />
+                  <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Para enfocar objetos chicos bajá la velocidad (1 o menos). La rueda del mouse también la cambia. Shift = 3 veces más rápido.</div>
+                </Group>
                 <div className="tools">
                   <Btn icon="copy" onClick={copyCamFromPrev} disabled={stageIndex <= 0}>Desde anterior</Btn>
                   <Btn icon="capture" kind="acc" onClick={captureFreeCamera} disabled={!freeOrbit} title="Activá «Libre» en el visor">Capturar vista</Btn>
