@@ -2060,10 +2060,20 @@ function AnimatedCharacter({ mouse, anchorRef }) {
       lCalf: "L_Calf", rCalf: "R_Calf",
       lFoot: "L_Foot", rFoot: "R_Foot",
     };
+    /* Nombres alternativos: esqueletos de Mixamo (Tripo, Mixamo). El «hombro» del editor mueve el brazo (LeftArm). */
+    const alias = {
+      spine1: ["mixamorigSpine1", "mixamorig:Spine1"], spine2: ["mixamorigSpine2", "mixamorig:Spine2"], neck: ["mixamorigNeck", "mixamorig:Neck"], head: ["mixamorigHead", "mixamorig:Head"],
+      lClavicle: ["mixamorigLeftArm", "mixamorig:LeftArm"], rClavicle: ["mixamorigRightArm", "mixamorig:RightArm"],
+      lForearm: ["mixamorigLeftForeArm", "mixamorig:LeftForeArm"], rForearm: ["mixamorigRightForeArm", "mixamorig:RightForeArm"],
+      lHand: ["mixamorigLeftHand", "mixamorig:LeftHand"], rHand: ["mixamorigRightHand", "mixamorig:RightHand"],
+      lThigh: ["mixamorigLeftUpLeg", "mixamorig:LeftUpLeg"], rThigh: ["mixamorigRightUpLeg", "mixamorig:RightUpLeg"],
+      lCalf: ["mixamorigLeftLeg", "mixamorig:LeftLeg"], rCalf: ["mixamorigRightLeg", "mixamorig:RightLeg"],
+      lFoot: ["mixamorigLeftFoot", "mixamorig:LeftFoot"], rFoot: ["mixamorigRightFoot", "mixamorig:RightFoot"],
+    };
     const bones = {};
     const rest = {};
     Object.entries(names).forEach(([key, boneName]) => {
-      const bone = scene.getObjectByName(boneName);
+      const bone = [boneName].concat(alias[key] || []).map((n) => scene.getObjectByName(n)).find(Boolean);
       if (bone) {
         bones[key] = bone;
         rest[key] = bone.quaternion.clone();
@@ -6994,6 +7004,16 @@ const BONE_DEFS = [
   ["lFoot", "L_Foot"], ["rFoot", "R_Foot"],
 ];
 const BONE_KEYS = BONE_DEFS.map(([k]) => k);
+/* Nombres alternativos de huesos: esqueletos de Mixamo (los que pone Tripo). Para esos, «Clavícula» mueve el brazo (LeftArm/RightArm). */
+const BONE_ALIAS = {
+  spine1: ["mixamorigSpine1", "mixamorig:Spine1"], spine2: ["mixamorigSpine2", "mixamorig:Spine2"], neck: ["mixamorigNeck", "mixamorig:Neck"], head: ["mixamorigHead", "mixamorig:Head"],
+  lClavicle: ["mixamorigLeftArm", "mixamorig:LeftArm"], rClavicle: ["mixamorigRightArm", "mixamorig:RightArm"],
+  lForearm: ["mixamorigLeftForeArm", "mixamorig:LeftForeArm"], rForearm: ["mixamorigRightForeArm", "mixamorig:RightForeArm"],
+  lHand: ["mixamorigLeftHand", "mixamorig:LeftHand"], rHand: ["mixamorigRightHand", "mixamorig:RightHand"],
+  lThigh: ["mixamorigLeftUpLeg", "mixamorig:LeftUpLeg"], rThigh: ["mixamorigRightUpLeg", "mixamorig:RightUpLeg"],
+  lCalf: ["mixamorigLeftLeg", "mixamorig:LeftLeg"], rCalf: ["mixamorigRightLeg", "mixamorig:RightLeg"],
+  lFoot: ["mixamorigLeftFoot", "mixamorig:LeftFoot"], rFoot: ["mixamorigRightFoot", "mixamorig:RightFoot"],
+};
 
 const rad = (d) => (d * Math.PI) / 180;
 const deg = (r) => (r * 180) / Math.PI;
@@ -7271,7 +7291,7 @@ function Character({ pose, onBonesFound, modelUrl, scale, centerY }) {
   useEffect(() => {
     const bones = {}; const rest = {}; const found = {};
     BONE_DEFS.forEach(([key, boneName]) => {
-      const bone = scene.getObjectByName(boneName);
+      const bone = [boneName].concat(BONE_ALIAS[key] || []).map((n) => scene.getObjectByName(n)).find(Boolean);
       if (bone) { bones[key] = bone; rest[key] = bone.quaternion.clone(); found[key] = true; }
       else found[key] = false;
     });
