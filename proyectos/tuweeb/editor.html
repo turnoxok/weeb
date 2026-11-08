@@ -3707,13 +3707,13 @@ function cloneModelScene(src) {
    Cada objeto "personaje" guarda sus giros de huesos (grados X/Y/Z) por pose dentro de su propia transformación (bn). Se aplican sobre la pose de reposo del hueso.
    Nombres: los del esqueleto original del editor o los de Mixamo / Tripo. */
 const RIG_BONES = [
-  ["spine1", ["Spine01", "mixamorigSpine1", "mixamorig:Spine1"]], ["spine2", ["Spine02", "mixamorigSpine2", "mixamorig:Spine2"]],
-  ["neck", ["NeckTwist01", "mixamorigNeck", "mixamorig:Neck"]], ["head", ["Head", "mixamorigHead", "mixamorig:Head"]],
-  ["lClavicle", ["L_Clavicle", "mixamorigLeftArm", "mixamorig:LeftArm"]], ["rClavicle", ["R_Clavicle", "mixamorigRightArm", "mixamorig:RightArm"]],
-  ["lForearm", ["L_Forearm", "mixamorigLeftForeArm", "mixamorig:LeftForeArm"]], ["rForearm", ["R_Forearm", "mixamorigRightForeArm", "mixamorig:RightForeArm"]],
-  ["lHand", ["L_Hand", "mixamorigLeftHand", "mixamorig:LeftHand"]], ["rHand", ["R_Hand", "mixamorigRightHand", "mixamorig:RightHand"]],
-  ["lThigh", ["L_Thigh", "mixamorigLeftUpLeg", "mixamorig:LeftUpLeg"]], ["rThigh", ["R_Thigh", "mixamorigRightUpLeg", "mixamorig:RightUpLeg"]],
-  ["lCalf", ["L_Calf", "mixamorigLeftLeg", "mixamorig:LeftLeg"]], ["rCalf", ["R_Calf", "mixamorigRightLeg", "mixamorig:RightLeg"]],
+  ["spine1", ["cuerpo_1", "Spine01", "mixamorigSpine1", "mixamorig:Spine1"]], ["spine2", ["cuerpo_2", "Spine02", "mixamorigSpine2", "mixamorig:Spine2"]],
+  ["neck", ["cuerpo_3", "NeckTwist01", "mixamorigNeck", "mixamorig:Neck"]], ["head", ["tallo_C", "Head", "mixamorigHead", "mixamorig:Head"]],
+  ["lClavicle", ["tallo_L", "L_Clavicle", "mixamorigLeftArm", "mixamorig:LeftArm"]], ["rClavicle", ["tallo_R", "R_Clavicle", "mixamorigRightArm", "mixamorig:RightArm"]],
+  ["lForearm", ["ojo_L", "L_Forearm", "mixamorigLeftForeArm", "mixamorig:LeftForeArm"]], ["rForearm", ["ojo_R", "R_Forearm", "mixamorigRightForeArm", "mixamorig:RightForeArm"]],
+  ["lHand", ["mano_L", "L_Hand", "mixamorigLeftHand", "mixamorig:LeftHand"]], ["rHand", ["mano_R", "R_Hand", "mixamorigRightHand", "mixamorig:RightHand"]],
+  ["lThigh", ["pata_L", "L_Thigh", "mixamorigLeftUpLeg", "mixamorig:LeftUpLeg"]], ["rThigh", ["pata_R", "R_Thigh", "mixamorigRightUpLeg", "mixamorig:RightUpLeg"]],
+  ["lCalf", ["ojo_C", "L_Calf", "mixamorigLeftLeg", "mixamorig:LeftLeg"]], ["rCalf", ["R_Calf", "mixamorigRightLeg", "mixamorig:RightLeg"]],
   ["lFoot", ["L_Foot", "mixamorigLeftFoot", "mixamorig:LeftFoot"]], ["rFoot", ["R_Foot", "mixamorigRightFoot", "mixamorig:RightFoot"]],
 ];
 function rigFind(scene) {
@@ -6832,7 +6832,7 @@ function ObjectPreviewModel({ obj, fade }) {
   const { scene: srcScene } = useGLTF(obj.previewUrl || obj.url);
   const scene = useClonedScene(srcScene);
   const rigR = useRef(null);
-  useEffect(() => { rigR.current = obj.rig ? rigFind(scene) : null; if (rigR.current) RIG_FOUND[obj.id] = Object.fromEntries(RIG_BONES.map(([k]) => [k, !!rigR.current.bones[k]])); else delete RIG_FOUND[obj.id]; }, [scene, obj.rig, obj.id]);
+  useEffect(() => { rigR.current = obj.rig ? rigFind(scene) : null; if (rigR.current) RIG_FOUND[obj.id] = Object.fromEntries(RIG_BONES.map(([k]) => [k, rigR.current.bones[k] ? rigR.current.bones[k].name : false])); else delete RIG_FOUND[obj.id]; }, [scene, obj.rig, obj.id]);
   useFrame(() => { if (rigR.current) rigPose(rigR.current, obj.bn); });
   useEffect(() => {
     scene.traverse((child) => {
@@ -10240,7 +10240,7 @@ function App() {
   ];
   /* Si hay un personaje (objeto con huesos) elegido en la pestaña Objetos, los deslizadores de huesos editan SU pose en la pose actual; si no, el Modelo principal de siempre. */
   const boneObj = section === "objects" ? (objects.find((o) => o.id === selectedObj && o.rig) || null) : null;
-  const boneName = (key) => (BONE_DEFS.find((b) => b[0] === key) || [key, key])[1];
+  const boneName = (key) => (boneObj && RIG_FOUND[boneObj.id] && RIG_FOUND[boneObj.id][key]) || (BONE_DEFS.find((b) => b[0] === key) || [key, key])[1];
   const boneVal = (key) => (boneObj ? (((objectTransformsByKf[boneObj.id] || {})[activeStage] || {}).bn || {})[key] : posesByKf[activeStage] && posesByKf[activeStage][key]) || { x: 0, y: 0, z: 0 };
   const renderBoneRow = (key) => {
     const v = boneVal(key);
