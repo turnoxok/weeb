@@ -2940,6 +2940,7 @@ function sampleObjectKeyframes(keyframes, progress) {
     li: lerp(a.li ?? 1, b.li ?? 1, t),
     bl: lerp(a.bl || 0, b.bl || 0, t),
     sm: a.sm || b.sm ? smokeLerp(a.sm, b.sm, t) : null,
+    bn: a.bn || b.bn ? boneLerp(a.bn, b.bn, t) : null,
     fade: fadeStateFor(a, b, t),
   };
 }
@@ -3806,6 +3807,41 @@ function cloneModelScene(src) {
   clone.traverse((n) => { if (n.isMesh && n.material) n.material = Array.isArray(n.material) ? n.material.map((m) => m.clone()) : n.material.clone(); });
   return clone;
 }
+/* ---- Personajes con huesos (objetos .glb con esqueleto) ----
+   Cada objeto "personaje" guarda sus giros de huesos (grados X/Y/Z) por pose dentro de su propia transformación (bn). Se aplican sobre la pose de reposo del hueso.
+   Nombres: los del esqueleto original del editor o los de Mixamo / Tripo. */
+const RIG_BONES = [
+  ["spine1", ["Spine01", "mixamorigSpine1", "mixamorig:Spine1"]], ["spine2", ["Spine02", "mixamorigSpine2", "mixamorig:Spine2"]],
+  ["neck", ["NeckTwist01", "mixamorigNeck", "mixamorig:Neck"]], ["head", ["Head", "mixamorigHead", "mixamorig:Head"]],
+  ["lClavicle", ["L_Clavicle", "mixamorigLeftArm", "mixamorig:LeftArm"]], ["rClavicle", ["R_Clavicle", "mixamorigRightArm", "mixamorig:RightArm"]],
+  ["lForearm", ["L_Forearm", "mixamorigLeftForeArm", "mixamorig:LeftForeArm"]], ["rForearm", ["R_Forearm", "mixamorigRightForeArm", "mixamorig:RightForeArm"]],
+  ["lHand", ["L_Hand", "mixamorigLeftHand", "mixamorig:LeftHand"]], ["rHand", ["R_Hand", "mixamorigRightHand", "mixamorig:RightHand"]],
+  ["lThigh", ["L_Thigh", "mixamorigLeftUpLeg", "mixamorig:LeftUpLeg"]], ["rThigh", ["R_Thigh", "mixamorigRightUpLeg", "mixamorig:RightUpLeg"]],
+  ["lCalf", ["L_Calf", "mixamorigLeftLeg", "mixamorig:LeftLeg"]], ["rCalf", ["R_Calf", "mixamorigRightLeg", "mixamorig:RightLeg"]],
+  ["lFoot", ["L_Foot", "mixamorigLeftFoot", "mixamorig:LeftFoot"]], ["rFoot", ["R_Foot", "mixamorigRightFoot", "mixamorig:RightFoot"]],
+];
+function rigFind(scene) {
+  const bones = {}, rest = {};
+  RIG_BONES.forEach(([key, names]) => { const b = names.map((n) => scene.getObjectByName(n)).find(Boolean); if (b) { bones[key] = b; rest[key] = b.quaternion.clone(); } });
+  return { bones, rest };
+}
+function rigPose(r, bn) {
+  const D = Math.PI / 180, e = new THREE.Euler(0, 0, 0, "XYZ"), q = new THREE.Quaternion();
+  Object.keys(r.bones).forEach((key) => {
+    const v = bn && bn[key], bone = r.bones[key];
+    if (v) { const x = Array.isArray(v) ? v[0] : v.x, y = Array.isArray(v) ? v[1] : v.y, z = Array.isArray(v) ? v[2] : v.z; e.set((x || 0) * D, (y || 0) * D, (z || 0) * D, "XYZ"); q.setFromEuler(e); bone.quaternion.copy(r.rest[key]).multiply(q); }
+    else bone.quaternion.copy(r.rest[key]);
+  });
+}
+function boneLerp(a, b, t) {
+  const A = a || {}, B = b || {}, out = {};
+  new Set([...Object.keys(A), ...Object.keys(B)]).forEach((k) => {
+    const va = A[k], vb = B[k];
+    const ga = (v, i) => (v ? (Array.isArray(v) ? v[i] : v["xyz"[i]]) || 0 : 0);
+    out[k] = [0, 1, 2].map((i) => ga(va, i) + (ga(vb, i) - ga(va, i)) * t);
+  });
+  return out;
+}
 function useClonedScene(src) {
   const scene = useMemo(() => cloneModelScene(src), [src]);
   useEffect(() => () => { scene.traverse((n) => { if (n.isMesh && n.material) (Array.isArray(n.material) ? n.material : [n.material]).forEach((m) => m.dispose()); }); }, [scene]);
@@ -3814,7 +3850,10 @@ function useClonedScene(src) {
 function SceneObjectModel({ data }) {
   const { scene: srcScene } = useGLTF(data.url);
   const scene = useClonedScene(srcScene);
-  const { groupRef, fade, hasFade } = useObjectTransformRef(data.keyframes, false, false, data);
+  const { groupRef, fade, hasFade, live } = useObjectTransformRef(data.keyframes, false, false, data);
+  const rigR = useRef(null);   // personaje con huesos: giros por pose
+  useEffect(() => { rigR.current = data.rig ? rigFind(scene) : null; }, [scene, data.rig]);
+  useFrame(() => { if (rigR.current && live.current) rigPose(rigR.current, live.current.bn); });
   useEffect(() => {
     scene.traverse((child) => {
       if (child.isMesh) {
@@ -7191,6 +7230,7 @@ function sampleObjectTransform(transformsByStage, progress, stages, easings) {
     li: lerp(ta.li ?? 1, tb.li ?? 1, t),
     bl: lerp(ta.bl || 0, tb.bl || 0, t),
     sm: ta.sm || tb.sm ? smokeLerp(ta.sm, tb.sm, t) : null,
+    bn: ta.bn || tb.bn ? boneLerp(ta.bn, tb.bn, t) : null,
   }, fadeStateFor(ta, tb, t));
 }
 
@@ -7683,9 +7723,17 @@ const EnvSettingsCtx = React.createContext({ enabled: false, intensity: 1, rig: 
 //@@use applyGlow
 //@@use cloneModelScene
 //@@use useClonedScene
+//@@use RIG_BONES
+//@@use rigFind
+//@@use rigPose
+//@@use boneLerp
+const RIG_FOUND = {};   // qué huesos encontró cada personaje (para avisar en el panel)
 function ObjectPreviewModel({ obj, fade }) {
   const { scene: srcScene } = useGLTF(obj.previewUrl || obj.url);
   const scene = useClonedScene(srcScene);
+  const rigR = useRef(null);
+  useEffect(() => { rigR.current = obj.rig ? rigFind(scene) : null; if (rigR.current) RIG_FOUND[obj.id] = Object.fromEntries(RIG_BONES.map(([k]) => [k, !!rigR.current.bones[k]])); else delete RIG_FOUND[obj.id]; }, [scene, obj.rig, obj.id]);
+  useFrame(() => { if (rigR.current) rigPose(rigR.current, obj.bn); });
   useEffect(() => {
     scene.traverse((child) => {
       if (child.isMesh) {
@@ -8959,7 +9007,7 @@ function generateObjectsCode(objects, transformsByKf, stages, easings) {
     const kfLines = stages.map((kf, idx) => {
       const t = transforms[kf.id] || { position: [0, 0, 0], scale: 1, rotationY: 0, hidden: false, fadeDir: "ltr" };
       const easing = idx === 0 ? "smooth" : (easings[idx - 1] || "smooth");
-      return `      { progress: ${roundProgress(kf.progress)}, easing: "${easing}", position: ${fmtVec(t.position)}, scale: ${fmtNum(t.scale)}, rotationY: ${fmtNum(t.rotationY)}, hidden: ${t.hidden ? "true" : "false"}, fadeDir: "${t.fadeDir || "ltr"}"${t.sx != null && t.sx !== 1 ? `, sx: ${fmtNum(t.sx)}` : ""}${t.sy != null && t.sy !== 1 ? `, sy: ${fmtNum(t.sy)}` : ""}${t.rv != null && t.rv !== 1 ? `, rv: ${fmtNum(t.rv)}` : ""}${t.rz ? `, rz: ${fmtNum(t.rz)}` : ""}${t.rx ? `, rx: ${fmtNum(t.rx)}` : ""}${t.tk ? `, tk: ${fmtNum(t.tk)}` : ""}${t.lh ? `, lh: ${fmtNum(t.lh)}` : ""}${t.bl ? `, bl: ${fmtNum(t.bl)}` : ""}${o.type === "smoke" ? `, sm: ${JSON.stringify(Object.fromEntries(Object.entries({ ...defaultSmokeParams(), ...(t.sm || {}) }).map(([k, v]) => [k, typeof v === "number" ? Math.round(v * 1000) / 1000 : v])))}` : ""}${o.type === "light" ? `, lt: ${fmtVec(t.lt || [0, 0, 0])}, li: ${fmtNum(t.li ?? 1)}` : ""}${o.type === "shape" ? `, sh: ${JSON.stringify(Object.fromEntries(Object.entries({ ...defaultShapeParams(), ...(t.sh || {}) }).map(([k, v]) => [k, typeof v === "number" ? Math.round(v * 10000) / 10000 : v])))}` : ""} },`;
+      return `      { progress: ${roundProgress(kf.progress)}, easing: "${easing}", position: ${fmtVec(t.position)}, scale: ${fmtNum(t.scale)}, rotationY: ${fmtNum(t.rotationY)}, hidden: ${t.hidden ? "true" : "false"}, fadeDir: "${t.fadeDir || "ltr"}"${t.sx != null && t.sx !== 1 ? `, sx: ${fmtNum(t.sx)}` : ""}${t.sy != null && t.sy !== 1 ? `, sy: ${fmtNum(t.sy)}` : ""}${t.rv != null && t.rv !== 1 ? `, rv: ${fmtNum(t.rv)}` : ""}${t.rz ? `, rz: ${fmtNum(t.rz)}` : ""}${t.rx ? `, rx: ${fmtNum(t.rx)}` : ""}${t.tk ? `, tk: ${fmtNum(t.tk)}` : ""}${t.lh ? `, lh: ${fmtNum(t.lh)}` : ""}${t.bl ? `, bl: ${fmtNum(t.bl)}` : ""}${o.type === "smoke" ? `, sm: ${JSON.stringify(Object.fromEntries(Object.entries({ ...defaultSmokeParams(), ...(t.sm || {}) }).map(([k, v]) => [k, typeof v === "number" ? Math.round(v * 1000) / 1000 : v])))}` : ""}${o.type === "light" ? `, lt: ${fmtVec(t.lt || [0, 0, 0])}, li: ${fmtNum(t.li ?? 1)}` : ""}${o.rig && t.bn ? (() => { const bo = {}; Object.keys(t.bn).forEach((k) => { const v = t.bn[k]; if (v && (v.x || v.y || v.z)) bo[k] = [Math.round((v.x || 0) * 100) / 100, Math.round((v.y || 0) * 100) / 100, Math.round((v.z || 0) * 100) / 100]; }); return Object.keys(bo).length ? `, bn: ${JSON.stringify(bo)}` : ""; })() : ""}${o.type === "shape" ? `, sh: ${JSON.stringify(Object.fromEntries(Object.entries({ ...defaultShapeParams(), ...(t.sh || {}) }).map(([k, v]) => [k, typeof v === "number" ? Math.round(v * 10000) / 10000 : v])))}` : ""} },`;
     }).join("\n");
     if (o.type === "text") {
       return `  {
@@ -9104,6 +9152,7 @@ ${kfLines}
     return `  {
     type: "${o.type === "image" || o.type === "video" ? o.type : "model"}",
     url: "${o.url}",
+    rig: ${o.rig && o.type === "model" ? "true" : "false"},
     videoMode: "${o.type === "video" && o.videoMode === "play" ? "play" : "scroll"}",
     scrollFrom: ${fmtNum((o.scrubFrom ?? 0) / 100)},
     scrollTo: ${fmtNum((o.scrubTo ?? 100) / 100)},
@@ -11255,10 +11304,13 @@ function App() {
 
   const stageIndex = stagesComputed.findIndex((s) => s.id === activeStage);
 
+  const setObjBone = (id, fn) => setObjectTransformsByKf((prev) => { const ts = prev[id] || {}; const cur = ts[activeStage] || defaultObjectTransform(); const bn = fn({ ...(cur.bn || {}) }); return { ...prev, [id]: { ...ts, [activeStage]: { ...cur, bn } } }; });
   const setBoneAxis = (boneKey, axis, value) => {
+    if (section === "objects" && selObj && selObj.rig) { setObjBone(selObj.id, (bn) => ({ ...bn, [boneKey]: { ...(bn[boneKey] || { x: 0, y: 0, z: 0 }), [axis]: value } })); return; }
     setPosesByKf((prev) => ({ ...prev, [activeStage]: { ...prev[activeStage], [boneKey]: { ...prev[activeStage][boneKey], [axis]: value } } }));
   };
   const resetBone = (boneKey) => {
+    if (section === "objects" && selObj && selObj.rig) { setObjBone(selObj.id, (bn) => ({ ...bn, [boneKey]: { x: 0, y: 0, z: 0 } })); return; }
     setPosesByKf((prev) => ({ ...prev, [activeStage]: { ...prev[activeStage], [boneKey]: { x: 0, y: 0, z: 0 } } }));
   };
   const copyPoseFromPrev = () => {
@@ -11405,13 +11457,15 @@ function App() {
     ["arms", "Brazos", ["lClavicle", "rClavicle", "lForearm", "rForearm", "lHand", "rHand"]],
     ["legs", "Piernas", ["lThigh", "rThigh", "lCalf", "rCalf", "lFoot", "rFoot"]],
   ];
+  /* Si hay un personaje (objeto con huesos) elegido en la pestaña Objetos, los deslizadores de huesos editan SU pose en la pose actual; si no, el Modelo principal de siempre. */
+  const boneObj = section === "objects" ? (objects.find((o) => o.id === selectedObj && o.rig) || null) : null;
   const boneName = (key) => (BONE_DEFS.find((b) => b[0] === key) || [key, key])[1];
-  const boneVal = (key) => (posesByKf[activeStage] && posesByKf[activeStage][key]) || { x: 0, y: 0, z: 0 };
+  const boneVal = (key) => (boneObj ? (((objectTransformsByKf[boneObj.id] || {})[activeStage] || {}).bn || {})[key] : posesByKf[activeStage] && posesByKf[activeStage][key]) || { x: 0, y: 0, z: 0 };
   const renderBoneRow = (key) => {
     const v = boneVal(key);
     const side = /^l[A-Z]/.test(key) ? "l" : /^r[A-Z]/.test(key) ? "r" : "c";
     return (
-      <div key={key} className={`bone ${side} ${v.x || v.y || v.z ? "dirty" : ""} ${foundMap[key] === false ? "missing" : ""}`}>
+      <div key={key} className={`bone ${side} ${v.x || v.y || v.z ? "dirty" : ""} ${(boneObj ? (RIG_FOUND[boneObj.id] || {}) : foundMap)[key] === false ? "missing" : ""}`}>
         <span className="bone-n" title={boneName(key)}>{boneName(key)}</span>
         {["x", "y", "z"].map((a, i) => <Num key={a} label={a.toUpperCase()} color={AXIS_COLORS[i]} step={0.5} value={v[a]} onChange={(n) => setBoneAxis(key, a, n)} />)}
         <button className="mini" title="Reset" onClick={() => resetBone(key)}><Icon name="reset" size={12} /></button>
@@ -12406,6 +12460,7 @@ function App() {
             <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Agrega un reflejo suave tipo vidrio a los materiales cuyo nombre (en Blender) contenga alguna de esas palabras (separadas por |). Necesita el Entorno de reflejos prendido.</div>
           </>
         )}
+        {isModel && <Switch checked={!!o.rig} onChange={(v) => updateObject(o.id, { rig: v })} label="Personaje con huesos (se mueve con los deslizadores de huesos)" />}
         {isModel && <Switch checked={o.shadows !== false} onChange={(v) => updateObject(o.id, { shadows: v })} label="Sombras (proyecta / recibe)" />}
         {!isModel && <Switch checked={!!o.billboard} onChange={(v) => updateObject(o.id, { billboard: v })} label="Billboard (mira a cámara)" />}
         <Slider label="Flotar siempre (altura · 0 = no)" min={0} max={0.6} step={0.01} value={o.float || 0} onChange={(v) => updateObject(o.id, { float: v })} />
@@ -13101,6 +13156,17 @@ function App() {
                   })()}
                   {!objects.length && <div className="empty">Sin objetos</div>}
                 </div>
+                {selObj && selObj.rig && (
+                  <Group id="objbones" title={`Huesos de ${selObj.label} (pose actual)`}>
+                    <div className="tools">
+                      <Btn icon="copy" title="Copia los giros del lado izquierdo al derecho (espejo)" onClick={() => setObjBone(selObj.id, (bn) => { BONE_DEFS.forEach(([key]) => { if (key[0] !== "l" || !/^l[A-Z]/.test(key)) return; const v = bn[key] || { x: 0, y: 0, z: 0 }; bn["r" + key.slice(1)] = { x: v.x, y: -v.y || 0, z: -v.z || 0 }; }); return bn; })}>Espejar izq → der</Btn>
+                      <Btn icon="reset" title="Deja todos los huesos en reposo en esta pose" onClick={() => setObjBone(selObj.id, () => ({}))}>Reposo</Btn>
+                    </div>
+                    {BONE_GROUPS.map(([gid, title, keys]) => (
+                      <Group key={gid} id={"objbones-" + gid} title={title} defaultOpen={gid === "torso"}>{keys.map(renderBoneRow)}</Group>
+                    ))}
+                  </Group>
+                )}
                 {selObj && renderObjectEditor(selObj, objects.indexOf(selObj))}
               </>
             )}
