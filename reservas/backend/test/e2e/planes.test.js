@@ -26,5 +26,8 @@ require('fs').mkdirSync(OUT, { recursive: true });
   // 4) Mi web
   await p.mouse.click(195, 8); await p.waitForTimeout(400); await p.click('.tabs button:has-text("Mi web")'); await p.waitForSelector('h2:has-text("Mi sitio web")'); assert(await p.locator('text=$720.000').count()); assert(await p.locator('text=Pendiente de pago').count()); await shot('p5-miweb-pendiente');
   a.run("agregar_('ServicioPagos', { id: 'X1', fecha: '2026-11-05', monto: 120000, nota: 'cuota 1' })"); await p.click('.tabs button:has-text("Agenda")'); await p.click('.tabs button:has-text("Mi web")'); await p.waitForSelector('text=En cuotas'); assert(await p.locator('text=Cuota 2 de 6').count()); assert(await p.locator('text=2027').count()); assert.equal(await p.locator('.sheet input, #vista input, #vista textarea').count(), 0); await shot('p6-miweb-cuotas'); ok('Mi web muestra cuotas, próximo pago y vencimiento, sin campos para editar');
+  // 5) sin turnos: calendario con mensaje amable
+  const { srv: s3, a: a2 } = await iniciar('reservar', 8795); a2.run("leer_('Turnos').forEach(t => actualizar_('Turnos', t._row, { activo: false }))");
+  const e = await ctx.newPage(); await e.goto('http://localhost:8795/'); await e.waitForSelector('text=Todavía no hay horarios disponibles'); assert(await e.locator('a:has-text("WhatsApp")').count() >= 1); await e.screenshot({ path: OUT + '/p7-sin-turnos.png', fullPage: true }); ok('sin turnos el calendario explica y ofrece WhatsApp'); s3.close();
   assert.deepEqual(errores, []); ok('sin errores en la consola'); await b.close(); s1.close(); s2.close(); console.log('Planes OK');
 })().catch(e => { console.error('FALLA', e.message); process.exit(1); });

@@ -49,8 +49,8 @@ var CFG_MEMO = null;
 
 /* Lo que el cliente le paga a tuweeb por su sitio. Se carga en las pestañas Servicio y ServicioPagos de la hoja; en el panel el cliente solo lo ve. */
 var SERVICIO_DEF = {
-  precioTotal: 720000, cuotas: 6, valorCuota: 120000, edicionesIncluidas: 3, edicionesUsadas: 0, dominio: '', dominioFecha: '',
-  incluye: 'Dominio propio|Hosting|Certificado SSL (el candado de seguridad)|Mantenimiento con 3 ediciones simples|Las ediciones complejas se cotizan aparte'
+  precioTotal: 720000, cuotas: 6, valorCuota: 120000, edicionesIncluidas: 3, edicionesUsadas: 0, renovacionUsd: 49, dominio: '', dominioFecha: '',
+  incluye: 'Dominio propio|Hosting|Certificado SSL (el candado de seguridad)|Soporte sin costo|3 ediciones simples por mes|Las ediciones complejas se cotizan aparte'
 };
 
 /* ───────────────────────── utilidades ───────────────────────── */
@@ -406,7 +406,7 @@ function servicio_() {
     estado: saldo <= 0 ? 'pagado' : pagado > 0 ? 'en cuotas' : 'pendiente', pagos: pagos,
     incluye: String(c.incluye).split('|').map(function (x) { return x.trim(); }).filter(Boolean),
     dominio: c.dominio, dominioInicio: inicio, vencimiento: vence, diasParaVencer: dias,
-    edicionesIncluidas: c.edicionesIncluidas, edicionesUsadas: c.edicionesUsadas, edicionesRestantes: Math.max(0, c.edicionesIncluidas - c.edicionesUsadas)
+    renovacionUsd: c.renovacionUsd, edicionesIncluidas: c.edicionesIncluidas, edicionesUsadas: c.edicionesUsadas, edicionesRestantes: Math.max(0, c.edicionesIncluidas - c.edicionesUsadas)
   };
 }
 function adminCrearReserva_(p, u) {

@@ -334,9 +334,9 @@ async function vWeb(main) {
     v.proximaCuota ? h('div', { class: 'item static', style: 'margin-top:.8rem' }, h('div', { class: 'main' }, h('b', null, `Próximo pago: ${money(v.proximaCuota.monto)}`), h('span', { class: 'muted small' }, `Cuota ${v.proximaCuota.numero} de ${v.cuotas} · ya pagaste ${v.cuotasPagadas}`))) : '',
     h('h3', { class: 'sec' }, 'Qué incluye'), h('ul', { class: 'small', style: 'padding-left:1.1rem;line-height:1.7' }, v.incluye.map(x => h('li', null, x))),
     h('h3', { class: 'sec' }, 'Dominio y renovación'),
-    h('dl', { class: 'kv' }, h('dt', null, 'Dominio'), h('dd', null, v.dominio || 'Se registra al recibir el primer pago'), h('dt', null, 'Inicio'), h('dd', null, v.dominioInicio ? fanio(v.dominioInicio) : '—'), h('dt', null, 'Próximo pago anual'), h('dd', null, venc)),
-    h('p', { class: 'muted small' }, 'El año se cuenta desde que tuweeb compra el dominio, una vez que pagás la primera cuota o el total.'),
-    h('h3', { class: 'sec' }, 'Ediciones'), h('p', { class: 'small' }, `${v.edicionesRestantes} de ${v.edicionesIncluidas} ediciones simples disponibles. Las complejas se cotizan aparte.`),
+    h('dl', { class: 'kv' }, h('dt', null, 'Dominio'), h('dd', null, v.dominio || 'Se registra al recibir el primer pago'), h('dt', null, 'Inicio'), h('dd', null, v.dominioInicio ? fanio(v.dominioInicio) : '—'), h('dt', null, 'Próximo pago anual'), h('dd', null, venc), h('dt', null, 'Renovación'), h('dd', null, `USD ${v.renovacionUsd} por año`)),
+    h('p', { class: 'muted small' }, `El año se cuenta desde que tuweeb compra el dominio, una vez que pagás la primera cuota o el total. La renovación (USD ${v.renovacionUsd} por año) incluye dominio, hosting, certificado SSL y soporte.`),
+    h('h3', { class: 'sec' }, 'Ediciones'), h('p', { class: 'small' }, `${v.edicionesRestantes} de ${v.edicionesIncluidas} ediciones simples disponibles este mes (se renuevan cada mes). El soporte no tiene costo. Las ediciones complejas se cotizan aparte.`),
     h('h3', { class: 'sec' }, 'Pagos registrados'), v.pagos.length ? h('div', { class: 'list' }, v.pagos.map(p => h('div', { class: 'item static' }, h('div', { class: 'when' }, fcorta(p.fecha)), h('div', { class: 'main' }, h('b', null, money(p.monto)), p.nota ? h('span', { class: 'muted small' }, p.nota) : '')))) : h('p', { class: 'empty' }, 'Todavía no hay pagos registrados.'));
 }
 
