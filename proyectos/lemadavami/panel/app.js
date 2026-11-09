@@ -54,7 +54,7 @@ async function accion(btn, fn) {
 let sheetEl = null;
 function sheet(titulo, contenido) {
   cerrar(true);
-  const back = h('div', { class: 'sheet-back', onclick: e => { if (e.target === back) cerrar(); } },
+  const back = h('div', { class: 'sheet-back', onpointerdown: e => { back._dn = e.target === back; }, onclick: e => { if (e.target === back && back._dn !== false) cerrar(); back._dn = undefined; } },   /* arrastrar para seleccionar texto y soltar afuera NO cierra */
     h('div', { class: 'sheet', role: 'dialog', 'aria-label': titulo }, h('div', { class: 'sheet-head' }, h('h3', null, titulo), h('button', { class: 'icon', 'aria-label': 'Cerrar', onclick: () => cerrar() }, '✕')), h('div', { class: 'sheet-body' }, contenido)));
   /* Enter en un campo pasa al siguiente (como la tecla "Siguiente" del celular) en vez de enviar el formulario a medio completar */
   back.addEventListener('keydown', e => {
