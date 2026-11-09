@@ -615,8 +615,24 @@ function doPost(e) {
 }
 
 /* ───────────────────────── instalación / mantenimiento ───────────────────────── */
+var PLANES_EJEMPLO = [
+  { nombre: 'Combo Despegue', descripcion: 'Hasta 15 invitados · 3 horas de salón con juegos · 2 animadores · mesa dulce básica · cotillón', precio: 180000, orden: 1 },
+  { nombre: 'Combo Órbita', descripcion: 'Hasta 25 invitados · 4 horas de salón con juegos · 3 animadores y baile con DJ · mesa dulce y torta · cotillón y souvenirs · invitación online', precio: 260000, orden: 2 },
+  { nombre: 'Combo Galaxia', descripcion: 'Hasta 40 invitados · 5 horas de salón con juegos · 4 animadores, DJ y show de magia · mesa dulce, torta y catering · cotillón, souvenirs y fotógrafo · invitación online', precio: 380000, orden: 3 }
+];
+/* Carga 3 planes de ejemplo SOLO si todavía no hay ninguno. Después se editan o borran desde el panel (Turnos → Planes). */
+function cargarPlanesEjemplo_() {
+  var n = 0;
+  conLock_(function () {
+    if (leer_('Planes').length) return;
+    PLANES_EJEMPLO.forEach(function (p) { agregar_('Planes', { id: nuevoId_('PL'), nombre: p.nombre, descripcion: p.descripcion, precio: p.precio, senaTipo: 'pct', senaValor: 30, orden: p.orden, activo: true }); n++; });
+    invalidar_();
+  });
+  try { SpreadsheetApp.getUi().alert(n ? 'Listo: se cargaron ' + n + ' planes de ejemplo (seña 30%). Entrá al panel, Turnos → Planes, y cambiá nombres, precios y lo que incluye.' : 'Ya hay planes cargados, no se tocó nada.'); } catch (e) {}
+  return n;
+}
 function onOpen() {
-  try { SpreadsheetApp.getUi().createMenu('Weeb Reservas').addItem('Instalar / reparar hojas', 'instalar').addItem('Crear o cambiar usuario del panel', 'menuUsuario_').addItem('Hacer backup ahora', 'backup_').addToUi(); } catch (e) {}
+  try { SpreadsheetApp.getUi().createMenu('Weeb Reservas').addItem('Instalar / reparar hojas', 'instalar').addItem('Crear o cambiar usuario del panel', 'menuUsuario_').addItem('Cargar planes de ejemplo (Despegue, Órbita, Galaxia)', 'cargarPlanesEjemplo_').addItem('Hacer backup ahora', 'backup_').addToUi(); } catch (e) {}
 }
 function menuUsuario_() {
   var ui = SpreadsheetApp.getUi(), a = ui.prompt('Usuario del panel', 'Mail del dueño:', ui.ButtonSet.OK_CANCEL); if (a.getSelectedButton() !== ui.Button.OK) return;
