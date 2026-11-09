@@ -20,7 +20,7 @@
   .wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto}
   .brand{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
   .back{color:#fff;opacity:.85;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 14px;border:1px solid rgba(255,255,255,.35);border-radius:999px;white-space:nowrap}
-  .brand img{height:38px;width:auto;display:block;max-width:100%}
+  .brand img{height:56px;width:auto;display:block;max-width:100%}
   .brand b{font-size:1.25rem;font-weight:800;letter-spacing:-.01em}
   .brand span{font-size:.7rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;background:var(--cy);color:#23431d;padding:5px 10px;border-radius:999px}
   .eyebrow{display:inline-block;background:rgba(232,105,58,.16);color:var(--ac);font-size:.78rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;padding:6px 12px;border-radius:999px;margin-bottom:14px}
@@ -87,7 +87,7 @@
 <body>
 <a class="weeb-back" href="./">← Volver al sitio</a>
 <div class="wrap">
-  <div class="brand"><img src="./assets/models/planetaninos-logo.svg" alt="Planeta Niños" /></div>
+  <div class="brand"><img src="./assets/models/planetaninos-logo-claro.svg" alt="Planeta Niños" /></div>
   <div class="main">
     <div class="side">
       <div class="hd">
@@ -402,7 +402,7 @@
     // logo de Planeta Niños
     var a1 = outCubic(prog(t, 0, .7));
     c.save(); c.globalAlpha = a1; c.translate(0, (1 - a1) * -40);
-    var lw = L(720), lh = lw * .17;
+    var lw = L(720), lh = lw * .2;
     if (LOGO.complete && LOGO.naturalWidth) { lh = lw * LOGO.naturalHeight / LOGO.naturalWidth; c.shadowColor = 'rgba(24,57,18,.5)'; c.shadowBlur = FAST ? 0 : 14; c.shadowOffsetY = 6; c.drawImage(LOGO, CX - lw / 2, Y(150), lw, lh); c.shadowColor = 'transparent'; }
     c.restore();
 
