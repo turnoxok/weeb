@@ -4,7 +4,7 @@ const { iniciar } = require('./servidor'); const assert = require('assert'); con
 require('fs').mkdirSync(OUT, { recursive: true });
 (async () => {
   const { srv, a } = await iniciar('panel', 8781);
-  const b = await chromium.launch({ args: ['--no-sandbox'] }), ctx = await b.newContext({ viewport: { width: 390, height: 800 }, locale: 'es-AR' }), p = await ctx.newPage();
+  const b = await chromium.launch({ args: ['--no-sandbox'] }), ctx = await b.newContext({ viewport: { width: 390, height: 800 }, locale: 'es-AR' }), _c = await ctx.clock.setFixedTime(new Date('2026-11-05T12:00:00-03:00')), p = await ctx.newPage();
   const errores = []; p.on('pageerror', e => errores.push(e.message)); p.on('console', m => { if (m.type() === 'error' && !/ERR_TUNNEL|ERR_NAME|fonts\.g/.test(m.text())) errores.push(m.text()); }); p.on('dialog', d => d.accept());
   const ok = (n) => console.log('  ok  ' + n); const shot = async n => { await p.waitForTimeout(400); await p.screenshot({ path: `${OUT}/${n}.png` }); };
   await p.goto('http://localhost:8781/'); await p.waitForSelector('form');

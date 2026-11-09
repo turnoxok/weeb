@@ -28,7 +28,7 @@ function h(tag, props, ...kids) {
   return e;
 }
 const svg = d => { const w = document.createElement('span'); w.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`; return w.firstChild; };
-const IC = { agenda: '<rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/>', reservas: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>', caja: '<rect x="2" y="6" width="20" height="13" rx="3"/><circle cx="12" cy="12.5" r="3"/>', turnos: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', ajustes: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>' };
+const IC = { agenda: '<rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/>', reservas: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>', caja: '<rect x="2" y="6" width="20" height="13" rx="3"/><circle cx="12" cy="12.5" r="3"/>', turnos: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', web: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>', ajustes: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>' };
 
 /* ───── estado y API ───── */
 const S = { cfg: null, pub: null, token: localStorage.getItem('weeb_token') || '', user: null, view: 'agenda', mes: mesDe(hoy()), reFiltro: 'prox', reQ: '', cajaMes: mesDe(hoy()), salones: [], turnos: [], instalar: null };
@@ -99,7 +99,7 @@ async function entrar() {
 async function cargarBase() { [S.salones, S.turnos] = await Promise.all([api('admin.salones'), api('admin.turnos')]); }
 const salonDe = id => (S.salones.find(s => s.id === id) || {}).nombre || '';
 
-const VISTAS = { agenda: ['Agenda', vAgenda], reservas: ['Reservas', vReservas], caja: ['Caja', vCaja], turnos: ['Turnos', vTurnos], ajustes: ['Ajustes', vAjustes] };
+const VISTAS = { agenda: ['Agenda', vAgenda], reservas: ['Reservas', vReservas], caja: ['Caja', vCaja], turnos: ['Turnos', vTurnos], web: ['Mi web', vWeb], ajustes: ['Ajustes', vAjustes] };
 function render() {
   const main = h('main', { class: 'wrap', id: 'vista' });
   const tabs = h('nav', { class: 'tabs' }, Object.entries(VISTAS).map(([k, [t]]) => h('button', { class: S.view === k ? 'on' : '', onclick: () => { S.view = k; render(); } }, svg(IC[k]), t)));
@@ -161,7 +161,7 @@ async function detalle(id) {
     h('div', { class: 'row', style: 'justify-content:space-between' }, h('h3', null, r.nombre), h('span', { class: 'chip ' + r.estado }, r.estado)),
     h('dl', { class: 'kv' }, h('dt', null, 'Fecha'), h('dd', null, flarga(r.fecha)), h('dt', null, 'Horario'), h('dd', null, `${r.inicio} a ${r.fin} (${horas(r.inicio, r.fin)})` + (S.salones.length > 1 ? ' · ' + salonDe(r.salonId) : '')),
       h('dt', null, 'Contacto'), h('dd', null, r.telefono ? h('a', { href: 'tel:' + r.telefono }, r.telefono) : '—', r.email ? [' · ', h('a', { href: 'mailto:' + r.email }, r.email)] : ''),
-      h('dt', null, 'Invitados'), h('dd', null, r.personas || '—'), r.nota ? [h('dt', null, 'Nota'), h('dd', null, r.nota)] : '', h('dt', null, 'Origen'), h('dd', null, r.origen === 'manual' ? 'Cargada a mano' : 'Web'),
+      r.plan ? [h('dt', null, 'Plan'), h('dd', null, r.plan)] : '', h('dt', null, 'Invitados'), h('dd', null, r.personas || '—'), r.nota ? [h('dt', null, 'Nota'), h('dd', null, r.nota)] : '', h('dt', null, 'Origen'), h('dd', null, r.origen === 'manual' ? 'Cargada a mano' : 'Web'),
       r.estado === 'pendiente' && r.venceEn ? [h('dt', null, 'Vence'), h('dd', null, new Date(r.venceEn).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }))] : '', h('dt', null, 'Código'), h('dd', { class: 'small' }, r.id)),
     h('div', { class: 'money' }, h('div', null, h('b', null, money(r.total)), h('span', null, 'Total')), h('div', null, h('b', null, money(r.sena)), h('span', null, 'Seña')), h('div', null, h('b', null, money(r.pagado)), h('span', null, 'Pagado')), h('div', null, h('b', { class: r.saldo > 0 ? 'neg' : 'pos' }, money(r.saldo)), h('span', null, 'Saldo'))),
     h('div', { class: 'progress' }, h('i', { style: 'width:' + pct + '%' })),
@@ -195,18 +195,22 @@ function moverUI(r) {
 
 /* ───── NUEVA RESERVA MANUAL ───── */
 function nuevaReserva(pre) {
-  const st = { fecha: pre.fecha || hoy(), turnoId: pre.turnoId || '', slots: [] };
+  const st = { fecha: pre.fecha || hoy(), turnoId: pre.turnoId || '', slots: [], planes: [] };
+  const planSel = h('select', { name: 'planId' }), planBox = h('span', { class: 'field', hidden: true }, h('span', { style: 'display:block;font-size:.82rem;color:var(--mute);font-weight:600;margin-bottom:.25rem' }, 'Plan'), planSel);
   const slotsEl = h('div', { class: 'slotbtns' }), fi = inp('fecha', { type: 'date', required: true, value: st.fecha }), tot = inp('total', { type: 'number', placeholder: 'Precio del turno' }), sen = inp('sena', { type: 'number', placeholder: 'Seña' });
-  const f = h('form', { onsubmit: ev => { ev.preventDefault(); if (!st.turnoId) { toast('Elegí un turno', 'err'); return; } const x = datos(f); accion($('button.btn.block', f), async () => {
-    const r = await api('admin.crearReserva', { fecha: x.fecha, turnoId: st.turnoId, nombre: x.nombre, telefono: x.telefono, email: x.email, personas: x.personas, nota: x.nota, total: x.total, sena: x.sena, pago: Number(x.pagoMonto) ? { monto: x.pagoMonto, metodo: x.pagoMetodo } : undefined });
+  const f = h('form', { onsubmit: ev => { ev.preventDefault(); if (!st.turnoId) { toast('Elegí un turno', 'err'); return; } if (st.planes.length && !planSel.value) { toast('Elegí un plan', 'err'); return; } const x = datos(f); accion($('button.btn.block', f), async () => {
+    const r = await api('admin.crearReserva', { fecha: x.fecha, turnoId: st.turnoId, planId: st.planes.length ? x.planId : undefined, nombre: x.nombre, telefono: x.telefono, email: x.email, personas: x.personas, nota: x.nota, total: x.total, sena: x.sena, pago: Number(x.pagoMonto) ? { monto: x.pagoMonto, metodo: x.pagoMetodo } : undefined });
     toast('Reserva guardada', 'ok'); S.mes = mesDe(x.fecha); cerrar(); render(); detalle(r.reserva.id); }); } },
-    campo('Fecha', fi), h('span', { class: 'field' }, h('span', { style: 'display:block;font-size:.82rem;color:var(--mute);font-weight:600' }, 'Turno'), slotsEl),
+    campo('Fecha', fi), h('span', { class: 'field' }, h('span', { style: 'display:block;font-size:.82rem;color:var(--mute);font-weight:600' }, 'Turno'), slotsEl), planBox,
     campo('Nombre', inp('nombre', { required: true, placeholder: 'Quién reserva' })), h('div', { class: 'grid2' }, campo('Teléfono', inp('telefono', { type: 'tel' })), campo('Mail (opcional)', inp('email', { type: 'email' }))),
     h('div', { class: 'grid2' }, campo('Invitados', inp('personas', { type: 'number' })), campo('Total $', tot)), campo('Seña $', sen), campo('Nota', h('textarea', { name: 'nota', rows: 2 })),
     h('h3', { class: 'sec' }, '¿Ya pagó algo?'), h('div', { class: 'grid2' }, campo('Monto recibido', inp('pagoMonto', { type: 'number', placeholder: '0' })), campo('Medio', h('select', { name: 'pagoMetodo' }, h('option', { value: 'efectivo' }, 'Efectivo'), h('option', { value: 'transferencia' }, 'Transferencia'), h('option', { value: 'otro' }, 'Otro')))),
     h('button', { class: 'btn block' }, 'Guardar reserva'));
-  const pintar = () => slotsEl.replaceChildren(...(st.slots.length ? st.slots.map(s => h('button', { type: 'button', class: st.turnoId === s.turnoId ? 'on' : '', onclick: () => { st.turnoId = s.turnoId; tot.value = s.precio; sen.value = s.sena; pintar(); } }, `${s.inicio} a ${s.fin}` + (S.salones.length > 1 ? ' · ' + salonDe(s.salonId) : ''))) : [h('span', { class: 'muted small' }, 'No hay turnos libres ese día. Probá con otra fecha o desbloqueá el turno.')]));
-  const cargar = async () => { slotsEl.replaceChildren(h('img', { class: 'tw3d', src: 'tuweeb-icono.svg', alt: 'tuweeb' })); try { const ag = await api('admin.agenda', { mes: mesDe(fi.value) }); st.slots = (ag.dias[fi.value] || []).filter(s => s.estado === 'libre'); if (!st.slots.some(s => s.turnoId === st.turnoId)) st.turnoId = ''; else { const s = st.slots.find(s => s.turnoId === st.turnoId); tot.value = s.precio; sen.value = s.sena; } pintar(); } catch (e) { slotsEl.replaceChildren(e.message); } };
+  const pintar = () => slotsEl.replaceChildren(...(st.slots.length ? st.slots.map(s => h('button', { type: 'button', class: st.turnoId === s.turnoId ? 'on' : '', onclick: () => { st.turnoId = s.turnoId; if (!st.planes.length) { tot.value = s.precio; sen.value = s.sena; } pintar(); } }, `${s.inicio} a ${s.fin}` + (S.salones.length > 1 ? ' · ' + salonDe(s.salonId) : ''))) : [h('span', { class: 'muted small' }, 'No hay turnos libres ese día. Probá con otra fecha o desbloqueá el turno.')]));
+  const cargar = async () => { slotsEl.replaceChildren(h('img', { class: 'tw3d', src: 'tuweeb-icono.svg', alt: 'tuweeb' })); try { const ag = await api('admin.agenda', { mes: mesDe(fi.value) }); st.slots = (ag.dias[fi.value] || []).filter(s => s.estado === 'libre'); if (!st.slots.some(s => s.turnoId === st.turnoId)) st.turnoId = ''; else if (!st.planes.length) { const s = st.slots.find(s => s.turnoId === st.turnoId); tot.value = s.precio; sen.value = s.sena; } pintar(); } catch (e) { slotsEl.replaceChildren(e.message); } };
+  const calcSena = p => p.senaTipo === 'pct' ? Math.round(p.precio * p.senaValor / 100) : p.senaTipo === 'monto' ? Math.min(p.precio, p.senaValor) : 0;
+  planSel.addEventListener('change', () => { const p = st.planes.find(x => x.id === planSel.value); if (p) { tot.value = p.precio; sen.value = calcSena(p); } });
+  api('admin.planes').then(l => { st.planes = l.filter(p => p.activo); if (!st.planes.length) return; planSel.replaceChildren(h('option', { value: '' }, 'Elegí un plan…'), ...st.planes.map(p => h('option', { value: p.id }, p.nombre + ' · ' + money(p.precio)))); planBox.hidden = false; tot.placeholder = 'Lo define el plan'; }).catch(() => {});
   fi.addEventListener('change', cargar); cargar(); sheet('Nueva reserva', f);
 }
 
@@ -258,16 +262,29 @@ function movimientoNuevo() {
 
 /* ───── TURNOS, SALONES Y BLOQUEOS ───── */
 async function vTurnos(main) {
-  cargando(main); let bl; try { await cargarBase(); bl = await api('admin.bloqueos'); } catch (e) { main.replaceChildren(h('p', { class: 'empty' }, e.message)); return; }
+  cargando(main); let bl; let pl = []; try { await cargarBase(); [bl, pl] = await Promise.all([api('admin.bloqueos'), api('admin.planes')]); } catch (e) { main.replaceChildren(h('p', { class: 'empty' }, e.message)); return; }
   const sen = t => t.senaTipo === 'pct' ? t.senaValor + '% de seña' : t.senaTipo === 'monto' ? money(t.senaValor) + ' de seña' : 'Sin seña', dias = t => h('span', { class: 'small' }, [1, 2, 3, 4, 5, 6, 0].map(d => String(t.dias).split(',').includes(String(d)) ? DIAS_L[d] : '·').join(' '));
   const bloques = S.salones.map(s => h('div', null, h('div', { class: 'bar', style: 'margin:1rem 0 .5rem' }, h('h3', null, s.nombre, s.activo ? '' : ' (inactivo)'), h('div', { class: 'row' }, h('button', { class: 'btn soft sm', onclick: () => salonForm(s) }, 'Editar salón'), h('button', { class: 'btn sm', onclick: () => turnoForm({ salonId: s.id }) }, '+ Turno'))),
     h('div', { class: 'list' }, S.turnos.filter(t => t.salonId === s.id).map(t => h('button', { class: 'item', onclick: () => turnoForm(t) }, h('div', { class: 'when' }, t.inicio, h('small', null, 'a ' + t.fin)), h('div', { class: 'main' }, h('b', null, (t.etiqueta || 'Turno') + ' · ' + horas(t.inicio, t.fin)), h('span', { class: 'muted small' }, money(t.precio) + ' · ' + sen(t) + (t.desde || t.hasta ? ` · ${t.desde || ''}→${t.hasta || ''}` : ''))), dias(t), t.activo ? '' : h('span', { class: 'chip' }, 'pausado'))),
       S.turnos.some(t => t.salonId === s.id) ? '' : h('p', { class: 'empty' }, 'Este salón todavía no tiene turnos.'))));
   const fut = bl.filter(b => (b.hasta || b.desde) >= hoy()).sort((a, b) => (a.desde < b.desde ? -1 : 1));
   main.replaceChildren(h('div', { class: 'bar' }, h('h2', null, 'Turnos y bloqueos'), h('button', { class: 'btn soft sm', onclick: () => salonForm({}) }, '+ Salón')), ...bloques,
+    h('div', { class: 'bar', style: 'margin:1.6rem 0 .5rem' }, h('h3', null, 'Planes'), h('button', { class: 'btn sm', onclick: () => planForm({}) }, '+ Plan')),
+    h('p', { class: 'muted small', style: 'margin-bottom:.5rem' }, 'Opcional. Si cargás planes, quien reserva elige día y horario y después un plan: el precio y la seña salen del plan. Sin planes, rige el precio de cada turno.'),
+    pl.length ? h('div', { class: 'list' }, pl.map(p => h('button', { class: 'item', onclick: () => planForm(p) }, h('div', { class: 'main' }, h('b', null, p.nombre), h('span', { class: 'muted small' }, money(p.precio) + ' · ' + sen(p) + (p.descripcion ? ' · ' + p.descripcion : ''))), p.activo ? '' : h('span', { class: 'chip' }, 'pausado')))) : h('p', { class: 'empty' }, 'Todavía no hay planes. Las reservas usan el precio del turno.'),
     h('div', { class: 'bar', style: 'margin:1.6rem 0 .5rem' }, h('h3', null, 'Días y turnos bloqueados'), h('button', { class: 'btn sm', onclick: () => bloqueoNuevo() }, '+ Bloquear')),
     fut.length ? h('div', { class: 'list' }, fut.map(b => h('div', { class: 'item static' }, h('div', { class: 'main' }, h('b', null, b.hasta && b.hasta !== b.desde ? `${fcorta(b.desde)} → ${fcorta(b.hasta)}` : flarga(b.desde)), h('span', { class: 'muted small' }, (b.salonId === '*' ? 'Todos los salones' : salonDe(b.salonId)) + (b.turnoId !== '*' ? ' · un turno' : ' · todo el día') + (b.motivo ? ' · ' + b.motivo : ''))),
       h('button', { class: 'btn sm line', onclick: e => accion(e.target, async () => { await api('admin.desbloquear', { id: b.id }); vTurnos(main); }) }, 'Quitar')))) : h('p', { class: 'empty' }, 'No hay bloqueos cargados.'));
+}
+function planForm(p) {
+  const nuevo = !p.id;
+  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f); accion($('button.btn.block', f), async () => { await api('admin.guardarPlan', { id: p.id, nombre: x.nombre, descripcion: x.descripcion, precio: x.precio, senaTipo: x.senaTipo, senaValor: x.senaValor, orden: x.orden, activo: x.activo }); toast('Plan guardado', 'ok'); cerrar(); render(); }); } },
+    campo('Nombre del plan', inp('nombre', { required: true, placeholder: 'Combo Órbita', value: p.nombre || '' })), campo('Qué incluye (opcional)', h('textarea', { name: 'descripcion', rows: 3, placeholder: '4 horas, 3 animadores, mesa dulce…' }, p.descripcion || '')),
+    h('div', { class: 'grid2' }, campo('Precio $', inp('precio', { type: 'number', min: '0', required: true, value: p.precio ?? '' })), campo('Seña', h('select', { name: 'senaTipo', value: p.senaTipo || 'pct' }, h('option', { value: 'pct' }, 'Porcentaje %'), h('option', { value: 'monto' }, 'Monto fijo $'), h('option', { value: 'ninguna' }, 'Sin seña ($0)')))),
+    h('div', { class: 'grid2' }, campo('Valor de la seña (30 = 30%)', inp('senaValor', { type: 'number', min: '0', value: p.senaValor ?? 30 })), campo('Orden', inp('orden', { type: 'number', value: p.orden || '' }))),
+    h('label', { class: 'row', style: 'margin-bottom:1rem' }, inp('activo', { type: 'checkbox', checked: p.activo !== false }), 'Plan activo (se puede elegir)'), h('button', { class: 'btn block' }, 'Guardar plan'),
+    nuevo ? '' : h('button', { type: 'button', class: 'btn line block', style: 'margin-top:.6rem', onclick: e => { if (!confirm('¿Borrar este plan? Las reservas ya hechas no cambian.')) return; accion(e.target, async () => { await api('admin.borrarPlan', { id: p.id }); toast('Plan borrado', 'ok'); cerrar(); render(); }); } }, 'Borrar plan'));
+  sheet(nuevo ? 'Nuevo plan' : 'Editar plan', f);
 }
 function salonForm(s) {
   const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f); accion($('button', f), async () => { await api('admin.guardarSalon', { id: s.id, nombre: x.nombre, capacidad: x.capacidad, activo: x.activo, orden: x.orden }); toast('Guardado', 'ok'); cerrar(); render(); }); } },
@@ -298,6 +315,27 @@ function bloqueoNuevo(fecha) {
     S.salones.length > 1 ? campo('Salón', h('select', { name: 'salonId' }, h('option', { value: '*' }, 'Todos'), S.salones.map(s => h('option', { value: s.id }, s.nombre)))) : h('input', { type: 'hidden', name: 'salonId', value: '*' }),
     campo('Turno', h('select', { name: 'turnoId' }, h('option', { value: '*' }, 'Todo el día'), S.turnos.map(t => h('option', { value: t.id }, `${t.etiqueta || 'Turno'} ${t.inicio}-${t.fin}` + (S.salones.length > 1 ? ' · ' + salonDe(t.salonId) : ''))))), campo('Motivo (opcional)', inp('motivo', { placeholder: 'Feriado, mantenimiento, evento privado…' })), h('button', { class: 'btn block' }, 'Bloquear'));
   sheet('Bloquear', f);
+}
+
+/* ───── MI WEB (solo lectura: lo carga tuweeb en la hoja) ───── */
+const fanio = f => new Date(f + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
+async function vWeb(main) {
+  cargando(main); let v; try { v = await api('admin.servicio'); } catch (e) { main.replaceChildren(h('p', { class: 'empty' }, e.message)); return; }
+  const est = { pagado: ['Pagado', 'confirmada'], 'en cuotas': ['En cuotas', 'pendiente'], pendiente: ['Pendiente de pago', 'pendiente'] }[v.estado] || [v.estado, ''];
+  const pct = v.precioTotal ? Math.min(100, Math.round(v.pagado / v.precioTotal * 100)) : 0;
+  const venc = v.vencimiento ? (v.diasParaVencer < 0 ? 'Venció el ' + fanio(v.vencimiento) : fanio(v.vencimiento) + (v.diasParaVencer <= 60 ? ` (faltan ${v.diasParaVencer} días)` : '')) : 'Se cuenta desde el primer pago';
+  main.replaceChildren(h('div', { class: 'bar' }, h('h2', null, 'Mi sitio web'), h('span', { class: 'chip ' + est[1] }, est[0])),
+    h('p', { class: 'muted small', style: 'margin-bottom:.8rem' }, 'Acá ves cuánto es tu servicio, qué pagaste y cuándo toca el próximo pago. Es solo para consultar: si algo no coincide, escribile a tuweeb.'),
+    h('div', { class: 'money', style: '--n:3' }, h('div', null, h('b', null, money(v.precioTotal)), h('span', null, 'Total del año')), h('div', null, h('b', null, money(v.pagado)), h('span', null, 'Pagado')), h('div', null, h('b', { class: v.saldo > 0 ? 'neg' : 'pos' }, money(v.saldo)), h('span', null, 'Falta'))),
+    h('div', { class: 'progress' }, h('i', { style: 'width:' + pct + '%' })),
+    h('p', { class: 'muted small', style: 'margin:.6rem 0 0' }, `Se paga de contado (${money(v.precioTotal)}) o hasta en ${v.cuotas} cuotas de ${money(v.valorCuota)}.`),
+    v.proximaCuota ? h('div', { class: 'item static', style: 'margin-top:.8rem' }, h('div', { class: 'main' }, h('b', null, `Próximo pago: ${money(v.proximaCuota.monto)}`), h('span', { class: 'muted small' }, `Cuota ${v.proximaCuota.numero} de ${v.cuotas} · ya pagaste ${v.cuotasPagadas}`))) : '',
+    h('h3', { class: 'sec' }, 'Qué incluye'), h('ul', { class: 'small', style: 'padding-left:1.1rem;line-height:1.7' }, v.incluye.map(x => h('li', null, x))),
+    h('h3', { class: 'sec' }, 'Dominio y renovación'),
+    h('dl', { class: 'kv' }, h('dt', null, 'Dominio'), h('dd', null, v.dominio || 'Se registra al recibir el primer pago'), h('dt', null, 'Inicio'), h('dd', null, v.dominioInicio ? fanio(v.dominioInicio) : '—'), h('dt', null, 'Próximo pago anual'), h('dd', null, venc)),
+    h('p', { class: 'muted small' }, 'El año se cuenta desde que tuweeb compra el dominio, una vez que pagás la primera cuota o el total.'),
+    h('h3', { class: 'sec' }, 'Ediciones'), h('p', { class: 'small' }, `${v.edicionesRestantes} de ${v.edicionesIncluidas} ediciones simples disponibles. Las complejas se cotizan aparte.`),
+    h('h3', { class: 'sec' }, 'Pagos registrados'), v.pagos.length ? h('div', { class: 'list' }, v.pagos.map(p => h('div', { class: 'item static' }, h('div', { class: 'when' }, fcorta(p.fecha)), h('div', { class: 'main' }, h('b', null, money(p.monto)), p.nota ? h('span', { class: 'muted small' }, p.nota) : '')))) : h('p', { class: 'empty' }, 'Todavía no hay pagos registrados.'));
 }
 
 /* ───── AJUSTES ───── */

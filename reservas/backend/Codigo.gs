@@ -20,7 +20,10 @@ var TABLAS = {
   Turnos:      ['id', 'salonId', 'dias', 'inicio', 'fin', 'etiqueta', 'precio', 'senaTipo', 'senaValor', 'desde', 'hasta', 'activo'],
   Bloqueos:    ['id', 'desde', 'hasta', 'salonId', 'turnoId', 'motivo', 'creado'],
   Reservas:    ['id', 'creada', 'actualizada', 'salonId', 'fecha', 'turnoId', 'inicio', 'fin', 'nombre', 'telefono', 'email', 'personas', 'nota',
-                'total', 'sena', 'pagado', 'saldo', 'estado', 'origen', 'metodo', 'venceEn', 'extRef'],
+                'total', 'sena', 'pagado', 'saldo', 'estado', 'origen', 'metodo', 'venceEn', 'extRef', 'planId', 'plan'],
+  Planes:      ['id', 'nombre', 'descripcion', 'precio', 'senaTipo', 'senaValor', 'orden', 'activo'],
+  Servicio:    ['clave', 'valor'],                                    // lo carga tuweeb (el cliente solo lo ve): precio del sitio, ediciones, dominio…
+  ServicioPagos: ['id', 'fecha', 'monto', 'nota'],                    // cada pago del cliente a tuweeb (cuota o total)
   Pagos:       ['id', 'reservaId', 'fecha', 'monto', 'metodo', 'nota', 'creado', 'usuario'],
   Movimientos: ['id', 'fecha', 'tipo', 'categoria', 'monto', 'descripcion', 'creado', 'usuario'],
   Usuarios:    ['email', 'nombre', 'rol', 'activo', 'sal', 'claveHash'],
@@ -43,6 +46,12 @@ var CFG_DEF = {
 var CFG_PUBLICA = ['nombre', 'logoUrl', 'colorPrincipal', 'whatsapp', 'direccion', 'mapsUrl', 'moneda', 'mesesAnticipacion', 'antelacionHoras',
                    'pagoTransferencia', 'pagoMercadoPago'];
 var CFG_MEMO = null;
+
+/* Lo que el cliente le paga a tuweeb por su sitio. Se carga en las pestañas Servicio y ServicioPagos de la hoja; en el panel el cliente solo lo ve. */
+var SERVICIO_DEF = {
+  precioTotal: 720000, cuotas: 6, valorCuota: 120000, edicionesIncluidas: 3, edicionesUsadas: 0, dominio: '', dominioFecha: '',
+  incluye: 'Dominio propio|Hosting|Certificado SSL (el candado de seguridad)|Mantenimiento con 3 ediciones simples|Las ediciones complejas se cotizan aparte'
+};
 
 /* ───────────────────────── utilidades ───────────────────────── */
 function err_(codigo, mensaje) { var e = new Error(mensaje || codigo); e.codigo = codigo; return e; }
@@ -137,6 +146,7 @@ function configPublica_() {
   CFG_PUBLICA.forEach(function (k) { o[k] = c[k]; });
   o.salones = leer_('Salones').filter(function (s) { return s.activo; }).sort(function (a, b) { return a.orden - b.orden; })
     .map(function (s) { return { id: s.id, nombre: s.nombre, capacidad: s.capacidad }; });
+  o.planes = planesActivos_().map(function (p) { return { id: p.id, nombre: p.nombre, descripcion: p.descripcion, precio: p.precio, sena: calcSena_(p, p.precio) }; });
   return o;
 }
 
@@ -168,6 +178,8 @@ function ocupante_(reservas, salonId, fecha, ini, fin, ignorarId) {
     return r.salonId === salonId && r.fecha === fecha && r.id !== ignorarId && vigente_(r) && solapan_(ini, fin, r.inicio, r.fin);
   })[0] || null;
 }
+/** Planes (combos) que se pueden elegir al reservar. Si no hay ninguno activo, el precio sale del turno como siempre. */
+function planesActivos_() { return leer_('Planes').filter(function (p) { return p.activo; }).sort(function (a, b) { return a.orden - b.orden; }); }
 function calcSena_(t, total) {
   var s = 0;
   if (t.senaTipo === 'pct') s = Math.round(total * Math.min(100, Math.max(0, t.senaValor)) / 100);
@@ -214,7 +226,7 @@ function conLock_(fn) {
 }
 function reservaPublica_(r, extra) {
   var cfg = config_(), o = { id: r.id, estado: r.estado, fecha: r.fecha, inicio: r.inicio, fin: r.fin, salonId: r.salonId, nombre: r.nombre,
-    total: r.total, sena: r.sena, pagado: r.pagado, saldo: r.saldo, venceEn: r.venceEn, metodo: r.metodo };
+    total: r.total, sena: r.sena, pagado: r.pagado, saldo: r.saldo, venceEn: r.venceEn, metodo: r.metodo, plan: r.plan || '' };
   if (r.estado === 'pendiente' && r.metodo === 'transferencia') {
     o.transferencia = { titular: cfg.transferTitular, cbu: cfg.transferCbu, alias: cfg.transferAlias, banco: cfg.transferBanco, nota: cfg.transferNota, importe: r.sena - r.pagado };
   }
@@ -242,7 +254,12 @@ function reservar_(p) {
     if (bloqueoDe_(leer_('Bloqueos'), t.salonId, p.fecha, t.id) || ocupante_(reservas, t.salonId, p.fecha, t.inicio, t.fin)) throw err_('OCUPADO', 'Ese turno ya no está disponible');
     var pend = reservas.filter(function (r) { return vigente_(r) && r.estado === 'pendiente' && ((mail && r.email === mail) || r.telefono === tel); }).length;
     if (pend >= cfg.maxPendientesPorContacto) throw err_('DEMASIADAS_PENDIENTES', 'Ya tenés reservas pendientes de pago. Completalas o escribinos.');
-    var total = t.precio, sena = calcSena_(t, total), metodo = '', estado, vence = '';
+    var planes = planesActivos_(), plan = null;
+    if (planes.length) {
+      plan = planes.filter(function (x) { return x.id === txt_(p.planId); })[0];
+      if (!plan) throw err_('PLAN_INVALIDO', 'Elegí un plan para tu fiesta');
+    }
+    var total = plan ? plan.precio : t.precio, sena = calcSena_(plan || t, total), metodo = '', estado, vence = '';
     if (sena > 0) {
       metodo = p.metodo === 'mercadopago' ? 'mercadopago' : 'transferencia';
       if (metodo === 'mercadopago' && !cfg.pagoMercadoPago) throw err_('METODO_NO_DISPONIBLE', 'Ese medio de pago no está habilitado');
@@ -252,7 +269,7 @@ function reservar_(p) {
     } else estado = cfg.autoConfirmarSinSena ? 'confirmada' : 'pendiente';
     var iso = new Date(ahora_()).toISOString();
     var r = { id: nuevoId_('R'), creada: iso, actualizada: iso, salonId: t.salonId, fecha: p.fecha, turnoId: t.id, inicio: t.inicio, fin: t.fin, nombre: nombre, telefono: tel, email: mail,
-      personas: personas, nota: txt_(p.nota, 400), total: total, sena: sena, pagado: 0, saldo: total, estado: estado, origen: 'web', metodo: metodo, venceEn: vence, extRef: '' };
+      personas: personas, nota: txt_(p.nota, 400), total: total, sena: sena, pagado: 0, saldo: total, estado: estado, origen: 'web', metodo: metodo, venceEn: vence, extRef: '', planId: plan ? plan.id : '', plan: plan ? plan.nombre : '' };
     agregar_('Reservas', r); invalidar_(); log_('web', 'reservar', r.id + ' ' + r.fecha + ' ' + r.inicio);
     notificar_(r, estado === 'confirmada' ? 'confirmada' : 'pendiente');
     return reservaPublica_(r);
@@ -296,7 +313,7 @@ function notificar_(r, evento) {
     var cfg = config_(); if (!cfg.emailsActivos) return;
     if (MailApp.getRemainingDailyQuota() < 4) return;
     var asunto = (evento === 'confirmada' ? 'Reserva confirmada' : 'Reserva recibida') + ' · ' + cfg.nombre;
-    var filas = '<p>Fecha: <b>' + r.fecha + '</b> · ' + r.inicio + ' a ' + r.fin + ' hs</p><p>Total: $' + r.total + (r.sena ? ' · Seña: $' + r.sena : '') + ' · Pagado: $' + r.pagado + '</p>';
+    var filas = '<p>Fecha: <b>' + r.fecha + '</b> · ' + r.inicio + ' a ' + r.fin + ' hs</p>' + (r.plan ? '<p>Plan: <b>' + r.plan + '</b></p>' : '') + '<p>Total: $' + r.total + (r.sena ? ' · Seña: $' + r.sena : '') + ' · Pagado: $' + r.pagado + '</p>';
     var cuerpo = '<div style="font-family:Arial,sans-serif;max-width:520px">' + (cfg.logoUrl ? '<img src="' + cfg.logoUrl + '" style="max-height:60px"><br>' : '') +
       '<h2>' + asunto + '</h2><p>Hola ' + r.nombre + '!</p>' + filas +
       (evento === 'pendiente' && r.metodo === 'transferencia' ? '<p>Para confirmar, transferí la seña a <b>' + cfg.transferAlias + '</b> (' + cfg.transferTitular + ') y mandanos el comprobante.</p>' : '') +
@@ -365,6 +382,33 @@ function validarTurno_(p) {
   return { salonId: p.salonId, dias: dias.join(','), inicio: p.inicio, fin: p.fin, etiqueta: txt_(p.etiqueta, 60), precio: Math.max(0, num_(p.precio || 0, 'precio')),
     senaTipo: tipo, senaValor: tipo === 'ninguna' ? 0 : Math.max(0, num_(p.senaValor || 0, 'seña')), desde: p.desde || '', hasta: p.hasta || '', activo: p.activo !== false };
 }
+function validarPlan_(p) {
+  var nombre = txt_(p.nombre, 60); if (!nombre) throw err_('DATO_INVALIDO', 'Falta el nombre del plan');
+  var tipo = ['pct', 'monto'].indexOf(p.senaTipo) >= 0 ? p.senaTipo : 'ninguna';
+  return { nombre: nombre, descripcion: txt_(p.descripcion, 400), precio: Math.max(0, num_(p.precio || 0, 'precio')), senaTipo: tipo,
+    senaValor: tipo === 'ninguna' ? 0 : Math.max(0, num_(p.senaValor || 0, 'seña')), orden: Math.round(Number(p.orden) || 0), activo: p.activo !== false };
+}
+/** Estado de lo que el cliente le paga a tuweeb por su sitio (solo lectura para el cliente). */
+function servicio_() {
+  var c = {}, k; for (k in SERVICIO_DEF) c[k] = SERVICIO_DEF[k];
+  leer_('Servicio').forEach(function (r) {
+    if (!(r.clave in SERVICIO_DEF)) return;
+    var d = SERVICIO_DEF[r.clave]; c[r.clave] = typeof d === 'number' ? (r.valor === '' ? d : Number(r.valor)) : String(r.valor);
+  });
+  var pagos = leer_('ServicioPagos').sort(function (a, b) { return a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : 0; }).map(limpio_);
+  var pagado = pagos.reduce(function (a, x) { return a + x.monto; }, 0), saldo = Math.max(0, c.precioTotal - pagado);
+  var cuotasPagadas = c.valorCuota > 0 ? Math.min(c.cuotas, Math.floor(pagado / c.valorCuota + 1e-9)) : 0;
+  var inicio = c.dominioFecha && fechaOk_(c.dominioFecha) ? c.dominioFecha : (pagos.length ? pagos[0].fecha : '');
+  var vence = inicio ? sumarMeses_(inicio, 12) : '', dias = vence ? Math.round((Date.parse(vence + 'T12:00:00Z') - Date.parse(hoy_() + 'T12:00:00Z')) / 86400000) : null;
+  return {
+    precioTotal: c.precioTotal, cuotas: c.cuotas, valorCuota: c.valorCuota, pagado: pagado, saldo: saldo, cuotasPagadas: cuotasPagadas,
+    proximaCuota: saldo > 0 ? { numero: cuotasPagadas + 1, monto: Math.min(c.valorCuota, saldo) } : null,
+    estado: saldo <= 0 ? 'pagado' : pagado > 0 ? 'en cuotas' : 'pendiente', pagos: pagos,
+    incluye: String(c.incluye).split('|').map(function (x) { return x.trim(); }).filter(Boolean),
+    dominio: c.dominio, dominioInicio: inicio, vencimiento: vence, diasParaVencer: dias,
+    edicionesIncluidas: c.edicionesIncluidas, edicionesUsadas: c.edicionesUsadas, edicionesRestantes: Math.max(0, c.edicionesIncluidas - c.edicionesUsadas)
+  };
+}
 function adminCrearReserva_(p, u) {
   if (!fechaOk_(p.fecha)) throw err_('DATO_INVALIDO', 'Fecha inválida');
   var nombre = txt_(p.nombre, 80); if (nombre.length < 2) throw err_('DATO_INVALIDO', 'Falta el nombre');
@@ -373,12 +417,14 @@ function adminCrearReserva_(p, u) {
     var reservas = leer_('Reservas');
     if (ocupante_(reservas, t.salonId, p.fecha, t.inicio, t.fin)) throw err_('OCUPADO', 'Ese turno ya tiene una reserva');
     if (!p.ignorarBloqueo && bloqueoDe_(leer_('Bloqueos'), t.salonId, p.fecha, t.id)) throw err_('BLOQUEADO', 'Ese turno está bloqueado');
-    var total = p.total != null && p.total !== '' ? Math.max(0, num_(p.total, 'total')) : t.precio;
-    var sena = p.sena != null && p.sena !== '' ? Math.max(0, Math.min(total, num_(p.sena, 'seña'))) : calcSena_(t, total);
+    var plan = p.planId ? porId_('Planes', txt_(p.planId)) : null;
+    if (p.planId && !plan) throw err_('PLAN_INVALIDO', 'Plan inexistente');
+    var total = p.total != null && p.total !== '' ? Math.max(0, num_(p.total, 'total')) : (plan ? plan.precio : t.precio);
+    var sena = p.sena != null && p.sena !== '' ? Math.max(0, Math.min(total, num_(p.sena, 'seña'))) : calcSena_(plan || t, total);
     var iso = new Date(ahora_()).toISOString();
     var r = { id: nuevoId_('R'), creada: iso, actualizada: iso, salonId: t.salonId, fecha: p.fecha, turnoId: t.id, inicio: t.inicio, fin: t.fin, nombre: nombre, telefono: txt_(p.telefono, 30),
       email: txt_(p.email, 120).toLowerCase(), personas: Math.max(0, Math.round(Number(p.personas) || 0)), nota: txt_(p.nota, 400), total: total, sena: sena, pagado: 0, saldo: total,
-      estado: p.estado === 'pendiente' ? 'pendiente' : 'confirmada', origen: 'manual', metodo: '', venceEn: '', extRef: '' };
+      estado: p.estado === 'pendiente' ? 'pendiente' : 'confirmada', origen: 'manual', metodo: '', venceEn: '', extRef: '', planId: plan ? plan.id : '', plan: plan ? plan.nombre : '' };
     agregar_('Reservas', r);
     if (p.pago && Number(p.pago.monto) !== 0) adminPagoInterno_(r.id, p.pago, u);
     invalidar_(); log_(u.email, 'reserva_manual', r.id);
@@ -500,6 +546,22 @@ var ADMIN = {
       borrar_('Turnos', t._row); invalidar_(); log_(u.email, 'turno_borrado', t.id); return { id: t.id, borrado: true };
     });
   },
+  'admin.planes': function () { return leer_('Planes').sort(function (a, b) { return a.orden - b.orden; }).map(limpio_); },
+  'admin.guardarPlan': function (p, u) {
+    var d = validarPlan_(p);
+    return conLock_(function () {
+      var cur = p.id && porId_('Planes', p.id);
+      if (cur) actualizar_('Planes', cur._row, d); else { d.id = nuevoId_('PL'); agregar_('Planes', d); cur = d; }
+      invalidar_(); log_(u.email, 'plan', cur.id); return limpio_(porId_('Planes', cur.id));
+    });
+  },
+  'admin.borrarPlan': function (p, u) {   // las reservas ya hechas guardan el nombre y el precio del plan, así que se puede borrar sin perder nada
+    return conLock_(function () {
+      var x = porId_('Planes', txt_(p.id)); if (!x) throw err_('NO_ENCONTRADO', 'Plan no encontrado');
+      borrar_('Planes', x._row); invalidar_(); log_(u.email, 'plan_borrado', x.id); return { id: x.id, borrado: true };
+    });
+  },
+  'admin.servicio': function () { return servicio_(); },
   'admin.movimientos': function (p) { return leer_('Movimientos').filter(function (x) { return !p.mes || x.fecha.indexOf(p.mes) === 0; }).map(limpio_); },
   'admin.movimiento': function (p, u) {
     if (['ingreso', 'egreso'].indexOf(p.tipo) < 0) throw err_('DATO_INVALIDO', 'Tipo inválido');
@@ -569,6 +631,7 @@ function instalar() {
     h.forEach(function (c, i) { if (!NUMS[c] && !BOOLS[c]) s.getRange(2, i + 1, Math.max(1, s.getMaxRows() - 1), 1).setNumberFormat('@'); });   // texto plano: Sheets no convierte fechas ni horas
   });
   if (!leer_('Salones').length) agregar_('Salones', { id: 'S1', nombre: 'Salón principal', capacidad: 0, activo: true, orden: 1 });
+  if (!leer_('Servicio').length) Object.keys(SERVICIO_DEF).forEach(function (k) { agregar_('Servicio', { clave: k, valor: SERVICIO_DEF[k] }); });
   if (!leer_('Config').length) Object.keys(CFG_DEF).forEach(function (k) { agregar_('Config', { clave: k, valor: CFG_DEF[k] }); });
   secreto_();
   ScriptApp.getProjectTriggers().forEach(function (t) { var f = t.getHandlerFunction(); if (f === 'vencer_' || f === 'backup_') ScriptApp.deleteTrigger(t); });

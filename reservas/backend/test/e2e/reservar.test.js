@@ -2,7 +2,7 @@ const pkg = require('/opt/npm-tools/node_modules/playwright/index.js'); const { 
 const { iniciar } = require('./servidor'); const assert = require('assert'); const OUT = process.argv[2] || '/tmp/e2e';
 (async () => {
   const { srv, a } = await iniciar('reservar', 8783);
-  const b = await chromium.launch({ args: ['--no-sandbox'] }), p = await (await b.newContext({ viewport: { width: 390, height: 800 }, locale: 'es-AR' })).newPage();
+  const b = await chromium.launch({ args: ['--no-sandbox'] }), cx = await b.newContext({ viewport: { width: 390, height: 800 }, locale: 'es-AR' }), _c = await cx.clock.setFixedTime(new Date('2026-11-05T12:00:00-03:00')), p = await cx.newPage();
   const errores = []; p.on('pageerror', e => errores.push(e.message)); p.on('console', m => { if (m.type() === 'error' && !/ERR_TUNNEL|ERR_NAME|fonts\.g/.test(m.text())) errores.push(m.text()); });
   const ok = n => console.log('  ok  ' + n), shot = async n => { await p.waitForTimeout(500); await p.screenshot({ path: `${OUT}/${n}.png`, fullPage: true }); };
   await p.goto('http://localhost:8783/'); await p.waitForSelector('.cal button.libre'); assert.equal(await p.title(), 'Reservar · Lemadavami'); await shot('r1-calendario'); ok('calendario con días disponibles y datos del salón');
@@ -14,7 +14,7 @@ const { iniciar } = require('./servidor'); const assert = require('assert'); con
   const url = p.url(); assert(url.includes('?reserva=R')); ok('queda un link propio de la reserva');
   assert.equal(a.run('leer_("Reservas")[0].estado'), 'pendiente'); assert.equal(a.mails.length, 2);
   // el dueño confirma el pago → la página lo refleja
-  a.setNow(Date.now()); const lg = a.post({ action: 'login', email: 'dueno@mail.com', clave: 'clave-segura-123' }); a.post({ action: 'admin.pago', token: lg.data.token, id: a.run('leer_("Reservas")[0].id'), monto: 30000, metodo: 'transferencia' });
+  a.setNow(Date.parse('2026-11-05T12:00:00-03:00')); const lg = a.post({ action: 'login', email: 'dueno@mail.com', clave: 'clave-segura-123' }); a.post({ action: 'admin.pago', token: lg.data.token, id: a.run('leer_("Reservas")[0].id'), monto: 30000, metodo: 'transferencia' });
   await p.reload(); await p.waitForSelector('text=Reserva confirmada'); await shot('r5-confirmada'); ok('al registrar el pago, el link muestra "Reserva confirmada"');
   // el horario ya no está disponible para otro
   await p.goto('http://localhost:8783/'); await p.waitForSelector('.cal button.libre'); await p.click('.cal button[aria-label^="sábado 7 de noviembre"]'); await p.waitForSelector('.slot'); assert.equal(await p.locator('.slot').count(), 2); assert.equal(await p.locator('button.slot').count(), 1); assert((await p.locator('.slot.off').innerText()).includes('No disponible')); await shot('r5b-nodisp'); ok('el turno reservado aparece como "No disponible"');

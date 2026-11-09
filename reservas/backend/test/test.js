@@ -176,5 +176,32 @@ t('JSON inválido en POST', () => { const a = nuevo(); const r = JSON.parse(a.ct
 t('caché: cambios del panel se ven al instante en el calendario público', () => { const a = nuevo(); const [t1] = conTurnos(a); a.get({ action: 'disponibilidad', mes: '2026-11' }); a.adm('admin.bloquear', { desde: '2026-11-07' }); assert(a.get({ action: 'disponibilidad', mes: '2026-11' }).data.dias['2026-11-07'].every(x => x.estado === 'no_disponible')); });
 t('100 reservas seguidas sin pisarse (un solo turno)', () => { const a = nuevo(); const [t1] = conTurnos(a); a.adm('admin.guardarConfig', { valores: { maxPendientesPorContacto: 999 } }); let ok = 0; for (let i = 0; i < 100; i++) if (a.post(cli({ turnoId: t1, nombre: 'Cliente ' + i, telefono: '11' + (50000000 + i), email: 'c' + i + '@m.com' })).ok) ok++; assert.equal(ok, 1); });
 
+console.log('Planes y servicio tuweeb');
+const planes3 = a => ['Despegue', 'Órbita', 'Galaxia'].map((nombre, i) => a.adm('admin.guardarPlan', { nombre, descripcion: 'Incluye ' + (i + 1), precio: [180000, 260000, 380000][i], senaTipo: 'pct', senaValor: 30, orden: i + 1 }).data.id);
+t('sin planes la reserva usa el precio del turno como siempre', () => { const a = nuevo(); const [t1] = conTurnos(a); assert.equal(a.get({ action: 'config' }).data.planes.length, 0); const r = a.post(cli({ turnoId: t1 })); assert(r.ok); assert.equal(r.data.sena, 30000); assert.equal(r.data.plan, ''); });
+t('con planes: la reserva exige elegir uno y el precio sale del plan', () => {
+  const a = nuevo(); const [t1] = conTurnos(a); const [p1, p2] = planes3(a);
+  assert.equal(a.get({ action: 'config' }).data.planes.length, 3);
+  assert.equal(a.post(cli({ turnoId: t1 })).error, 'PLAN_INVALIDO'); assert.equal(a.post(cli({ turnoId: t1, planId: 'PLxx' })).error, 'PLAN_INVALIDO');
+  const r = a.post(cli({ turnoId: t1, planId: p2 })); assert(r.ok, JSON.stringify(r)); assert.equal(r.data.total, 260000); assert.equal(r.data.sena, 78000); assert.equal(r.data.plan, 'Órbita'); });
+t('un plan pausado no se puede elegir; borrar un plan no toca reservas hechas', () => {
+  const a = nuevo(); const [t1, t2] = conTurnos(a); const [p1, p2] = planes3(a); const r = a.post(cli({ turnoId: t1, planId: p1 })); assert(r.ok);
+  a.adm('admin.guardarPlan', { id: p2, nombre: 'Órbita', precio: 260000, activo: false }); assert.equal(a.post(cli({ turnoId: t2, planId: p2, nombre: 'Otra Persona', telefono: '1155559999', email: 'o@mail.com' })).error, 'PLAN_INVALIDO');
+  assert.equal(a.adm('admin.borrarPlan', { id: p1 }).data.borrado, true); const g = a.adm('admin.reserva', { id: r.data.id }).data.reserva; assert.equal(g.plan, 'Despegue'); assert.equal(g.total, 180000); });
+t('alta manual con plan; plan inválido y validaciones', () => {
+  const a = nuevo(); const [t1] = conTurnos(a); const [p1] = planes3(a);
+  const r = a.adm('admin.crearReserva', { fecha: '2026-11-07', turnoId: t1, nombre: 'Rosa Maria', planId: p1 }).data.reserva; assert.equal(r.total, 180000); assert.equal(r.sena, 54000); assert.equal(r.plan, 'Despegue');
+  assert.equal(a.adm('admin.crearReserva', { fecha: '2026-11-08', turnoId: t1, nombre: 'Rosa Maria', planId: 'nada' }).error, 'PLAN_INVALIDO'); assert.equal(a.adm('admin.guardarPlan', { nombre: '' }).error, 'DATO_INVALIDO'); });
+t('los planes del panel exigen sesión', () => { const a = nuevo(); assert.equal(a.post({ action: 'admin.planes' }).error, 'NO_AUTORIZADO'); assert.equal(a.post({ action: 'admin.servicio' }).error, 'NO_AUTORIZADO'); });
+t('servicio tuweeb: sin pagos queda pendiente; con cuotas calcula saldo, próxima cuota y vencimiento a 1 año del primer pago', () => {
+  const a = nuevo(); let s = a.adm('admin.servicio').data; assert.equal(s.precioTotal, 720000); assert.equal(s.estado, 'pendiente'); assert.equal(s.saldo, 720000); assert.equal(s.vencimiento, ''); assert.equal(s.proximaCuota.monto, 120000); assert.equal(s.edicionesRestantes, 3);
+  a.run("agregar_('ServicioPagos', { id: 'X1', fecha: '2026-11-09', monto: 120000, nota: 'cuota 1' })"); a.run("agregar_('ServicioPagos', { id: 'X2', fecha: '2026-12-10', monto: 120000, nota: 'cuota 2' })");
+  s = a.adm('admin.servicio').data; assert.equal(s.estado, 'en cuotas'); assert.equal(s.pagado, 240000); assert.equal(s.saldo, 480000); assert.equal(s.cuotasPagadas, 2); assert.equal(s.proximaCuota.numero, 3); assert.equal(s.vencimiento, '2027-11-09'); assert.equal(s.pagos.length, 2); assert(s.incluye.length >= 4); });
+t('servicio tuweeb: pago total, dominio con fecha propia y ediciones usadas', () => {
+  const a = nuevo(); a.run("agregar_('ServicioPagos', { id: 'X1', fecha: '2026-11-09', monto: 720000, nota: 'contado' })");
+  a.run("actualizar_('Servicio', leer_('Servicio').filter(r => r.clave === 'dominioFecha')[0]._row, { valor: '2026-11-12' })"); a.run("actualizar_('Servicio', leer_('Servicio').filter(r => r.clave === 'edicionesUsadas')[0]._row, { valor: 1 })");
+  const s = a.adm('admin.servicio').data; assert.equal(s.estado, 'pagado'); assert.equal(s.saldo, 0); assert.equal(s.proximaCuota, null); assert.equal(s.vencimiento, '2027-11-12'); assert.equal(s.edicionesRestantes, 2); });
+t('instalar crea Planes, Servicio y ServicioPagos sin duplicar', () => { const a = crear(); a.run('instalar()'); a.run('instalar()'); ['Planes', 'Servicio', 'ServicioPagos'].forEach(h => assert(a.hojas[h], h)); assert.equal(a.run('leer_("Servicio").length'), a.run('Object.keys(SERVICIO_DEF).length')); });
+
 console.log(`\n${n} pruebas ok, ${fallos} con fallas`);
 process.exit(fallos ? 1 : 0);

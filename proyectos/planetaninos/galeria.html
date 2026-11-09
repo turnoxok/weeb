@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Galería de fotos — Planeta Niños</title>
+<meta name="description" content="Fotos del salón de Planeta Niños, Oro Verde." />
+<meta name="theme-color" content="#406c38" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  @font-face{font-family:'Baloo 2';font-weight:700;src:url(./assets/inv/baloo2-700.woff2) format('woff2')}
+  @font-face{font-family:'Baloo 2';font-weight:800;src:url(./assets/inv/baloo2-800.woff2) format('woff2')}
+  :root{--bg:#406c38;--bg2:#325a2b;--fg:#fafff9;--ac:#e8693a;--cy:#5bd0e7;--li:#83b27c;--off:#ebebef;--yl:#f5c93a}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--fg);font-family:'Montserrat',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:clamp(20px,4vw,48px) clamp(16px,4vw,40px) 40px;position:relative;overflow-x:hidden}
+  body:before,body:after{content:"";position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+  body:before{width:340px;height:340px;right:-120px;top:-90px;background:radial-gradient(circle,rgba(91,208,231,.22),transparent 68%)}
+  body:after{width:380px;height:380px;left:-140px;bottom:-120px;background:radial-gradient(circle,rgba(232,105,58,.20),transparent 68%)}
+  a{color:inherit}
+  .wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto}
+  .brand{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:26px}
+  .brand img{height:44px;width:auto;display:block;max-width:60%}
+  .back{color:#fff;opacity:.85;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 14px;border:1px solid rgba(255,255,255,.35);border-radius:999px;white-space:nowrap}
+  .back:hover{opacity:1;background:rgba(255,255,255,.08)}
+  .eyebrow{display:inline-block;background:rgba(232,105,58,.16);color:#ffb08a;font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:6px 12px;border-radius:999px;margin-bottom:14px}
+  h1{font-family:'Baloo 2','Montserrat',system-ui,sans-serif;font-size:clamp(2rem,5.4vw,3.4rem);line-height:1.02;letter-spacing:-.01em;font-weight:800;margin-bottom:12px}
+  h1 em{font-style:normal;color:var(--cy)}
+  .lead{max-width:38em;opacity:.88;line-height:1.6;margin-bottom:34px;font-size:clamp(.98rem,1.9vw,1.1rem)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+  .grid figure{aspect-ratio:4/3;border-radius:20px;overflow:hidden;background:rgba(235,235,239,.08);border:1.5px dashed rgba(235,235,239,.3);display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;font-weight:600;opacity:.85}
+  .grid img{width:100%;height:100%;object-fit:cover;display:block}
+  .cta{margin-top:30px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:22px;border-radius:22px;background:rgba(235,235,239,.1);border:1.5px solid rgba(235,235,239,.16)}
+  .cta p{font-weight:600;max-width:30em;line-height:1.45}
+  .cta a{text-decoration:none;font:700 .98rem 'Montserrat',system-ui,sans-serif;padding:13px 22px;border-radius:999px;border:2px solid var(--ac);background:linear-gradient(135deg,#f08a54,#e8693a);color:#fff}
+  @media (max-width:700px){.cta{flex-direction:column;align-items:stretch;text-align:center}.cta a{text-align:center}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><img src="./assets/models/planetaninos-logo.png" alt="Planeta Niños" /><a class="back" href="./">← Volver al sitio</a></div>
+
+  <div class="eyebrow">Galería</div>
+  <h1>Conocé el salón de <em>Planeta Niños</em></h1>
+  <p class="lead">Acá van tus fotos.</p>
+
+  <!-- Para agregar una foto: copiarla a assets/galeria/ y reemplazar un cuadro por
+       <figure><img src="./assets/galeria/foto1.jpg" alt="Descripción de la foto" loading="lazy" /></figure> -->
+  <div class="grid">
+    <figure>Acá va tu foto</figure><figure>Acá va tu foto</figure><figure>Acá va tu foto</figure>
+    <figure>Acá va tu foto</figure><figure>Acá va tu foto</figure><figure>Acá va tu foto</figure>
+  </div>
+
+  <div class="cta">
+    <p>¿Te gustó? Mirá qué días hay lugar y dejá tu reserva.</p>
+    <a href="./reservar/">Ver disponibilidad</a>
+  </div>
+</div>
+</body>
+</html>

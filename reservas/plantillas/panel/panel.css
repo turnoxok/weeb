@@ -44,7 +44,8 @@ button.item:hover{border-color:var(--line2);background:rgba(255,255,255,.1)}
 .stats .card{padding:.95rem 1.05rem}
 .stat b{display:block;font-size:1.35rem;font-weight:700;letter-spacing:-.02em}.stat span{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
 .pos{color:var(--ok)}.neg{color:var(--bad)}
-.money{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);background:rgba(255,255,255,.05);border-radius:var(--rs);margin:.9rem 0 .7rem;overflow:hidden}
+[hidden]{display:none!important}
+.money{display:grid;grid-template-columns:repeat(var(--n,4),1fr);border:1px solid var(--line);background:rgba(255,255,255,.05);border-radius:var(--rs);margin:.9rem 0 .7rem;overflow:hidden}
 .money div{padding:.65rem .3rem;text-align:center;border-right:1px solid var(--line)}.money div:last-child{border-right:0}
 .money b{display:block;font-size:.95rem;font-weight:700}.money span{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
 .progress{height:4px;border-radius:99px;background:var(--line);overflow:hidden;margin-bottom:1rem}.progress i{display:block;height:100%;background:var(--ok);box-shadow:0 0 10px rgba(90,211,154,.5)}
