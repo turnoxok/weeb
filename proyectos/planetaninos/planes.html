@@ -62,11 +62,15 @@
     .cta .btns{flex-direction:column}
     .cta a{text-align:center}
   }
+  .weeb-back{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:12px;z-index:200;display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 15px;border:0;border-radius:999px;background:rgba(18,12,28,.72);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#fff;font:600 .85rem 'Montserrat',system-ui,sans-serif;text-decoration:none;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+  .weeb-back:active{transform:scale(.96)}
+  body{padding-top:68px!important}
 </style>
 </head>
 <body>
+<a class="weeb-back" href="./">← Volver al sitio</a>
 <div class="wrap">
-  <div class="brand"><img src="./assets/models/planetaninos-logo.png" alt="Planeta Niños" /><a class="back" href="./">← Volver al sitio</a></div>
+  <div class="brand"><img src="./assets/models/planetaninos-logo.png" alt="Planeta Niños" /></div>
 
   <div class="eyebrow">Planes y combos</div>
   <h1>Elegí cómo querés festejar en <em>Planeta Niños</em></h1>
@@ -134,5 +138,11 @@
 
   <p class="note">Precios orientativos, consultá por fechas y promociones. Planeta Niños · Av. Los Cisnes 2351, Oro Verde · WhatsApp <a href="https://wa.me/5493436222263">343 622 22 63</a></p>
 </div>
+<script>
+/* Dentro del sitio (iframe) "Volver al sitio" cierra la página y el 3D sigue cargado; suelta, vuelve al sitio normal. */
+(function(){var emb=window.parent!==window;
+document.querySelectorAll('.weeb-back').forEach(function(a){a.addEventListener('click',function(e){if(emb){e.preventDefault();parent.postMessage('weeb-cerrar',location.origin);}});});
+if(emb)document.querySelectorAll('a[href^="./"]:not(.weeb-back)').forEach(function(a){var h=a.getAttribute('href');if(/(\/|\.html)$/.test(h))a.addEventListener('click',function(e){e.preventDefault();parent.postMessage({weebOpen:h},location.origin);});});})();
+</script>
 </body>
 </html>

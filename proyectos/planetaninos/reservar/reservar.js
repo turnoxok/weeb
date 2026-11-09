@@ -21,7 +21,7 @@ async function llamar(action, data, post) {
 }
 const wa = (txt) => S.pub.whatsapp ? 'https://wa.me/' + S.pub.whatsapp.replace(/\D/g, '') + (txt ? '?text=' + encodeURIComponent(txt) : '') : '';
 function cabecera() {
-  const emb = window.parent !== window, volver = emb ? h('button', { class: 'btn line sm back', onclick: () => parent.postMessage('weeb-cerrar', location.origin) }, '← Volver a la web') : S.cfg.volver ? h('a', { class: 'btn line sm back', href: S.cfg.volver }, '← Volver a la web') : '';
+  const emb = window.parent !== window, txt = '← Volver al sitio', volver = emb ? [h('button', { class: 'weeb-back', onclick: () => parent.postMessage('weeb-cerrar', location.origin) }, txt), h('div', { style: 'height:46px' })] : S.cfg.volver ? [h('a', { class: 'weeb-back', href: S.cfg.volver }, txt), h('div', { style: 'height:46px' })] : '';
   const w = wa(`Hola! Quiero consultar por una reserva en ${S.pub.nombre}.`);
   return h('div', null, volver, h('div', { class: 'head' }, h('img', { src: S.pub.logoUrl || 'weeb-logo.svg', alt: S.pub.nombre, onerror: ev => { if (!ev.target.dataset.f) { ev.target.dataset.f = 1; ev.target.src = 'weeb-logo.svg'; } } }), h('h1', null, S.pub.nombre), S.pub.direccion ? h('p', { class: 'muted small', style: 'margin:.3rem 0 0' }, S.pub.direccion) : ''),
     h('div', { class: 'acts' }, w ? h('a', { class: 'btn soft sm', href: w, target: '_blank', rel: 'noopener' }, 'WhatsApp') : '', S.pub.mapsUrl ? h('a', { class: 'btn soft sm', href: S.pub.mapsUrl, target: '_blank', rel: 'noopener' }, 'Cómo llegar') : ''));

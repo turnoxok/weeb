@@ -6004,7 +6004,7 @@ function SiteMenu({ cfg, contained }) {
           else window.scrollTo({ top: y, behavior: "smooth" });
         }
       } else if (it.href) {
-        if (it.newTab) window.open(it.href, "_blank", "noopener"); else window.location.href = it.href;
+        if (it.newTab) window.open(it.href, "_blank", "noopener"); else if (!(window.__weebOpenPage && window.__weebOpenPage(it.href))) window.location.href = it.href;
       }
     }, 140);
   };
@@ -6206,6 +6206,57 @@ function fabItems() {
   return { phone, mapHref, showBook: !!(FAB.book !== false && FAB.reservarUrl), showWa: !!(FAB.wa !== false && phone), showMap: !!(FAB.map !== false && mapHref) };
 }
 function fabActive() { const it = fabItems(); return !!(FAB.enabled && (it.showBook || it.showWa || it.showMap)); }
+/* Páginas internas del sitio (Reservar, Panel, Invitaciones, Planes, Galería…) se abren ENCIMA del sitio en un iframe que queda cargado:
+   al volver no se recarga el 3D. Cada página cierra con postMessage("weeb-cerrar"). Si algo falla, el link funciona normal. */
+function PageOverlay() {
+  const [pages, setPages] = useState([]);
+  const [cur, setCur] = useState("");
+  const ref = useRef("");
+  useEffect(() => {
+    const here = location.pathname.replace(/index\.html$/, "");
+    const toHref = (raw) => {
+      try {
+        if (!raw || raw.charAt(0) === "#" || /^[a-z][a-z0-9+.-]*:/i.test(raw) || raw.indexOf("//") === 0) return null;
+        const u = new URL(raw, location.href);
+        if (u.origin !== location.origin || !/(\/|\.html)$/.test(u.pathname) || u.pathname.replace(/index\.html$/, "") === here) return null;
+        return u.pathname + u.search;
+      } catch (_) { return null; }
+    };
+    const mount = (h) => setPages((p) => (p.indexOf(h) >= 0 ? p : p.concat(h)));
+    const show = (h) => { ref.current = h; setCur(h); };
+    const close = () => { if (history.state && history.state.weebRes) history.back(); else show(""); };
+    window.__weebPreload = (raw) => { const h = toHref(raw); if (h) mount(h); };
+    window.__weebOpenPage = (raw) => {
+      const h = toHref(raw); if (!h) return false;
+      mount(h); show(h); try { history.pushState({ weebRes: 1 }, ""); } catch (_) {}
+      return true;
+    };
+    const onMsg = (e) => {
+      if (e.origin !== location.origin || !ref.current) return;
+      if (e.data === "weeb-cerrar") close();
+      else if (e.data && e.data.weebOpen) { const h = toHref(e.data.weebOpen); if (h) { mount(h); show(h); } }
+    };
+    const onPop = () => show("");
+    const onKey = (e) => { if (e.key === "Escape" && ref.current) close(); };
+    const onClick = (e) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+      if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
+      if (window.__weebOpenPage(a.getAttribute("href"))) e.preventDefault();
+    };
+    window.addEventListener("message", onMsg); window.addEventListener("popstate", onPop); window.addEventListener("keydown", onKey); document.addEventListener("click", onClick);
+    return () => { window.removeEventListener("message", onMsg); window.removeEventListener("popstate", onPop); window.removeEventListener("keydown", onKey); document.removeEventListener("click", onClick); delete window.__weebOpenPage; delete window.__weebPreload; };
+  }, []);
+  useEffect(() => {
+    if (!cur) return undefined;
+    const l = window.__lenis; if (l && l.stop) l.stop();
+    const prev = document.documentElement.style.overflow; document.documentElement.style.overflow = "hidden";
+    return () => { document.documentElement.style.overflow = prev; if (l && l.start) l.start(); };
+  }, [cur]);
+  return pages.map((h) => (
+    <div key={h} className={"resv" + (h === cur ? " on" : "")} aria-hidden={h !== cur}><iframe src={h + (h.indexOf("?") >= 0 ? "&" : "?") + "embed=1"} title="Página del sitio" /></div>
+  ));
+}
 function FloatingActions() {
   const [on, setOn] = useState(!(FAB.showAfter > 0));
   useEffect(() => {
@@ -6215,31 +6266,16 @@ function FloatingActions() {
     return () => window.removeEventListener("scroll", f);
   }, []);
   const { phone, mapHref, showBook, showWa, showMap } = fabItems();
-  /* "Reservar" se abre encima del sitio (en un iframe que queda cargado): al volver no se recarga el 3D y reabrirlo es instantáneo. */
+  /* "Reservar" se abre encima del sitio con PageOverlay (un iframe que queda cargado): al volver no se recarga el 3D. */
   const embed = !!(showBook && !FAB.newTab);
-  const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   useEffect(() => {
     if (!embed) return undefined;
-    const t = setTimeout(() => setMounted(true), 4000);   // precarga tranquila, cuando el sitio ya terminó de cargar
+    const t = setTimeout(() => { if (window.__weebPreload) window.__weebPreload(FAB.reservarUrl); }, 4000);   // precarga tranquila, cuando el sitio ya terminó de cargar
     return () => clearTimeout(t);
   }, [embed]);
-  useEffect(() => {
-    if (!open) return undefined;
-    const l = window.__lenis; if (l && l.stop) l.stop();
-    const prev = document.documentElement.style.overflow; document.documentElement.style.overflow = "hidden";
-    const onMsg = (e) => { if (e.origin === location.origin && e.data === "weeb-cerrar") closeRes(); };
-    const onPop = () => setOpen(false);
-    const onKey = (e) => { if (e.key === "Escape") closeRes(); };
-    window.addEventListener("message", onMsg); window.addEventListener("popstate", onPop); window.addEventListener("keydown", onKey);
-    return () => { window.removeEventListener("message", onMsg); window.removeEventListener("popstate", onPop); window.removeEventListener("keydown", onKey); document.documentElement.style.overflow = prev; if (l && l.start) l.start(); };
-  }, [open]);
-  const closeRes = () => { if (history.state && history.state.weebRes) history.back(); else setOpen(false); };
-  const openRes = (e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return; e.preventDefault(); setMounted(true); setOpen(true); try { history.pushState({ weebRes: 1 }, ""); } catch (_) {} };
-  const resSrc = FAB.reservarUrl + (String(FAB.reservarUrl).indexOf("?") >= 0 ? "&" : "?") + "embed=1";
+  const openRes = (e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return; if (window.__weebOpenPage && window.__weebOpenPage(FAB.reservarUrl)) e.preventDefault(); };
   if (!showBook && !showWa && !showMap) return null;
   return (<>
-    {embed && mounted && <div className={"resv" + (open ? " on" : "")} aria-hidden={!open}><iframe src={resSrc} title="Reservas" /></div>}
     <nav className={"fab" + (on ? " is-on" : "")} aria-label="Reservas y contacto">
       {showBook && (
         <a className="fab__btn fab__book" href={FAB.reservarUrl} target={FAB.newTab ? "_blank" : undefined} rel={FAB.newTab ? "noopener" : undefined} onClick={embed ? openRes : undefined}>
@@ -6993,6 +7029,7 @@ function App() {
       </div>}
         </div>
       ) : <Block2D key={sec.id} s={sec} theme={SITE2D} />), SECTIONS)}
+      <PageOverlay />
       {FAB.enabled && <FloatingActions />}
       {BACKTOP.enabled && !fabActive() && <BackToTop />}
       {MENU.logoUrl && <SiteLogo cfg={MENU} />}

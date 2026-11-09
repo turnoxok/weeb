@@ -85,11 +85,12 @@ function marca() {
 function firma() { return h('div', { class: 'firma' }, 'Hecho con ', h('a', { href: 'https://www.tuweeb.com', target: '_blank', rel: 'noopener' }, 'tuweeb')); }
 function logo(alto) { return h('img', { src: S.pub.logoUrl || 'weeb-logo.svg', alt: S.pub.nombre || 'tuweeb', style: 'max-height:' + alto + 'px', onerror: ev => { if (!ev.target.dataset.f) { ev.target.dataset.f = 1; ev.target.src = 'weeb-logo.svg'; } } }); }
 
+const volverBtn = () => h('button', { class: 'weeb-back', onclick: () => { if (window.parent !== window) parent.postMessage('weeb-cerrar', location.origin); else location.href = '../'; } }, '← Volver al sitio');
 function pantallaLogin() {
   const f = h('form', { onsubmit: ev => { ev.preventDefault(); const d = datos(f), b = $('button', f); accion(b, async () => { const r = await llamar('login', { email: d.email, clave: d.clave }); S.token = r.token; S.user = r; localStorage.setItem('weeb_token', r.token); localStorage.setItem('weeb_email', d.email); await entrar(); }); } },
     campo('Mail', inp('email', { type: 'email', required: true, autocomplete: 'username', value: localStorage.getItem('weeb_email') || '' })),
     campo('Clave', inp('clave', { type: 'password', required: true, autocomplete: 'current-password' })), h('button', { class: 'btn block' }, 'Entrar'));
-  $app().replaceChildren(h('div', { class: 'login' }, logo(64), h('h1', null, S.pub.nombre || 'Panel'), h('p', { class: 'sub' }, 'Entrá para gestionar tus reservas.'), f, h('button', { type: 'button', class: 'link', onclick: () => { const m = (datos(f).email || ''); window.open('https://wa.me/5493435020970?text=' + encodeURIComponent('Hola tuweeb, olvidé la clave del panel de ' + (S.pub.nombre || 'mi salón') + (m ? '. Mi mail: ' + m : '')), '_blank', 'noopener'); } }, '¿Olvidaste tu clave?'), h('a', { class: 'link', href: '../' }, '← Volver al sitio'), firma()));
+  $app().replaceChildren(h('div', { class: 'login' }, logo(64), h('h1', null, S.pub.nombre || 'Panel'), h('p', { class: 'sub' }, 'Entrá para gestionar tus reservas.'), f, h('button', { type: 'button', class: 'link', onclick: () => { const m = (datos(f).email || ''); window.open('https://wa.me/5493435020970?text=' + encodeURIComponent('Hola tuweeb, olvidé la clave del panel de ' + (S.pub.nombre || 'mi salón') + (m ? '. Mi mail: ' + m : '')), '_blank', 'noopener'); } }, '¿Olvidaste tu clave?'), volverBtn(), firma()));
 }
 function salir(vencida) { S.token = ''; S.user = null; localStorage.removeItem('weeb_token'); cerrar(true); if (vencida) toast('La sesión venció. Volvé a entrar.', 'err'); pantallaLogin(); }
 
@@ -104,7 +105,8 @@ function render() {
   const main = h('main', { class: 'wrap', id: 'vista' });
   const tabs = h('nav', { class: 'tabs' }, Object.entries(VISTAS).map(([k, [t]]) => h('button', { class: S.view === k ? 'on' : '', onclick: () => { S.view = k; render(); } }, svg(IC[k]), t)));
   $app().replaceChildren(
-    h('header', { class: 'top' }, h('button', { class: 'icon', title: 'Volver al sitio', 'aria-label': 'Volver al sitio', onclick: () => { location.href = '../'; } }, '←'), logo(34), h('div', { class: 'name' }, S.pub.nombre), h('button', { class: 'icon', title: 'Salir', 'aria-label': 'Salir', onclick: () => salir() }, '⎋')),
+    volverBtn(),
+    h('header', { class: 'top' }, h('span', { class: 'back-sp' }), h('div', { class: 'name' }, S.pub.nombre), h('button', { class: 'icon', title: 'Salir', 'aria-label': 'Salir', onclick: () => salir() }, '⎋')),
     main, firma(), tabs);
   VISTAS[S.view][1](main);
 }
