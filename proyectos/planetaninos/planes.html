@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Planes y combos — Planeta Niños eventos infantiles</title>
+<meta name="description" content="Combos para festejar el cumpleaños en Planeta Niños, Oro Verde: salón, animación, mesa dulce y más. Elegí el tuyo y reservá." />
+<meta name="theme-color" content="#406c38" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  @font-face{font-family:'Baloo 2';font-weight:700;src:url(./assets/inv/baloo2-700.woff2) format('woff2')}
+  @font-face{font-family:'Baloo 2';font-weight:800;src:url(./assets/inv/baloo2-800.woff2) format('woff2')}
+  :root{--bg:#406c38;--bg2:#325a2b;--fg:#fafff9;--ac:#e8693a;--cy:#5bd0e7;--li:#83b27c;--off:#ebebef;--yl:#f5c93a}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--fg);font-family:'Montserrat',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:clamp(20px,4vw,48px) clamp(16px,4vw,40px) 40px;position:relative;overflow-x:hidden}
+  body:before,body:after{content:"";position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+  body:before{width:340px;height:340px;right:-120px;top:-90px;background:radial-gradient(circle,rgba(91,208,231,.22),transparent 68%)}
+  body:after{width:380px;height:380px;left:-140px;bottom:-120px;background:radial-gradient(circle,rgba(232,105,58,.20),transparent 68%)}
+  a{color:inherit}
+  .wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto}
+  .brand{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:26px}
+  .brand img{height:44px;width:auto;display:block;max-width:60%}
+  .back{color:#fff;opacity:.85;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 14px;border:1px solid rgba(255,255,255,.35);border-radius:999px;white-space:nowrap}
+  .back:hover{opacity:1;background:rgba(255,255,255,.08)}
+  .eyebrow{display:inline-block;background:rgba(232,105,58,.16);color:#ffb08a;font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:6px 12px;border-radius:999px;margin-bottom:14px}
+  h1{font-family:'Baloo 2','Montserrat',system-ui,sans-serif;font-size:clamp(2rem,5.4vw,3.4rem);line-height:1.02;letter-spacing:-.01em;font-weight:800;margin-bottom:12px}
+  h1 em{font-style:normal;color:var(--cy)}
+  .lead{max-width:38em;opacity:.88;line-height:1.6;margin-bottom:34px;font-size:clamp(.98rem,1.9vw,1.1rem)}
+  .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:stretch}
+  .plan{position:relative;display:flex;flex-direction:column;background:rgba(235,235,239,.08);border:1.5px solid rgba(235,235,239,.16);border-radius:26px;padding:26px 22px 22px}
+  .plan.top{background:rgba(235,235,239,.14);border-color:var(--ac);box-shadow:0 26px 60px -28px rgba(10,28,7,.85)}
+  .badge{position:absolute;top:-13px;left:22px;background:var(--ac);color:#fff;font-weight:800;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:6px 12px;border-radius:999px}
+  .plan h2{font-family:'Baloo 2','Montserrat',system-ui,sans-serif;font-size:1.7rem;line-height:1.05;font-weight:800}
+  .for{opacity:.78;font-size:.92rem;margin:6px 0 18px;line-height:1.45}
+  .price{font-family:'Baloo 2','Montserrat',system-ui,sans-serif;font-weight:800;font-size:2.3rem;line-height:1;color:var(--yl)}
+  .price small{display:block;font-family:'Montserrat',system-ui,sans-serif;font-weight:600;font-size:.78rem;color:var(--fg);opacity:.75;margin-bottom:4px}
+  .price span{font-family:'Montserrat',system-ui,sans-serif;font-weight:600;font-size:.82rem;color:var(--fg);opacity:.75}
+  .inc{list-style:none;margin:20px 0 24px;display:grid;gap:11px;flex:1}
+  .inc li{display:flex;gap:11px;align-items:flex-start;font-size:.95rem;line-height:1.4;font-weight:500}
+  .inc li:before{content:"";flex:none;width:18px;height:18px;margin-top:1px;border-radius:50%;background:var(--cy) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 10.5l3 3 6-6.5' fill='none' stroke='%23244b1f' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% no-repeat}
+  .inc li.more{opacity:.8}
+  .go{display:block;text-align:center;text-decoration:none;font:700 1rem 'Montserrat',system-ui,sans-serif;padding:15px 20px;border-radius:999px;background:rgba(235,235,239,.1);border:2px solid var(--off);color:var(--off);transition:.2s}
+  .go:hover{transform:translateY(-2px);background:rgba(235,235,239,.2)}
+  .top .go{background:linear-gradient(135deg,#f08a54,#e8693a);border-color:var(--ac);color:#fff;box-shadow:0 12px 26px -14px rgba(232,105,58,.9)}
+  .extras{margin-top:36px;padding:22px;border-radius:22px;background:rgba(0,0,0,.14)}
+  .extras h3{font-family:'Baloo 2','Montserrat',system-ui,sans-serif;font-size:1.35rem;margin-bottom:12px}
+  .chips{display:flex;flex-wrap:wrap;gap:9px}
+  .chips span{padding:8px 14px;border-radius:999px;background:rgba(235,235,239,.1);border:1px solid rgba(235,235,239,.2);font-weight:600;font-size:.88rem}
+  .cta{margin-top:30px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:22px;border-radius:22px;background:rgba(235,235,239,.1);border:1.5px solid rgba(235,235,239,.16)}
+  .cta p{font-weight:600;max-width:30em;line-height:1.45}
+  .cta .btns{display:flex;flex-wrap:wrap;gap:10px}
+  .cta a{text-decoration:none;font:700 .98rem 'Montserrat',system-ui,sans-serif;padding:13px 22px;border-radius:999px;border:2px solid var(--ac);background:linear-gradient(135deg,#f08a54,#e8693a);color:#fff}
+  .cta a.sec{background:transparent;border-color:var(--off);color:var(--off)}
+  .note{font-size:.8rem;opacity:.65;line-height:1.5;margin-top:22px;text-align:center}
+  @media (max-width:900px){
+    .plans{grid-template-columns:1fr;gap:26px}
+    .plan.top{order:-1}
+    .cta{flex-direction:column;align-items:stretch;text-align:center}
+    .cta .btns{flex-direction:column}
+    .cta a{text-align:center}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><img src="./assets/models/planetaninos-logo.png" alt="Planeta Niños" /><a class="back" href="./">← Volver al sitio</a></div>
+
+  <div class="eyebrow">Planes y combos</div>
+  <h1>Elegí cómo querés festejar en <em>Planeta Niños</em></h1>
+  <p class="lead">Tres combos pensados para que no tengas que preocuparte por nada. Si querés armar algo a tu medida, escribinos y lo hacemos.</p>
+
+  <!-- Planes de ejemplo: cambiar nombres, valores e ítems por los reales. -->
+  <div class="plans">
+    <article class="plan">
+      <h2>Combo Despegue</h2>
+      <p class="for">Para festejos chicos, hasta 15 invitados.</p>
+      <div class="price"><small>Desde</small>$180.000 <span>por fiesta</span></div>
+      <ul class="inc">
+        <li>3 horas de salón con juegos</li>
+        <li>2 animadores</li>
+        <li>Mesa dulce básica</li>
+        <li>Cotillón para los chicos</li>
+      </ul>
+      <a class="go" href="https://wa.me/5493436222263?text=Hola!%20Quiero%20consultar%20por%20el%20Combo%20Despegue%20en%20Planeta%20Ni%C3%B1os." target="_blank" rel="noopener">Quiero este combo</a>
+    </article>
+
+    <article class="plan top">
+      <span class="badge">El más elegido</span>
+      <h2>Combo Órbita</h2>
+      <p class="for">El clásico: hasta 25 invitados y todo resuelto.</p>
+      <div class="price"><small>Desde</small>$260.000 <span>por fiesta</span></div>
+      <ul class="inc">
+        <li>4 horas de salón con juegos</li>
+        <li>3 animadores y baile con DJ</li>
+        <li>Mesa dulce y torta</li>
+        <li>Cotillón y souvenirs</li>
+        <li>Invitación online personalizada</li>
+      </ul>
+      <a class="go" href="https://wa.me/5493436222263?text=Hola!%20Quiero%20consultar%20por%20el%20Combo%20%C3%93rbita%20en%20Planeta%20Ni%C3%B1os." target="_blank" rel="noopener">Quiero este combo</a>
+    </article>
+
+    <article class="plan">
+      <h2>Combo Galaxia</h2>
+      <p class="for">Fiesta completa para hasta 40 invitados.</p>
+      <div class="price"><small>Desde</small>$380.000 <span>por fiesta</span></div>
+      <ul class="inc">
+        <li>5 horas de salón con juegos</li>
+        <li>4 animadores, DJ y show de magia</li>
+        <li>Mesa dulce, torta y catering</li>
+        <li>Cotillón, souvenirs y fotógrafo</li>
+        <li>Invitación online personalizada</li>
+      </ul>
+      <a class="go" href="https://wa.me/5493436222263?text=Hola!%20Quiero%20consultar%20por%20el%20Combo%20Galaxia%20en%20Planeta%20Ni%C3%B1os." target="_blank" rel="noopener">Quiero este combo</a>
+    </article>
+  </div>
+
+  <section class="extras" aria-labelledby="ad">
+    <h3 id="ad">Podés sumar</h3>
+    <div class="chips">
+      <span>Hora extra de salón</span><span>Show de magia</span><span>Maquillaje artístico</span><span>Fotógrafo</span><span>Catering para adultos</span><span>Piñata</span>
+    </div>
+  </section>
+
+  <div class="cta">
+    <p>¿Ya sabés la fecha? Mirá qué días hay lugar y dejá tu reserva.</p>
+    <div class="btns">
+      <a href="./reservar/">Ver disponibilidad</a>
+      <a class="sec" href="https://wa.me/5493436222263?text=Hola!%20Quiero%20consultar%20por%20un%20festejo%20en%20Planeta%20Ni%C3%B1os." target="_blank" rel="noopener">Escribinos por WhatsApp</a>
+    </div>
+  </div>
+
+  <p class="note">Precios orientativos, consultá por fechas y promociones. Planeta Niños · Av. Los Cisnes 2351, Oro Verde · WhatsApp <a href="https://wa.me/5493436222263">343 622 22 63</a></p>
+</div>
+</body>
+</html>
