@@ -408,6 +408,17 @@
   .backtop:active { transform: scale(.94); }
   .backtop:focus-visible { outline: 2px solid var(--bt-fg, #fff); outline-offset: 3px; }
   .backtop--right { right: 24px; } .backtop--left { left: 24px; }
+  /* ---- Botón de música: rayita que se vuelve viborita al sonar ---- */
+  .music { --mu-size: 46px; position: fixed; z-index: 9; bottom: calc(24px + env(safe-area-inset-bottom)); width: var(--mu-size); height: var(--mu-size); margin: 0; padding: 0; border: 0; border-radius: 50%; cursor: pointer; display: grid; place-items: center;
+    color: #fff; background: var(--mu-bg, #1230ff); box-shadow: 0 6px 22px rgba(0,0,0,.28); -webkit-tap-highlight-color: transparent; font: inherit;
+    opacity: 0; visibility: hidden; transform: translateY(14px) scale(.86);
+    transition: opacity .5s ease, transform .6s cubic-bezier(.2,.9,.25,1.15), visibility 0s linear .6s; }
+  .music.is-on { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+  .music:active { transform: scale(.94); }
+  .music:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  .music svg { width: 56%; height: 56%; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
+  .music--right { right: 24px; } .music--left { left: 24px; }
+  @media (max-width: 720px) { .music--lift { bottom: calc(98px + env(safe-area-inset-bottom)); } }
   .backtop--center { left: 50%; margin-left: calc(var(--bt-size) / -2); }
   .backtop--light { --bt-fg: #111; --bt-bg: rgba(255,255,255,.62); --bt-line: rgba(0,0,0,.14); --bt-bg-h: rgba(255,255,255,.85); box-shadow: 0 6px 22px rgba(0,0,0,.16); }
   .backtop--accent { --bt-fg: #0a0a0a; --bt-bg: var(--bt-accent, var(--brand-accent)); --bt-line: transparent; --bt-bg-h: var(--bt-accent, var(--brand-accent)); }
@@ -988,6 +999,7 @@ const BACKTOP = {
 };
 const MENU = { "enabled": false };
 const FAB = { "enabled": false };
+const MUSIC = { "enabled": false };
 /*@GEN:EXTRAS_END*/
 
 function damp(current, target, lambda, dt) {
@@ -6200,6 +6212,71 @@ function BackToTop({ inline }) {
   );
 }
 
+function MusicToggle() {
+  const pathRef = useRef(null);
+  const st = useRef({ audio: null, playing: false, amp: 0, phase: 0, raf: 0, last: 0, fadeRaf: 0 });
+  const [on, setOn] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const vol = Math.min(1, Math.max(0, MUSIC.volume == null ? 0.5 : MUSIC.volume));
+  const reduce = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const draw = () => {
+    const el = pathRef.current; if (!el) return;
+    const s = st.current, N = 30; let d = "";
+    for (let i = 0; i <= N; i++) {
+      const t = i / N, x = 3 + 18 * t, env = Math.pow(Math.sin(Math.PI * t), 0.55);
+      const y = 12 + s.amp * env * Math.sin(t * Math.PI * 3 - s.phase);
+      d += (i ? "L" : "M") + x.toFixed(2) + " " + y.toFixed(2);
+    }
+    el.setAttribute("d", d);
+  };
+  const tick = (now) => {
+    const s = st.current, dt = Math.min(0.05, (now - (s.last || now)) / 1000); s.last = now;
+    s.amp += ((s.playing ? 4.2 : 0) - s.amp) * (1 - Math.exp(-4.5 * dt));   // la viborita crece y se aplana suave
+    if (!reduce) s.phase += dt * (1.9 + s.amp * 0.25);                       // el movimiento no se corta nunca: la fase sigue donde quedó
+    draw();
+    if (s.playing || s.amp > 0.03) s.raf = requestAnimationFrame(tick); else { s.raf = 0; s.last = 0; s.amp = 0; draw(); }
+  };
+  const kick = () => { const s = st.current; if (!s.raf) { s.last = 0; s.raf = requestAnimationFrame(tick); } };
+  const fade = (to, ms, done) => {
+    const s = st.current, a = s.audio; if (!a) return;
+    cancelAnimationFrame(s.fadeRaf);
+    const from = a.volume, t0 = performance.now();
+    const step = (n) => { const k = Math.min(1, (n - t0) / ms); a.volume = from + (to - from) * k; if (k < 1) s.fadeRaf = requestAnimationFrame(step); else if (done) done(); };
+    s.fadeRaf = requestAnimationFrame(step);
+  };
+  const prep = () => {
+    const s = st.current; if (s.audio || !MUSIC.url) return;
+    const a = new Audio(); a.loop = true; a.preload = "auto"; a.volume = 0; a.src = MUSIC.url; s.audio = a;
+  };
+  useEffect(() => {
+    draw();
+    const th = MUSIC.showAfter || 0;
+    const f = () => { const p = window.scrollY / Math.max(1, document.documentElement.scrollHeight - window.innerHeight); if (window.scrollY > 4 && p >= th) { setOn(true); prep(); } };
+    f(); window.addEventListener("scroll", f, { passive: true });
+    const vis = () => { const s = st.current; if (!s.audio || !s.playing) return; if (document.hidden) s.audio.pause(); else s.audio.play().catch(() => {}); };
+    document.addEventListener("visibilitychange", vis);
+    return () => { window.removeEventListener("scroll", f); document.removeEventListener("visibilitychange", vis); const s = st.current; cancelAnimationFrame(s.raf); cancelAnimationFrame(s.fadeRaf); if (s.audio) { s.audio.pause(); s.audio = null; } };
+  }, []);
+  const toggle = () => {
+    const s = st.current; prep(); const a = s.audio; if (!a) return;
+    if (!s.playing) {
+      s.playing = true; setPlaying(true); kick();
+      a.play().then(() => fade(vol, 1400)).catch(() => { s.playing = false; setPlaying(false); kick(); });
+    } else {
+      s.playing = false; setPlaying(false); kick();
+      fade(0, 700, () => a.pause());
+    }
+  };
+  const sz = MUSIC.size || 46;
+  return (
+    <button type="button" aria-label={playing ? "Silenciar la música" : "Activar la música"} aria-pressed={playing} onClick={toggle}
+      className={"music music--" + (MUSIC.position === "right" ? "right" : "left") + (on ? " is-on" : "") + (FAB.enabled ? " music--lift" : "")}
+      style={{ "--mu-size": sz + "px", ...(MUSIC.color ? { "--mu-bg": MUSIC.color } : {}) }}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path ref={pathRef} d="M3 12H21" /></svg>
+    </button>
+  );
+}
+
 function fabItems() {
   const phone = String(FAB.phone || "").replace(/\D/g, "");
   const mapHref = FAB.mapUrl || (FAB.address ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(FAB.address) : "");
@@ -7032,6 +7109,7 @@ function App() {
       <PageOverlay />
       {FAB.enabled && <FloatingActions />}
       {BACKTOP.enabled && !fabActive() && <BackToTop />}
+      {MUSIC.enabled && MUSIC.url && <MusicToggle />}
       {MENU.logoUrl && <SiteLogo cfg={MENU} />}
       {MENU.enabled && <SiteMenu cfg={MENU} />}
       {LAB_ON && <LabPanel />}
@@ -8964,6 +9042,7 @@ const pickDock = (d) => { const o = { ...DEFAULT_DOCK }; DOCK_KEYS.forEach((k) =
 const DEFAULT_CURSOR = { enabled: true, color: "#ffffff", size: 56, life: 0.7, intensity: 0.6, shift: 60 };
 const DEFAULT_PROGRESS_BAR = { enabled: true, color: "" };
 const DEFAULT_FAB = { enabled: false, position: "right", book: true, label: "Reservar", reservarUrl: "./reservar/", newTab: false, wa: true, waText: "Hola! Quiero consultar por una reserva.", map: true, color: "", showAfter: 0 };
+const DEFAULT_MUSIC = { enabled: false, url: "./assets/audio/musica.mp3", position: "left", size: 46, volume: 0.5, showAfter: 0, color: "" };
 const DEFAULT_BACKTOP = { enabled: true, position: "right", style: "dark", size: 46, showAfter: 0.06, duration: 1.8, ring: true, color: "" };
 /* Bloque @GEN:EXTRAS de la plantilla: estela del mouse y barra de progreso lateral. */
 const PINWHEEL_COLORS = ["#F7E02B", "#3AA0EE", "#F04F68", "#4EDB2E", "#F2C57A"];
@@ -8971,12 +9050,12 @@ const BALLOON_COLORS = ["#FFB719", "#FF6A00", "#CB000F", "#A60064", "#0071CE"];
 const CONFETTI_COLORS = ["#FFB719", "#FF6A00", "#CB000F", "#A60064", "#9379D3", "#709749", "#0071CE"];
 const CONFETTI_DEFAULTS = { cfFrom: "", cfTo: "", cfCount: 260, cfSize: 0.2, cfPos: [0, 5, -10], cfRotY: 0, cfW: 10, cfH: 4, cfFloor: 0, cfColors: CONFETTI_COLORS };
 const DEFAULT_MENU = MENU_DEFAULTS;
-function generateExtrasCode(cursor, progressBar, backTop, menu, stageProgress, fab) {
+function generateExtrasCode(cursor, progressBar, backTop, menu, stageProgress, fab, music) {
   const c = { ...DEFAULT_CURSOR, ...cursor }, p = { ...DEFAULT_PROGRESS_BAR, ...progressBar }, b = { ...DEFAULT_BACKTOP, ...backTop };
   const m0 = { ...DEFAULT_MENU, ...(menu || {}) };
   const sp = stageProgress || [0];
   const m = { ...m0, items: (m0.items || []).map((it) => ({ label: it.label || "", type: it.type === "pose" ? "pose" : it.type === "section" ? "section" : "url", href: it.href || "", newTab: !!it.newTab, ...(it.type === "section" ? { sec: it.sec || "" } : {}), ...(it.type === "pose" ? { pose: it.pose || 1, p: Math.round((sp[Math.min(sp.length - 1, Math.max(0, (it.pose || 1) - 1))] || 0) * 10000) / 10000 } : {}) })) };
-  return `const CURSOR = ${JSON.stringify(c, null, 2)};\nconst PROGRESS_BAR = ${JSON.stringify(p, null, 2)};\nconst BACKTOP = ${JSON.stringify(b, null, 2)};\nconst MENU = ${JSON.stringify(m, null, 2)};\nconst FAB = ${JSON.stringify({ ...DEFAULT_FAB, ...(fab || {}) }, null, 2)};`;
+  return `const CURSOR = ${JSON.stringify(c, null, 2)};\nconst PROGRESS_BAR = ${JSON.stringify(p, null, 2)};\nconst BACKTOP = ${JSON.stringify(b, null, 2)};\nconst MENU = ${JSON.stringify(m, null, 2)};\nconst FAB = ${JSON.stringify({ ...DEFAULT_FAB, ...(fab || {}) }, null, 2)};\nconst MUSIC = ${JSON.stringify({ ...DEFAULT_MUSIC, ...(music || {}) }, null, 2)};`;
 }
 const DEFAULT_LOADER = { enabled: true, svg: "", background: "#05070f", lineColor: "#ffffff", font: "'Space Grotesk', sans-serif", lineWidth: 1.4, minMs: 1800, showNumber: true };
 /* Bloques @GEN:LOADER y @GEN:LOADER_CSS de la plantilla: pantalla de carga con tu SVG y el contador 000 → 100. */
@@ -11058,6 +11137,7 @@ function App() {
   const [cursor, setCursor] = useState(DEFAULT_CURSOR);
   const [progressBar, setProgressBar] = useState(DEFAULT_PROGRESS_BAR);
   const [backTop, setBackTop] = useState(DEFAULT_BACKTOP);
+  const [music, setMusic] = useState(DEFAULT_MUSIC);
   const [fab, setFab] = useState(DEFAULT_FAB);
   const setFabField = (field, value) => setFab((prev) => ({ ...prev, [field]: value }));
   const [menu, setMenu] = useState(DEFAULT_MENU);
@@ -11067,6 +11147,7 @@ function App() {
   const removeMenuItem = (i) => setMenu((prev) => ({ ...prev, items: prev.items.filter((_, k) => k !== i) }));
   const moveMenuItem = (i, d) => setMenu((prev) => { const a = [...prev.items]; const j = i + d; if (j < 0 || j >= a.length) return prev; [a[i], a[j]] = [a[j], a[i]]; return { ...prev, items: a }; });
   const setBackTopField = (field, value) => setBackTop((prev) => ({ ...prev, [field]: value }));
+  const setMusicField = (field, value) => setMusic((prev) => ({ ...prev, [field]: value }));
   const setCursorField = (field, value) => setCursor((prev) => ({ ...prev, [field]: value }));
   const setProgressField = (field, value) => setProgressBar((prev) => ({ ...prev, [field]: value }));
   const setLoaderField = (field, value) => setLoader((prev) => ({ ...prev, [field]: value }));
@@ -11963,7 +12044,7 @@ function App() {
   const sectionsCode = useMemo(() => generateSectionsCode(sections, site2d), [sections, site2d]);
   const loaderCode = useMemo(() => generateLoaderCode(loader), [loader]);
   const loaderCss = useMemo(() => generateLoaderCss(loader), [loader]);
-  const extrasCode = useMemo(() => generateExtrasCode(cursor, progressBar, backTop, menu, stagesComputed.map((st) => st.progress), { ...fab, phone: dock.whatsappPhone, address: dock.address, mapUrl: dock.mapUrl }), [cursor, progressBar, backTop, menu, stagesComputed, fab, dock]);
+  const extrasCode = useMemo(() => generateExtrasCode(cursor, progressBar, backTop, menu, stagesComputed.map((st) => st.progress), { ...fab, phone: dock.whatsappPhone, address: dock.address, mapUrl: dock.mapUrl }, music), [cursor, progressBar, backTop, menu, stagesComputed, fab, dock, music]);
 
   const copy = async (text, which) => {
     let ok = false;
@@ -12012,6 +12093,7 @@ function App() {
     cursor,
     progressBar,
     backTop,
+    music,
     fab,
     menu,
     sections,
@@ -12043,6 +12125,7 @@ function App() {
     setCursor({ ...DEFAULT_CURSOR, ...(p.cursor || {}) });
     setProgressBar({ ...DEFAULT_PROGRESS_BAR, ...(p.progressBar || {}) });
     setBackTop({ ...DEFAULT_BACKTOP, ...(p.backTop || {}) });
+    setMusic({ ...DEFAULT_MUSIC, ...(p.music || {}) });
     setFab({ ...DEFAULT_FAB, ...(p.fab || {}) });
     setMenu({ ...DEFAULT_MENU, ...(p.menu || {}), items: (p.menu && p.menu.items) || DEFAULT_MENU.items });
     setBrandColorsState(Array.isArray(p.brandColors) && p.brandColors.length ? p.brandColors : DEFAULT_BRAND);
@@ -12370,7 +12453,7 @@ function App() {
     setPostFx({ vignetteEnabled: false, vignetteDarkness: 0.5, vignetteOffset: 0.15, bloomEnabled: false, bloomIntensity: 0.5, beamEnabled: false, beamOpacity: 0.5, beamWidth: 2.5, beamHeight: 14, beamSoft: 0.5, beamGlow: 0.35, beamTx: 0, beamTy: 0, beamTz: 0, partEnabled: false, partCount: 650, partSize: 1, partOpacity: 0.65, partSpeed: 1, partBlur: 0.6, partRange: 16, partBeam: 0.6, envEnabled: true, envIntensity: 0.8, toneMap: false, naturalLight: 0, exposure: 1, lookPreset: "" });
     setTrail({ enabled: false, color: "#ffd873", size: 0.05, life: 0.9, rate: 40 });
     setReflection({ enabled: false, resolution: 256, updateEvery: 2, intensity: 1 });
-    setDock(DEFAULT_DOCK); setSeo(DEFAULT_SEO); setLoader(DEFAULT_LOADER); setCursor(DEFAULT_CURSOR); setProgressBar(DEFAULT_PROGRESS_BAR); setBackTop(DEFAULT_BACKTOP); setFab(DEFAULT_FAB); setMenu(DEFAULT_MENU);
+    setDock(DEFAULT_DOCK); setSeo(DEFAULT_SEO); setLoader(DEFAULT_LOADER); setCursor(DEFAULT_CURSOR); setProgressBar(DEFAULT_PROGRESS_BAR); setBackTop(DEFAULT_BACKTOP); setMusic(DEFAULT_MUSIC); setFab(DEFAULT_FAB); setMenu(DEFAULT_MENU);
     setSections(DEFAULT_SECTIONS); setSite2d(DEFAULT_SITE2D); setSelSec(null);
     setStages(st); setDurationsVh([]); setEasings([]);
     setPosesByKf(initialPoses(st)); setCamsByKf(initialCameras(st)); setMovesByKf(initialMovements(st)); setFxByKf(initialFx(st));
@@ -13215,6 +13298,15 @@ function App() {
                     {backTop.color && <button className="mini" onClick={() => setBackTopField("color", "")}>Quitar</button>}
                   </div>
                   <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Aparece en el sitio al avanzar el scroll y vuelve al principio con inercia. Con el vidrio oscuro o claro se ve bien sobre cualquier fondo; queda abajo, a un costado o al centro. No se ve en el visor, probalo en el sitio exportado.</div>
+                </Group>
+                <Group id="music" title="Música" defaultOpen={false} toggle={{ checked: !!music.enabled, onChange: (v) => setMusicField("enabled", v) }}>
+                  <div className="row"><span className="lbl">Archivo</span><input type="text" style={{ flex: 1 }} value={music.url || ""} placeholder="./assets/audio/musica.mp3" spellCheck={false} onChange={(e) => setMusicField("url", e.target.value)} /></div>
+                  <Slider label="Volumen" min={5} max={100} step={1} value={Math.round((music.volume == null ? 0.5 : music.volume) * 100)} onChange={(v) => setMusicField("volume", v / 100)} />
+                  <SelectRow label="Posición" value={music.position} onChange={(v) => setMusicField("position", v)} options={[["left", "Izquierda"], ["right", "Derecha"]]} />
+                  <Slider label="Tamaño" min={36} max={68} step={1} value={music.size} onChange={(v) => setMusicField("size", v)} />
+                  <Slider label="Aparece al (%)" min={0} max={50} step={1} value={Math.round((music.showAfter || 0) * 100)} onChange={(v) => setMusicField("showAfter", v / 100)} />
+                  <div className="row"><span className="lbl">Color</span><HexColor value={music.color || "#1230ff"} onChange={(v) => setMusicField("color", v)} /></div>
+                  <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Aparece como una rayita con el primer scroll. Al tocarla empieza la música (el navegador no permite que suene sola) y la rayita se vuelve una viborita que se mueve; al volver a tocarla se apaga con suavidad. Copiá tu archivo (mp3) a la carpeta del sitio, en assets/audio/.</div>
                 </Group>
                 <Group id="logo" title="Logo flotante" defaultOpen={false} toggle={{ checked: !!menu.logoUrl, onChange: (v) => setMenuField("logoUrl", v ? (menu.logoUrl || "./assets/img/logo.png") : "") }}>
                   <S2DField f={["logoUrl", "Imagen (PNG/SVG)", "img"]} s={menu} set={(patch) => setMenu((prev) => ({ ...prev, ...patch }))} toast={showMsg} />
