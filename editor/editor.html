@@ -6241,7 +6241,7 @@ function MusicToggle() {
     const s = st.current, a = s.audio; if (!a) return;
     cancelAnimationFrame(s.fadeRaf);
     const from = a.volume, t0 = performance.now();
-    const step = (n) => { const k = Math.min(1, (n - t0) / ms); a.volume = from + (to - from) * k; if (k < 1) s.fadeRaf = requestAnimationFrame(step); else if (done) done(); };
+    const step = (n) => { const k = Math.min(1, Math.max(0, (n - t0) / ms)); try { a.volume = Math.min(1, Math.max(0, from + (to - from) * k)); } catch (e) { /* volumen fuera de rango: se ignora */ } if (k < 1) s.fadeRaf = requestAnimationFrame(step); else if (done) done(); };
     s.fadeRaf = requestAnimationFrame(step);
   };
   const prep = () => {
