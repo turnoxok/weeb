@@ -140,3 +140,26 @@ function cargarDemo() {
   try { SpreadsheetApp.getUi().alert(msg); } catch (e) {}
   return msg;
 }
+
+/**
+ * VACIAR LA HOJA: borra TODO lo cargado (reservas, pagos, turnos, planes, bloqueos, caja, configuración, historial y usuarios del panel)
+ * y la deja como recién instalada (un "Salón principal" vacío y las opciones por defecto). Antes hace una copia de seguridad en Drive.
+ * Pide confirmación escribiendo BORRAR. Después hay que crear de nuevo el usuario del panel: menú Weeb Reservas > Crear o cambiar usuario.
+ */
+function borrarTodo() {
+  var ui = null; try { ui = SpreadsheetApp.getUi(); } catch (e) {}
+  if (ui) {
+    var a = ui.prompt('Vaciar la hoja', 'Se borra TODO lo de esta hoja (reservas, pagos, turnos, planes, configuración y usuarios). Se hace antes una copia en Drive.\nPara seguir, escribí BORRAR:', ui.ButtonSet.OK_CANCEL);
+    if (a.getSelectedButton() !== ui.Button.OK || a.getResponseText().trim() !== 'BORRAR') { ui.alert('No se borró nada.'); return 'cancelado'; }
+  }
+  try { backup_(); } catch (e) {}
+  Object.keys(TABLAS).forEach(function (n) {
+    var s = ss_().getSheetByName(n); if (!s) return;
+    var last = s.getLastRow(); if (last > 1) s.deleteRows(2, last - 1);
+  });
+  CFG_MEMO = null;
+  var msg = instalar() + ' Quedó vacía. Creá el usuario del panel desde el menú Weeb Reservas.';
+  invalidar_();
+  if (ui) ui.alert(msg);
+  return msg;
+}
