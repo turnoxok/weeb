@@ -10426,43 +10426,71 @@ function suiFab(fab, dock) {
   return items;
 }
 
-/* Captura real de la página de reservas (se dibuja el HTML en una imagen). Si algo falla devuelve null y se usa una ilustración. */
+/* Recorre la página real de reservas en una ventana oculta (sin confirmar nada) y saca una captura por paso:
+   calendario, horarios, datos vacíos, nombre cargado, todo cargado. Devuelve null si algo falla (se usa una ilustración). */
+async function suiSnap(fr, cw, hh) {
+  const d = fr.contentDocument;
+  const css = [];
+  for (const l of Array.from(d.querySelectorAll('link[rel="stylesheet"]'))) {
+    try { if (new URL(l.href, d.baseURI).origin === location.origin) { const r = await fetch(l.href); if (r.ok) css.push(await r.text()); } } catch (e) { /* sin esa hoja */ }
+  }
+  Array.from(d.querySelectorAll("style")).forEach((s) => css.push(s.textContent));
+  const root = d.documentElement.cloneNode(true);
+  root.querySelectorAll("script, link, style, noscript, iframe").forEach((n) => n.remove());
+  const st = d.createElement("style"); st.textContent = css.join("\n").replace(/@import[^;]+;/g, "");
+  root.querySelector("head").appendChild(st);
+  const oi = Array.from(d.querySelectorAll("input, textarea")), ci = Array.from(root.querySelectorAll("input, textarea"));
+  for (let i = 0; i < oi.length && i < ci.length; i++) { if (oi[i].tagName === "TEXTAREA") ci[i].textContent = oi[i].value; else if (oi[i].value) ci[i].setAttribute("value", oi[i].value); if (oi[i].checked) ci[i].setAttribute("checked", ""); }
+  const orig = Array.from(d.querySelectorAll("img")), cl = Array.from(root.querySelectorAll("img"));
+  for (let i = 0; i < orig.length && i < cl.length; i++) {
+    try {
+      const o = orig[i], cv = document.createElement("canvas"); cv.width = o.naturalWidth || 64; cv.height = o.naturalHeight || 64;
+      cv.getContext("2d").drawImage(o, 0, 0, cv.width, cv.height); cl[i].setAttribute("src", cv.toDataURL("image/png"));
+    } catch (e) { cl[i].removeAttribute("src"); }
+  }
+  const xhtml = new XMLSerializer().serializeToString(root);
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + cw + '" height="' + hh + '"><foreignObject x="0" y="0" width="100%" height="100%">' + xhtml + "</foreignObject></svg>";
+  const img = new Image();
+  await new Promise((res, rej) => { img.onload = res; img.onerror = () => rej(new Error("imagen")); img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg); setTimeout(() => rej(new Error("tiempo")), 10000); });
+  const out = document.createElement("canvas"); out.width = cw * 2; out.height = hh * 2;
+  const oc = out.getContext("2d"); oc.fillStyle = "#1a1026"; oc.fillRect(0, 0, out.width, out.height); oc.drawImage(img, 0, 0, out.width, out.height);
+  oc.getImageData(0, 0, 1, 1);   // si el lienzo quedó "marcado" (tainted) esto falla y se usa la ilustración
+  return out;
+}
+async function suiWait(fn, ms) { for (let i = 0; i < ms / 200 && !fn(); i++) await suiSleep(200); return !!fn(); }
 async function suiShot(url, cw, ch) {
-  let fr = null;
+  let fr = null; const HH = 1500;
   try {
     fr = document.createElement("iframe");
-    fr.style.cssText = "position:fixed;left:-9999px;top:0;width:" + cw + "px;height:" + ch + "px;border:0;visibility:hidden";
+    fr.style.cssText = "position:fixed;left:-9999px;top:0;width:" + cw + "px;height:" + HH + "px;border:0;visibility:hidden";
     fr.src = url + (String(url).indexOf("?") >= 0 ? "&" : "?") + "embed=1";
     document.body.appendChild(fr);
     await new Promise((res, rej) => { fr.onload = res; setTimeout(() => rej(new Error("tiempo")), 15000); });
-    const d = fr.contentDocument;
-    for (let i = 0; i < 75 && !d.querySelector(".cal button"); i++) await suiSleep(200);
-    if (!d.querySelector(".cal button")) return null;   // la página no cargó los horarios: se usa la ilustración
+    const d = fr.contentDocument, q = (sel) => d.querySelector(sel);
+    if (!(await suiWait(() => q(".cal button.libre"), 15000))) return null;   // la página no cargó horarios libres: se usa la ilustración
     await suiSleep(700);
-    const css = [];
-    for (const l of Array.from(d.querySelectorAll('link[rel="stylesheet"]'))) {
-      try { if (new URL(l.href, d.baseURI).origin === location.origin) { const r = await fetch(l.href); if (r.ok) css.push(await r.text()); } } catch (e) { /* sin esa hoja */ }
-    }
-    Array.from(d.querySelectorAll("style")).forEach((s) => css.push(s.textContent));
-    const root = d.documentElement.cloneNode(true);
-    root.querySelectorAll("script, link, style, noscript, iframe").forEach((n) => n.remove());
-    const st = d.createElement("style"); st.textContent = css.join("\n").replace(/@import[^;]+;/g, "");
-    root.querySelector("head").appendChild(st);
-    const orig = Array.from(d.querySelectorAll("img")), cl = Array.from(root.querySelectorAll("img"));
-    for (let i = 0; i < orig.length && i < cl.length; i++) {
-      try {
-        const o = orig[i], cv = document.createElement("canvas"); cv.width = o.naturalWidth || 64; cv.height = o.naturalHeight || 64;
-        cv.getContext("2d").drawImage(o, 0, 0, cv.width, cv.height); cl[i].setAttribute("src", cv.toDataURL("image/png"));
-      } catch (e) { cl[i].removeAttribute("src"); }
-    }
-    const xhtml = new XMLSerializer().serializeToString(root);
-    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + cw + '" height="' + ch + '"><foreignObject x="0" y="0" width="100%" height="100%">' + xhtml + "</foreignObject></svg>";
-    const img = new Image();
-    await new Promise((res, rej) => { img.onload = res; img.onerror = () => rej(new Error("imagen")); img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg); setTimeout(() => rej(new Error("tiempo")), 10000); });
-    const out = document.createElement("canvas"); out.width = cw * 2; out.height = ch * 2;
-    const oc = out.getContext("2d"); oc.fillStyle = "#1a1026"; oc.fillRect(0, 0, out.width, out.height); oc.drawImage(img, 0, 0, out.width, out.height);
-    oc.getImageData(0, 0, 1, 1);   // si el lienzo quedó "marcado" (tainted) esto falla y se usa la ilustración
-    return out;
+    const pt = (el, sc) => { const r = el.getBoundingClientRect(); return [(r.left + r.width / 2) / cw, (r.top + r.height / 2 - sc) / ch]; };
+    const lim = (v) => Math.max(0, Math.min(HH - ch, Math.round(v)));
+    const steps = [], taps = [];
+    const snap = async (sc) => { const cv = await suiSnap(fr, cw, HH); steps.push({ cv, scroll: sc }); };
+    const dia = q(".cal button.libre");
+    taps.push(pt(dia, 0)); await snap(0);
+    dia.click();
+    if (!(await suiWait(() => q("button.slot"), 8000))) return null;
+    await suiSleep(500);
+    const sc1 = lim(q("#horarios").getBoundingClientRect().top - 70), slot = q("button.slot");
+    taps.push(pt(slot, sc1)); await snap(sc1);
+    slot.click();
+    if (!(await suiWait(() => q("form input[name=nombre]"), 8000))) return null;
+    await suiSleep(500);
+    const nom = q("form input[name=nombre]"), go = q("#go"), sc2 = lim(nom.getBoundingClientRect().top - 190), sc3 = lim(go.getBoundingClientRect().bottom + 30 - ch);
+    const resumen = q(".resumen"), meta = { fecha: resumen && resumen.querySelector("b") ? resumen.querySelector("b").textContent : "", hora: resumen ? resumen.textContent.replace(resumen.querySelector("b") ? resumen.querySelector("b").textContent : "", "").split("Total")[0].trim() : "" };
+    taps.push(pt(nom, sc2)); await snap(sc2);
+    const put = (n, v) => { const e = q("form [name=" + n + "]"); if (e) { e.value = v; e.dispatchEvent(new Event("input", { bubbles: true })); } };
+    put("nombre", "Sofía Demo"); await suiSleep(250); await snap(sc2);
+    put("telefono", "343 555 0123"); put("email", "sofia.demo@gmail.com"); put("personas", "25"); await suiSleep(300);
+    taps.push(pt(go, sc3)); await snap(sc3);
+    return { steps, taps, meta };
   } catch (e) { return null; }
   finally { try { if (fr && fr.parentNode) fr.parentNode.removeChild(fr); } catch (e2) { /* nada */ } }
 }
@@ -10483,13 +10511,13 @@ async function suiPrepare(cfg, W, H) {
   } catch (e) { /* sin fuente */ }
   const cw = 390, ch = Math.round(390 * H / W);
   const hasBook = fab.some((x) => x.id === "book");
-  const shot = hasBook ? await Promise.race([suiShot(cfg.fab.reservarUrl, cw, ch), suiSleep(45000).then(() => null)]) : null;
+  const shot = hasBook ? await Promise.race([suiShot(cfg.fab.reservarUrl, cw, ch), suiSleep(90000).then(() => null)]) : null;
   return { menu, footer, fab, imgs, shot, site2d: cfg.site2d || {}, dock: cfg.dock || {}, W, H, k: W / 390, cw, ch };
 }
 
 /* Guion del video (en segundos). El 3D avanza, se frena cuando se toca menú / Reservar y hay un "sube y vuelve" sin soltar. */
 function suiPlan(T, o) {
-  const sc = Math.min(1, T / 24), dM = 3.6 * sc, dR = 5.4 * sc, dW = 3.6 * sc, dF = Math.max(3.2, 4.4 * sc), tF = T - dF;
+  const sc = Math.min(1, T / 40), dM = 3.6 * sc, dR = 13 * sc, dW = 3.6 * sc, dF = Math.max(3.2, 4.4 * sc), tF = T - dF;
   const tM = suiClamp((o.menuAt == null ? 22 : o.menuAt) / 100 * T, 1, Math.max(1, tF - dM - dW - dR - 1.2));
   const tR = suiClamp((o.resAt == null ? 68 : o.resAt) / 100 * T, tM + dM + dW + 0.8, Math.max(tM + dM + dW + 0.8, tF - dR - 0.3));
   const tW = Math.max(tM + dM + 0.4, (tM + dM + tR - dW) / 2);
@@ -10515,13 +10543,21 @@ function suiTimeline(ts, T, o) {
     if (u >= 2.7 && u < 3.3) s.press = { target: "menu", p: (u - 2.7) / 0.6 };
   }
   u = (ts - tR) / sc;
-  if (u >= 0 && u <= 5.4) {
-    const open = suiEase((u - 0.65) / 0.65), close = suiEaseIO((u - 4.55) / 0.65);
-    s.res = u < 4.55 ? open : 1 - close;
-    if (u < 0.9) s.finger = { target: "book", p: suiEase(u / 0.55), a: suiClamp(u / 0.25, 0, 1) };
-    else if (u >= 3.3 && u < 4.8) s.finger = { target: "back", p: suiEase((u - 3.3) / 0.8), a: 1, from: "book" };
+  if (u >= 0 && u <= 13) {
+    const open = suiEase((u - 0.65) / 0.65), close = suiEaseIO((u - 12.2) / 0.65);
+    s.res = u < 12.2 ? open : 1 - close; s.rvu = u;
+    const tp = o.taps, bk = o.back || [0.2, 0.045];
+    const kf = [[0, [0.5, 1.02]], [0.45, "book"]];
+    if (u < 1.0) s.finger = { target: "book", p: suiEase(u / 0.5), a: suiClamp(u / 0.25, 0, 1) };
     if (u >= 0.5 && u < 1.0) { s.press = { target: "book", p: (u - 0.5) / 0.5 }; s.bookPress = Math.sin(((u - 0.5) / 0.5) * Math.PI); }
-    if (u >= 4.35 && u < 4.9) s.press = { target: "back", p: (u - 4.35) / 0.55 };
+    const path = tp ? [[1.4, [0.5, 0.9]], [2.3, tp[0]], [2.75, tp[0]], [4.0, tp[1]], [4.4, tp[1]], [5.2, tp[2]], [5.7, tp[2]], [6.9, [tp[2][0], tp[2][1] + 0.12]], [8.0, tp[3]], [8.45, tp[3]], [8.9, [0.5, 0.8]], [11.0, [0.5, 0.8]], [11.8, bk], [12.2, bk], [12.6, bk]] : [[11.0, [0.5, 0.7]], [11.8, bk], [12.2, bk], [12.6, bk]];
+    const first = path[0][0];
+    if (u >= first - 0.45 && u < 12.8) {
+      let xy = path[0][1], a = suiClamp((u - (first - 0.45)) / 0.3, 0, 1);
+      for (let i = 1; i < path.length; i++) { if (u >= path[i - 1][0] && u <= path[i][0]) { const z = suiEaseIO((u - path[i - 1][0]) / (path[i][0] - path[i - 1][0])); xy = [path[i - 1][1][0] + (path[i][1][0] - path[i - 1][1][0]) * z, path[i - 1][1][1] + (path[i][1][1] - path[i - 1][1][1]) * z]; } else if (u > path[i][0]) xy = path[i][1]; }
+      const rip = [[2.3, 2.75], [4.0, 4.4], [5.2, 5.7], [8.0, 8.45], [11.8, 12.2]].find((r) => u >= r[0] && u <= r[1]);
+      if (u >= 1.0) s.finger = { xy, a: Math.min(a, suiClamp((12.8 - u) / 0.3, 0, 1)), rip: rip ? (u - rip[0]) / (rip[1] - rip[0]) : null };
+    }
   }
   if (ts >= tF) s.foot = suiEaseIO((ts - tF) / (1.1 * Math.max(sc, 0.6)));
   // "sube y vuelve" sin soltar: dedo apretado sube, el 3D avanza; baja y el 3D vuelve
@@ -10640,17 +10676,43 @@ function suiDrawBackPill(c, o, a) {
   c.fillText("←  Volver al sitio", 27 * k, 31.5 * k); c.restore();
 }
 
-function suiDrawReserva(c, o, p) {
+function suiResStep(u) {
+  const br = [2.8, 4.6, 5.6, 6.9, 8.6];
+  let idx = 0; br.forEach((b, i) => { if (u >= b) idx = i + 1; });
+  const prev = Math.max(0, idx - 1), m = idx > 0 ? suiClamp((u - br[idx - 1]) / 0.25, 0, 1) : 1;
+  return { idx, prev, m };
+}
+function suiDrawConf(c, o, a) {
+  const W = o.W, H = o.H, k = o.k, ff = o.menu.font || "sans-serif", meta = (o.shot && o.shot.meta) || {};
+  c.save(); c.globalAlpha = a;
+  const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#2b1a45"); g.addColorStop(1, "#150c22"); c.fillStyle = g; c.fillRect(0, 0, W, H);
+  c.textAlign = "center"; c.textBaseline = "alphabetic";
+  const cy = H * 0.34; c.beginPath(); c.arc(W / 2, cy, 38 * k, 0, 7); c.fillStyle = "#2fbf71"; c.fill();
+  c.strokeStyle = "#fff"; c.lineWidth = 5 * k; c.lineCap = "round"; c.lineJoin = "round"; c.beginPath(); c.moveTo(W / 2 - 15 * k, cy + 1 * k); c.lineTo(W / 2 - 4 * k, cy + 12 * k); c.lineTo(W / 2 + 17 * k, cy - 11 * k); c.stroke();
+  c.fillStyle = "#fff"; c.font = "700 " + 24 * k + "px " + ff; c.fillText("¡Reserva confirmada!", W / 2, cy + 82 * k);
+  c.font = "500 " + 14.5 * k + "px " + ff; c.fillStyle = "rgba(255,255,255,.85)";
+  const l1 = (meta.fecha || "Sábado") + (meta.hora ? " · " + meta.hora : ""); suiWrap(c, l1, W - 60 * k).forEach((l, i) => c.fillText(l, W / 2, cy + 112 * k + i * 21 * k));
+  c.fillStyle = "rgba(255,255,255,.6)"; c.font = "500 " + 12.5 * k + "px " + ff; c.fillText("Te mandamos la confirmación a tu mail.", W / 2, cy + 160 * k);
+  c.fillText("Código de reserva: DEMO-0421", W / 2, cy + 184 * k);
+  suiRR(c, 24 * k, cy + 214 * k, W - 48 * k, 48 * k, 24 * k); c.lineWidth = 1.5 * k; c.strokeStyle = "rgba(255,255,255,.55)"; c.stroke();
+  c.fillStyle = "#fff"; c.font = "600 " + 14 * k + "px " + ff; c.fillText("Hacer otra reserva", W / 2, cy + 244 * k);
+  c.restore();
+}
+function suiDrawReserva(c, o, p, u) {
   if (p <= 0.001) return;
   const W = o.W, H = o.H, k = o.k, y = (1 - suiEase(p)) * H;
   c.save(); c.translate(0, y);
   c.shadowColor = "rgba(0,0,0,.45)"; c.shadowBlur = 40 * k; c.shadowOffsetY = -10 * k; c.fillStyle = "#1a1026"; c.fillRect(0, 0, W, H); c.shadowColor = "transparent";
-  if (o.shot) { c.drawImage(o.shot, 0, 0, W, H); }
-  else {   // ilustración de reserva si no se pudo capturar la página real
+  if (o.shot && o.shot.steps) {
+    const st = suiResStep(u == null ? 0 : u), put = (i, al) => { const sp = o.shot.steps[i]; if (!sp) return; c.globalAlpha = al; c.drawImage(sp.cv, 0, sp.scroll * 2, o.cw * 2, o.ch * 2, 0, 0, W, H); c.globalAlpha = 1; };
+    if (st.idx >= 5) { put(4, 1); suiDrawConf(c, o, suiClamp((u - 8.6) / 0.3, 0, 1)); }
+    else { if (st.m < 1) put(st.prev, 1); put(st.idx, st.m); }
+  } else {   // ilustración de reserva si no se pudo capturar la página real
     const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#4c3470"); g.addColorStop(1, "#1a1026"); c.fillStyle = g; c.fillRect(0, 0, W, H);
     c.fillStyle = "#fff"; c.textAlign = "left"; c.textBaseline = "alphabetic"; c.font = "700 " + 26 * k + "px " + (o.menu.font || "sans-serif"); c.fillText("Elegí el día", 24 * k, 120 * k);
     const cw = (W - 48 * k) / 7;
     for (let r = 0; r < 5; r++) for (let q = 0; q < 7; q++) { const x = 24 * k + q * cw, yy = 150 * k + r * cw; suiRR(c, x + 3 * k, yy + 3 * k, cw - 6 * k, cw - 6 * k, 10 * k); c.fillStyle = (r * 7 + q) % 4 === 1 ? "#e8693a" : "rgba(255,255,255,.1)"; c.fill(); }
+    if (u != null && u >= 8.6) suiDrawConf(c, o, suiClamp((u - 8.6) / 0.3, 0, 1));
   }
   c.restore();
   c.save(); c.translate(0, y); suiDrawBackPill(c, o, 1); c.restore();
@@ -10700,7 +10762,7 @@ function suiDrawFinger(c, o, f, press) {
   if (!f) return;
   const k = o.k;
   let x, y, pr = 0;
-  if (f.xy) { x = f.xy[0] * o.W; y = f.xy[1] * o.H; pr = f.down ? 1.4 : 0; }
+  if (f.xy) { x = f.xy[0] * o.W; y = f.xy[1] * o.H; pr = f.down ? 1.4 : f.rip != null ? Math.sin(suiClamp(f.rip, 0, 1) * Math.PI) : 0; if (f.rip != null) press = { target: "_xy", p: f.rip }; f = Object.assign({}, f, { target: "_xy" }); }
   else { const to = suiPoint(o, f.target, k), from = f.from ? suiPoint(o, f.from, k) : [to[0] + 70 * k, to[1] + 150 * k]; x = from[0] + (to[0] - from[0]) * f.p; y = from[1] + (to[1] - from[1]) * f.p; pr = press && press.target === f.target ? Math.sin(suiClamp(press.p, 0, 1) * Math.PI) : 0; }
   c.save(); c.globalAlpha = f.a == null ? 1 : f.a;
   if (press && f.target && press.target === f.target) { const rp = suiClamp(press.p, 0, 1); c.beginPath(); c.arc(x, y, (18 + rp * 40) * k, 0, 7); c.lineWidth = 3 * k; c.strokeStyle = "rgba(255,255,255," + (0.7 * (1 - rp)) + ")"; c.stroke(); }
@@ -10710,14 +10772,14 @@ function suiDrawFinger(c, o, f, press) {
 
 /* Dibuja la interfaz del sitio en el cuadro actual. ts = segundos del video, T = duración total. */
 function drawSiteUI(c, o, ts, T, opts) {
-  const s = suiTimeline(ts, T, opts || {}), k = o.k;
+  const s = suiTimeline(ts, T, Object.assign({ taps: o.shot && o.shot.taps, back: [79 / 390, 31 / (o.H / o.k)] }, opts || {})), k = o.k;
   c.save();
   suiDrawLogo(c, o);
   suiDrawFab(c, o, 1 - suiClamp(s.foot * 1.6, 0, 1), s.bookPress);   // calcula también las posiciones para el dedo
   suiDrawFooter(c, o, s.foot);
   suiDrawMenuPanel(c, o, s.menu);
   suiDrawMenuBtn(c, o, s.menuBtn);
-  suiDrawReserva(c, o, s.res);
+  suiDrawReserva(c, o, s.res, s.rvu);
   suiDrawFinger(c, o, s.finger, s.press);
   c.restore();
 }
@@ -13610,11 +13672,11 @@ function App() {
                   <Slider label="Duracion (s)" min={3} max={60} step={1} value={vidSeconds} onChange={setVidSeconds} />
                   <Seg value={vidFps} onChange={setVidFps} options={[[30, "30 fps"], [60, "60 fps"]]} />
                   <Seg value={vidQuality} onChange={setVidQuality} options={[[1, "Calidad normal"], [2, "Alta (2x, mas lento)"]]} />
-                  <Switch checked={vidUi} onChange={setVidUi} label="Mostrar la interfaz del sitio (logo, menú, Reservar y pie)" />
+                  <Switch checked={vidUi} onChange={(v) => { setVidUi(v); if (v && vidSeconds < 40) setVidSeconds(40); }} label="Mostrar la interfaz del sitio (logo, menú, Reservar y pie)" />
                   {vidUi && <>
                     <Slider label="Toca el menú en el % del video" min={5} max={80} step={1} value={vidUiMenuAt} onChange={setVidUiMenuAt} />
                     <Slider label="Toca Reservar en el % del video" min={20} max={90} step={1} value={vidUiResAt} onChange={setVidUiResAt} />
-                    <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Dibuja encima del 3D: el logo, el botón de menú y la barra de botones. Un dedito va scrolleando; se toca el menú (el 3D se frena, se abre y se cierra), hay un momento en que sube y vuelve sin soltar, se toca Reservar (con la captura de tu página, el 3D frenado) y termina en el pie. Conviene 25 s o más.</div>
+                    <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Dibuja encima del 3D: el logo, el botón de menú y la barra de botones. Un dedito va scrolleando; se toca el menú (el 3D se frena, se abre y se cierra), hay un momento en que sube y vuelve sin soltar, y se hace una reserva de mentira (día, horario, datos de ejemplo y confirmación) sobre tu página real, sin guardar nada. Termina en el pie. Conviene 40 s.</div>
                   </>}
                   <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>
                     {VIDEO_FORMATS[vidFormat].w}x{VIDEO_FORMATS[vidFormat].h}.{vidFormat === "feed" ? " Se arma con la misma composicion del marco 9:16 (el logo mide igual) y se recorta en alto: 0% = pegado arriba (zona libre), 100% = pegado abajo." : ""} Recorre el scroll de 0 a 100% y graba solo el canvas (sin barra de progreso ni aviso de scroll). Deja la pestana visible mientras exporta.
