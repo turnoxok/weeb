@@ -10578,6 +10578,41 @@ async function suiShot(url, cw, ch) {
 }
 
 /* Prepara todo lo que necesita el dibujo (imágenes, fuentes, captura de Reservar). Se llama una vez antes del primer cuadro. */
+/* ---- Música dentro del MP4 (solo para uso propio): decodifica el mp3, lo ajusta al largo del video, fundidos y codifica a AAC ---- */
+async function vidBuildAudio(ab, seconds, fadeIn, fadeOut) {
+  const SR = 48000, n = Math.max(1, Math.round(seconds * SR));
+  const ac = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: SR });
+  let buf; try { buf = await ac.decodeAudioData(ab.slice(0)); } finally { try { ac.close(); } catch (e) { /* ya cerrado */ } }
+  const d0 = buf.getChannelData(0), d1 = buf.numberOfChannels > 1 ? buf.getChannelData(1) : d0, len = buf.length;
+  const L = new Float32Array(n), R = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const j = i % len; L[i] = d0[j]; R[i] = d1[j]; }   // si la música dura menos que el video, se repite
+  const fi = Math.max(0, Math.round(fadeIn * SR)), fo = Math.max(0, Math.round(fadeOut * SR));
+  const sm = (t) => (1 - Math.cos(Math.PI * Math.min(1, Math.max(0, t)))) / 2;   // curva suave
+  for (let i = 0; i < n; i++) { let g = 1; if (fi && i < fi) g = sm(i / fi); if (fo && i > n - fo) g = Math.min(g, sm((n - i) / fo)); L[i] *= g; R[i] *= g; }
+  return { SR, n, ch: [L, R] };
+}
+async function vidAudioCodec(SR) {
+  const base = { sampleRate: SR, numberOfChannels: 2 };
+  try { const a = await AudioEncoder.isConfigSupported({ codec: "mp4a.40.2", bitrate: 160000, ...base }); if (a.supported) return { name: "aac", cfg: { codec: "mp4a.40.2", bitrate: 160000, ...base } }; } catch (e) { /* sin AAC */ }
+  try { const o = await AudioEncoder.isConfigSupported({ codec: "opus", bitrate: 128000, ...base }); if (o.supported) return { name: "opus", cfg: { codec: "opus", bitrate: 128000, ...base } }; } catch (e) { /* sin Opus */ }
+  return null;
+}
+async function vidEncodeAudio(plan, codec, onChunk) {
+  let err = null;
+  const enc = new AudioEncoder({ output: (c, m) => onChunk(c, m), error: (e) => { err = e; } });
+  enc.configure(codec.cfg);
+  const F = 1024;
+  for (let o = 0; o < plan.n; o += F) {
+    const m = Math.min(F, plan.n - o), data = new Float32Array(m * 2);
+    data.set(plan.ch[0].subarray(o, o + m), 0); data.set(plan.ch[1].subarray(o, o + m), m);
+    const ad = new AudioData({ format: "f32-planar", sampleRate: plan.SR, numberOfFrames: m, numberOfChannels: 2, timestamp: Math.round((o / plan.SR) * 1e6), data });
+    enc.encode(ad); ad.close();
+    while (enc.encodeQueueSize > 16) await new Promise((r) => setTimeout(r, 2));
+    if (err) throw err;
+  }
+  await enc.flush(); enc.close();
+  if (err) throw err;
+}
 async function suiPrepare(cfg, W, H) {
   const menu = { ...MENU_DEFAULTS, ...(cfg.menu || {}) };
   const footer = (cfg.sections || []).find((s) => s.type === "footer") || null;
@@ -11331,6 +11366,10 @@ function App() {
   const [vidUi, setVidUi] = useState(false);          // dibujar la interfaz del sitio (logo, menú, botones, pie)
   const [vidUiMenuAt, setVidUiMenuAt] = useState(22);
   const [vidUiResAt, setVidUiResAt] = useState(68);
+  const [vidAudio, setVidAudio] = useState(false);
+  const [vidAudioFile, setVidAudioFile] = useState(null);
+  const [vidFadeIn, setVidFadeIn] = useState(1.5);
+  const [vidFadeOut, setVidFadeOut] = useState(2.5);
   const [vidFps, setVidFps] = useState(30);
   const [vidQuality, setVidQuality] = useState(1);
   const [vidRun, setVidRun] = useState(null);        // { status: running|done|error, pct, msg }
@@ -12346,7 +12385,18 @@ function App() {
     try {
       const cfg = await pickH264Config(w, h, fps, bitrate);
       const mod = await loadMp4Muxer();
-      const muxer = new mod.Muxer({ target: new mod.ArrayBufferTarget(), video: { codec: "avc", width: w, height: h, frameRate: fps }, fastStart: "in-memory" });
+      let aplan = null, acodec = null;
+      if (vidAudio) {
+        if (typeof AudioEncoder === "undefined") throw new Error("Este navegador no puede agregar música al MP4. Usá Chrome o Edge.");
+        setVidRun({ status: "running", pct: 0, msg: "Preparando la música..." });
+        let ab;
+        if (vidAudioFile) ab = await vidAudioFile.arrayBuffer();
+        else { const r = await fetch(music.url).catch(() => null); if (!r || !r.ok) throw new Error("No encuentro la música del sitio: elegí un mp3."); ab = await r.arrayBuffer(); }
+        aplan = await vidBuildAudio(ab, total / fps, vidFadeIn, vidFadeOut);
+        acodec = await vidAudioCodec(aplan.SR);
+        if (!acodec) throw new Error("Este navegador no puede codificar el audio. Usá Chrome o Edge.");
+      }
+      const muxer = new mod.Muxer({ target: new mod.ArrayBufferTarget(), video: { codec: "avc", width: w, height: h, frameRate: fps }, ...(aplan ? { audio: { codec: acodec.name, numberOfChannels: 2, sampleRate: aplan.SR } } : {}), fastStart: "in-memory" });
       let encErr = null;
       encoder = new VideoEncoder({ output: (chunk, meta) => muxer.addVideoChunk(chunk, meta), error: (e) => { encErr = e; } });
       encoder.configure(cfg);
@@ -12411,6 +12461,7 @@ function App() {
       }
       await encoder.flush();
       if (encErr) throw encErr;
+      if (aplan) { setVidRun({ status: "running", pct: 1, msg: "Agregando la música..." }); await vidEncodeAudio(aplan, acodec, (c, m) => muxer.addAudioChunk(c, m)); }
       muxer.finalize();
       const blob = new Blob([muxer.target.buffer], { type: "video/mp4" });
       const url = URL.createObjectURL(blob);
@@ -12418,7 +12469,7 @@ function App() {
       a.href = url; a.download = "reel-" + fmt.file + "-" + w + "x" + h + ".mp4";
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 10000);
-      setVidRun({ status: "done", pct: 1, msg: "reel-" + fmt.file + ".mp4 - " + (blob.size / 1048576).toFixed(1) + " MB - " + (total / fps).toFixed(1) + " s" });
+      setVidRun({ status: "done", pct: 1, msg: "reel-" + fmt.file + ".mp4 - " + (blob.size / 1048576).toFixed(1) + " MB - " + (total / fps).toFixed(1) + " s" + (acodec && acodec.name === "opus" ? " (audio Opus: si Instagram no lo acepta, exportá desde Chrome)" : "") });
     } catch (e) {
       if (e && e.message === "__cancel__") setVidRun(null);
       else setVidRun({ status: "error", pct: 0, msg: (e && e.message) || String(e) });
@@ -13767,6 +13818,16 @@ function App() {
                   <Slider label="Duracion (s)" min={3} max={60} step={1} value={vidSeconds} onChange={setVidSeconds} />
                   <Seg value={vidFps} onChange={setVidFps} options={[[30, "30 fps"], [60, "60 fps"]]} />
                   <Seg value={vidQuality} onChange={setVidQuality} options={[[1, "Calidad normal"], [2, "Alta (2x, mas lento)"]]} />
+                  <Switch checked={vidAudio} onChange={setVidAudio} label="Agregar música al video (fundido al empezar y al terminar)" />
+                  {vidAudio && <>
+                    <div className="row"><span className="lbl">Música</span>
+                      <label className="mini" style={{ cursor: "pointer" }}>Elegir mp3<input type="file" accept="audio/*,.mp3" style={{ display: "none" }} onChange={(e) => { const f = e.target.files && e.target.files[0]; setVidAudioFile(f || null); e.target.value = ""; }} /></label>
+                      <span style={{ fontSize: 10.5, opacity: 0.7, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vidAudioFile ? vidAudioFile.name : "usa la música del sitio"}</span>
+                      {vidAudioFile && <button className="mini" onClick={() => setVidAudioFile(null)}>Quitar</button>}
+                    </div>
+                    <Slider label="Fundido al empezar (s)" min={0} max={5} step={0.1} value={vidFadeIn} onChange={setVidFadeIn} />
+                    <Slider label="Fundido al terminar (s)" min={0} max={6} step={0.1} value={vidFadeOut} onChange={setVidFadeOut} />
+                  </>}
                   <Switch checked={vidUi} onChange={(v) => { setVidUi(v); if (v && vidSeconds < 40) setVidSeconds(40); }} label="Mostrar la interfaz del sitio (logo, menú, Reservar y pie)" />
                   {vidUi && <>
                     <Slider label="Toca el menú en el % del video" min={5} max={80} step={1} value={vidUiMenuAt} onChange={setVidUiMenuAt} />
