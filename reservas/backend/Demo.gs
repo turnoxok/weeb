@@ -15,7 +15,7 @@ var DEMO = {
   nombre: 'Mundo Mágico',
   email: 'demo@mundomagico.com.ar',
   clave: 'MundoMagico2026',
-  sobreescribir: false                  // true = permite cargar el demo en una hoja que ya tiene datos de OTRO salón (hace una copia de seguridad antes)
+  sobreescribir: true                   // true = carga el demo aunque la hoja tenga datos de OTRO salón (los reemplaza, sin copia). false = se frena para proteger un cliente real
 };
 
 function demoLimpiar_() {
@@ -30,8 +30,7 @@ function cargarDemo() {
   var cfg0 = config_(), esDemo = cfg0.nombre === DEMO.nombre;
   var hayDatos = leer_('Reservas').length || leer_('Turnos').length || leer_('Planes').length || (cfg0.nombre !== CFG_DEF.nombre);
   if (hayDatos && !esDemo) {
-    if (!DEMO.sobreescribir) throw new Error('Esta hoja ya tiene datos de "' + cfg0.nombre + '" (nombre, turnos, planes, reservas). Cargar el demo los REEMPLAZA y cambia lo que ve su página de reservas. Si es lo que querés, poné sobreescribir: true arriba de todo en el archivo Demo y volvé a correr: antes se hace una copia de seguridad.');
-    backup_();                                                             // copia de la hoja en Drive > "Weeb backups"
+    if (!DEMO.sobreescribir) throw new Error('Esta hoja ya tiene datos de "' + cfg0.nombre + '" (nombre, turnos, planes, reservas). Cargar el demo los REEMPLAZA y cambia lo que ve su página de reservas. Si es lo que querés, poné sobreescribir: true arriba de todo en el archivo Demo y volvé a correr.');
   }
   demoLimpiar_(); CFG_MEMO = null;
 
@@ -143,16 +142,15 @@ function cargarDemo() {
 
 /**
  * VACIAR LA HOJA: borra TODO lo cargado (reservas, pagos, turnos, planes, bloqueos, caja, configuración, historial y usuarios del panel)
- * y la deja como recién instalada (un "Salón principal" vacío y las opciones por defecto). Antes hace una copia de seguridad en Drive.
+ * y la deja como recién instalada (un "Salón principal" vacío y las opciones por defecto). 
  * Pide confirmación escribiendo BORRAR. Después hay que crear de nuevo el usuario del panel: menú Weeb Reservas > Crear o cambiar usuario.
  */
 function borrarTodo() {
   var ui = null; try { ui = SpreadsheetApp.getUi(); } catch (e) {}
   if (ui) {
-    var a = ui.prompt('Vaciar la hoja', 'Se borra TODO lo de esta hoja (reservas, pagos, turnos, planes, configuración y usuarios). Se hace antes una copia en Drive.\nPara seguir, escribí BORRAR:', ui.ButtonSet.OK_CANCEL);
+    var a = ui.prompt('Vaciar la hoja', 'Se borra TODO lo de esta hoja (reservas, pagos, turnos, planes, configuración y usuarios). \nPara seguir, escribí BORRAR:', ui.ButtonSet.OK_CANCEL);
     if (a.getSelectedButton() !== ui.Button.OK || a.getResponseText().trim() !== 'BORRAR') { ui.alert('No se borró nada.'); return 'cancelado'; }
   }
-  try { backup_(); } catch (e) {}
   Object.keys(TABLAS).forEach(function (n) {
     var s = ss_().getSheetByName(n); if (!s) return;
     var last = s.getLastRow(); if (last > 1) s.deleteRows(2, last - 1);
