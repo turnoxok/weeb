@@ -4262,7 +4262,7 @@ function svgSchedule(job) {
   SVG_Q.on = true;
   const pump = () =&gt; {
     const t0 = performance.now();
-    while (SVG_Q.jobs.length &amp;&amp; performance.now() - t0 &lt; (window.__wbWarm ? 7 : 22)) { const j = SVG_Q.jobs.shift(); try { j(); } catch (e) { /* un SVG con error no frena al resto */ } }
+    while (SVG_Q.jobs.length &amp;&amp; performance.now() - t0 &lt; 7) { const j = SVG_Q.jobs.shift(); try { j(); } catch (e) { /* un SVG con error no frena al resto */ } }
     if (SVG_Q.jobs.length) requestAnimationFrame(pump); else SVG_Q.on = false;
   };
   requestAnimationFrame(pump);
@@ -5113,10 +5113,6 @@ function ShadowThrottle() {
   });
   return null;
 }
-/* ¿hay piezas SVG extruidas que armar? Si no hay, el loader no tiene nada que esperar de ellas (antes esperaba 12 s fijos) */
-function svgExtrudeExpected() {
-  try { if (typeof OBJECTS === "undefined" || !Array.isArray(OBJECTS)) return true; return OBJECTS.some((o) => o && o.type === "image" && isSvgUrl(o.url) && (o.ext || 0) > 0 && !isBallsUrl(o.url)); } catch (e) { return true; }
-}
 function WarmUp() {
   const { gl, scene, camera } = useThree();
   const tickRef = useRef(null);
@@ -5208,7 +5204,7 @@ function WarmUp() {
       }
       if (!done) {
         if (el &gt; 12000) fin(); // no se espera más: lo que falte se calienta aparte apenas aparezca
-        else if (((window.__wbStarted || 0) &gt; 0 || !svgExtrudeExpected()) &amp;&amp; (window.__wbPend || 0) === 0 &amp;&amp; el &gt; 800) {
+        else if ((window.__wbStarted || 0) &gt; 0 &amp;&amp; (window.__wbPend || 0) === 0 &amp;&amp; el &gt; 800) {
           /* calentamiento repartido: de a un grupo de objetos por cuadro (antes era todo en un solo cuadro y congelaba el loader) */
           /* 1) compilar TODOS los shaders (también los de objetos ocultos o vacíos, como el confeti y la bengala), sin trabar la pantalla si el navegador lo permite */
           if (cstate === 0) {
@@ -6443,7 +6439,7 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       target = Math.min(target, (el / minMs) * 100);
       const loaded = simulate ? el &gt;= minMs : (L.total &gt; 0 ? L.progress &gt;= 100 &amp;&amp; !L.active : el &gt; 3500);
       /* el logo no se va hasta que los objetos 3D (SVG extruidos) terminaron de armarse: antes aparecían recién después del loader */
-      const built = simulate || el &gt; 15000 || (((window.__wbStarted || 0) &gt; 0 || !svgExtrudeExpected() || el &gt; 6000) &amp;&amp; (window.__wbPend || 0) === 0 &amp;&amp; (window.__wbWarm || el &gt; 13000));
+      const built = simulate || el &gt; 15000 || (((window.__wbStarted || 0) &gt; 0 || el &gt; 6000) &amp;&amp; (window.__wbPend || 0) === 0 &amp;&amp; (window.__wbWarm || el &gt; 13000));
       if (loaded &amp;&amp; built &amp;&amp; fontsOk &amp;&amp; target &gt;= 99.9) { if (!okSince) okSince = now; } else okSince = 0;
       if (!finishAt &amp;&amp; ((okSince &amp;&amp; now - okSince &gt; (simulate ? 0 : 700)) || el &gt; 14000)) finishAt = now;
       if (finishAt) target = 100;
@@ -8715,7 +8711,7 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       target = Math.min(target, (el / minMs) * 100);
       const loaded = simulate ? el >= minMs : (L.total > 0 ? L.progress >= 100 && !L.active : el > 3500);
       /* el logo no se va hasta que los objetos 3D (SVG extruidos) terminaron de armarse: antes aparecían recién después del loader */
-      const built = simulate || el > 15000 || (((window.__wbStarted || 0) > 0 || !svgExtrudeExpected() || el > 6000) && (window.__wbPend || 0) === 0 && (window.__wbWarm || el > 13000));
+      const built = simulate || el > 15000 || (((window.__wbStarted || 0) > 0 || el > 6000) && (window.__wbPend || 0) === 0 && (window.__wbWarm || el > 13000));
       if (loaded && built && fontsOk && target >= 99.9) { if (!okSince) okSince = now; } else okSince = 0;
       if (!finishAt && ((okSince && now - okSince > (simulate ? 0 : 700)) || el > 14000)) finishAt = now;
       if (finishAt) target = 100;
