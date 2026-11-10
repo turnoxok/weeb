@@ -10365,6 +10365,332 @@ const VIDEO_FORMATS = {
    (así el logo y los objetos miden lo mismo que en el marco 9:16) y el 4:5 es un recorte vertical. */
 const VIDEO_REF = { w: 1080, h: 1920 };
 const VIDEO_BASE_BG = "#05070f";
+/* ---- Video con la interfaz del sitio (opcional) ----
+   Dibuja ENCIMA del video 3D lo que ve quien entra al sitio: logo, botón de menú, barra Reservar / WhatsApp / Cómo llegar,
+   y un guion: se toca el menú (se abre y se cierra), se toca Reservar (captura real de la página de reservas, y se vuelve)
+   y el video termina en el pie. El 3D sigue avanzando debajo todo el tiempo. */
+const SUI = { imgs: {} };
+const suiClamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const suiEase = (t) => 1 - Math.pow(1 - suiClamp(t, 0, 1), 3);
+const suiEaseIO = (t) => { t = suiClamp(t, 0, 1); return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+const suiSleep = (ms) => new Promise((r) => setTimeout(r, ms));
+function suiLoadImg(url) {
+  if (!url) return Promise.resolve(null);
+  if (SUI.imgs[url] !== undefined) return Promise.resolve(SUI.imgs[url]);
+  return new Promise((res) => {
+    const im = new Image();
+    im.crossOrigin = "anonymous";
+    const done = (ok) => { SUI.imgs[url] = ok ? im : null; res(SUI.imgs[url]); };
+    im.onload = () => done(im.naturalWidth > 0);
+    im.onerror = () => done(false);
+    setTimeout(() => done(false), 8000);
+    im.src = url;
+  });
+}
+function suiRR(c, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
+}
+function suiRgba(hex, a) {
+  const h = String(hex || "#000000").replace("#", "");
+  const f = h.length === 3 ? h.split("").map((ch) => ch + ch).join("") : h.padEnd(6, "0");
+  const n = parseInt(f.slice(0, 6), 16);
+  return "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + a + ")";
+}
+function suiWrap(c, txt, maxW) {
+  const words = String(txt || "").split(/\s+/), lines = []; let cur = "";
+  words.forEach((w) => { const t = cur ? cur + " " + w : w; if (c.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; });
+  if (cur) lines.push(cur);
+  return lines;
+}
+function suiFab(fab, dock) {
+  const f = fab || {}, d = dock || {};
+  const phone = String(d.whatsappPhone || f.phone || "").replace(/\D/g, "");
+  const mapOk = !!(d.mapUrl || d.address);
+  const items = [];
+  if (f.book !== false && f.reservarUrl) items.push({ id: "book", label: f.label || "Reservar" });
+  if (f.wa !== false && phone) items.push({ id: "wa", label: "WhatsApp" });
+  if (f.map !== false && mapOk) items.push({ id: "map", label: "Cómo llegar" });
+  return items;
+}
+
+/* Captura real de la página de reservas (se dibuja el HTML en una imagen). Si algo falla devuelve null y se usa una ilustración. */
+async function suiShot(url, cw, ch) {
+  let fr = null;
+  try {
+    fr = document.createElement("iframe");
+    fr.style.cssText = "position:fixed;left:-9999px;top:0;width:" + cw + "px;height:" + ch + "px;border:0;visibility:hidden";
+    fr.src = url + (String(url).indexOf("?") >= 0 ? "&" : "?") + "embed=1";
+    document.body.appendChild(fr);
+    await new Promise((res, rej) => { fr.onload = res; setTimeout(() => rej(new Error("tiempo")), 15000); });
+    const d = fr.contentDocument;
+    for (let i = 0; i < 75 && !d.querySelector(".cal button"); i++) await suiSleep(200);
+    if (!d.querySelector(".cal button")) return null;   // la página no cargó los horarios: se usa la ilustración
+    await suiSleep(700);
+    const css = [];
+    for (const l of Array.from(d.querySelectorAll('link[rel="stylesheet"]'))) {
+      try { if (new URL(l.href, d.baseURI).origin === location.origin) { const r = await fetch(l.href); if (r.ok) css.push(await r.text()); } } catch (e) { /* sin esa hoja */ }
+    }
+    Array.from(d.querySelectorAll("style")).forEach((s) => css.push(s.textContent));
+    const root = d.documentElement.cloneNode(true);
+    root.querySelectorAll("script, link, style, noscript, iframe").forEach((n) => n.remove());
+    const st = d.createElement("style"); st.textContent = css.join("\n").replace(/@import[^;]+;/g, "");
+    root.querySelector("head").appendChild(st);
+    const orig = Array.from(d.querySelectorAll("img")), cl = Array.from(root.querySelectorAll("img"));
+    for (let i = 0; i < orig.length && i < cl.length; i++) {
+      try {
+        const o = orig[i], cv = document.createElement("canvas"); cv.width = o.naturalWidth || 64; cv.height = o.naturalHeight || 64;
+        cv.getContext("2d").drawImage(o, 0, 0, cv.width, cv.height); cl[i].setAttribute("src", cv.toDataURL("image/png"));
+      } catch (e) { cl[i].removeAttribute("src"); }
+    }
+    const xhtml = new XMLSerializer().serializeToString(root);
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + cw + '" height="' + ch + '"><foreignObject x="0" y="0" width="100%" height="100%">' + xhtml + "</foreignObject></svg>";
+    const img = new Image();
+    await new Promise((res, rej) => { img.onload = res; img.onerror = () => rej(new Error("imagen")); img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg); setTimeout(() => rej(new Error("tiempo")), 10000); });
+    const out = document.createElement("canvas"); out.width = cw * 2; out.height = ch * 2;
+    const oc = out.getContext("2d"); oc.fillStyle = "#1a1026"; oc.fillRect(0, 0, out.width, out.height); oc.drawImage(img, 0, 0, out.width, out.height);
+    oc.getImageData(0, 0, 1, 1);   // si el lienzo quedó "marcado" (tainted) esto falla y se usa la ilustración
+    return out;
+  } catch (e) { return null; }
+  finally { try { if (fr && fr.parentNode) fr.parentNode.removeChild(fr); } catch (e2) { /* nada */ } }
+}
+
+/* Prepara todo lo que necesita el dibujo (imágenes, fuentes, captura de Reservar). Se llama una vez antes del primer cuadro. */
+async function suiPrepare(cfg, W, H) {
+  const menu = { ...MENU_DEFAULTS, ...(cfg.menu || {}) };
+  const footer = (cfg.sections || []).find((s) => s.type === "footer") || null;
+  const fab = suiFab(cfg.fab, cfg.dock);
+  const imgs = {
+    logo: await suiLoadImg(menu.logoUrl),
+    footLogo: footer && footer.logo ? await suiLoadImg(footer.logo) : null,
+  };
+  try {
+    const fams = [menu.font, cfg.site2d && cfg.site2d.fontHead, cfg.site2d && cfg.site2d.fontBody].filter(Boolean);
+    const lim = (p, ms) => Promise.race([p, suiSleep(ms)]);
+    for (const f of fams) { if (document.fonts && document.fonts.load) { await lim(document.fonts.load("600 20px " + f), 4000); await lim(document.fonts.load("500 20px " + f), 4000); } }
+  } catch (e) { /* sin fuente */ }
+  const cw = 390, ch = Math.round(390 * H / W);
+  const hasBook = fab.some((x) => x.id === "book");
+  const shot = hasBook ? await Promise.race([suiShot(cfg.fab.reservarUrl, cw, ch), suiSleep(45000).then(() => null)]) : null;
+  return { menu, footer, fab, imgs, shot, site2d: cfg.site2d || {}, dock: cfg.dock || {}, W, H, k: W / 390, cw, ch };
+}
+
+/* Guion del video (en segundos). Devuelve el estado de cada elemento en el instante ts. */
+function suiTimeline(ts, T, o) {
+  const sc = Math.min(1, T / 24);
+  const dM = 3.6 * sc, dR = 5.4 * sc, dF = Math.max(3.2, 4.4 * sc);
+  const tF = T - dF;
+  let tM = suiClamp((o.menuAt == null ? 30 : o.menuAt) / 100 * T, 1, Math.max(1, tF - dM - dR - 0.6));
+  let tR = suiClamp((o.resAt == null ? 62 : o.resAt) / 100 * T, tM + dM + 0.4, Math.max(tM + dM + 0.4, tF - dR - 0.3));
+  const s = { menu: 0, menuBtn: 0, res: 0, foot: 0, finger: null, press: null, bookPress: 0 };
+  // menú: el dedo llega, toca, se abre; después toca la X y se cierra
+  let u = (ts - tM) / sc;
+  if (u >= 0 && u <= 3.6) {
+    const open = suiEaseIO((u - 0.55) / 0.6), close = suiEaseIO((u - 2.75) / 0.55);
+    s.menu = u < 2.75 ? open : 1 - close; s.menuBtn = s.menu;
+    if (u < 3.4) s.finger = { target: "menu", p: suiEase(u / 0.5), a: suiClamp(u / 0.25, 0, 1) };
+    if (u >= 2.2 && u < 3.4) s.finger = { target: "menu", p: 1, a: 1, from: "menu" };
+    if (u >= 0.5 && u < 1.1) s.press = { target: "menu", p: (u - 0.5) / 0.6 };
+    if (u >= 2.7 && u < 3.3) s.press = { target: "menu", p: (u - 2.7) / 0.6 };
+  }
+  // reservar: el dedo toca el botón y se desliza la pantalla de reservas; después toca "Volver" y se cierra
+  u = (ts - tR) / sc;
+  if (u >= 0 && u <= 5.4) {
+    const open = suiEase((u - 0.65) / 0.65), close = suiEaseIO((u - 4.55) / 0.65);
+    s.res = u < 4.55 ? open : 1 - close;
+    if (u < 0.9) s.finger = { target: "book", p: suiEase(u / 0.55), a: suiClamp(u / 0.25, 0, 1) };
+    else if (u >= 3.3 && u < 4.8) s.finger = { target: "back", p: suiEase((u - 3.3) / 0.8), a: 1, from: "book" };
+    if (u >= 0.5 && u < 1.0) { s.press = { target: "book", p: (u - 0.5) / 0.5 }; s.bookPress = Math.sin(((u - 0.5) / 0.5) * Math.PI); }
+    if (u >= 4.35 && u < 4.9) s.press = { target: "back", p: (u - 4.35) / 0.55 };
+  }
+  // pie: sube al final
+  if (ts >= tF) s.foot = suiEaseIO((ts - tF) / (1.1 * Math.max(sc, 0.6)));
+  return s;
+}
+
+function suiPoint(o, name, k) {
+  const m = o.menu, bs = m.btnSize || 52, right = m.position !== "left";
+  if (name === "menu") return [right ? (390 - (m.side == null ? 18 : m.side) - bs / 2) * k : ((m.side == null ? 18 : m.side) + bs / 2) * k, ((m.top == null ? 18 : m.top) + bs / 2) * k];
+  if (name === "back") return [(12 + 67) * k, (12 + 19) * k];
+  if (name === "book") { const r = o.fabRects && o.fabRects[0]; return r ? [r.x + r.w / 2, r.y + r.h / 2] : [195 * k, (o.H / k - 49) * k]; }
+  return [195 * k, 400 * k];
+}
+
+function suiDrawFab(c, o, fade, bookPress) {
+  const k = o.k, items = o.fab; if (!items.length || fade <= 0) { o.fabRects = o.fabRects || []; return; }
+  const bw = 88 * k, bh = 66 * k, gap = 8 * k, n = items.length, tw = n * bw + (n - 1) * gap;
+  let x0 = o.W / 2 - tw / 2; const y0 = o.H - 16 * k - bh;
+  o.fabRects = [];
+  c.save(); c.globalAlpha = fade;
+  items.forEach((it, i) => {
+    const x = x0 + i * (bw + gap), press = it.id === "book" ? bookPress : 0, sc = 1 - 0.06 * press;
+    o.fabRects.push({ x, y: y0, w: bw, h: bh });
+    c.save(); c.translate(x + bw / 2, y0 + bh / 2); c.scale(sc, sc); c.translate(-bw / 2, -bh / 2);
+    c.shadowColor = "rgba(0,0,0,.28)"; c.shadowBlur = 28 * k; c.shadowOffsetY = 8 * k;
+    suiRR(c, 0, 0, bw, bh, 18 * k); c.fillStyle = "rgba(20,12,36,.58)"; c.fill(); c.shadowColor = "transparent";
+    c.save(); c.translate(bw / 2 - 12 * k, 12 * k); c.scale(k, k);
+    c.strokeStyle = "#fff"; c.lineWidth = 1.6; c.lineCap = "round"; c.lineJoin = "round";
+    if (it.id === "book") { c.beginPath(); c.roundRect ? c.roundRect(3, 4.5, 18, 16, 3) : c.rect(3, 4.5, 18, 16); c.stroke(); c.stroke(new Path2D("M8 2.5v4M16 2.5v4M3 10h18")); }
+    else if (it.id === "wa") { c.stroke(new Path2D("M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3z")); c.stroke(new Path2D("M8.9 8.6c.2 2.8 3.2 5.8 6.1 6l1-1.3-2-1-.9.8c-.9-.3-1.8-1.2-2.1-2.1l.8-.9-1-2z")); }
+    else { c.stroke(new Path2D("M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z")); c.beginPath(); c.arc(12, 9.5, 2.5, 0, 7); c.stroke(); }
+    c.restore();
+    c.fillStyle = "#fff"; c.font = "600 " + 11 * k + "px " + (o.menu.font || "sans-serif"); c.textAlign = "center"; c.textBaseline = "alphabetic";
+    if (c.letterSpacing !== undefined) c.letterSpacing = 0.33 * k + "px";
+    c.fillText(it.label, bw / 2, 54 * k);
+    if (c.letterSpacing !== undefined) c.letterSpacing = "0px";
+    c.restore();
+  });
+  c.restore();
+}
+
+function suiDrawMenuBtn(c, o, openP) {
+  const m = o.menu, k = o.k, bs = (m.btnSize || 52) * k, [cx, cy] = suiPoint(o, "menu", k);
+  c.save(); c.translate(cx, cy);
+  const col = openP > 0.02 ? (m.color || "#fff") : (m.btnColor || "#fff");
+  const circle = m.btnShape !== "square";
+  if (openP > 0.02) { c.globalAlpha = suiClamp(openP * 2, 0, 1); suiRR(c, -bs / 2, -bs / 2, bs, bs, bs / 2); c.fillStyle = "rgba(255,255,255,.16)"; c.fill(); c.lineWidth = 2 * k; c.strokeStyle = col; c.stroke(); c.globalAlpha = 1; }
+  else if (m.btnStyle === "glass" || m.btnStyle === "solid") { suiRR(c, -bs / 2, -bs / 2, bs, bs, circle ? bs / 2 : 14 * k); c.fillStyle = suiRgba(m.btnBg || "#101014", m.btnStyle === "solid" ? 1 : (m.btnBgAlpha == null ? 0.45 : m.btnBgAlpha)); c.fill(); }
+  else if (m.btnStyle === "outline") { suiRR(c, -bs / 2, -bs / 2, bs, bs, circle ? bs / 2 : 14 * k); c.lineWidth = 1.5 * k; c.strokeStyle = col; c.stroke(); }
+  const lw = (m.lineWidth || 2) * k, gap = (m.lineGap || 5) * k, len = bs * 0.42, n = m.lines === 3 ? 3 : 2;
+  c.strokeStyle = col; c.lineCap = "round"; c.lineWidth = lw;
+  const ys = n === 3 ? [-gap - lw, 0, gap + lw] : [-gap / 2 - lw / 2, gap / 2 + lw / 2];
+  ys.forEach((y, i) => {
+    c.save(); c.translate(0, openP > 0 ? y * (1 - openP) : y);
+    if (openP > 0) { if (n === 3 && i === 1) c.globalAlpha = 1 - openP; c.rotate((i === 0 ? 1 : -1) * (Math.PI / 4) * openP); }
+    c.beginPath(); c.moveTo(-len / 2, 0); c.lineTo(len / 2, 0); c.stroke(); c.restore();
+  });
+  c.restore();
+}
+
+function suiDrawLogo(c, o) {
+  const m = o.menu, im = o.imgs.logo; if (!im) return;
+  const k = o.k, right = m.position !== "left", pos = m.logoPos && m.logoPos !== "auto" ? m.logoPos : (right ? "tl" : "tr");
+  const hh = (m.logoSize || 40) * (m.logoMobile || 0.8) * k, ww = hh * im.naturalWidth / im.naturalHeight, mx = (m.logoX == null ? 18 : m.logoX) * k, my = (m.logoY == null ? 18 : m.logoY) * k;
+  const x = pos === "tl" || pos === "bl" ? mx : o.W - mx - ww, y = pos === "tl" || pos === "tr" ? my : o.H - my - hh;
+  c.save(); c.globalAlpha = m.logoOpacity == null ? 1 : m.logoOpacity;
+  if (m.logoShadow) { c.shadowColor = "rgba(0,0,0,.35)"; c.shadowBlur = 12 * k; c.shadowOffsetY = 3 * k; }
+  c.drawImage(im, x, y, ww, hh); c.restore();
+}
+
+function suiDrawMenuPanel(c, o, p) {
+  if (p <= 0.001) return;
+  const m = o.menu, k = o.k, W = o.W, H = o.H, [bx, by] = suiPoint(o, "menu", k);
+  c.save();
+  const reach = Math.hypot(Math.max(bx, W - bx), Math.max(by, H - by));
+  if (m.bgAnim === "circle" || m.bgAnim === "columns") { c.beginPath(); c.arc(bx, by, reach * suiEaseIO(p), 0, 7); c.clip(); }
+  else c.globalAlpha = suiClamp(p * 1.4, 0, 1);
+  const ang = ((m.bgAngle == null ? 135 : m.bgAngle) * Math.PI) / 180, dx = Math.sin(ang), dy = -Math.cos(ang), len = Math.abs(W * dx) + Math.abs(H * dy);
+  const g = c.createLinearGradient(W / 2 - dx * len / 2, H / 2 - dy * len / 2, W / 2 + dx * len / 2, H / 2 + dy * len / 2);
+  const al = m.bgAlpha == null ? 0.94 : m.bgAlpha;
+  g.addColorStop(0, suiRgba(m.bgColor || "#0b0b10", al)); g.addColorStop(1, suiRgba(m.bgColor2 || m.bgColor || "#0b0b10", al));
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+  c.restore();
+  // items
+  const items = m.items || [], size = Math.min(m.size || 46, 34) * k, gapPx = (m.gap == null ? 10 : m.gap) * k * 0.8, step = size + gapPx;
+  const total = items.length * step, y0 = H / 2 - total / 2 + size, x0 = 34 * k;
+  c.save(); c.textAlign = "left"; c.textBaseline = "alphabetic";
+  items.forEach((it, i) => {
+    const ip = suiEase((p - 0.35 - i * 0.05) / 0.4); if (ip <= 0) return;
+    const y = y0 + i * step; c.save(); c.globalAlpha = ip; c.translate(0, (1 - ip) * 26 * k);
+    if (m.numbers) { c.font = "500 " + 12 * k + "px " + (m.font || "sans-serif"); c.fillStyle = suiRgba(m.color || "#ffffff", 0.55); c.fillText(String(i + 1).padStart(2, "0"), x0, y - size * 0.55); }
+    c.font = (m.weight || 600) + " " + size + "px " + (m.font || "sans-serif"); c.fillStyle = m.color || "#fff";
+    if (c.letterSpacing !== undefined) c.letterSpacing = (m.letterSpacing || 0) * size + "px";
+    const t = m.uppercase ? String(it.label).toUpperCase() : String(it.label);
+    c.fillText(t, x0 + (m.numbers ? 34 * k : 0), y);
+    if (c.letterSpacing !== undefined) c.letterSpacing = "0px";
+    c.restore();
+  });
+  if (m.footer) { c.globalAlpha = suiClamp((p - 0.7) / 0.3, 0, 1) * 0.7; c.font = "500 " + (m.footerSize || 13) * k + "px " + (m.font || "sans-serif"); c.fillStyle = m.color || "#fff"; c.fillText(m.footer, x0, H - 34 * k); }
+  c.restore();
+}
+
+function suiDrawBackPill(c, o, a) {
+  const k = o.k; c.save(); c.globalAlpha = a;
+  suiRR(c, 12 * k, 12 * k, 134 * k, 38 * k, 19 * k); c.fillStyle = "rgba(18,12,28,.72)"; c.fill();
+  c.fillStyle = "#fff"; c.font = "600 " + 13.6 * k + "px " + (o.menu.font || "sans-serif"); c.textAlign = "left"; c.textBaseline = "middle";
+  c.fillText("←  Volver al sitio", 27 * k, 31.5 * k); c.restore();
+}
+
+function suiDrawReserva(c, o, p) {
+  if (p <= 0.001) return;
+  const W = o.W, H = o.H, k = o.k, y = (1 - suiEase(p)) * H;
+  c.save(); c.translate(0, y);
+  c.shadowColor = "rgba(0,0,0,.45)"; c.shadowBlur = 40 * k; c.shadowOffsetY = -10 * k; c.fillStyle = "#1a1026"; c.fillRect(0, 0, W, H); c.shadowColor = "transparent";
+  if (o.shot) { c.drawImage(o.shot, 0, 0, W, H); }
+  else {   // ilustración de reserva si no se pudo capturar la página real
+    const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#4c3470"); g.addColorStop(1, "#1a1026"); c.fillStyle = g; c.fillRect(0, 0, W, H);
+    c.fillStyle = "#fff"; c.textAlign = "left"; c.textBaseline = "alphabetic"; c.font = "700 " + 26 * k + "px " + (o.menu.font || "sans-serif"); c.fillText("Elegí el día", 24 * k, 120 * k);
+    const cw = (W - 48 * k) / 7;
+    for (let r = 0; r < 5; r++) for (let q = 0; q < 7; q++) { const x = 24 * k + q * cw, yy = 150 * k + r * cw; suiRR(c, x + 3 * k, yy + 3 * k, cw - 6 * k, cw - 6 * k, 10 * k); c.fillStyle = (r * 7 + q) % 4 === 1 ? "#e8693a" : "rgba(255,255,255,.1)"; c.fill(); }
+  }
+  c.restore();
+  c.save(); c.translate(0, y); suiDrawBackPill(c, o, 1); c.restore();
+}
+
+function suiDrawFooter(c, o, p) {
+  if (p <= 0.001 || !o.footer) return;
+  const s = o.footer, site = o.site2d, W = o.W, H = o.H, k = o.k;
+  const bg = site.bg || "#1a1026", fg = site.text || "#fff", ac = site.accent || "#e8693a", ff = site.fontBody || o.menu.font || "sans-serif", fh = site.fontHead || ff;
+  const pad = 26 * k, inner = W - pad * 2;
+  // contenido
+  const links = (txt) => String(txt || "").split("\n").map((l) => l.split("|")[0].trim()).filter(Boolean);
+  const col1 = links(s.col1Links), col2 = links(s.col2Links);
+  const contact = [s.address, s.phone && ("WhatsApp " + s.phone), s.email].filter(Boolean);
+  c.save(); c.font = "400 " + 14.5 * k + "px " + ff;
+  const textLines = suiWrap(c, s.text, Math.min(inner, 300 * k));
+  const lh = 15 * k * 1.55;
+  let hgt = pad * 1.4; if (o.imgs.footLogo) hgt += 54 * k; hgt += textLines.length * lh + 22 * k;
+  c.font = "400 " + 14 * k + "px " + ff;
+  const colW = inner / 2 - 12 * k, contactW = col1.length ? colW : inner;
+  const contactL = []; contact.forEach((t) => suiWrap(c, t, contactW).forEach((l) => contactL.push(l)));
+  const colRows = Math.max(col1.length, contactL.length, col2.length); hgt += 26 * k + colRows * 24 * k + 20 * k + 54 * k + 30 * k;
+  hgt = Math.min(hgt, H * 0.9);
+  const top = H - hgt * suiEaseIO(p);
+  c.beginPath(); c.moveTo(0, H + 4); c.lineTo(0, top + 28 * k); c.arcTo(0, top, 28 * k, top, 28 * k); c.lineTo(W - 28 * k, top); c.arcTo(W, top, W, top + 28 * k, 28 * k); c.lineTo(W, H + 4); c.closePath();
+  c.shadowColor = "rgba(0,0,0,.4)"; c.shadowBlur = 30 * k; c.shadowOffsetY = -6 * k; c.fillStyle = bg; c.fill(); c.shadowColor = "transparent";
+  c.clip();
+  let y = top + pad * 1.2; c.textAlign = "left"; c.textBaseline = "alphabetic";
+  if (o.imgs.footLogo) { const im = o.imgs.footLogo, hh = 44 * k, ww = Math.min(hh * im.naturalWidth / im.naturalHeight, inner); c.drawImage(im, pad, y, ww, ww * im.naturalHeight / im.naturalWidth); y += 54 * k; }
+  c.fillStyle = suiRgba(fg.length === 7 ? fg : "#ffffff", 0.78); c.font = "400 " + 14.5 * k + "px " + ff;
+  textLines.forEach((l) => { y += lh; c.fillText(l, pad, y - 4 * k); }); y += 22 * k;
+  const colX = [pad, pad + inner / 2];
+  const drawCol = (x, title, rows) => {
+    c.fillStyle = ac; c.font = "700 " + 11 * k + "px " + fh; if (c.letterSpacing !== undefined) c.letterSpacing = 2 * k + "px"; c.fillText(String(title || "").toUpperCase(), x, y + 12 * k); if (c.letterSpacing !== undefined) c.letterSpacing = "0px";
+    c.fillStyle = suiRgba(fg.length === 7 ? fg : "#ffffff", 0.85); c.font = "400 " + 14 * k + "px " + ff;
+    rows.forEach((r, i) => { c.fillText(r, x, y + 40 * k + i * 24 * k); });
+  };
+  if (col1.length) drawCol(colX[0], s.col1Title, col1);
+  if (contact.length) drawCol(col1.length ? colX[1] : colX[0], s.contactTitle || "Contacto", contactL);
+  y += 26 * k + colRows * 24 * k + 30 * k;
+  c.strokeStyle = suiRgba(fg.length === 7 ? fg : "#ffffff", 0.14); c.lineWidth = 1 * k; c.beginPath(); c.moveTo(pad, y); c.lineTo(W - pad, y); c.stroke();
+  c.fillStyle = suiRgba(fg.length === 7 ? fg : "#ffffff", 0.6); c.font = "400 " + 12 * k + "px " + ff; c.fillText(s.copyright || "", pad, y + 28 * k);
+  c.restore();
+}
+
+function suiDrawFinger(c, o, f, press) {
+  if (!f) return;
+  const k = o.k, to = suiPoint(o, f.target, k), from = f.from ? suiPoint(o, f.from, k) : [to[0] + 70 * k, to[1] + 150 * k];
+  const x = from[0] + (to[0] - from[0]) * f.p, y = from[1] + (to[1] - from[1]) * f.p, pr = press && press.target === f.target ? Math.sin(suiClamp(press.p, 0, 1) * Math.PI) : 0;
+  c.save(); c.globalAlpha = f.a == null ? 1 : f.a;
+  if (press && press.target === f.target) { const rp = suiClamp(press.p, 0, 1); c.beginPath(); c.arc(x, y, (18 + rp * 40) * k, 0, 7); c.lineWidth = 3 * k; c.strokeStyle = "rgba(255,255,255," + (0.7 * (1 - rp)) + ")"; c.stroke(); }
+  c.beginPath(); c.arc(x, y, (19 - pr * 4) * k, 0, 7); c.fillStyle = "rgba(255,255,255,.55)"; c.fill(); c.lineWidth = 2.5 * k; c.strokeStyle = "rgba(255,255,255,.95)"; c.stroke();
+  c.restore();
+}
+
+/* Dibuja la interfaz del sitio en el cuadro actual. ts = segundos del video, T = duración total. */
+function drawSiteUI(c, o, ts, T, opts) {
+  const s = suiTimeline(ts, T, opts || {}), k = o.k;
+  c.save();
+  suiDrawLogo(c, o);
+  suiDrawFab(c, o, 1 - suiClamp(s.foot * 1.6, 0, 1), s.bookPress);   // calcula también las posiciones para el dedo
+  suiDrawFooter(c, o, s.foot);
+  suiDrawMenuPanel(c, o, s.menu);
+  suiDrawMenuBtn(c, o, s.menuBtn);
+  suiDrawReserva(c, o, s.res);
+  suiDrawFinger(c, o, s.finger, s.press);
+  c.restore();
+}
+
 function paintVideoBackground(ctx, w, h, bg) {
   ctx.globalAlpha = 1;
   ctx.fillStyle = VIDEO_BASE_BG;
@@ -10825,6 +11151,9 @@ function App() {
   const [vidFormat, setVidFormat] = useState("story");
   const [vidCropY, setVidCropY] = useState(0);          // 4:5: 0 = recorte pegado arriba (zona libre), 100 = abajo
   const [vidSeconds, setVidSeconds] = useState(10);
+  const [vidUi, setVidUi] = useState(false);          // dibujar la interfaz del sitio (logo, menú, botones, pie)
+  const [vidUiMenuAt, setVidUiMenuAt] = useState(30);
+  const [vidUiResAt, setVidUiResAt] = useState(62);
   const [vidFps, setVidFps] = useState(30);
   const [vidQuality, setVidQuality] = useState(1);
   const [vidRun, setVidRun] = useState(null);        // { status: running|done|error, pct, msg }
@@ -11864,6 +12193,11 @@ function App() {
       const sized = await vxUntil(() => b.canvas && b.canvas.width === rw * ss && b.canvas.height === rh * ss && b.tag === 0);
       if (!sized) throw new Error("El visor no pudo ajustarse a " + rw * ss + "x" + rh * ss + ". Proba calidad Normal.");
       await vxFrames(8);
+      let sui = null;
+      if (vidUi) {
+        setVidRun({ status: "running", pct: 0, msg: "Preparando la interfaz del sitio (captura de Reservar)..." });
+        sui = await suiPrepare({ menu, sections, fab, dock, site2d }, w, h);
+      }
 
       for (let i = 0; i < total; i++) {
         if (vidCancelRef.current) throw new Error("__cancel__");
@@ -11884,6 +12218,7 @@ function App() {
         paintVideoBackground(ctx, rw, rh, bg);
         ctx.drawImage(b.canvas, 0, 0, rw, rh);
         if (full !== out) octx.drawImage(full, 0, cropSy, w, h, 0, 0, w, h);   // 4:5 = recorte del 9:16
+        if (sui) drawSiteUI(octx, sui, i / fps, total / fps, { menuAt: vidUiMenuAt, resAt: vidUiResAt });
 
         const frame = new VideoFrame(out, { timestamp: Math.round((i * 1e6) / fps), duration: Math.round(1e6 / fps) });
         encoder.encode(frame, { keyFrame: i % (fps * 2) === 0 });
@@ -13242,6 +13577,12 @@ function App() {
                   <Slider label="Duracion (s)" min={3} max={60} step={1} value={vidSeconds} onChange={setVidSeconds} />
                   <Seg value={vidFps} onChange={setVidFps} options={[[30, "30 fps"], [60, "60 fps"]]} />
                   <Seg value={vidQuality} onChange={setVidQuality} options={[[1, "Calidad normal"], [2, "Alta (2x, mas lento)"]]} />
+                  <Switch checked={vidUi} onChange={setVidUi} label="Mostrar la interfaz del sitio (logo, menú, Reservar y pie)" />
+                  {vidUi && <>
+                    <Slider label="Toca el menú en el % del video" min={5} max={80} step={1} value={vidUiMenuAt} onChange={setVidUiMenuAt} />
+                    <Slider label="Toca Reservar en el % del video" min={20} max={90} step={1} value={vidUiResAt} onChange={setVidUiResAt} />
+                    <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Dibuja encima del 3D: el logo, el botón de menú y la barra de botones. Se toca el menú (se abre y se cierra), se toca Reservar (con la captura de tu página) y el video termina en el pie. Conviene 20 s o más.</div>
+                  </>}
                   <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>
                     {VIDEO_FORMATS[vidFormat].w}x{VIDEO_FORMATS[vidFormat].h}.{vidFormat === "feed" ? " Se arma con la misma composicion del marco 9:16 (el logo mide igual) y se recorta en alto: 0% = pegado arriba (zona libre), 100% = pegado abajo." : ""} Recorre el scroll de 0 a 100% y graba solo el canvas (sin barra de progreso ni aviso de scroll). Deja la pestana visible mientras exporta.
                   </div>
