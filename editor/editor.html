@@ -10487,15 +10487,24 @@ async function suiPrepare(cfg, W, H) {
   return { menu, footer, fab, imgs, shot, site2d: cfg.site2d || {}, dock: cfg.dock || {}, W, H, k: W / 390, cw, ch };
 }
 
-/* Guion del video (en segundos). Devuelve el estado de cada elemento en el instante ts. */
+/* Guion del video (en segundos). El 3D avanza, se frena cuando se toca menú / Reservar y hay un "sube y vuelve" sin soltar. */
+function suiPlan(T, o) {
+  const sc = Math.min(1, T / 24), dM = 3.6 * sc, dR = 5.4 * sc, dW = 3.6 * sc, dF = Math.max(3.2, 4.4 * sc), tF = T - dF;
+  const tM = suiClamp((o.menuAt == null ? 22 : o.menuAt) / 100 * T, 1, Math.max(1, tF - dM - dW - dR - 1.2));
+  const tR = suiClamp((o.resAt == null ? 68 : o.resAt) / 100 * T, tM + dM + dW + 0.8, Math.max(tM + dM + dW + 0.8, tF - dR - 0.3));
+  const tW = Math.max(tM + dM + 0.4, (tM + dM + tR - dW) / 2);
+  return { sc, dM, dR, dW, dF, tF, tM, tR, tW, mT: Math.max(0.5, tF - dM - dR - dW) };
+}
+function suiProgress(ts, T, o) {
+  const P = suiPlan(T, o); let held = 0;
+  [[P.tM, P.dM], [P.tW, P.dW], [P.tR, P.dR]].forEach((a) => { held += suiClamp(ts - a[0], 0, a[1]); });
+  const base = suiClamp((ts - held) / P.mT, 0, 1);
+  const u = suiClamp((ts - P.tW) / P.dW, 0, 1), bump = 0.07 * Math.sin(Math.PI * u) * (ts >= P.tW && ts <= P.tW + P.dW ? 1 : 0);
+  return suiClamp(base + bump, 0, 1);
+}
 function suiTimeline(ts, T, o) {
-  const sc = Math.min(1, T / 24);
-  const dM = 3.6 * sc, dR = 5.4 * sc, dF = Math.max(3.2, 4.4 * sc);
-  const tF = T - dF;
-  let tM = suiClamp((o.menuAt == null ? 30 : o.menuAt) / 100 * T, 1, Math.max(1, tF - dM - dR - 0.6));
-  let tR = suiClamp((o.resAt == null ? 62 : o.resAt) / 100 * T, tM + dM + 0.4, Math.max(tM + dM + 0.4, tF - dR - 0.3));
+  const P = suiPlan(T, o), sc = P.sc, tM = P.tM, tR = P.tR, tF = P.tF;
   const s = { menu: 0, menuBtn: 0, res: 0, foot: 0, finger: null, press: null, bookPress: 0 };
-  // menú: el dedo llega, toca, se abre; después toca la X y se cierra
   let u = (ts - tM) / sc;
   if (u >= 0 && u <= 3.6) {
     const open = suiEaseIO((u - 0.55) / 0.6), close = suiEaseIO((u - 2.75) / 0.55);
@@ -10505,7 +10514,6 @@ function suiTimeline(ts, T, o) {
     if (u >= 0.5 && u < 1.1) s.press = { target: "menu", p: (u - 0.5) / 0.6 };
     if (u >= 2.7 && u < 3.3) s.press = { target: "menu", p: (u - 2.7) / 0.6 };
   }
-  // reservar: el dedo toca el botón y se desliza la pantalla de reservas; después toca "Volver" y se cierra
   u = (ts - tR) / sc;
   if (u >= 0 && u <= 5.4) {
     const open = suiEase((u - 0.65) / 0.65), close = suiEaseIO((u - 4.55) / 0.65);
@@ -10515,8 +10523,17 @@ function suiTimeline(ts, T, o) {
     if (u >= 0.5 && u < 1.0) { s.press = { target: "book", p: (u - 0.5) / 0.5 }; s.bookPress = Math.sin(((u - 0.5) / 0.5) * Math.PI); }
     if (u >= 4.35 && u < 4.9) s.press = { target: "back", p: (u - 4.35) / 0.55 };
   }
-  // pie: sube al final
   if (ts >= tF) s.foot = suiEaseIO((ts - tF) / (1.1 * Math.max(sc, 0.6)));
+  // "sube y vuelve" sin soltar: dedo apretado sube, el 3D avanza; baja y el 3D vuelve
+  const w = (ts - P.tW) / P.dW;
+  if (w >= 0 && w <= 1) {
+    const yy = w < 0.5 ? suiEaseIO(w / 0.5) : 1 - suiEaseIO((w - 0.5) / 0.5);
+    s.finger = { xy: [0.5, 0.8 - 0.26 * yy], a: suiClamp(w / 0.1, 0, 1) * suiClamp((1 - w) / 0.1, 0, 1), down: true };
+  } else if (!s.finger && ts > 0.5 && ts < tF - 0.2 && !(ts >= tM && ts <= tM + P.dM) && !(ts >= tR && ts <= tR + P.dR)) {
+    // dedito que scrollea de a tramos, para que se entienda que se desliza
+    const per = 2.4, q = (((ts - 0.5) % per) + per) % per / per;
+    if (q < 0.5) { const z = q / 0.5; s.finger = { xy: [0.5, 0.78 - 0.24 * suiEaseIO(z)], a: Math.sin(Math.PI * z) * 0.95, down: true }; }
+  }
   return s;
 }
 
@@ -10681,10 +10698,12 @@ function suiDrawFooter(c, o, p) {
 
 function suiDrawFinger(c, o, f, press) {
   if (!f) return;
-  const k = o.k, to = suiPoint(o, f.target, k), from = f.from ? suiPoint(o, f.from, k) : [to[0] + 70 * k, to[1] + 150 * k];
-  const x = from[0] + (to[0] - from[0]) * f.p, y = from[1] + (to[1] - from[1]) * f.p, pr = press && press.target === f.target ? Math.sin(suiClamp(press.p, 0, 1) * Math.PI) : 0;
+  const k = o.k;
+  let x, y, pr = 0;
+  if (f.xy) { x = f.xy[0] * o.W; y = f.xy[1] * o.H; pr = f.down ? 1.4 : 0; }
+  else { const to = suiPoint(o, f.target, k), from = f.from ? suiPoint(o, f.from, k) : [to[0] + 70 * k, to[1] + 150 * k]; x = from[0] + (to[0] - from[0]) * f.p; y = from[1] + (to[1] - from[1]) * f.p; pr = press && press.target === f.target ? Math.sin(suiClamp(press.p, 0, 1) * Math.PI) : 0; }
   c.save(); c.globalAlpha = f.a == null ? 1 : f.a;
-  if (press && press.target === f.target) { const rp = suiClamp(press.p, 0, 1); c.beginPath(); c.arc(x, y, (18 + rp * 40) * k, 0, 7); c.lineWidth = 3 * k; c.strokeStyle = "rgba(255,255,255," + (0.7 * (1 - rp)) + ")"; c.stroke(); }
+  if (press && f.target && press.target === f.target) { const rp = suiClamp(press.p, 0, 1); c.beginPath(); c.arc(x, y, (18 + rp * 40) * k, 0, 7); c.lineWidth = 3 * k; c.strokeStyle = "rgba(255,255,255," + (0.7 * (1 - rp)) + ")"; c.stroke(); }
   c.beginPath(); c.arc(x, y, (19 - pr * 4) * k, 0, 7); c.fillStyle = "rgba(255,255,255,.55)"; c.fill(); c.lineWidth = 2.5 * k; c.strokeStyle = "rgba(255,255,255,.95)"; c.stroke();
   c.restore();
 }
@@ -11164,8 +11183,8 @@ function App() {
   const [vidCropY, setVidCropY] = useState(0);          // 4:5: 0 = recorte pegado arriba (zona libre), 100 = abajo
   const [vidSeconds, setVidSeconds] = useState(10);
   const [vidUi, setVidUi] = useState(false);          // dibujar la interfaz del sitio (logo, menú, botones, pie)
-  const [vidUiMenuAt, setVidUiMenuAt] = useState(30);
-  const [vidUiResAt, setVidUiResAt] = useState(62);
+  const [vidUiMenuAt, setVidUiMenuAt] = useState(22);
+  const [vidUiResAt, setVidUiResAt] = useState(68);
   const [vidFps, setVidFps] = useState(30);
   const [vidQuality, setVidQuality] = useState(1);
   const [vidRun, setVidRun] = useState(null);        // { status: running|done|error, pct, msg }
@@ -12211,17 +12230,19 @@ function App() {
         sui = await suiPrepare({ menu, sections, fab, dock, site2d }, w, h);
       }
 
+      let prevT = 0;
       for (let i = 0; i < total; i++) {
         if (vidCancelRef.current) throw new Error("__cancel__");
         if (encErr) throw encErr;
-        const t = i / (total - 1);
+        const t = sui ? suiProgress(i / fps, total / fps, { menuAt: vidUiMenuAt, resAt: vidUiResAt }) : i / (total - 1);
         const f0 = b.frames;
         window.__wsExportTime = i / fps;
-        if (i > 0) {
+        if (i > 0 && t !== prevT) {
           setExportT(t);
           const ok = await vxUntil(() => b.tag === t && b.frames > f0);
           if (!ok) throw new Error("El visor dejo de responder (pestana en segundo plano?).");
         }
+        prevT = t;
         await vxFrames(i === 0 ? 4 : 2);
         const vids = window.__wsVideos ? Array.from(window.__wsVideos) : [];
         if (vids.length) { await vxUntil(() => vids.every((v) => !v.seeking), 120); await vxFrames(2); }
@@ -13593,7 +13614,7 @@ function App() {
                   {vidUi && <>
                     <Slider label="Toca el menú en el % del video" min={5} max={80} step={1} value={vidUiMenuAt} onChange={setVidUiMenuAt} />
                     <Slider label="Toca Reservar en el % del video" min={20} max={90} step={1} value={vidUiResAt} onChange={setVidUiResAt} />
-                    <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Dibuja encima del 3D: el logo, el botón de menú y la barra de botones. Se toca el menú (se abre y se cierra), se toca Reservar (con la captura de tu página) y el video termina en el pie. Conviene 20 s o más.</div>
+                    <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>Dibuja encima del 3D: el logo, el botón de menú y la barra de botones. Un dedito va scrolleando; se toca el menú (el 3D se frena, se abre y se cierra), hay un momento en que sube y vuelve sin soltar, se toca Reservar (con la captura de tu página, el 3D frenado) y termina en el pie. Conviene 25 s o más.</div>
                   </>}
                   <div style={{ fontSize: 10.5, opacity: 0.65, lineHeight: 1.4 }}>
                     {VIDEO_FORMATS[vidFormat].w}x{VIDEO_FORMATS[vidFormat].h}.{vidFormat === "feed" ? " Se arma con la misma composicion del marco 9:16 (el logo mide igual) y se recorta en alto: 0% = pegado arriba (zona libre), 100% = pegado abajo." : ""} Recorre el scroll de 0 a 100% y graba solo el canvas (sin barra de progreso ni aviso de scroll). Deja la pestana visible mientras exporta.
