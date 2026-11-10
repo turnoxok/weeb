@@ -6235,21 +6235,24 @@ function MusicToggle() {
   const prep = () => {
     const s = st.current; if (s.audio || !MUSIC.url) return;
     const a = new Audio(); a.loop = true; a.preload = "auto"; a.volume = 0; a.src = MUSIC.url; s.audio = a;
+    /* la viborita siempre refleja lo que el audio hace de verdad (el sistema puede pausarlo: llamada, notificación, otra app) */
+    const sync = () => { const on = !a.paused && !a.ended && !a.error; if (s.audio === a && s.playing !== on) { s.playing = on; setPlaying(on); kick(); } };
+    ["pause", "playing", "ended", "error"].forEach((ev) => a.addEventListener(ev, sync));
   };
   useEffect(() => {
     draw();
     const th = MUSIC.showAfter || 0;
     const f = () => { const p = window.scrollY / Math.max(1, document.documentElement.scrollHeight - window.innerHeight); if (window.scrollY > 4 && p >= th) { setOn(true); prep(); } };
     f(); window.addEventListener("scroll", f, { passive: true });
-    const vis = () => { const s = st.current; if (!s.audio || !s.playing) return; if (document.hidden) s.audio.pause(); else s.audio.play().catch(() => {}); };
+    const vis = () => { const s = st.current, a = s.audio; if (!a) return; if (document.hidden) { s.resume = s.playing && !a.paused; if (s.resume) a.pause(); } else if (s.resume) { s.resume = false; a.volume = 0; a.play().then(() => fade(vol, 700)).catch(() => {}); } };
     document.addEventListener("visibilitychange", vis);
     return () => { window.removeEventListener("scroll", f); document.removeEventListener("visibilitychange", vis); const s = st.current; cancelAnimationFrame(s.raf); cancelAnimationFrame(s.fadeRaf); if (s.audio) { s.audio.pause(); s.audio = null; } };
   }, []);
   const toggle = () => {
-    const s = st.current; prep(); const a = s.audio; if (!a) return;
-    if (!s.playing) {
+    const s = st.current; if (s.audio && s.audio.error) s.audio = null; prep(); const a = s.audio; if (!a) return;
+    if (!(s.playing && !a.paused)) {
       s.playing = true; setPlaying(true); kick();
-      a.play().then(() => fade(vol, 1400)).catch(() => { s.playing = false; setPlaying(false); kick(); });
+      a.play().then(() => fade(vol, 1400)).catch((e) => { if (e && e.name === "AbortError") return; s.playing = false; setPlaying(false); kick(); });
     } else {
       s.playing = false; setPlaying(false); kick();
       fade(0, 700, () => a.pause());
