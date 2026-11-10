@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mundo Mágico · Demo del panel</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#2b1c44">
+<link rel="icon" href="panel/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap">
+<style>
+  :root { --violeta:#7b3fe4; --naranja:#e8693a; --fondo:#1a1026; --vidrio:rgba(255,255,255,.07); --borde:rgba(255,255,255,.12); --texto:#f4effc; --suave:rgba(244,239,252,.68); }
+  * { box-sizing:border-box; }
+  html,body { margin:0; min-height:100%; }
+  body { font-family:'Montserrat',system-ui,sans-serif; color:var(--texto); background:radial-gradient(1200px 700px at 20% -10%, #4a2a8a 0%, transparent 60%), radial-gradient(900px 600px at 110% 110%, #5b2a5e 0%, transparent 55%), var(--fondo); background-attachment:fixed; padding:max(24px,env(safe-area-inset-top)) 16px max(32px,env(safe-area-inset-bottom)); }
+  main { max-width:460px; margin:0 auto; }
+  .marca { display:flex; align-items:center; gap:12px; margin:8px 0 22px; }
+  .marca img { width:52px; height:52px; border-radius:14px; }
+  .marca h1 { font-size:1.35rem; line-height:1.15; margin:0; font-weight:800; }
+  .marca small { display:block; color:var(--suave); font-weight:500; font-size:.82rem; margin-top:3px; }
+  .aviso { background:rgba(232,105,58,.14); border:1px solid rgba(232,105,58,.45); color:#ffd9c9; border-radius:14px; padding:11px 14px; font-size:.84rem; line-height:1.45; margin-bottom:16px; }
+  .tarjeta { background:var(--vidrio); border:1px solid var(--borde); border-radius:20px; padding:18px; margin-bottom:14px; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
+  .tarjeta h2 { margin:0 0 6px; font-size:1.05rem; font-weight:700; }
+  .tarjeta p { margin:0 0 14px; color:var(--suave); font-size:.88rem; line-height:1.5; }
+  .boton { display:flex; align-items:center; justify-content:center; min-height:50px; border-radius:14px; font-weight:700; font-size:.98rem; text-decoration:none; color:#fff; background:var(--naranja); border:0; width:100%; font-family:inherit; cursor:pointer; }
+  .boton.sec { background:rgba(255,255,255,.1); border:1px solid var(--borde); }
+  .boton:focus-visible, .copiar:focus-visible { outline:3px solid #fff; outline-offset:2px; }
+  .dato { display:flex; align-items:center; gap:10px; background:rgba(0,0,0,.25); border-radius:12px; padding:9px 10px 9px 14px; margin-bottom:8px; }
+  .dato span { flex:1; min-width:0; overflow-wrap:anywhere; font-size:.82rem; font-weight:600; }
+  .dato em { display:block; font-style:normal; font-size:.7rem; font-weight:500; color:var(--suave); margin-bottom:1px; }
+  .copiar { flex:none; min-height:40px; padding:0 14px; border-radius:10px; border:1px solid var(--borde); background:rgba(255,255,255,.1); color:#fff; font-family:inherit; font-weight:600; font-size:.8rem; cursor:pointer; }
+  .copiar.ok { background:#2e9e5b; border-color:#2e9e5b; }
+  .pie { text-align:center; color:var(--suave); font-size:.78rem; line-height:1.5; margin-top:20px; }
+  .pie b { color:var(--texto); }
+</style>
+</head>
+<body>
+<main>
+  <div class="marca">
+    <img src="panel/icon-192.png" alt="">
+    <h1>Mundo Mágico<small>Demo del panel · Villa Elisa, Entre Ríos</small></h1>
+  </div>
+
+  <div class="aviso">Es un salón de ejemplo con datos de mentira. Podés cargar reservas, anotar pagos y tocar todo sin miedo.</div>
+
+  <section class="tarjeta">
+    <h2>Panel del dueño</h2>
+    <p>Agenda, reservas, pagos y caja del salón. Copiá los datos y entrá.</p>
+    <div class="dato"><span><em>Mail</em><b id="m">demo@mundomagico.com.ar</b></span><button class="copiar" data-c="demo@mundomagico.com.ar" type="button">Copiar</button></div>
+    <div class="dato"><span><em>Clave</em><b id="k">MundoMagico2026</b></span><button class="copiar" data-c="MundoMagico2026" type="button">Copiar</button></div>
+    <a class="boton" href="panel/">Entrar al panel</a>
+  </section>
+
+  <section class="tarjeta">
+    <h2>Página de reservas</h2>
+    <p>Lo que ven las familias cuando eligen día, plan y horario desde el celular.</p>
+    <a class="boton sec" href="reservar/">Ver la página de reservas</a>
+  </section>
+
+  <p class="pie">Para tenerlo como app: abrí el panel, tocá el menú del navegador y elegí <b>Agregar a la pantalla de inicio</b>.</p>
+</main>
+<script>
+  document.querySelectorAll('.copiar').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = b.getAttribute('data-c');
+      function listo() { b.textContent = '¡Copiado!'; b.classList.add('ok'); setTimeout(function () { b.textContent = 'Copiar'; b.classList.remove('ok'); }, 1500); }
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(listo, function () { b.textContent = 'Copialo a mano'; });
+      else { var x = document.createElement('textarea'); x.value = t; document.body.appendChild(x); x.select(); try { document.execCommand('copy'); listo(); } catch (e) { b.textContent = 'Copialo a mano'; } x.remove(); }
+    });
+  });
+</script>
+</body>
+</html>
