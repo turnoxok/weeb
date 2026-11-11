@@ -30,14 +30,20 @@ body{font-family:"Montserrat",system-ui,sans-serif;color:var(--ink);-webkit-font
   background:radial-gradient(120% 60% at 50% -10%,#5b3d85 0%,rgba(91,61,133,0) 62%),radial-gradient(90% 50% at 100% 100%,rgba(232,105,58,.18) 0%,rgba(232,105,58,0) 60%),linear-gradient(#2b1c44,#170e24 70%)}
 .orb{position:absolute;border-radius:50%;filter:blur(40px);opacity:.5;pointer-events:none}
 /* textos */
-.top{position:absolute;left:0;right:0;top:0;padding:calc(14px + env(safe-area-inset-top)) 16px 34px;text-align:center;z-index:30;pointer-events:none;background:linear-gradient(rgba(36,23,58,.97) 62%,rgba(36,23,58,0))}
-.top img{height:22px;opacity:.9}
-.caps{position:relative;height:74px;margin-top:8px}
-.cap{position:absolute;inset:0;opacity:0;transition:none}
-.cap h2{font-size:clamp(1.35rem,5.6vw,2.2rem);font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.top{position:absolute;left:0;right:0;top:0;padding:calc(12px + env(safe-area-inset-top)) 16px 26px;text-align:center;z-index:30;pointer-events:none;background:linear-gradient(rgba(36,23,58,.96) 70%,rgba(36,23,58,0))}
+.glow{position:absolute;left:50%;width:520px;height:640px;margin-left:-260px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(150,90,255,.42),rgba(150,90,255,.12) 55%,rgba(150,90,255,0));filter:blur(10px)}
+.ico{position:relative;height:46px;display:flex;align-items:center;justify-content:center}
+.ico::before,.ico::after{content:"";position:absolute;top:50%;width:min(28vw,190px);height:2px;border-radius:2px}
+.ico::before{right:calc(50% + 38px);background:linear-gradient(90deg,rgba(110,120,255,0),#7d86ff)}
+.ico::after{left:calc(50% + 38px);background:linear-gradient(90deg,#e86bb0,rgba(232,107,176,0))}
+.ico svg{position:absolute;width:40px;height:40px;stroke:#f3eaff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:0;filter:drop-shadow(0 0 10px rgba(167,120,255,.6))}
+.ico svg .a{stroke:#a46cff}
+.caps{position:relative;margin-top:10px}
+.cap{position:absolute;left:0;right:0;top:0;opacity:0}
+.cap h2{font-size:clamp(1.85rem,8.6vw,3.2rem);font-weight:800;letter-spacing:-.03em;line-height:1.04;text-wrap:balance}
 .cap h2 em{font-style:normal;color:var(--brand)}
-.cap p{color:var(--mute);font-size:clamp(.82rem,3.4vw,1rem);font-weight:500;margin-top:6px}
-.badge{position:absolute;left:50%;top:calc(118px + env(safe-area-inset-top));transform:translateX(-50%);z-index:31;background:linear-gradient(90deg,#e8693a,#f2a14e);color:#1b0f26;font-weight:800;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;padding:.45rem 1rem;border-radius:99px;box-shadow:0 0 28px rgba(232,105,58,.55);opacity:0;white-space:nowrap}
+.cap p{color:#cbbbe6;font-size:clamp(1rem,4.4vw,1.3rem);font-weight:500;margin-top:6px;line-height:1.25}
+.badge{position:absolute;left:50%;top:0;transform:translateX(-50%);z-index:31;background:linear-gradient(90deg,#e8693a,#f2a14e);color:#1b0f26;font-weight:800;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;padding:.45rem 1rem;border-radius:99px;box-shadow:0 0 28px rgba(232,105,58,.55);opacity:0;white-space:nowrap}
 .hint{position:absolute;left:0;right:0;bottom:calc(18px + env(safe-area-inset-bottom));text-align:center;color:var(--mute);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;z-index:30}
 .hint i{display:block;width:2px;height:22px;margin:6px auto 0;background:linear-gradient(var(--brand),transparent);animation:h 1.6s ease-in-out infinite}
 @keyframes h{50%{transform:translateY(6px);opacity:.4}}
@@ -46,7 +52,7 @@ body{font-family:"Montserrat",system-ui,sans-serif;color:var(--ink);-webkit-font
 .cta a.sec{background:rgba(255,255,255,.1);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line2)}
 .firma{position:absolute;left:0;right:0;bottom:calc(76px + env(safe-area-inset-bottom));text-align:center;font-size:.72rem;letter-spacing:.14em;color:var(--mute);opacity:0;z-index:32}
 /* mundo 3D */
-#world{position:absolute;left:50%;top:56%;width:0;height:0;perspective:1500px;transform-style:preserve-3d}
+#world{position:absolute;left:50%;top:58%;width:0;height:0;perspective:1500px;transform-style:preserve-3d}
 #rig{position:absolute;left:0;top:0;transform-style:preserve-3d}
 .phone{position:absolute;left:-150px;top:-320px;width:300px;height:640px;transform-style:preserve-3d;will-change:transform}
 .body{position:absolute;inset:0;border-radius:46px;background:linear-gradient(145deg,#3a2a52,#120a1d 60%);box-shadow:0 40px 80px -20px rgba(0,0,0,.7),0 0 0 1.5px rgba(255,255,255,.14) inset}
@@ -179,8 +185,9 @@ body{font-family:"Montserrat",system-ui,sans-serif;color:var(--ink);-webkit-font
   <div class="orb" style="width:260px;height:260px;left:-80px;top:30%;background:#7a4fc0"></div>
   <div class="orb" style="width:220px;height:220px;right:-70px;top:62%;background:#e8693a;opacity:.32"></div>
 
+  <div class="glow" id="glow"></div>
   <div class="top">
-    <img src="panel/weeb-logo.svg" alt="tuweeb">
+    <div class="ico" id="ico"></div>
     <div class="caps" id="caps"></div>
   </div>
   <div class="badge" id="badge">Panel incluido</div>
@@ -330,6 +337,19 @@ const CAPS=[
 ];
 const caps=$('caps');
 const capEls=CAPS.map(([h,p])=>{const d=document.createElement('div');d.className='cap';d.innerHTML=`<h2>${h}</h2><p>${p}</p>`;caps.appendChild(d);return d});
+const ICOS=[
+ '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path class="a" d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/>',
+ '<rect x="3.5" y="5" width="17" height="15" rx="3.5"/><path d="M8 3v4M16 3v4"/><path class="a" d="M8.5 13l2.5 2.5 4.5-5"/>',
+ '<rect x="3" y="7" width="11" height="14" rx="2.5" transform="rotate(-8 8 14)"/><rect x="10" y="4" width="11" height="14" rx="2.5"/><path class="a" d="M15.5 8.5l.9 1.8 2 .3-1.4 1.4.3 2-1.8-.9-1.8.9.3-2-1.4-1.4 2-.3z"/>',
+ '<rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10.5h18"/><path class="a" d="M7 15h4"/>',
+ '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path class="a" d="M10 20.5a2 2 0 0 0 4 0"/>',
+ '<rect x="3.5" y="5" width="17" height="15" rx="3.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/><circle class="a" cx="15" cy="15" r="1.6"/>',
+ '<circle cx="12" cy="12" r="8.5"/><path class="a" d="M8.5 12.5l2.5 2.5 4.5-5"/>',
+ '<path d="M8 7h12M8 12h12M8 17h12"/><circle class="a" cx="4.5" cy="7" r="1"/><circle class="a" cx="4.5" cy="12" r="1"/><circle class="a" cx="4.5" cy="17" r="1"/>',
+ '<path d="M4 20h16"/><path d="M7 16v-4M12 16V7M17 16v-6"/><path class="a" d="M5 9l5-4 4 3 5-4"/>',
+ '<path d="M12 3l2 5.5L19.5 10 14 12l-2 5.5L10 12 4.5 10 10 8.5z"/><path class="a" d="M19 16l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>',
+];
+const icoEls=ICOS.map(p=>{const i=document.getElementById('ico');i.insertAdjacentHTML('beforeend',`<svg viewBox="0 0 24 24">${p}</svg>`);return i.lastElementChild});
 
 /* ---------- sitio 3D (cuadros) ---------- */
 const NW=9, webs=$('webs');
@@ -391,10 +411,18 @@ const cellB=d=>{const i=d;const col=i%7,row=Math.floor(i/7);return[12+(col+.5)*2
 let S=1, Wtwo=1;
 function fit(){
   const w=innerWidth,h=innerHeight;
-  S=Math.min(h*.6/640,w*.84/300,1.15);
-  Wtwo=Math.min(1,(w*.94)/(690*S));
+  // el alto del encabezado es el del texto más largo, así no salta entre momentos
+  let mh=0;capEls.forEach(c=>{mh=Math.max(mh,c.offsetHeight)});$('caps').style.height=mh+'px';
+  const capBot=$('caps').getBoundingClientRect().bottom;
+  const top=capBot+14, bottom=h-Math.max(14,h*.02);
+  S=Math.min((bottom-top)/640,w*.9/300,1.3);
+  const cy=top+320*S;
+  $('world').style.top=cy+'px';
+  const g=$('glow');g.style.top=(cy-320)+'px';g.style.transform=`scale(${Math.max(.8,S*1.1)})`;
+  $('badge').style.top=(top-6)+'px';
+  Wtwo=Math.min(1,w/(610*S));
 }
-addEventListener('resize',fit);fit();
+addEventListener('resize',fit);fit();if(document.fonts)document.fonts.ready.then(fit);
 
 function setTap(el,T,ks){ // ks: [[t0,t1,x,y],...] aparece, presiona, se va
   let o=0,x=0,y=0,s=1,rp=0,rs=1;
@@ -407,7 +435,7 @@ const type=(s,t)=>s.slice(0,Math.round(s.length*C(t)));
 /* ---------- render ---------- */
 function render(T,time){
   // textos
-  capEls.forEach((el,i)=>{const o=Math.min(i===0?1:R(T,i+.0,i+.1),i===SEG-1?1:1-R(T,i+.9,i+.98));el.style.opacity=o;el.style.transform=`translateY(${(1-o)*8}px)`});
+  capEls.forEach((el,i)=>{const o=Math.min(i===0?1:R(T,i+.0,i+.1),i===SEG-1?1:1-R(T,i+.9,i+.98));el.style.opacity=o;if(icoEls[i]){icoEls[i].style.opacity=o;icoEls[i].style.transform=`scale(${.85+.15*o})`}el.style.transform=`translateY(${(1-o)*8}px)`});
   $('hint').style.opacity=1-R(T,.05,.3);
   const bo=Math.max(Math.min(R(T,4.5,4.65),1-R(T,5.6,5.75)),R(T,9.2,9.4));
   $('badge').style.opacity=bo;$('badge').style.transform=`translateX(-50%) scale(${.85+.15*bo})`;
@@ -421,7 +449,7 @@ function render(T,time){
   $('rig').style.transform=`scale(${ws})`;
 
   /* ===== celular A ===== */
-  const aX=K(T,[[0,0],[4,0],[4.3,-170],[5,-170],[5.3,-620],[9,-620],[9.35,-180]]);
+  const aX=K(T,[[0,0],[4,0],[4.3,-158],[5,-158],[5.3,-620],[9,-620],[9.35,-160]]);
   const aRY=K(T,[[0,-28],[.45,-8],[.9,0],[1.3,-6],[3.9,-6],[4.3,20],[5,20],[5.3,40],[9,40],[9.35,18]]);
   const aRX=K(T,[[0,8],[.4,4],[.55,58],[1.0,58],[1.25,0],[9,0]]);
   const aY=K(T,[[0,30],[.4,10],[.55,120],[1.0,120],[1.25,0],[9,0]]);
@@ -464,7 +492,7 @@ function render(T,time){
   $('chk').style.strokeDashoffset=60*(1-R(T,3.88,3.99));
 
   /* ===== celular B ===== */
-  const bX=K(T,[[3.9,640],[4.3,170],[5,170],[5.3,0],[9,0],[9.35,180]]);
+  const bX=K(T,[[3.9,640],[4.3,158],[5,158],[5.3,0],[9,0],[9.35,160]]);
   const bRY=K(T,[[3.9,-40],[4.3,-20],[5,-20],[5.3,-4],[9,-4],[9.35,-18]]);
   const bS=K(T,[[4.3,.86],[5,.86],[5.3,1],[9,1],[9.35,.9]]);
   // cámara (zoom a lo importante): [T, zoom, x, y] en coordenadas de la pantalla
