@@ -5888,6 +5888,7 @@ function ProgressIndicator() {
 /* Botón "volver arriba" (configurable en el editor, pestaña Escena). Aparece al avanzar el scroll y sube con inercia (Lenis). */
 const MENU_DEFAULTS = {
   enabled: false,
+  style: "classic", railColor: "#3F8A28", railDark: "#16461A", railHeight: 0.42, railBlur: true, railHideFab: true, railStart: null,
   position: "right", top: 18, side: 18,
   btnStyle: "glass", btnShape: "circle", btnSize: 52, lines: 2, lineWidth: 2, lineGap: 5,
   btnColor: "#ffffff", btnBg: "#101014", btnBgAlpha: 0.45, autoContrast: false,
@@ -5990,6 +5991,282 @@ function menuRgba(hex, a) {
   const n = parseInt(f, 16);
   return `rgba(${(n &gt;&gt; 16) &amp; 255}, ${(n &gt;&gt; 8) &amp; 255}, ${n &amp; 255}, ${a})`;
 }
+/* ---- Botones laterales (alternativa al menú hamburguesa): iconos finos que se deslizan hasta una marca, preguntan y abren con un círculo ---- */
+const RAIL_ICONS = {
+  precio: '&lt;path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z"/&gt;&lt;circle cx="7.5" cy="7.5" r=".6"/&gt;',
+  fotos: '&lt;rect width="18" height="18" x="3" y="3" rx="2.5"/&gt;&lt;circle cx="9" cy="9" r="2"/&gt;&lt;path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/&gt;',
+  invitacion: '&lt;rect width="20" height="16" x="2" y="4" rx="2.5"/&gt;&lt;path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/&gt;',
+  calendario: '&lt;path d="M8 2v4M16 2v4"/&gt;&lt;rect width="18" height="18" x="3" y="4" rx="2.5"/&gt;&lt;path d="M3 10h18"/&gt;&lt;path d="m9 16 2 2 4-4"/&gt;',
+  panel: '&lt;rect width="7" height="9" x="3" y="3" rx="1.5"/&gt;&lt;rect width="7" height="5" x="14" y="3" rx="1.5"/&gt;&lt;rect width="7" height="9" x="14" y="12" rx="1.5"/&gt;&lt;rect width="7" height="5" x="3" y="16" rx="1.5"/&gt;',
+  mapa: '&lt;path d="M20 10c0 5-5.5 10.2-7.4 11.8a1 1 0 0 1-1.2 0C9.5 20.2 4 15 4 10a8 8 0 0 1 16 0"/&gt;&lt;circle cx="12" cy="10" r="3"/&gt;',
+  chat: '&lt;path d="M3 21l1.7-4.9A9 9 0 1 1 8 19.4z"/&gt;&lt;path d="M9.2 8.9c.2 2.4 2.9 5.1 5.9 5.9l1.3-1.4-2.1-1.1-1 .8a4.7 4.7 0 0 1-2-2l.8-1-1.1-2.1z"/&gt;',
+  casa: '&lt;path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/&gt;&lt;path d="M3 10a2 2 0 0 1 .7-1.5l7-6a2 2 0 0 1 2.6 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/&gt;',
+  estrella: '&lt;path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9 6.8 19.7l1-5.9L3.5 9.7l5.9-.8z"/&gt;',
+  regalo: '&lt;rect x="3.5" y="9" width="17" height="11.5" rx="2"/&gt;&lt;path d="M3.5 13h17M12 9v11.5"/&gt;&lt;path d="M12 9c-1-3.6-5-4.6-5-2s3.2 2 5 2zM12 9c1-3.6 5-4.6 5-2s-3.2 2-5 2z"/&gt;',
+  corazon: '&lt;path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.6 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/&gt;',
+  telefono: '&lt;path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/&gt;',
+  instagram: '&lt;rect width="20" height="20" x="2" y="2" rx="5"/&gt;&lt;path d="M16 11.4a4 4 0 1 1-7.4 2.2 4 4 0 0 1 7.4-2.2z"/&gt;&lt;path d="M17.5 6.5h.01"/&gt;'
+};
+const RAIL_CSS = `
+.wr-f, .wr-f * { font-family: var(--wr-font, 'Montserrat', system-ui, sans-serif); }
+.wr-f { position: fixed; }
+.wr--c .wr-f { position: absolute; }
+.wr-velo { inset: 0; z-index: 24; pointer-events: none; opacity: 0; transition: opacity .35s; background: rgba(255,255,255,.08); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.wr-velo.on { opacity: 1; }
+.wr-riel { top: 0; right: 0; bottom: 0; width: 84px; z-index: 25; pointer-events: none; transition: opacity .5s; }
+.wr-riel.quieta { opacity: .7; }
+.wr-it { position: absolute; left: 50%; top: 0; width: 44px; height: 44px; margin: -22px 0 0 -22px; border: 0; padding: 0; background: none; color: #fff; display: grid; place-items: center; will-change: transform, opacity; pointer-events: none; }
+.wr-it::before { content: ''; position: absolute; inset: -3px; border-radius: 58% 42% 52% 48% / 46% 58% 42% 54%; opacity: var(--k, 0); animation: wrPiedra 8s ease-in-out infinite;
+  background: linear-gradient(145deg, rgba(var(--wr-marca), .62), rgba(var(--wr-marca), .3)); box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 10px 22px -10px rgba(var(--wr-oscuro), .7); }
+@keyframes wrPiedra { 0%,100% { transform: rotate(-7deg) scale(1); } 50% { transform: rotate(9deg) scale(1.045); } }
+.wr-it svg { position: relative; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 2px rgba(0,40,30,.35)); }
+.wr-it:focus-visible { outline: 2px solid #fff; outline-offset: 2px; pointer-events: auto; }
+.wr-zona { right: 0; bottom: 0; width: 84px; z-index: 26; touch-action: none; user-select: none; -webkit-user-select: none; pointer-events: auto; }
+.wr-etq { right: 94px; z-index: 26; transform: translateY(-50%); font-weight: 500; font-size: .98rem; letter-spacing: .01em; color: #fff; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .3s;
+  text-shadow: 0 0 14px rgba(var(--wr-oscuro), .75), 0 1px 3px rgba(var(--wr-oscuro), .45); }
+.wr-etq.on { opacity: 1; }
+.wr-preg { right: 112px; z-index: 27; transform: translateY(-50%) scale(.7); transform-origin: 100% 50%; opacity: 0; pointer-events: none; width: max-content; min-width: 176px; max-width: calc(100vw - 136px);
+  display: flex; flex-direction: column; gap: 12px; padding: 16px 16px 14px 20px; border-radius: 32px; color: #fff;
+  background: linear-gradient(150deg, rgba(var(--wr-oscuro), .84), rgba(var(--wr-oscuro), .7));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 18px 38px -18px rgba(0,40,30,.55); transition: transform .5s cubic-bezier(.2,1.2,.4,1), opacity .3s; }
+.wr-preg.on { transform: translateY(-50%) scale(1); opacity: 1; pointer-events: auto; }
+.wr-gota { position: absolute; pointer-events: none; border-radius: 62% 38% 54% 46% / 48% 60% 40% 52%; background: radial-gradient(circle at 30% 28%, rgba(255,255,255,.5), rgba(var(--wr-oscuro), .42) 62%); box-shadow: inset 0 1px 0 rgba(255,255,255,.45); animation: wrFlota 3.4s ease-in-out infinite; }
+.wr-gota.g1 { right: -21px; top: calc(50% - 7px); width: 14px; height: 12px; transform: rotate(-18deg); }
+.wr-gota.g2 { right: -35px; top: calc(50% + 3px); width: 8px; height: 7px; transform: rotate(12deg); animation-delay: -1.2s; }
+@keyframes wrFlota { 0%,100% { translate: 0 0; } 50% { translate: 0 -2.5px; } }
+.wr-q { font-weight: 500; font-size: .98rem; line-height: 1.25; text-wrap: balance; padding-right: 4px; }
+.wr-bt { display: flex; gap: 8px; }
+.wr-bt button { flex: 1 1 0; font: 500 .9rem var(--wr-font, 'Montserrat', sans-serif); color: #fff; background: rgba(255,255,255,.15); border: 0; border-radius: 999px; padding: 0 14px 0 11px; min-height: 40px; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; }
+.wr-bt button.p { background: rgba(255,255,255,.92); color: rgb(var(--wr-oscuro)); font-weight: 600; }
+.wr-bt svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.wr-bt button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.wr-chispa { position: absolute; left: 16px; top: -2px; width: 0; height: 0; pointer-events: none; }
+.wr-chispa i { position: absolute; left: 0; top: 0; width: 2px; height: 11px; border-radius: 2px; background: rgba(255,255,255,.9); transform-origin: 50% 100%; opacity: 0; }
+.wr-abre { inset: 0; z-index: 28; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 24px; color: #fff; pointer-events: none;
+  background: linear-gradient(160deg, rgba(var(--wr-marca), .62), rgba(var(--wr-oscuro), .74)); will-change: clip-path; }
+.wr-gr { width: 88px; height: 88px; border-radius: 58% 42% 52% 48% / 46% 58% 42% 54%; background: rgba(255,255,255,.16); display: grid; place-items: center; box-shadow: inset 0 1px 0 rgba(255,255,255,.4); }
+.wr-gr svg { width: 42px; height: 42px; fill: none; stroke: #fff; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.wr-at { font-size: 1.7rem; font-weight: 600; text-shadow: 0 2px 14px rgba(var(--wr-oscuro), .5); }
+@media (prefers-reduced-motion: reduce) { .wr-preg { transition: opacity .2s; transform: translateY(-50%); } .wr-it::before, .wr-gota { animation: none; } }
+`;
+function railIconFor(it) {
+  if (it &amp;&amp; it.icon &amp;&amp; RAIL_ICONS[it.icon]) return it.icon;
+  const t = String((it &amp;&amp; it.label) || "").toLowerCase();
+  if (/plan|precio|tarifa|promo/.test(t)) return "precio";
+  if (/galer|foto|imagen/.test(t)) return "fotos";
+  if (/invit|tarjeta/.test(t)) return "invitacion";
+  if (/reserv|disponib|turno|agenda|cita/.test(t)) return "calendario";
+  if (/panel|admin|cuenta/.test(t)) return "panel";
+  if (/mapa|llegar|ubic|direcc|donde|dónde/.test(t)) return "mapa";
+  if (/whats|contact|consult|chat|escrib/.test(t)) return "chat";
+  if (/insta/.test(t)) return "instagram";
+  if (/tel|llam/.test(t)) return "telefono";
+  if (/inicio|home|portada/.test(t)) return "casa";
+  return "estrella";
+}
+/* Lleva adonde dice el botón (mismo criterio que el menú hamburguesa). */
+function weebGoItem(it) {
+  if (it.type === "pose") {
+    const l = window.__lenis;
+    const topPx = window.__wsScrollTop, tot = window.__wsScrollTotal;
+    const pp = Math.max(0, Math.min(1, it.p || 0));
+    const bl = (window.__wsBlocks || []).find((b) =&gt; b.total &gt; 0 &amp;&amp; pp &gt;= b.mf - 1e-4 &amp;&amp; pp &lt;= b.mt + 1e-4);
+    const y = bl ? bl.top + ((pp - bl.mf) / Math.max(1e-6, bl.mt - bl.mf)) * bl.total : (typeof topPx === "number" &amp;&amp; tot &gt; 0) ? topPx + pp * tot : pp * Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    if (l &amp;&amp; l.scrollTo) l.scrollTo(y, { duration: 1.6, easing: (t) =&gt; 1 - Math.pow(1 - t, 4) });
+    else window.scrollTo({ top: y, behavior: "smooth" });
+  } else if (it.type === "section") {
+    const el = it.sec === "3d" ? document.querySelector(".ws-3d") : document.getElementById(it.sec || "");
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.scrollY;
+      window.__wsJump = true; setTimeout(() =&gt; { window.__wsJump = false; window.__wsSnap = true; }, 2200);
+      const l = window.__lenis;
+      if (l &amp;&amp; l.scrollTo) l.scrollTo(y, { duration: 1.6, easing: (t) =&gt; 1 - Math.pow(1 - t, 4) });
+      else window.scrollTo({ top: y, behavior: "smooth" });
+    }
+  } else if (it.href) {
+    if (it.newTab) window.open(it.href, "_blank", "noopener"); else if (!(window.__weebOpenPage &amp;&amp; window.__weebOpenPage(it.href))) window.location.href = it.href;
+  }
+}
+function weebRailMount(host, C, contained) {
+  const hexRgb = (h, d) =&gt; { const m = /^#?([0-9a-f]{6})$/i.exec(String(h || "").trim()); const v = m ? parseInt(m[1], 16) : d; return ((v &gt;&gt; 16) &amp; 255) + "," + ((v &gt;&gt; 8) &amp; 255) + "," + (v &amp; 255); };
+  const marca = hexRgb(C.railColor, 0x3F8A28), oscuro = hexRgb(C.railDark, 0x16461A);
+  host.style.setProperty("--wr-marca", marca); host.style.setProperty("--wr-oscuro", oscuro); host.style.setProperty("--wr-font", C.font || "'Montserrat', sans-serif");
+  const ITEMS = (C.items || []).filter((it) =&gt; it &amp;&amp; String(it.label || "").trim()).map((it) =&gt; ({ it, label: String(it.label), icon: railIconFor(it),
+    ask: it.ask || ((it.newTab || /^(https?:\/\/(wa\.me|api\.whatsapp|www\.google|maps)|tel:|mailto:)/i.test(it.href || "")) ? "¿Abrir " + it.label + "?" : "¿Ir a " + it.label + "?") }));
+  const N = ITEMS.length;
+  if (!N) return () =&gt; {};
+  const ALTO = C.railHeight == null ? 0.42 : C.railHeight, BLUR = C.railBlur !== false;
+  const INICIAL = Math.max(0, Math.min(N - 1, C.railStart == null ? Math.floor(N / 2) : C.railStart));
+  const GAP = 52, REST_B = 100;
+  const reduce = !!(window.matchMedia &amp;&amp; window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const mk = (tag, cls, parent) =&gt; { const e = document.createElement(tag); e.className = cls; (parent || host).appendChild(e); return e; };
+  const svg = (k) =&gt; '&lt;svg viewBox="0 0 24 24" aria-hidden="true"&gt;' + RAIL_ICONS[k] + "&lt;/svg&gt;";
+  const velo = mk("div", "wr-f wr-velo"), riel = mk("div", "wr-f wr-riel"), etq = mk("div", "wr-f wr-etq"), preg = mk("div", "wr-f wr-preg"), abre = mk("div", "wr-f wr-abre"), zona = mk("div", "wr-f wr-zona");
+  riel.setAttribute("role", "toolbar"); riel.setAttribute("aria-label", "Accesos rápidos"); preg.setAttribute("role", "dialog"); preg.setAttribute("aria-live", "polite");
+  const chispa = mk("span", "wr-chispa", preg); for (let i = 0; i &lt; 3; i++) chispa.appendChild(document.createElement("i"));
+  mk("i", "wr-gota g1", preg); mk("i", "wr-gota g2", preg);
+  const ptxt = mk("div", "wr-q", preg), bt = mk("div", "wr-bt", preg);
+  const si = document.createElement("button"); si.type = "button"; si.className = "p"; si.innerHTML = '&lt;svg viewBox="0 0 24 24" aria-hidden="true"&gt;&lt;path d="M5 12.5l4.5 4.5L19 7.5"/&gt;&lt;/svg&gt;Sí';
+  const no = document.createElement("button"); no.type = "button"; no.innerHTML = '&lt;svg viewBox="0 0 24 24" aria-hidden="true"&gt;&lt;path d="M6 6l12 12M18 6L6 18"/&gt;&lt;/svg&gt;No';
+  bt.appendChild(si); bt.appendChild(no);
+  const agr = mk("div", "wr-gr", abre), at = mk("div", "wr-at", abre);
+  const els = ITEMS.map((x, i) =&gt; { const b = document.createElement("button"); b.type = "button"; b.className = "wr-it"; b.setAttribute("aria-label", x.label); b.dataset.i = String(i); b.innerHTML = svg(x.icon); riel.appendChild(b); return b; });
+  const clamp = (v, a, b) =&gt; Math.min(b, Math.max(a, v));
+  const box = host.parentElement || host;
+  const vibrar = (ms) =&gt; { try { navigator.vibrate &amp;&amp; navigator.vibrate(ms); } catch (e) { /* sin vibración */ } };
+  let H = 0, M = 0, pos = INICIAL, a = 0, aT = 0, vel = 0, destino = INICIAL, arrastrando = false, inercia = false, snapping = false, quiere = false, preguntando = -1, ultimo = INICIAL;
+  let raf = 0, tPrev = 0, tPreg = 0, tCol = 0, abriendo = null, anims = [], muerto = false;
+  const yRest = (i) =&gt; { let y = H - REST_B; for (let j = i; j &lt; N - 1; j++) y -= 24 + 2.4 * (N - 2 - j); return y; };
+  const xRest = (i) =&gt; 24 * Math.pow(i / Math.max(1, N - 1), 1.5);
+  const yAct = (i) =&gt; M + (i - pos) * GAP;
+  const pintar = () =&gt; {
+    const k = clamp(Math.round(pos), 0, N - 1);
+    els.forEach((el, i) =&gt; {
+      const de = clamp((a - 0.4 * ((N - 1 - i) / Math.max(1, N - 1))) / 0.6, 0, 1), e = de * de * (3 - 2 * de);
+      const d = Math.abs(i - pos), sA = clamp(1.3 - 0.4 * d, 0.5, 1.3), oA = clamp(1.1 - 0.3 * d, 0.1, 1);
+      const sR = Math.max(0.4, 0.92 - 0.07 * i), oR = Math.max(0.3, 1 - 0.12 * i), bl = (1 - e) * i * 0.35, kR = Math.max(0.2, 0.64 - 0.06 * i), kA = clamp(1.3 - d * 1.6, 0, 1);
+      const x = xRest(i) * (1 - e), y = yRest(i) + (yAct(i) - yRest(i)) * e, s = sR + (sA - sR) * e;
+      let o = oR + (oA - oR) * e; if (preguntando &gt;= 0 &amp;&amp; i !== preguntando) o *= 0.3;
+      el.style.transform = "translate3d(" + x.toFixed(1) + "px," + y.toFixed(1) + "px,0) scale(" + s.toFixed(3) + ")";
+      el.style.opacity = o.toFixed(2); el.style.filter = bl &gt; 0.05 ? "blur(" + bl.toFixed(2) + "px)" : "";
+      el.style.setProperty("--k", (kR + (kA - kR) * e).toFixed(2));
+      el.style.zIndex = String(100 - Math.round(d * 10));
+    });
+    const mov = arrastrando || inercia || (snapping &amp;&amp; preguntando &lt; 0);
+    etq.style.top = M + "px"; preg.style.top = M + "px";
+    if (k !== ultimo) { ultimo = k; vibrar(6); }
+    if (mov &amp;&amp; a &gt; 0.85) { etq.textContent = ITEMS[k].label; etq.classList.add("on"); } else etq.classList.remove("on");
+    velo.classList.toggle("on", BLUR &amp;&amp; !abriendo &amp;&amp; a &gt; 0.5 &amp;&amp; (arrastrando || inercia || snapping || preguntando &gt;= 0));      // el fondo se difumina ya mientras deslizás, así se ve mejor cada icono
+    if (!arrastrando) zona.style.top = a &gt; 0.5 ? "0px" : (yRest(0) - 30) + "px";
+  };
+  const kick = () =&gt; { if (!raf &amp;&amp; !muerto) { tPrev = performance.now(); raf = requestAnimationFrame(frame); } };
+  const frame = (now) =&gt; {
+    const dt = Math.min(0.05, (now - tPrev) / 1000); tPrev = now; raf = 0;
+    if (inercia) {
+      pos += vel * dt; vel *= Math.exp(-dt * 2.6);
+      if (pos &lt; 0) { pos = 0; vel = 0; } else if (pos &gt; N - 1) { pos = N - 1; vel = 0; }
+      if (Math.abs(vel) &lt; 0.5) { inercia = false; vel = 0; destino = clamp(Math.round(pos), 0, N - 1); snapping = true; }
+    } else if (snapping) {
+      const d = destino - pos;
+      if (reduce || Math.abs(d) &lt; 0.004) { pos = destino; snapping = false; if (quiere) { quiere = false; preguntar(destino); } else if (!arrastrando) programarColapso(900); }
+      else pos += d * (1 - Math.exp(-dt * 16));
+    }
+    const ad = aT - a; a = reduce || Math.abs(ad) &lt; 0.002 ? aT : a + ad * (1 - Math.exp(-dt * (ad &gt; 0 ? 6 : 4)));
+    pintar();
+    if (arrastrando || inercia || snapping || a !== aT) kick();
+  };
+  const programarColapso = (ms) =&gt; { clearTimeout(tCol); tCol = setTimeout(() =&gt; { if (!arrastrando &amp;&amp; !inercia &amp;&amp; !snapping &amp;&amp; preguntando &lt; 0 &amp;&amp; !abriendo) { aT = 0; kick(); } }, ms); };
+  const preguntar = (i) =&gt; {
+    preguntando = i; ptxt.textContent = ITEMS[i].ask;
+    preg.classList.add("on"); etq.classList.remove("on");
+    clearTimeout(tPreg); tPreg = setTimeout(cancelar, 7000); vibrar(10); pintar();
+    if (!reduce &amp;&amp; chispa.children[0].animate) Array.prototype.forEach.call(chispa.children, (c, n) =&gt; {
+      const ang = -70 + n * 38;
+      c.animate([{ transform: "rotate(" + ang + "deg) translateY(-6px) scaleY(.2)", opacity: 0 }, { transform: "rotate(" + ang + "deg) translateY(-14px) scaleY(1)", opacity: 1, offset: 0.4 }, { transform: "rotate(" + ang + "deg) translateY(-18px) scaleY(.3)", opacity: 0 }], { duration: 650, delay: 180 + n * 50, easing: "ease-out" });
+    });
+  };
+  const cancelar = () =&gt; { clearTimeout(tPreg); preguntando = -1; preg.classList.remove("on"); pintar(); programarColapso(1200); };
+  no.addEventListener("click", cancelar);
+  const onDocDown = (e) =&gt; { if (preguntando &gt;= 0 &amp;&amp; !abriendo &amp;&amp; !preg.contains(e.target) &amp;&amp; !zona.contains(e.target)) cancelar(); };
+  document.addEventListener("pointerdown", onDocDown);
+  const parts = [agr, at], cancelAnims = () =&gt; { anims.forEach((x) =&gt; { try { x.cancel(); } catch (e) { /* ya terminó */ } }); anims = []; };
+  const cerrarCirculo = () =&gt; {
+    if (!abriendo) return; const p = abriendo;
+    const fin = () =&gt; { abre.style.display = "none"; cancelAnims(); abriendo = null; clearTimeout(tPreg); preguntando = -1; preg.classList.remove("on"); aT = 0; kick(); };
+    if (reduce || !abre.animate) { fin(); return; }
+    parts.forEach((el, n) =&gt; { el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, delay: n * 30, easing: "ease-in", fill: "forwards" }); });
+    setTimeout(() =&gt; {
+      const an = abre.animate([{ clipPath: "circle(150vmax at " + p.x + "px " + p.y + "px)" }, { clipPath: "circle(0px at " + p.x + "px " + p.y + "px)" }], { duration: 850, easing: "cubic-bezier(.5,0,.2,1)", fill: "forwards" });
+      an.onfinish = () =&gt; { an.cancel(); parts.forEach((el) =&gt; el.getAnimations().forEach((x) =&gt; x.cancel())); fin(); };
+    }, 300);
+  };
+  const onShow = () =&gt; { if (abriendo) { abre.style.display = "none"; cancelAnims(); abriendo = null; cancelar(); } };
+  window.addEventListener("pageshow", onShow);
+  si.addEventListener("click", () =&gt; {
+    const i = preguntando; if (i &lt; 0 || abriendo) return;
+    const x0 = ITEMS[i], ic = els[i], r = ic.getBoundingClientRect(), hr = box.getBoundingClientRect();
+    const x = r.left - (contained ? hr.left : 0) + r.width / 2, y = r.top - (contained ? hr.top : 0) + r.height / 2;
+    abriendo = { x, y }; clearTimeout(tPreg); vibrar([10, 40, 12]); preg.classList.remove("on"); velo.classList.remove("on");
+    if (!reduce &amp;&amp; ic.animate) ic.animate([{ scale: 1 }, { scale: 1.2, offset: 0.45 }, { scale: 1 }], { duration: 560, easing: "ease-in-out" });
+    const lanzar = () =&gt; { if (!contained) { try { weebGoItem(x0.it); } catch (e) { /* sin destino */ } } };
+    setTimeout(() =&gt; {
+      agr.innerHTML = svg(x0.icon); at.textContent = x0.label; abre.style.display = "flex";
+      if (reduce || !abre.animate) { lanzar(); setTimeout(cerrarCirculo, 400); return; }
+      parts.forEach((el, n) =&gt; anims.push(el.animate([{ opacity: 0, transform: "translateY(16px)" }, { opacity: 1, transform: "none" }], { duration: 560, delay: 500 + n * 110, easing: "cubic-bezier(.2,.7,.2,1)", fill: "both" })));
+      anims.push(abre.animate([{ clipPath: "circle(0px at " + x + "px " + y + "px)" }, { clipPath: "circle(150vmax at " + x + "px " + y + "px)" }], { duration: 1100, easing: "cubic-bezier(.45,0,.15,1)" }));
+      setTimeout(lanzar, 1000);                 // cuando el círculo ya tapó todo, recién ahí va al destino
+      setTimeout(cerrarCirculo, 2300);          // si seguimos en la misma página, el círculo se cierra y se ve el destino
+    }, reduce ? 0 : 480);
+  });
+  let y0 = 0, pos0 = 0, movio = false, idDedo = null, muestras = [], estabaChico = false;
+  zona.addEventListener("pointerdown", (e) =&gt; {
+    if (abriendo) return;
+    if (preguntando &gt;= 0) cancelar();
+    estabaChico = a &lt; 0.5; arrastrando = true; inercia = false; snapping = false; quiere = false; movio = false; idDedo = e.pointerId; y0 = e.clientY; pos0 = pos; muestras = [[performance.now(), pos]];
+    try { zona.setPointerCapture(e.pointerId); } catch (x) { /* sin captura */ }
+    clearTimeout(tCol); riel.classList.remove("quieta"); aT = 1; kick();
+  });
+  zona.addEventListener("pointermove", (e) =&gt; {
+    if (!arrastrando || e.pointerId !== idDedo) return;
+    const dy = e.clientY - y0; if (Math.abs(dy) &gt; 6) movio = true; if (!movio) return;
+    const p = pos0 - dy / GAP;
+    pos = p &lt; 0 ? p * 0.35 : p &gt; N - 1 ? N - 1 + (p - N + 1) * 0.35 : p;
+    const t = performance.now(); muestras.push([t, pos]); while (muestras.length &gt; 2 &amp;&amp; t - muestras[0][0] &gt; 90) muestras.shift();
+    kick();
+  });
+  const soltar = (e) =&gt; {
+    if (!arrastrando || (e &amp;&amp; e.pointerId !== idDedo)) return;
+    arrastrando = false; quiere = true;
+    if (!movio) {
+      const hr = contained ? box.getBoundingClientRect() : { top: 0 }, y = e ? e.clientY - hr.top : M;
+      let mejor = 0, dm = 1e9;
+      for (let i = 0; i &lt; N; i++) { const dd = Math.abs(y - (estabaChico ? yRest(i) : yAct(i))); if (dd &lt; dm) { dm = dd; mejor = i; } }
+      destino = mejor; snapping = true;
+    } else {
+      pos = clamp(pos, 0, N - 1);
+      const m0 = muestras[0], m1 = muestras[muestras.length - 1], dtm = (m1[0] - m0[0]) / 1000, v = dtm &gt; 0.01 ? (m1[1] - m0[1]) / dtm : 0;
+      if (Math.abs(v) &gt; 1.6 &amp;&amp; !reduce) { vel = clamp(v, -22, 22); inercia = true; }
+      else { destino = clamp(Math.round(pos), 0, N - 1); snapping = true; }
+    }
+    kick();
+  };
+  zona.addEventListener("pointerup", soltar); zona.addEventListener("pointercancel", soltar);
+  riel.addEventListener("keydown", (e) =&gt; { if (e.key === "Enter" || e.key === " ") { const t = e.target.closest &amp;&amp; e.target.closest(".wr-it"); if (t) { e.preventDefault(); aT = 1; destino = +t.dataset.i; snapping = true; quiere = true; kick(); } } });
+  const onScroll = () =&gt; { if (a &lt; 0.05 &amp;&amp; !arrastrando) riel.classList.add("quieta"); };
+  const medir = () =&gt; { H = contained ? box.clientHeight : window.innerHeight; M = Math.round(H * (1 - ALTO)); pintar(); };
+  window.addEventListener("scroll", onScroll, { passive: true }); window.addEventListener("resize", medir); medir();
+  /* aviso la primera vez (cuando ya terminó el loader): los botones se despliegan solos, se mueven un poquito y se achican */
+  let hintT = 0, vio = false; try { vio = localStorage.getItem("wr_hint_v1") === "1"; } catch (e) { /* sin almacenamiento */ }
+  if (!vio &amp;&amp; !reduce &amp;&amp; !contained) {
+    let tries = 0;
+    const intentar = () =&gt; {
+      if (muerto) return;
+      if (document.querySelector(".ldr") &amp;&amp; tries++ &lt; 80) { hintT = setTimeout(intentar, 500); return; }
+      hintT = setTimeout(() =&gt; {
+        if (arrastrando || preguntando &gt;= 0 || muerto) return;
+        aT = 1; kick();
+        setTimeout(() =&gt; { if (arrastrando || preguntando &gt;= 0 || muerto) return; destino = INICIAL - 1.4; snapping = true; quiere = false; kick(); }, 700);
+        setTimeout(() =&gt; { if (arrastrando || preguntando &gt;= 0 || muerto) return; destino = INICIAL; snapping = true; quiere = false; kick(); }, 1500);
+        try { localStorage.setItem("wr_hint_v1", "1"); } catch (e) { /* sin almacenamiento */ }
+      }, 900);
+    };
+    intentar();
+  }
+  return () =&gt; {
+    muerto = true; cancelAnimationFrame(raf); clearTimeout(tPreg); clearTimeout(tCol); clearTimeout(hintT);
+    document.removeEventListener("pointerdown", onDocDown); window.removeEventListener("pageshow", onShow); window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", medir);
+    host.innerHTML = "";
+  };
+}
+function SideRail({ cfg, contained }) {
+  const C = { ...MENU_DEFAULTS, ...(cfg || {}) };
+  const ref = useRef(null);
+  const key = JSON.stringify([C.items, C.railColor, C.railDark, C.railHeight, C.railBlur, C.railStart, C.font]);
+  useEffect(() =&gt; { ensureTextFont(C.font); }, [C.font]);
+  useEffect(() =&gt; { if (!ref.current) return undefined; return weebRailMount(ref.current, C, !!contained); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [key, contained]);
+  return &lt;div className={"wr" + (contained ? " wr--c" : "")} style={contained ? { position: "absolute", inset: 0, pointerEvents: "none" } : undefined}&gt;&lt;style&gt;{RAIL_CSS}&lt;/style&gt;&lt;div ref={ref} /&gt;&lt;/div&gt;;
+}
+
 function SiteMenu({ cfg, contained }) {
   const C = { ...MENU_DEFAULTS, ...(cfg || {}) };
   const items = C.items || [];
@@ -6301,7 +6578,7 @@ function MusicToggle() {
   const sz = MUSIC.size || 46;
   return (
     <button type="button" aria-label={playing ? "Silenciar la música" : "Activar la música"} aria-pressed={playing} onClick={toggle}
-      className={"music music--" + (MUSIC.position === "right" ? "right" : "left") + (on ? " is-on" : "") + (FAB.enabled ? " music--lift" : "")}
+      className={"music music--" + (MUSIC.position === "right" ? "right" : "left") + (on ? " is-on" : "") + (FAB.enabled &amp;&amp; !railHidesFab() ? " music--lift" : "")}
       style={{ "--mu-size": sz + "px", ...(MUSIC.color ? { "--mu-bg": MUSIC.color } : {}) }}>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path ref={pathRef} d="M3 12H21" /></svg>
     </button>
@@ -6313,7 +6590,8 @@ function fabItems() {
   const mapHref = FAB.mapUrl || (FAB.address ? "https://www.google.com/maps/search/?api=1&amp;query=" + encodeURIComponent(FAB.address) : "");
   return { phone, mapHref, showBook: !!(FAB.book !== false &amp;&amp; FAB.reservarUrl), showWa: !!(FAB.wa !== false &amp;&amp; phone), showMap: !!(FAB.map !== false &amp;&amp; mapHref) };
 }
-function fabActive() { const it = fabItems(); return !!(FAB.enabled &amp;&amp; (it.showBook || it.showWa || it.showMap)); }
+function railHidesFab() { return !!(MENU.enabled &amp;&amp; MENU.style === "rail" &amp;&amp; MENU.railHideFab !== false); }
+function fabActive() { const it = fabItems(); return !!(FAB.enabled &amp;&amp; !railHidesFab() &amp;&amp; (it.showBook || it.showWa || it.showMap)); }
 /* Páginas internas del sitio (Reservar, Panel, Invitaciones, Planes, Galería…) se abren ENCIMA del sitio en un iframe que queda cargado:
    al volver no se recarga el 3D. Cada página cierra con postMessage("weeb-cerrar"). Si algo falla, el link funciona normal. */
 function PageOverlay() {
@@ -7247,11 +7525,11 @@ function App() {
         &lt;/div&gt;
       ) : &lt;Block2D key={sec.id} s={sec} theme={SITE2D} /&gt;), SECTIONS)}
       &lt;PageOverlay /&gt;
-      {FAB.enabled &amp;&amp; &lt;FloatingActions /&gt;}
+      {FAB.enabled &amp;&amp; !railHidesFab() &amp;&amp; &lt;FloatingActions /&gt;}
       {BACKTOP.enabled &amp;&amp; !fabActive() &amp;&amp; &lt;BackToTop /&gt;}
       {MUSIC.enabled &amp;&amp; MUSIC.url &amp;&amp; &lt;MusicToggle /&gt;}
       {MENU.logoUrl &amp;&amp; &lt;SiteLogo cfg={MENU} /&gt;}
-      {MENU.enabled &amp;&amp; &lt;SiteMenu cfg={MENU} /&gt;}
+      {MENU.enabled &amp;&amp; (MENU.style === "rail" ? &lt;SideRail cfg={MENU} /&gt; : &lt;SiteMenu cfg={MENU} /&gt;)}
       {LAB_ON &amp;&amp; &lt;LabPanel /&gt;}
     &lt;/div&gt;
   );
@@ -7870,6 +8148,12 @@ function FadeGroup({ obj, fade, children }) {
 //@@use MENU_EASES
 //@@use MENU_CSS
 //@@use menuRgba
+//@@use RAIL_ICONS
+//@@use RAIL_CSS
+//@@use railIconFor
+//@@use weebGoItem
+//@@use weebRailMount
+//@@use SideRail
 //@@use SiteMenu
 //@@use SiteLogo
 //@@use OvlPair
@@ -9208,7 +9492,7 @@ function generateExtrasCode(cursor, progressBar, backTop, menu, stageProgress, f
   const c = { ...DEFAULT_CURSOR, ...cursor }, p = { ...DEFAULT_PROGRESS_BAR, ...progressBar }, b = { ...DEFAULT_BACKTOP, ...backTop };
   const m0 = { ...DEFAULT_MENU, ...(menu || {}) };
   const sp = stageProgress || [0];
-  const m = { ...m0, items: (m0.items || []).map((it) => ({ label: it.label || "", type: it.type === "pose" ? "pose" : it.type === "section" ? "section" : "url", href: it.href || "", newTab: !!it.newTab, ...(it.type === "section" ? { sec: it.sec || "" } : {}), ...(it.type === "pose" ? { pose: it.pose || 1, p: Math.round((sp[Math.min(sp.length - 1, Math.max(0, (it.pose || 1) - 1))] || 0) * 10000) / 10000 } : {}) })) };
+  const m = { ...m0, items: (m0.items || []).map((it) => ({ label: it.label || "", type: it.type === "pose" ? "pose" : it.type === "section" ? "section" : "url", href: it.href || "", newTab: !!it.newTab, ...(it.icon ? { icon: it.icon } : {}), ...(it.ask ? { ask: it.ask } : {}), ...(it.type === "section" ? { sec: it.sec || "" } : {}), ...(it.type === "pose" ? { pose: it.pose || 1, p: Math.round((sp[Math.min(sp.length - 1, Math.max(0, (it.pose || 1) - 1))] || 0) * 10000) / 10000 } : {}) })) };
   return `const CURSOR = ${JSON.stringify(c, null, 2)};\nconst PROGRESS_BAR = ${JSON.stringify(p, null, 2)};\nconst BACKTOP = ${JSON.stringify(b, null, 2)};\nconst MENU = ${JSON.stringify(m, null, 2)};\nconst FAB = ${JSON.stringify({ ...DEFAULT_FAB, ...(fab || {}) }, null, 2)};\nconst MUSIC = ${JSON.stringify({ ...DEFAULT_MUSIC, ...(music || {}) }, null, 2)};`;
 }
 const DEFAULT_LOADER = { enabled: true, svg: "", background: "#05070f", lineColor: "#ffffff", font: "'Space Grotesk', sans-serif", lineWidth: 1.4, minMs: 1800, showNumber: true,
@@ -10397,6 +10681,21 @@ function LoaderFields({ loader, setLoaderField, onPreview }) {
       <Switch checked={loader.showNumber !== false} onChange={(v) => setLoaderField("showNumber", v)} label="Mostrar número 000 → 100" />
       </>}
       <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>El SVG se dibuja trazo a trazo, de abajo hacia arriba, mientras carga el sitio (los rellenos se ven solo como contorno). El número sigue la carga real. Al llegar a 100 se hace zoom hacia adentro del SVG y aparece la web. Funciona mejor con SVG simples (menos de 300 trazos) y con el texto convertido a curvas.</div>
+    </>
+  );
+}
+/* Opciones de los botones laterales. */
+function RailFields({ menu, setMenuField }) {
+  return (
+    <>
+      <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Iconos finos sobre el borde derecho: nacen chicos abajo, se deslizan hasta una marca, preguntan y abren con una animación. Probalo en el visor.</div>
+      <ColorRow label="Color de marca" value={menu.railColor || "#3F8A28"} onChange={(v) => setMenuField("railColor", v)} />
+      <ColorRow label="Color oscuro (cartel)" value={menu.railDark || "#16461A"} onChange={(v) => setMenuField("railDark", v)} />
+      <Switch checked={menu.railBlur !== false} onChange={(v) => setMenuField("railBlur", v)} label="Difuminar el fondo mientras deslizás" />
+      <Switch checked={menu.railHideFab !== false} onChange={(v) => setMenuField("railHideFab", v)} label="Ocultar la barra de abajo (Reservar / WhatsApp / Mapa)" />
+      <Slider label="Altura de la marca" min={0.25} max={0.7} step={0.01} value={menu.railHeight ?? 0.42} onChange={(v) => setMenuField("railHeight", v)} />
+      <SelectRow label="Arranca en" value={menu.railStart == null ? "" : String(menu.railStart)} onChange={(v) => setMenuField("railStart", v === "" ? null : Number(v))} options={[["", "El del medio"], ...menu.items.map((it, i) => [String(i), it.label || "Botón " + (i + 1)])]} />
+      <FontSelect label="Tipografía" value={menu.font} onChange={(v) => setMenuField("font", v)} />
     </>
   );
 }
@@ -13452,7 +13751,7 @@ function App() {
         )}
         {menu.enabled && !exporting && (
           <div style={{ position: "absolute", zIndex: 7, pointerEvents: "none", ...(phoneBox ? { left: phoneBox.left, top: phoneBox.top, width: phoneBox.w, height: phoneBox.h } : { inset: 0 }) }}>
-            <SiteMenu cfg={menu} contained />
+            {menu.style === "rail" ? <SideRail cfg={menu} contained /> : <SiteMenu cfg={menu} contained />}
           </div>
         )}
         {progressBar.enabled && (
@@ -13614,7 +13913,9 @@ function App() {
                   </div>
                   <Switch checked={!!menu.logoNewTab} onChange={(v) => setMenuField("logoNewTab", v)} label="Abrir en pestaña nueva" />
                 </Group>
-                <Group id="menu" title="Menú (hamburguesa)" defaultOpen={false} toggle={{ checked: menu.enabled, onChange: (v) => setMenuField("enabled", v) }}>
+                <Group id="menu" title="Menú (hamburguesa o botones laterales)" defaultOpen={false} toggle={{ checked: menu.enabled, onChange: (v) => setMenuField("enabled", v) }}>
+                  <Seg value={menu.style === "rail" ? "rail" : "classic"} options={[["classic", "Hamburguesa"], ["rail", "Botones laterales"]]} onChange={(v) => setMenuField("style", v)} />
+                  {menu.style === "rail" ? <RailFields menu={menu} setMenuField={setMenuField} /> : (<>
                   <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Botón de dos rayitas que se convierte en una cruz al abrir. Mirá y probalo en el visor (tocá el botón).</div>
                   <div className="grp-t" style={{ marginTop: 4 }}>Botón</div>
                   <SelectRow label="Posición" value={menu.position} onChange={(v) => setMenuField("position", v)} options={[["right", "Arriba derecha"], ["left", "Arriba izquierda"]]} />
@@ -13668,6 +13969,7 @@ function App() {
                   <Slider label="Retraso entre links (s)" min={0} max={0.3} step={0.01} value={menu.itemDelay} onChange={(v) => setMenuField("itemDelay", v)} />
                   <Slider label="Duración de cada link (s)" min={0.2} max={1.8} step={0.05} value={menu.itemDuration} onChange={(v) => setMenuField("itemDuration", v)} />
                   <SelectRow label="Al pasar el mouse" value={menu.hover} onChange={(v) => setMenuField("hover", v)} options={[["shift", "Se corre a la derecha"], ["underline", "Subrayado animado"], ["dim", "Los otros se apagan"], ["none", "Nada"]]} />
+                  </>)}
                   <div className="grp-t" style={{ marginTop: 8 }}>Links (a dónde llevan)</div>
                   {menu.items.map((it, i) => (
                     <div key={i} style={{ display: "flex", flexDirection: "column", gap: 5, padding: 8, border: "1px solid var(--line2)", borderRadius: 6 }}>
@@ -13675,6 +13977,14 @@ function App() {
                         <span className="lbl">Nombre</span>
                         <input type="text" style={{ flex: 1 }} value={it.label} spellCheck={false} onChange={(e) => setMenuItem(i, { label: e.target.value })} />
                       </div>
+                      {menu.style === "rail" && (
+                        <>
+                          <SelectRow label="Icono" value={it.icon || railIconFor(it)} onChange={(v) => setMenuItem(i, { icon: v })} options={Object.keys(RAIL_ICONS).map((k2) => [k2, k2.charAt(0).toUpperCase() + k2.slice(1)])} />
+                          <div className="row"><span className="lbl">Pregunta</span>
+                            <input type="text" style={{ flex: 1 }} value={it.ask || ""} placeholder={"¿Ir a " + (it.label || "…") + "?"} spellCheck={false} onChange={(e) => setMenuItem(i, { ask: e.target.value })} />
+                          </div>
+                        </>
+                      )}
                       <div className="row">
                         <span className="lbl">Lleva a</span>
                         <select style={{ flex: 1 }} value={it.type === "pose" ? "pose" : it.type === "section" ? "section" : "url"} onChange={(e) => setMenuItem(i, { type: e.target.value })}>
