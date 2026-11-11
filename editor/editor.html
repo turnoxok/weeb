@@ -6155,7 +6155,7 @@ function weebRailMount(host, C, contained) {
   const frame = (now) => {
     const dt = Math.min(0.05, (now - tPrev) / 1000); tPrev = now; raf = 0;
     if (inercia) {
-      pos += vel * dt; vel *= Math.exp(-dt * 2.6);
+      pos += vel * dt; vel *= Math.exp(-dt * 3.6);
       if (pos < 0) { pos = 0; vel = 0; } else if (pos > N - 1) { pos = N - 1; vel = 0; }
       if (Math.abs(vel) < 0.5) { inercia = false; vel = 0; destino = clamp(Math.round(pos), 0, N - 1); snapping = true; }
     } else if (snapping) {
@@ -6237,7 +6237,7 @@ function weebRailMount(host, C, contained) {
     } else {
       pos = clamp(pos, 0, N - 1);
       const m0 = muestras[0], m1 = muestras[muestras.length - 1], dtm = (m1[0] - m0[0]) / 1000, v = dtm > 0.01 ? (m1[1] - m0[1]) / dtm : 0;
-      if (Math.abs(v) > 1.6 && !reduce) { vel = clamp(v, -22, 22); inercia = true; }
+      if (Math.abs(v) > 1.6 && !reduce) { vel = clamp(v * 0.7, -9, 9); inercia = true; }
       else { destino = clamp(Math.round(pos), 0, N - 1); snapping = true; }
     }
     kick();
@@ -6921,6 +6921,8 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
     if (ctl) { ctl.setDraw(0); ctl.setZoom(1, 1); }
     const fx = cfg.style === "fiesta" && fxRef.current && rootRef.current ? ldrFiesta(fxRef.current, rootRef.current, cfg, reduce) : null;
     let raf = 0, fontsOk = !!simulate, okSince = 0, finishAt = 0, exitStart = 0, shown = 0;
+    const expectSvg = typeof OBJECTS !== "undefined" && OBJECTS.some((o) => o && o.type === "image" && /\.svg/i.test(o.url || "") && (o.ext || 0) > 0);
+    let sig = "", sigT = performance.now();
     let last = performance.now(), tmax = 0;
     const t0 = last;
     if (!simulate) {
@@ -6937,6 +6939,10 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       const el = now - t0, L = live.current;
+      /* si la carga se estanca (nada cambia en 8 s) recién ahí se deja de esperar; mientras avance, se espera a que estén todas las piezas 3D */
+      const sg = (L.progress | 0) + "|" + (window.__wbPend || 0) + "|" + (window.__wbStarted || 0) + "|" + Math.round((window.__wbWarmP || 0) * 20);
+      if (sg !== sig) { sig = sg; sigT = now; }
+      const stalled = now - sigT > 8000;
       // progreso real de carga, pero sin avanzar más rápido que "duración mín." para que se llegue a ver la animación
       let target = simulate ? 100 : (L.total > 0 ? L.progress : Math.min(35, el / 80));
       if (!simulate && L.total > 0) {
@@ -6948,11 +6954,11 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       }
       tmax = Math.max(tmax, target); target = tmax;
       target = Math.min(target, (el / minMs) * 100);
-      const loaded = simulate ? el >= minMs : (L.total > 0 ? L.progress >= 100 && !L.active : el > 3500);
+      const loaded = simulate ? el >= minMs : (L.total > 0 ? L.progress >= 100 && !L.active : (el > 3500 && ((window.__wbStarted || 0) > 0 || !expectSvg || el > 25000)));
       /* el logo no se va hasta que los objetos 3D (SVG extruidos) terminaron de armarse: antes aparecían recién después del loader */
-      const built = simulate || el > 15000 || (((window.__wbStarted || 0) > 0 || el > 6000) && (window.__wbPend || 0) === 0 && (window.__wbWarm || el > 13000));
+      const built = simulate || (el > 15000 && stalled) || el > 60000 || (((window.__wbStarted || 0) > 0 || (el > 6000 && (!expectSvg || el > 25000))) && (window.__wbPend || 0) === 0 && (window.__wbWarm || ((el > 13000 && stalled) || el > 60000)));
       if (loaded && built && fontsOk && target >= 99.9) { if (!okSince) okSince = now; } else okSince = 0;
-      if (!finishAt && ((okSince && now - okSince > (simulate ? 0 : 700)) || el > 14000)) finishAt = now;
+      if (!finishAt && ((okSince && now - okSince > (simulate ? 0 : 700)) || (el > 14000 && stalled) || el > 60000)) finishAt = now;
       if (finishAt) target = 100;
       shown += (target - shown) * (1 - Math.exp(-dt * (finishAt ? 14 : 5)));
       const disp = finishAt ? Math.round(shown) : Math.min(99, Math.floor(shown));
@@ -9214,6 +9220,8 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
     if (ctl) { ctl.setDraw(0); ctl.setZoom(1, 1); }
     const fx = cfg.style === "fiesta" && fxRef.current && rootRef.current ? ldrFiesta(fxRef.current, rootRef.current, cfg, reduce) : null;
     let raf = 0, fontsOk = !!simulate, okSince = 0, finishAt = 0, exitStart = 0, shown = 0;
+    const expectSvg = typeof OBJECTS !== "undefined" && OBJECTS.some((o) => o && o.type === "image" && /\.svg/i.test(o.url || "") && (o.ext || 0) > 0);
+    let sig = "", sigT = performance.now();
     let last = performance.now(), tmax = 0;
     const t0 = last;
     if (!simulate) {
@@ -9230,6 +9238,10 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       const el = now - t0, L = live.current;
+      /* si la carga se estanca (nada cambia en 8 s) recién ahí se deja de esperar; mientras avance, se espera a que estén todas las piezas 3D */
+      const sg = (L.progress | 0) + "|" + (window.__wbPend || 0) + "|" + (window.__wbStarted || 0) + "|" + Math.round((window.__wbWarmP || 0) * 20);
+      if (sg !== sig) { sig = sg; sigT = now; }
+      const stalled = now - sigT > 8000;
       // progreso real de carga, pero sin avanzar más rápido que "duración mín." para que se llegue a ver la animación
       let target = simulate ? 100 : (L.total > 0 ? L.progress : Math.min(35, el / 80));
       if (!simulate && L.total > 0) {
@@ -9241,11 +9253,11 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       }
       tmax = Math.max(tmax, target); target = tmax;
       target = Math.min(target, (el / minMs) * 100);
-      const loaded = simulate ? el >= minMs : (L.total > 0 ? L.progress >= 100 && !L.active : el > 3500);
+      const loaded = simulate ? el >= minMs : (L.total > 0 ? L.progress >= 100 && !L.active : (el > 3500 && ((window.__wbStarted || 0) > 0 || !expectSvg || el > 25000)));
       /* el logo no se va hasta que los objetos 3D (SVG extruidos) terminaron de armarse: antes aparecían recién después del loader */
-      const built = simulate || el > 15000 || (((window.__wbStarted || 0) > 0 || el > 6000) && (window.__wbPend || 0) === 0 && (window.__wbWarm || el > 13000));
+      const built = simulate || (el > 15000 && stalled) || el > 60000 || (((window.__wbStarted || 0) > 0 || (el > 6000 && (!expectSvg || el > 25000))) && (window.__wbPend || 0) === 0 && (window.__wbWarm || ((el > 13000 && stalled) || el > 60000)));
       if (loaded && built && fontsOk && target >= 99.9) { if (!okSince) okSince = now; } else okSince = 0;
-      if (!finishAt && ((okSince && now - okSince > (simulate ? 0 : 700)) || el > 14000)) finishAt = now;
+      if (!finishAt && ((okSince && now - okSince > (simulate ? 0 : 700)) || (el > 14000 && stalled) || el > 60000)) finishAt = now;
       if (finishAt) target = 100;
       shown += (target - shown) * (1 - Math.exp(-dt * (finishAt ? 14 : 5)));
       const disp = finishAt ? Math.round(shown) : Math.min(99, Math.floor(shown));
