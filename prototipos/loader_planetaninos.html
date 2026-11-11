@@ -87,6 +87,7 @@
 
   /* ---------- armado de cada variante ---------- */
   function armar() {
+    ldr.getAnimations().forEach(function (a) { a.cancel(); });   // limpia la salida anterior (si no, la pantalla quedaba oculta al repetir)
     zona.innerHTML = ''; partes = {};
     ldr.style.clipPath = ''; ldr.style.opacity = ''; ldr.classList.remove('fuera'); ldr.style.display = '';
     if (variante === 'A') {
