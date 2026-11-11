@@ -25,6 +25,26 @@
   /* ---- Loader: SVG que se dibuja + contador 000 → 100 + zoom de salida ---- */
   .ldr { position: fixed; inset: 0; z-index: 100; touch-action: none; overflow: hidden; }
   .ldr--contained { position: absolute; z-index: 30; cursor: pointer; }
+  /* ---- Loader "Fiesta" ---- */
+  .ldr--fiesta { touch-action: none; }
+  .ldrf { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 0 24px 70px; font-family: var(--ldr-font, 'Montserrat', system-ui, sans-serif); }
+  .ldrf__caja { width: min(86vw, 340px); min-height: 116px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; text-align: center; }
+  .ldrf__msg { display: flex; flex-direction: column; align-items: center; gap: 8px; will-change: transform, opacity; }
+  .ldrf__ico { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--c, #7B4FD8); box-shadow: 0 6px 14px -6px var(--c, #7B4FD8); }
+  .ldrf__ico svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .ldrf__tit { font-weight: 800; font-size: 1.2rem; line-height: 1.2; text-wrap: balance; color: var(--f-tit, #3F8A28); }
+  .ldrf__sub { font-weight: 500; font-size: .88rem; line-height: 1.3; text-wrap: balance; color: var(--f-sub, #5b7a52); }
+  .ldrf__zona { position: relative; width: min(58vw, 280px); height: min(50vw, 244px); }
+  .ldrf__vent { position: relative; width: 100%; height: 100%; overflow: hidden; }
+  .ldrf__env { width: 100%; height: 100%; will-change: transform; transform: translateY(105%); }
+  .ldrf__sq { width: 100%; height: 100%; transform-origin: 50% 100%; }
+  .ldrf__img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .ldrf__suelo { position: absolute; left: 6%; right: 6%; bottom: 0; height: 12px; border-radius: 12px 12px 0 0; background: var(--f-suelo, #7CC23A); z-index: 2; }
+  .ldrf__num { font-weight: 800; font-size: 1.9rem; line-height: 1; font-variant-numeric: tabular-nums; margin-top: -4px; color: var(--f-num, #3F8A28); opacity: .9; }
+  .ldrf__num small { font-size: 1rem; margin-left: 1px; }
+  .ldrf__barra { position: absolute; left: 0; top: 0; height: 4px; width: 100%; background: var(--f-barra, #F5C93A); transform-origin: left; transform: scaleX(0); z-index: 3; }
+  .ldrf__c { position: absolute; left: 0; top: 0; width: 11px; height: 16px; border-radius: 2px; pointer-events: none; z-index: 4; will-change: transform, opacity; }
+  .ldrf__c.r { border-radius: 50%; width: 12px; height: 12px; }
   .ldr__bg { position: absolute; inset: 0; background: var(--ldr-bg, #05070f); }
   .ldr__stage { position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%); display: grid; place-items: center; }
   .ldr__zoom { width: min(64vw, 420px, calc(46vh * var(--ar, 1))); aspect-ratio: var(--ar, 1); transform-origin: 50% 50%; }
@@ -523,6 +543,26 @@
   /* ---- Loader: SVG que se dibuja + contador 000 → 100 + zoom de salida ---- */
   .ldr { position: fixed; inset: 0; z-index: 100; touch-action: none; overflow: hidden; }
   .ldr--contained { position: absolute; z-index: 30; cursor: pointer; }
+  /* ---- Loader "Fiesta" ---- */
+  .ldr--fiesta { touch-action: none; }
+  .ldrf { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 0 24px 70px; font-family: var(--ldr-font, 'Montserrat', system-ui, sans-serif); }
+  .ldrf__caja { width: min(86vw, 340px); min-height: 116px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; text-align: center; }
+  .ldrf__msg { display: flex; flex-direction: column; align-items: center; gap: 8px; will-change: transform, opacity; }
+  .ldrf__ico { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--c, #7B4FD8); box-shadow: 0 6px 14px -6px var(--c, #7B4FD8); }
+  .ldrf__ico svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .ldrf__tit { font-weight: 800; font-size: 1.2rem; line-height: 1.2; text-wrap: balance; color: var(--f-tit, #3F8A28); }
+  .ldrf__sub { font-weight: 500; font-size: .88rem; line-height: 1.3; text-wrap: balance; color: var(--f-sub, #5b7a52); }
+  .ldrf__zona { position: relative; width: min(58vw, 280px); height: min(50vw, 244px); }
+  .ldrf__vent { position: relative; width: 100%; height: 100%; overflow: hidden; }
+  .ldrf__env { width: 100%; height: 100%; will-change: transform; transform: translateY(105%); }
+  .ldrf__sq { width: 100%; height: 100%; transform-origin: 50% 100%; }
+  .ldrf__img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .ldrf__suelo { position: absolute; left: 6%; right: 6%; bottom: 0; height: 12px; border-radius: 12px 12px 0 0; background: var(--f-suelo, #7CC23A); z-index: 2; }
+  .ldrf__num { font-weight: 800; font-size: 1.9rem; line-height: 1; font-variant-numeric: tabular-nums; margin-top: -4px; color: var(--f-num, #3F8A28); opacity: .9; }
+  .ldrf__num small { font-size: 1rem; margin-left: 1px; }
+  .ldrf__barra { position: absolute; left: 0; top: 0; height: 4px; width: 100%; background: var(--f-barra, #F5C93A); transform-origin: left; transform: scaleX(0); z-index: 3; }
+  .ldrf__c { position: absolute; left: 0; top: 0; width: 11px; height: 16px; border-radius: 2px; pointer-events: none; z-index: 4; will-change: transform, opacity; }
+  .ldrf__c.r { border-radius: 50%; width: 12px; height: 12px; }
   .ldr__bg { position: absolute; inset: 0; background: var(--ldr-bg, #05070f); }
   .ldr__stage { position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%); display: grid; place-items: center; }
   .ldr__zoom { width: min(64vw, 420px, calc(46vh * var(--ar, 1))); aspect-ratio: var(--ar, 1); transform-origin: 50% 50%; }
@@ -6459,12 +6499,112 @@ function ldrPrepare(host, svgText, lineColor, swPx) {
     },
   };
 }
+/* ---- Loader "Fiesta": mensajes que venden + mascota que sube con la carga + confeti en los momentos elegidos + salida en círculo ---- */
+const LDR_FX_EXIT_MS = 1000;
+const LDR_FX_ICONS = {
+  cubo: '&lt;path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/&gt;&lt;path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/&gt;',
+  calendario: '&lt;rect x="3.5" y="5" width="17" height="15.5" rx="3"/&gt;&lt;path d="M3.5 10h17M8 3v4M16 3v4"/&gt;&lt;path d="M8.5 14.5l2.2 2.2 4.3-4.4"/&gt;',
+  precio: '&lt;path d="M3.5 12.2V4.8a1.3 1.3 0 0 1 1.3-1.3h7.4a1.3 1.3 0 0 1 .9.4l8 8a1.3 1.3 0 0 1 0 1.8l-7.4 7.4a1.3 1.3 0 0 1-1.8 0l-8-8a1.3 1.3 0 0 1-.4-.9z"/&gt;&lt;circle cx="8" cy="8" r="1.3"/&gt;',
+  invitacion: '&lt;rect x="3" y="5.5" width="18" height="13.5" rx="3"/&gt;&lt;path d="M3.5 7.5l8.5 6 8.5-6"/&gt;',
+  fotos: '&lt;rect x="3" y="4.5" width="18" height="15" rx="3"/&gt;&lt;circle cx="8.5" cy="10" r="1.6"/&gt;&lt;path d="M3.5 17l5-4.5 4 3.5 3-2.5 5 4"/&gt;',
+  regalo: '&lt;rect x="3.5" y="9" width="17" height="11.5" rx="2"/&gt;&lt;path d="M3.5 13h17M12 9v11.5"/&gt;&lt;path d="M12 9c-1-3.6-5-4.6-5-2s3.2 2 5 2zM12 9c1-3.6 5-4.6 5-2s-3.2 2-5 2z"/&gt;',
+  estrella: '&lt;path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9 6.8 19.7l1-5.9L3.5 9.7l5.9-.8z"/&gt;',
+  corazon: '&lt;path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.6 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/&gt;',
+  listo: '&lt;path d="M5 12.5l4.5 4.5L19 7.5"/&gt;'
+};
+const LDR_FX_PAL = ["#3F8A28", "#7CC23A", "#F5C93A", "#E8693A", "#3BB5E8", "#E0457B", "#7B4FD8"];
+const LDR_FX_MSGS = [
+  { desde: 0, icono: "cubo", color: "#7B4FD8", titulo: "Estás por vivir una experiencia 3D", sub: "Scrolleá y dejate llevar" },
+  { desde: 30, icono: "calendario", color: "#3F8A28", titulo: "Reservá y elegí tu plan", sub: "Disponibilidad y precios al instante, las 24 hs" },
+  { desde: 70, icono: "invitacion", color: "#E0457B", titulo: "Diseñá tu invitación gratis", sub: "En imagen y en video" },
+  { desde: 100, icono: "listo", color: "#7CC23A", titulo: "¡A disfrutar!", sub: "" }
+];
+/* Arma la pantalla dentro de "host" (dentro de "root", que es el .ldr). Devuelve { update(p, num), exit(x), destroy() }. */
+function ldrFiesta(host, root, cfg, reduce) {
+  const msgs = (Array.isArray(cfg.fMensajes) &amp;&amp; cfg.fMensajes.length ? cfg.fMensajes : LDR_FX_MSGS).slice().sort((a, b) =&gt; (+a.desde || 0) - (+b.desde || 0));
+  const fest = cfg.fConfeti === false ? [] : (Array.isArray(cfg.fFestejos) ? cfg.fFestejos : [30, 70]).map(Number).filter((n) =&gt; n &gt; 0 &amp;&amp; n &lt;= 100);
+  const pal = Array.isArray(cfg.fPaleta) &amp;&amp; cfg.fPaleta.length ? cfg.fPaleta : LDR_FX_PAL;
+  const mk = (cls, parent) =&gt; { const d = document.createElement("div"); d.className = cls; if (parent) parent.appendChild(d); return d; };
+  host.innerHTML = "";
+  const box = mk("ldrf__caja", host), msgEl = mk("ldrf__msg", box);
+  const zona = mk("ldrf__zona", host), vent = mk("ldrf__vent", zona), env = mk("ldrf__env", vent), sq = mk("ldrf__sq", env);
+  if (cfg.fImg) { const im = document.createElement("img"); im.className = "ldrf__img"; im.alt = ""; im.draggable = false; im.src = cfg.fImg; sq.appendChild(im); }
+  else sq.innerHTML = '&lt;svg class="ldrf__img" viewBox="0 0 100 100" aria-hidden="true"&gt;&lt;circle cx="50" cy="54" r="38" fill="var(--f-tit)"/&gt;&lt;circle cx="37" cy="48" r="6" fill="#fff"/&gt;&lt;circle cx="63" cy="48" r="6" fill="#fff"/&gt;&lt;path d="M33 66q17 15 34 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/&gt;&lt;/svg&gt;';
+  if (cfg.fSueloOn !== false) mk("ldrf__suelo", vent);
+  const numEl = mk("ldrf__num", host), numTxt = document.createElement("span"); numTxt.textContent = "0";
+  const pct = document.createElement("small"); pct.textContent = "%"; numEl.appendChild(numTxt); numEl.appendChild(pct);
+  if (cfg.showNumber === false) numEl.style.display = "none";
+  const bar = cfg.fBarraOn === false ? null : mk("ldrf__barra", root);
+  const confs = [];
+  let actual = -1, hechos = {}, saliendo = false, lote = 0;
+  const ease = (x) =&gt; 1 - Math.pow(1 - x, 3);
+  const hop = (kf, ms) =&gt; { if (!reduce &amp;&amp; sq.animate) sq.animate(kf, { duration: ms, easing: "ease-out" }); };
+  const poner = (i) =&gt; {
+    const m = msgs[i];
+    msgEl.textContent = "";
+    const ico = mk("ldrf__ico", msgEl); ico.style.setProperty("--c", m.color || "#7B4FD8");
+    ico.innerHTML = '&lt;svg viewBox="0 0 24 24" aria-hidden="true"&gt;' + (LDR_FX_ICONS[m.icono] || LDR_FX_ICONS.estrella) + "&lt;/svg&gt;";
+    if (!m.icono || m.icono === "ninguno") ico.style.display = "none";
+    const t = mk("ldrf__tit", msgEl); t.textContent = m.titulo || "";
+    if (m.sub) { const s = mk("ldrf__sub", msgEl); s.textContent = m.sub; }
+    if (!reduce &amp;&amp; msgEl.animate) msgEl.animate([{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "none" }], { duration: 300, easing: "ease-out" });
+  };
+  const mostrar = (i) =&gt; {
+    if (i === actual) return;
+    const primero = actual &lt; 0; actual = i;
+    if (primero || reduce || !msgEl.animate) { poner(i); return; }
+    const a = msgEl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, fill: "forwards" });
+    a.onfinish = () =&gt; { poner(i); a.cancel(); };
+  };
+  const confeti = () =&gt; {
+    if (reduce || !root.animate) return;
+    const rr = root.getBoundingClientRect(), zr = zona.getBoundingClientRect();
+    const ox = zr.left - rr.left + zr.width / 2, oy = zr.top - rr.top + zr.height * 0.5;
+    for (let i = 0; i &lt; 46; i++) {
+      const p = document.createElement("i"); p.className = "ldrf__c" + (i % 4 === 0 ? " r" : ""); p.style.background = pal[i % pal.length]; root.appendChild(p);
+      const ang = ((-90 + (Math.random() - 0.5) * 150) * Math.PI) / 180, f = 90 + Math.random() * 150, dx = Math.cos(ang) * f, dy = Math.sin(ang) * f;
+      const caida = 160 + Math.random() * 260, rot = (Math.random() - 0.5) * 900, dur = 1300 + Math.random() * 900;
+      const a = p.animate([
+        { transform: `translate(${ox}px,${oy}px) rotate(0deg) scale(.6)`, opacity: 1, offset: 0 },
+        { transform: `translate(${ox + dx * 0.75}px,${oy + dy}px) rotate(${rot * 0.5}deg) scale(1)`, opacity: 1, offset: 0.38, easing: "cubic-bezier(.3,0,.9,.6)" },
+        { transform: `translate(${ox + dx}px,${oy + dy + caida}px) rotate(${rot}deg) scale(1)`, opacity: 0, offset: 1 }
+      ], { duration: dur, easing: "cubic-bezier(.1,.6,.3,1)", fill: "forwards" });
+      confs.push(p);
+      a.onfinish = () =&gt; { p.remove(); };
+    }
+  };
+  const festejo = () =&gt; {
+    confeti();
+    hop([{ transform: "scale(1)" }, { transform: "scale(1.1,.92)" }, { transform: "scale(.95,1.08)" }, { transform: "scale(1)" }], 520);
+  };
+  return {
+    update(p, n) {
+      if (saliendo) return;
+      numTxt.textContent = String(Math.min(100, Math.max(0, Math.floor(n))));
+      if (bar) bar.style.transform = `scaleX(${Math.min(1, p / 100)})`;
+      env.style.transform = `translateY(${(1 - ease(Math.min(1, p / 100))) * 105}%)`;
+      let k = 0; msgs.forEach((m, i) =&gt; { if (p &gt;= (+m.desde || 0)) k = i; });
+      mostrar(k);
+      fest.forEach((f) =&gt; { if (p &gt;= f &amp;&amp; !hechos[f]) { hechos[f] = 1; setTimeout(festejo, 350 * lote++); setTimeout(() =&gt; { lote = Math.max(0, lote - 1); }, 400); } });
+    },
+    exit(x) {
+      saliendo = true;
+      root.style.pointerEvents = x &gt; 0.8 ? "none" : "";
+      if (reduce) { root.style.opacity = String(1 - x); return; }
+      env.style.transform = `translateY(${-14 * Math.sin(Math.PI * Math.min(1, x / 0.52))}%)`;
+      const c = Math.min(1, Math.max(0, (x - 0.3) / 0.7)), e = c &lt; 0.5 ? 2 * c * c : 1 - Math.pow(-2 * c + 2, 2) / 2;
+      root.style.clipPath = `circle(${150 * (1 - e)}% at 50% 44%)`;
+    },
+    destroy() { confs.forEach((c) =&gt; c.remove()); if (bar) bar.remove(); }
+  };
+}
+
 function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
   const prog = useProgress();
   const live = useRef({ progress: 0, active: false, total: 0 });
   live.current = { progress: prog.progress, active: prog.active, total: prog.total };
   const [gone, setGone] = useState(false);
-  const rootRef = useRef(), bgRef = useRef(), zoomRef = useRef(), numRef = useRef();
+  const rootRef = useRef(), bgRef = useRef(), zoomRef = useRef(), numRef = useRef(), fxRef = useRef();
   useEffect(() =&gt; {
     const pre = document.getElementById("pre-ldr");
     if (pre) pre.remove();
@@ -6489,6 +6629,7 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
     const reduce = !!(window.matchMedia &amp;&amp; window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     const ctl = zoomRef.current ? ldrPrepare(zoomRef.current, cfg.svg, cfg.lineColor || "#ffffff", cfg.lineWidth || 1.4) : null;
     if (ctl) { ctl.setDraw(0); ctl.setZoom(1, 1); }
+    const fx = cfg.style === "fiesta" &amp;&amp; fxRef.current &amp;&amp; rootRef.current ? ldrFiesta(fxRef.current, rootRef.current, cfg, reduce) : null;
     let raf = 0, fontsOk = !!simulate, okSince = 0, finishAt = 0, exitStart = 0, shown = 0;
     let last = performance.now(), tmax = 0;
     const t0 = last;
@@ -6528,8 +6669,13 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       if (numRef.current) numRef.current.textContent = String(disp).padStart(3, "0");
       if (ctl) ctl.setDraw(Math.min(1, shown / 100));
       if (numRef.current) numRef.current.classList.toggle("ldr__wait", !finishAt &amp;&amp; shown &gt; 97);
+      if (fx) fx.update(finishAt &amp;&amp; shown &gt; 99.4 ? 100 : shown, disp);
       if (finishAt &amp;&amp; !exitStart &amp;&amp; now - finishAt &gt; 700) exitStart = now; // se queda un instante en 100 y recién ahí hace zoom
-      if (exitStart) {
+      if (exitStart &amp;&amp; fx) {
+        const xf = Math.min(1, (now - exitStart) / LDR_FX_EXIT_MS);
+        fx.exit(xf);
+        if (xf &gt;= 1) { lock(false); unlockScroll(); setGone(true); if (onDone) onDone(); return; }
+      } else if (exitStart) {
         if (zoomRef.current) zoomRef.current.classList.add("ldr__exit");
         const x = Math.min(1, (now - exitStart) / ZOOM_MS);
         const e = reduce ? 0 : Math.pow(x, 2.2);
@@ -6544,16 +6690,19 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () =&gt; { cancelAnimationFrame(raf); lock(false); unlockScroll(); };
+    return () =&gt; { cancelAnimationFrame(raf); lock(false); unlockScroll(); if (fx) fx.destroy(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   if (gone) return null;
   return (
-    &lt;div ref={rootRef} className={"ldr" + (contained ? " ldr--contained" : "")} onClick={onClose}
-      style={{ "--ldr-bg": cfg.background || "#05070f", "--ldr-line": cfg.lineColor || "#ffffff", "--ldr-font": cfg.font || "'Space Grotesk', sans-serif" }}&gt;
+    &lt;div ref={rootRef} className={"ldr" + (contained ? " ldr--contained" : "") + (cfg.style === "fiesta" ? " ldr--fiesta" : "")} onClick={onClose}
+      style={{ "--ldr-bg": cfg.background || "#05070f", "--ldr-line": cfg.lineColor || "#ffffff", "--ldr-font": cfg.font || "'Space Grotesk', sans-serif",
+        ...(cfg.style === "fiesta" ? { "--f-tit": cfg.fTitulo || "#3F8A28", "--f-sub": cfg.fSub || "#5b7a52", "--f-num": cfg.fNum || "#3F8A28", "--f-suelo": cfg.fSuelo || "#7CC23A", "--f-barra": cfg.fBarra || "#F5C93A" } : {}) }}&gt;
       &lt;div ref={bgRef} className="ldr__bg" /&gt;
-      &lt;div className="ldr__stage"&gt;&lt;div ref={zoomRef} className="ldr__zoom" /&gt;&lt;/div&gt;
-      {cfg.showNumber !== false &amp;&amp; &lt;div ref={numRef} className="ldr__num"&gt;000&lt;/div&gt;}
+      {cfg.style === "fiesta" ? &lt;div ref={fxRef} className="ldrf" /&gt; : &lt;&gt;
+        &lt;div className="ldr__stage"&gt;&lt;div ref={zoomRef} className="ldr__zoom" /&gt;&lt;/div&gt;
+        {cfg.showNumber !== false &amp;&amp; &lt;div ref={numRef} className="ldr__num"&gt;000&lt;/div&gt;}
+      &lt;/&gt;}
     &lt;/div&gt;
   );
 }
@@ -8732,12 +8881,17 @@ const LDR_SPAN = 0.35;      // cuánto del progreso tarda cada trazo en dibujars
 function ldrSanitizeSvg(text) { const svg = ldrParseSvg(text); return svg ? new XMLSerializer().serializeToString(svg) : null; }
 //@@use ldrCountStrokes
 //@@use ldrPrepare
+//@@use LDR_FX_EXIT_MS
+//@@use LDR_FX_ICONS
+//@@use LDR_FX_PAL
+//@@use LDR_FX_MSGS
+//@@use ldrFiesta
 function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
   const prog = useProgress();
   const live = useRef({ progress: 0, active: false, total: 0 });
   live.current = { progress: prog.progress, active: prog.active, total: prog.total };
   const [gone, setGone] = useState(false);
-  const rootRef = useRef(), bgRef = useRef(), zoomRef = useRef(), numRef = useRef();
+  const rootRef = useRef(), bgRef = useRef(), zoomRef = useRef(), numRef = useRef(), fxRef = useRef();
   useEffect(() => {
     const pre = document.getElementById("pre-ldr");
     if (pre) pre.remove();
@@ -8762,6 +8916,7 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
     const reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     const ctl = zoomRef.current ? ldrPrepare(zoomRef.current, cfg.svg, cfg.lineColor || "#ffffff", cfg.lineWidth || 1.4) : null;
     if (ctl) { ctl.setDraw(0); ctl.setZoom(1, 1); }
+    const fx = cfg.style === "fiesta" && fxRef.current && rootRef.current ? ldrFiesta(fxRef.current, rootRef.current, cfg, reduce) : null;
     let raf = 0, fontsOk = !!simulate, okSince = 0, finishAt = 0, exitStart = 0, shown = 0;
     let last = performance.now(), tmax = 0;
     const t0 = last;
@@ -8801,8 +8956,13 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       if (numRef.current) numRef.current.textContent = String(disp).padStart(3, "0");
       if (ctl) ctl.setDraw(Math.min(1, shown / 100));
       if (numRef.current) numRef.current.classList.toggle("ldr__wait", !finishAt && shown > 97);
+      if (fx) fx.update(finishAt && shown > 99.4 ? 100 : shown, disp);
       if (finishAt && !exitStart && now - finishAt > 700) exitStart = now; // se queda un instante en 100 y recién ahí hace zoom
-      if (exitStart) {
+      if (exitStart && fx) {
+        const xf = Math.min(1, (now - exitStart) / LDR_FX_EXIT_MS);
+        fx.exit(xf);
+        if (xf >= 1) { lock(false); unlockScroll(); setGone(true); if (onDone) onDone(); return; }
+      } else if (exitStart) {
         if (zoomRef.current) zoomRef.current.classList.add("ldr__exit");
         const x = Math.min(1, (now - exitStart) / ZOOM_MS);
         const e = reduce ? 0 : Math.pow(x, 2.2);
@@ -8817,16 +8977,19 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => { cancelAnimationFrame(raf); lock(false); };
+    return () => { cancelAnimationFrame(raf); lock(false); if (fx) fx.destroy(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   if (gone) return null;
   return (
-    <div ref={rootRef} className={"ldr" + (contained ? " ldr--contained" : "")} onClick={onClose}
-      style={{ "--ldr-bg": cfg.background || "#05070f", "--ldr-line": cfg.lineColor || "#ffffff", "--ldr-font": cfg.font || "'Space Grotesk', sans-serif" }}>
+    <div ref={rootRef} className={"ldr" + (contained ? " ldr--contained" : "") + (cfg.style === "fiesta" ? " ldr--fiesta" : "")} onClick={onClose}
+      style={{ "--ldr-bg": cfg.background || "#05070f", "--ldr-line": cfg.lineColor || "#ffffff", "--ldr-font": cfg.font || "'Space Grotesk', sans-serif",
+        ...(cfg.style === "fiesta" ? { "--f-tit": cfg.fTitulo || "#3F8A28", "--f-sub": cfg.fSub || "#5b7a52", "--f-num": cfg.fNum || "#3F8A28", "--f-suelo": cfg.fSuelo || "#7CC23A", "--f-barra": cfg.fBarra || "#F5C93A" } : {}) }}>
       <div ref={bgRef} className="ldr__bg" />
-      <div className="ldr__stage"><div ref={zoomRef} className="ldr__zoom" /></div>
-      {cfg.showNumber !== false && <div ref={numRef} className="ldr__num">000</div>}
+      {cfg.style === "fiesta" ? <div ref={fxRef} className="ldrf" /> : <>
+        <div className="ldr__stage"><div ref={zoomRef} className="ldr__zoom" /></div>
+        {cfg.showNumber !== false && <div ref={numRef} className="ldr__num">000</div>}
+      </>}
     </div>
   );
 }
@@ -9048,11 +9211,16 @@ function generateExtrasCode(cursor, progressBar, backTop, menu, stageProgress, f
   const m = { ...m0, items: (m0.items || []).map((it) => ({ label: it.label || "", type: it.type === "pose" ? "pose" : it.type === "section" ? "section" : "url", href: it.href || "", newTab: !!it.newTab, ...(it.type === "section" ? { sec: it.sec || "" } : {}), ...(it.type === "pose" ? { pose: it.pose || 1, p: Math.round((sp[Math.min(sp.length - 1, Math.max(0, (it.pose || 1) - 1))] || 0) * 10000) / 10000 } : {}) })) };
   return `const CURSOR = ${JSON.stringify(c, null, 2)};\nconst PROGRESS_BAR = ${JSON.stringify(p, null, 2)};\nconst BACKTOP = ${JSON.stringify(b, null, 2)};\nconst MENU = ${JSON.stringify(m, null, 2)};\nconst FAB = ${JSON.stringify({ ...DEFAULT_FAB, ...(fab || {}) }, null, 2)};\nconst MUSIC = ${JSON.stringify({ ...DEFAULT_MUSIC, ...(music || {}) }, null, 2)};`;
 }
-const DEFAULT_LOADER = { enabled: true, svg: "", background: "#05070f", lineColor: "#ffffff", font: "'Space Grotesk', sans-serif", lineWidth: 1.4, minMs: 1800, showNumber: true };
+const DEFAULT_LOADER = { enabled: true, svg: "", background: "#05070f", lineColor: "#ffffff", font: "'Space Grotesk', sans-serif", lineWidth: 1.4, minMs: 1800, showNumber: true,
+  /* estilo "Fiesta" (opcional; por defecto sigue el clásico) */
+  style: "classic", fMensajes: LDR_FX_MSGS, fConfeti: true, fFestejos: [30, 70], fImg: "", fTitulo: "#3F8A28", fSub: "#5b7a52", fNum: "#3F8A28",
+  fBarraOn: true, fBarra: "#F5C93A", fSueloOn: true, fSuelo: "#7CC23A", fPaleta: LDR_FX_PAL };
+const LDR_CLASSIC_KEYS = ["enabled", "svg", "background", "lineColor", "font", "lineWidth", "minMs", "showNumber"];
 /* Bloques @GEN:LOADER y @GEN:LOADER_CSS de la plantilla: pantalla de carga con tu SVG y el contador 000 → 100. */
 function generateLoaderCode(loader) {
   const merged = { ...DEFAULT_LOADER, ...loader };
-  const clean = Object.fromEntries(Object.keys(DEFAULT_LOADER).map((k) => [k, merged[k]]));
+  const keys = merged.style === "fiesta" ? Object.keys(DEFAULT_LOADER) : LDR_CLASSIC_KEYS;   // los sitios clásicos no cambian ni un byte
+  const clean = Object.fromEntries(keys.map((k) => [k, merged[k]]));
   return `const LOADER = ${JSON.stringify(clean, null, 2).replace(/<\//g, "<\\/")};`;
 }
 function generateLoaderCss(loader) {
@@ -9916,7 +10084,7 @@ function buildFullHtml(boneCode, scenesCode, movementCode, scrollLengthCode, obj
     tpl = tpl.replace('<html lang="es">', '<html lang="' + seoEsc(seoPack.lang) + '">');
   }
   /* Pre-cargador: el "000" solo si el loader lo muestra. */
-  if (/"showNumber":\s*false/.test(loaderCode)) tpl = tpl.replace('<div id="pre-ldr"><span>000</span></div>', '<div id="pre-ldr"></div>');
+  if (/"showNumber":\s*false/.test(loaderCode) || /"style":\s*"fiesta"/.test(loaderCode)) tpl = tpl.replace('<div id="pre-ldr"><span>000</span></div>', '<div id="pre-ldr"></div>');
   /* El sitio sale ya compilado: el visitante no espera a que Babel traduzca todo el código en su navegador
      (en un celular eran varios segundos de loader). Si algo fallara, queda la versión de siempre. */
   try {
@@ -10127,6 +10295,74 @@ function TextStyleEditor({ o, updateObject }) {
     </>
   );
 }
+/* Opciones del loader "Fiesta": mensajes, confeti, mascota, colores y tipografía. */
+function LoaderFiestaFields({ loader, setLoaderField }) {
+  const msgs = Array.isArray(loader.fMensajes) ? loader.fMensajes : LDR_FX_MSGS;
+  const setMsg = (i, patch) => setLoaderField("fMensajes", msgs.map((m, j) => (j === i ? { ...m, ...patch } : m)));
+  const pal = Array.isArray(loader.fPaleta) && loader.fPaleta.length ? loader.fPaleta : LDR_FX_PAL;
+  const uploadImg = (file) => {
+    if (!file) return;
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      /* se achica a 560 px de ancho como mucho: pesa poco y se ve nítida en el celular */
+      const k = Math.min(1, 560 / img.naturalWidth), c = document.createElement("canvas");
+      c.width = Math.max(1, Math.round(img.naturalWidth * k)); c.height = Math.max(1, Math.round(img.naturalHeight * k));
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      setLoaderField("fImg", c.toDataURL("image/png"));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); window.alert("No pude leer esa imagen. Probá con un PNG o JPG."); };
+    img.src = url;
+  };
+  const ICONS = [["ninguno", "Sin ícono"], ...Object.keys(LDR_FX_ICONS).map((k) => [k, k.charAt(0).toUpperCase() + k.slice(1)])];
+  return (
+    <>
+      <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>Los mensajes cambian según el % de carga. Arriba el mensaje, en el medio la mascota que sube, abajo el porcentaje.</div>
+      <div className="row"><span className="lbl">Mascota</span>
+        <span style={{ flex: 1, fontSize: 11, opacity: 0.75 }}>{loader.fImg ? "imagen cargada" : "carita por defecto"}</span>
+        <label className="ibtn" title="Subir imagen"><Icon name="open" size={16} />
+          <input type="file" accept="image/*" onChange={(e) => { uploadImg(e.target.files[0]); e.target.value = ""; }} />
+        </label>
+        {loader.fImg && <button className="mini" onClick={() => setLoaderField("fImg", "")}>Quitar</button>}
+      </div>
+      {msgs.map((m, i) => (
+        <div key={i} style={{ border: "1px solid var(--line2, #2a2f3a)", borderRadius: 8, padding: 8, marginBottom: 6 }}>
+          <div className="row"><span className="lbl">Desde %</span>
+            <input type="number" min={0} max={100} value={m.desde ?? 0} style={{ width: 64 }} onChange={(e) => setMsg(i, { desde: Math.max(0, Math.min(100, Number(e.target.value) || 0)) })} />
+            <button className="mini" style={{ marginLeft: "auto" }} onClick={() => setLoaderField("fMensajes", msgs.filter((_, j) => j !== i))} disabled={msgs.length <= 1}>Borrar</button>
+          </div>
+          <div className="row"><span className="lbl">Título</span><input type="text" style={{ flex: 1 }} value={m.titulo || ""} onChange={(e) => setMsg(i, { titulo: e.target.value })} /></div>
+          <div className="row"><span className="lbl">Detalle</span><input type="text" style={{ flex: 1 }} value={m.sub || ""} onChange={(e) => setMsg(i, { sub: e.target.value })} /></div>
+          <SelectRow label="Ícono" value={m.icono || "estrella"} onChange={(v) => setMsg(i, { icono: v })} options={ICONS} />
+          <ColorRow label="Color ícono" value={m.color || "#7B4FD8"} onChange={(v) => setMsg(i, { color: v })} />
+        </div>
+      ))}
+      <div className="row">
+        <Btn onClick={() => setLoaderField("fMensajes", [...msgs, { desde: Math.min(100, (Math.max(0, ...msgs.map((m) => +m.desde || 0)) + 10)), icono: "estrella", color: "#E8693A", titulo: "Nuevo mensaje", sub: "" }])}>+ Mensaje</Btn>
+        <Btn onClick={() => setLoaderField("fMensajes", LDR_FX_MSGS)}>Restaurar textos</Btn>
+      </div>
+      <Switch checked={loader.fConfeti !== false} onChange={(v) => setLoaderField("fConfeti", v)} label="Confeti en momentos clave" />
+      {loader.fConfeti !== false && (
+        <div className="row"><span className="lbl">Confeti en %</span>
+          <input type="text" style={{ flex: 1 }} defaultValue={(loader.fFestejos || [30, 70]).join(", ")} key={(loader.fFestejos || []).join(",")}
+            onBlur={(e) => setLoaderField("fFestejos", e.target.value.split(/[ ,;]+/).map(Number).filter((n) => n > 0 && n <= 100))} />
+        </div>
+      )}
+      <ColorRow label="Fondo" value={loader.background || "#ffffff"} onChange={(v) => setLoaderField("background", v)} />
+      <ColorRow label="Título" value={loader.fTitulo || "#3F8A28"} onChange={(v) => setLoaderField("fTitulo", v)} />
+      <ColorRow label="Detalle" value={loader.fSub || "#5b7a52"} onChange={(v) => setLoaderField("fSub", v)} />
+      <ColorRow label="Porcentaje" value={loader.fNum || "#3F8A28"} onChange={(v) => setLoaderField("fNum", v)} />
+      <Switch checked={loader.fBarraOn !== false} onChange={(v) => setLoaderField("fBarraOn", v)} label="Barra de progreso arriba" />
+      {loader.fBarraOn !== false && <ColorRow label="Color barra" value={loader.fBarra || "#F5C93A"} onChange={(v) => setLoaderField("fBarra", v)} />}
+      <Switch checked={loader.fSueloOn !== false} onChange={(v) => setLoaderField("fSueloOn", v)} label="Piso bajo la mascota" />
+      {loader.fSueloOn !== false && <ColorRow label="Color piso" value={loader.fSuelo || "#7CC23A"} onChange={(v) => setLoaderField("fSuelo", v)} />}
+      {loader.fConfeti !== false && pal.map((c, i) => <ColorRow key={i} label={"Confeti " + (i + 1)} value={c} onChange={(v) => setLoaderField("fPaleta", pal.map((x, j) => (j === i ? v : x)))} />)}
+      <FontSelect label="Tipografía" value={loader.font || "'Montserrat', sans-serif"} onChange={(v) => setLoaderField("font", v)} />
+      <Slider label="Duración mín." min={800} max={6000} step={100} value={loader.minMs ?? 1800} onChange={(v) => setLoaderField("minMs", v)} />
+      <Switch checked={loader.showNumber !== false} onChange={(v) => setLoaderField("showNumber", v)} label="Mostrar porcentaje" />
+    </>
+  );
+}
 function LoaderFields({ loader, setLoaderField, onPreview }) {
   const strokes = useMemo(() => ldrCountStrokes(loader.svg), [loader.svg]);
   const upload = (file) => {
@@ -10143,6 +10379,9 @@ function LoaderFields({ loader, setLoaderField, onPreview }) {
   return (
     <>
       <Btn onClick={onPreview}>▶ Ver loader</Btn>
+      <Seg value={loader.style === "fiesta" ? "fiesta" : "classic"} options={[["classic", "Clásico (SVG)"], ["fiesta", "Fiesta"]]}
+        onChange={(v) => { setLoaderField("style", v); if (v === "fiesta" && (loader.background || "#05070f") === "#05070f") { setLoaderField("background", "#ffffff"); setLoaderField("font", "'Montserrat', sans-serif"); } }} />
+      {loader.style === "fiesta" ? <LoaderFiestaFields loader={loader} setLoaderField={setLoaderField} /> : <>
       <div className="row"><span className="lbl">SVG</span>
         <span style={{ flex: 1, fontSize: 11, opacity: 0.75 }}>{loader.svg ? `${strokes} trazos${strokes > 300 ? " · son muchos, puede ir lento" : ""}` : "sin SVG (solo el número)"}</span>
         <label className="ibtn" title="Subir SVG"><Icon name="open" size={16} />
@@ -10156,6 +10395,7 @@ function LoaderFields({ loader, setLoaderField, onPreview }) {
       <Slider label="Grosor línea" min={0.6} max={4} step={0.1} value={loader.lineWidth ?? 1.4} onChange={(v) => setLoaderField("lineWidth", v)} />
       <Slider label="Duración mín." min={800} max={6000} step={100} value={loader.minMs ?? 1800} onChange={(v) => setLoaderField("minMs", v)} />
       <Switch checked={loader.showNumber !== false} onChange={(v) => setLoaderField("showNumber", v)} label="Mostrar número 000 → 100" />
+      </>}
       <div style={{ fontSize: 10.5, opacity: 0.6, lineHeight: 1.35 }}>El SVG se dibuja trazo a trazo, de abajo hacia arriba, mientras carga el sitio (los rellenos se ven solo como contorno). El número sigue la carga real. Al llegar a 100 se hace zoom hacia adentro del SVG y aparece la web. Funciona mejor con SVG simples (menos de 300 trazos) y con el texto convertido a curvas.</div>
     </>
   );
