@@ -18,19 +18,20 @@
 <meta name="theme-color" content="#1a1026">
 <link rel="icon" href="panel/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap">
 <link rel="preload" as="image" href="animacion/web1.webp">
 <style>
 :root{--brand:#e8693a;--ink:#fbf9ff;--mute:rgba(251,249,255,.62);--line:rgba(255,255,255,.12);--line2:rgba(255,255,255,.2);--ok:#5ad39a;--warn:#f2b44e;--vio:#9a7bd6;--card:rgba(255,255,255,.07)}
 *{box-sizing:border-box;margin:0}
 html{background:#170e24;color-scheme:dark}
 body{font-family:"Montserrat",system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;overflow-x:hidden}
-#scroll{height:1350vh;position:relative}
+#scroll{height:1170vh;position:relative}
 #stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;
-  background:radial-gradient(120% 60% at 50% -10%,#5b3d85 0%,rgba(91,61,133,0) 62%),radial-gradient(90% 50% at 100% 100%,rgba(232,105,58,.18) 0%,rgba(232,105,58,0) 60%),linear-gradient(#2b1c44,#170e24 70%)}
+  background:radial-gradient(70% 45% at 50% 46%,rgba(134,64,245,.9) 0%,rgba(134,64,245,0) 75%),radial-gradient(55% 35% at 108% 92%,rgba(255,105,55,.55) 0%,rgba(255,105,55,0) 70%),radial-gradient(50% 35% at -12% 38%,rgba(160,70,255,.55) 0%,rgba(160,70,255,0) 70%),linear-gradient(#26104e,#150a30 80%)}
+.arc{position:absolute;left:50%;border-radius:50%;pointer-events:none;border:2px solid rgba(205,150,255,.55);box-shadow:0 0 26px rgba(170,100,255,.55),inset 0 0 26px rgba(170,100,255,.35)}
 .orb{position:absolute;border-radius:50%;filter:blur(40px);opacity:.5;pointer-events:none}
 /* textos */
-.top{position:absolute;left:0;right:0;top:0;padding:calc(12px + env(safe-area-inset-top)) 16px 26px;text-align:center;z-index:30;pointer-events:none;background:linear-gradient(rgba(36,23,58,.96) 70%,rgba(36,23,58,0))}
+.top{position:absolute;left:0;right:0;top:0;padding:calc(12px + env(safe-area-inset-top)) 16px 26px;text-align:center;z-index:30;pointer-events:none;background:linear-gradient(rgba(34,14,70,.62) 60%,rgba(34,14,70,0))}
 .glow{position:absolute;left:50%;width:520px;height:640px;margin-left:-260px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(150,90,255,.42),rgba(150,90,255,.12) 55%,rgba(150,90,255,0));filter:blur(10px)}
 .ico{position:relative;height:46px;display:flex;align-items:center;justify-content:center}
 .ico::before,.ico::after{content:"";position:absolute;top:50%;width:min(28vw,190px);height:2px;border-radius:2px}
@@ -40,9 +41,13 @@ body{font-family:"Montserrat",system-ui,sans-serif;color:var(--ink);-webkit-font
 .ico svg .a{stroke:#a46cff}
 .caps{position:relative;margin-top:10px}
 .cap{position:absolute;left:0;right:0;top:0;opacity:0}
-.cap h2{font-size:clamp(1.85rem,8.6vw,3.2rem);font-weight:800;letter-spacing:-.03em;line-height:1.04;text-wrap:balance}
+.cap h2{font-size:clamp(2.15rem,10.6vw,3.7rem);font-weight:900;letter-spacing:-.035em;line-height:1}
+.cap .w{display:inline-block;will-change:transform}
+.cap .l2{display:block;color:#ff6a2b;text-shadow:0 0 28px rgba(255,106,43,.45);will-change:transform}
 .cap h2 em{font-style:normal;color:var(--brand)}
-.cap p{color:#cbbbe6;font-size:clamp(1rem,4.4vw,1.3rem);font-weight:500;margin-top:6px;line-height:1.25}
+.cap p{display:inline-flex;align-items:center;gap:9px;margin-top:12px;padding:.5rem 1.05rem;border-radius:99px;background:rgba(255,255,255,.09);box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 8px 24px rgba(20,0,50,.3);color:#f1e9ff;font-size:clamp(.92rem,4.1vw,1.2rem);font-weight:500;line-height:1.2}
+.cap p svg{width:1.15em;height:1.15em;flex:none;stroke:#f1e9ff;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.spot{position:absolute;inset:0;z-index:25;pointer-events:none;opacity:0}
 .badge{position:absolute;left:50%;top:0;transform:translateX(-50%);z-index:31;background:linear-gradient(90deg,#e8693a,#f2a14e);color:#1b0f26;font-weight:800;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;padding:.45rem 1rem;border-radius:99px;box-shadow:0 0 28px rgba(232,105,58,.55);opacity:0;white-space:nowrap}
 .hint{position:absolute;left:0;right:0;bottom:calc(18px + env(safe-area-inset-bottom));text-align:center;color:var(--mute);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;z-index:30}
 .hint i{display:block;width:2px;height:22px;margin:6px auto 0;background:linear-gradient(var(--brand),transparent);animation:h 1.6s ease-in-out infinite}
@@ -55,7 +60,7 @@ body{font-family:"Montserrat",system-ui,sans-serif;color:var(--ink);-webkit-font
 #world{position:absolute;left:50%;top:58%;width:0;height:0;perspective:1500px;transform-style:preserve-3d}
 #rig{position:absolute;left:0;top:0;transform-style:preserve-3d}
 .phone{position:absolute;left:-150px;top:-320px;width:300px;height:640px;transform-style:preserve-3d;will-change:transform}
-.body{position:absolute;inset:0;border-radius:46px;background:linear-gradient(145deg,#3a2a52,#120a1d 60%);box-shadow:0 40px 80px -20px rgba(0,0,0,.7),0 0 0 1.5px rgba(255,255,255,.14) inset}
+.body{position:absolute;inset:0;border-radius:46px;background:linear-gradient(145deg,#3a2a52,#120a1d 60%);box-shadow:0 40px 80px -20px rgba(0,0,0,.7),0 0 0 1.5px rgba(255,255,255,.18) inset,0 0 0 2px rgba(185,125,255,.9),0 0 38px rgba(160,90,255,.6)}
 .back{position:absolute;inset:0;border-radius:46px;background:#0c0714;transform:translateZ(-12px)}
 .edge{position:absolute;inset:3px;border-radius:44px;background:#22163a;transform:translateZ(-6px)}
 .scr{position:absolute;left:9px;top:9px;width:282px;height:622px;border-radius:38px;overflow:hidden;background:linear-gradient(#2b1c44,#170e24 75%);transform:translateZ(1px)}
@@ -82,7 +87,7 @@ body{font-family:"Montserrat",system-ui,sans-serif;color:var(--ink);-webkit-font
 .grid{position:absolute;left:12px;width:258px;display:grid;grid-template-columns:repeat(7,1fr)}
 .dow{font-size:8.5px;text-align:center;color:var(--mute);font-weight:700;letter-spacing:.08em;height:22px;line-height:22px}
 .d{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:600;position:relative}
-.d b{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600}
+.d b{width:30px;height:30px;font-size:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600}
 .d.oc{color:rgba(251,249,255,.28)}
 .d.oc b{text-decoration:line-through}
 .d.lib b{box-shadow:inset 0 0 0 1.5px rgba(232,105,58,0)}
@@ -185,6 +190,7 @@ body{font-family:"Montserrat",system-ui,sans-serif;color:var(--ink);-webkit-font
   <div class="orb" style="width:260px;height:260px;left:-80px;top:30%;background:#7a4fc0"></div>
   <div class="orb" style="width:220px;height:220px;right:-70px;top:62%;background:#e8693a;opacity:.32"></div>
 
+  <div class="arc" id="arc1"></div><div class="arc" id="arc2"></div>
   <div class="glow" id="glow"></div>
   <div class="top">
     <div class="ico" id="ico"></div>
@@ -247,7 +253,7 @@ body{font-family:"Montserrat",system-ui,sans-serif;color:var(--ink);-webkit-font
             <p>Te mandamos todo por mail</p>
           </div>
         </div>
-        <div class="tap" id="tA"></div>
+        <div class="spot" id="spA"></div><div class="tap" id="tA"></div>
       </div>
     </div>
 
@@ -296,7 +302,7 @@ body{font-family:"Montserrat",system-ui,sans-serif;color:var(--ink);-webkit-font
         </div>
         <div class="notif" id="notif"><img src="panel/tuweeb-icono.svg" alt=""><div><b>Nueva reserva · Lucía F.</b><small>Sáb 12 · 17:30 · Seña $114.000</small></div></div>
         <div class="toast" id="toast" style="opacity:0">✓ Pago registrado</div>
-        <div class="tap" id="tB"></div>
+        <div class="spot" id="spB"></div><div class="tap" id="tB"></div>
       </div>
     </div>
 
@@ -320,23 +326,22 @@ const L=(a,b,t)=>a+(b-a)*t;
 // pista con claves: [[T,v],...] suavizada entre claves
 const K=(T,ks)=>{if(T<=ks[0][0])return ks[0][1];for(let i=1;i<ks.length;i++){if(T<=ks[i][0]){const[a,va]=ks[i-1],[b,vb]=ks[i];return L(va,vb,E((T-a)/(b-a)))}}return ks[ks.length-1][1]};
 const money=n=>'$'+Math.round(n).toLocaleString('es-AR');
-const SEG=10;
+const SEG=9;
 
 /* ---------- textos ---------- */
 const CAPS=[
- ['Tu salón, <em>en 3D</em>','Una web que se recorre como un juego'],
- ['La familia reserva <em>desde tu web</em>','Elige el día y el horario libre'],
- ['Elige <em>su plan</em>','Ve el precio y la seña al instante'],
- ['Y paga <em>la seña</em>','Por Mercado Pago o transferencia'],
- ['Y te llega <em>a vos</em>','Sin WhatsApps ni cuaderno'],
- ['Tu agenda, <em>al día</em>','Cada reserva en su lugar'],
- ['Registrás <em>el pago</em>','El saldo se calcula solo'],
- ['Todas tus <em>reservas</em>','Ves quién te debe en un toque'],
- ['Y la caja <em>del mes</em>','Ingresos, gastos y balance'],
- ['Web 3D <em>+ panel</em>','Todo incluido, en un solo servicio'],
+ ['La familia reserva','desde tu web','Elegí el día y el horario ideal'],
+ ['Elige','su plan','Ve el precio y la seña al instante'],
+ ['Y paga','la seña','Por Mercado Pago o transferencia'],
+ ['Y te llega','a vos','Sin WhatsApps ni cuaderno'],
+ ['Tu agenda,','al día','Cada reserva en su lugar'],
+ ['Registrás','el pago','El saldo se calcula solo'],
+ ['Todas tus','reservas','Ves quién te debe en un toque'],
+ ['Y la caja','del mes','Ingresos, gastos y balance'],
+ ['Web 3D','+ panel incluido','Todo en un solo servicio, a medida'],
 ];
 const caps=$('caps');
-const capEls=CAPS.map(([h,p])=>{const d=document.createElement('div');d.className='cap';d.innerHTML=`<h2>${h}</h2><p>${p}</p>`;caps.appendChild(d);return d});
+const capEls=CAPS.map(([a,b,p])=>{const d=document.createElement('div');d.className='cap';d.innerHTML=`<h2>${a.split(' ').map(x=>`<span class="w">${x}</span>`).join(' ')}<span class="l2">${b}</span></h2><p><i></i><span>${p}</span></p>`;caps.appendChild(d);return d});
 const ICOS=[
  '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path class="a" d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/>',
  '<rect x="3.5" y="5" width="17" height="15" rx="3.5"/><path d="M8 3v4M16 3v4"/><path class="a" d="M8.5 13l2.5 2.5 4.5-5"/>',
@@ -349,6 +354,8 @@ const ICOS=[
  '<path d="M4 20h16"/><path d="M7 16v-4M12 16V7M17 16v-6"/><path class="a" d="M5 9l5-4 4 3 5-4"/>',
  '<path d="M12 3l2 5.5L19.5 10 14 12l-2 5.5L10 12 4.5 10 10 8.5z"/><path class="a" d="M19 16l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>',
 ];
+ICOS.shift();
+capEls.forEach((c,i)=>{c.querySelector('p i').outerHTML=`<svg viewBox="0 0 24 24">${ICOS[i].replace(/class="a" /g,'')}</svg>`});
 const icoEls=ICOS.map(p=>{const i=document.getElementById('ico');i.insertAdjacentHTML('beforeend',`<svg viewBox="0 0 24 24">${p}</svg>`);return i.lastElementChild});
 
 /* ---------- sitio 3D (cuadros) ---------- */
@@ -414,9 +421,12 @@ function fit(){
   // el alto del encabezado es el del texto más largo, así no salta entre momentos
   let mh=0;capEls.forEach(c=>{mh=Math.max(mh,c.offsetHeight)});$('caps').style.height=mh+'px';
   const capBot=$('caps').getBoundingClientRect().bottom;
-  const top=capBot+14, bottom=h-Math.max(14,h*.02);
-  S=Math.min((bottom-top)/640,w*.9/300,1.3);
+  const top=capBot+12;
+  S=Math.min((h-top)/(640*.965),w*.92/300,1.35);
   const cy=top+320*S;
+  const a1=$('arc1'),a2=$('arc2');const d1=760*S,d2=1100*S;
+  a1.style.width=a1.style.height=d1+'px';a1.style.marginLeft=(-d1/2)+'px';a1.style.top=(cy-d1*.36)+'px';
+  a2.style.width=a2.style.height=d2+'px';a2.style.marginLeft=(-d2/2+120*S)+'px';a2.style.top=(cy-d2*.3)+'px';a2.style.opacity=.55;
   $('world').style.top=cy+'px';
   const g=$('glow');g.style.top=(cy-320)+'px';g.style.transform=`scale(${Math.max(.8,S*1.1)})`;
   $('badge').style.top=(top-6)+'px';
@@ -433,10 +443,28 @@ function setTap(el,T,ks){ // ks: [[t0,t1,x,y],...] aparece, presiona, se va
 const type=(s,t)=>s.slice(0,Math.round(s.length*C(t)));
 
 /* ---------- render ---------- */
-function render(T,time){
-  // textos
-  capEls.forEach((el,i)=>{const o=Math.min(i===0?1:R(T,i+.0,i+.1),i===SEG-1?1:1-R(T,i+.9,i+.98));el.style.opacity=o;if(icoEls[i]){icoEls[i].style.opacity=o;icoEls[i].style.transform=`scale(${.85+.15*o})`}el.style.transform=`translateY(${(1-o)*8}px)`});
-  $('hint').style.opacity=1-R(T,.05,.3);
+function spot(el,T,ks){let o=0,x=0,y=0,rx=40,ry=40;
+  for(const[a,b,X,Y,RX,RY]of ks){const k=Math.min(R(T,a,a+.05),1-R(T,b,b+.05));if(k>o){o=k;x=X;y=Y;rx=RX;ry=RY}}
+  el.style.opacity=o;if(o>0)el.style.background=`radial-gradient(${rx}px ${ry}px at ${x}px ${y}px,rgba(12,6,24,0) 72%,rgba(12,6,24,.66) 100%)`}
+// cada momento: primero entra el texto, después se mueve el celular
+function render(Tn,time){
+  const j=Math.min(SEG-1,Math.floor(Tn)), u=Tn-j;
+  capEls.forEach((el,i)=>{
+    if(i!==j){el.style.opacity=0;icoEls[i].style.opacity=0;return}
+    const out=i===SEG-1?1:1-R(u,.95,1);el.style.opacity=out;el.style.transform=`translateY(${(1-out)*-12}px)`;
+    el.querySelectorAll('.w').forEach((w,k)=>{const q=R(u,.01+k*.035,.11+k*.035);w.style.opacity=q;w.style.transform=`translateY(${(1-q)*34}px)`});
+    const q2=R(u,.07,.18),l2=el.querySelector('.l2');l2.style.opacity=q2;l2.style.transform=`scale(${.82+.18*q2})`;
+    const q3=R(u,.13,.23),p=el.querySelector('p');p.style.opacity=q3;p.style.transform=`translateY(${(1-q3)*14}px)`;
+    const qi=R(u,0,.08)*out;icoEls[i].style.opacity=qi;icoEls[i].style.transform=`scale(${.6+.4*qi}) rotate(${(1-qi)*-20}deg)`;
+  });
+  $('hint').style.opacity=R(Tn,.24,.3)*(1-R(Tn,.36,.5));
+  const ps=j===0?.32:.24, st=j===0?1.5:j+1;
+  const To=st+(j+2-st)*C((u-ps)/(1-ps));
+  intro=j===0?(1-R(u,.14,.32))*560:0;
+  renderOld(To,time);
+}
+let intro=0;
+function renderOld(T,time){
   const bo=Math.max(Math.min(R(T,4.5,4.65),1-R(T,5.6,5.75)),R(T,9.2,9.4));
   $('badge').style.opacity=bo;$('badge').style.transform=`translateX(-50%) scale(${.85+.15*bo})`;
   $('badge').textContent=T>8.5?'Web 3D + panel incluido':'Panel incluido';
@@ -455,7 +483,7 @@ function render(T,time){
   const aY=K(T,[[0,30],[.4,10],[.55,120],[1.0,120],[1.25,0],[9,0]]);
   const aS=K(T,[[0,.92],[.4,1],[3.9,1],[4.3,.86],[5,.86],[9,.86],[9.35,.9]]);
   const aO=1-R(T,5.15,5.3)+R(T,9,9.15);
-  $('pA').style.transform=`translate3d(${aX}px,${aY+fl}px,0) rotateY(${aRY}deg) rotateX(${aRX}deg) scale(${aS})`;
+  $('pA').style.transform=`translate3d(${aX}px,${aY+fl+intro}px,0) rotateY(${aRY}deg) rotateX(${aRX}deg) scale(${aS})`;
   $('pA').style.opacity=C(aO);
 
   // sitio: cuadros que corren con el scroll
@@ -534,6 +562,8 @@ function render(T,time){
   barEls.forEach((g,i)=>{const k=R(T,8.52+i*.04,8.68+i*.04);g[0].style.transform=`scaleY(${k})`;g[1].style.transform=`scaleY(${k})`});
   mvEls.forEach((e,i)=>{const k=R(T,8.7+i*.04,8.82+i*.04);e.style.opacity=k;e.style.transform=`translateX(${(1-k)*20}px)`});
 
+  spot($('spA'),T,[[1.66,1.96,...cellA(12),34,34],[2.04,2.13,141,495,150,46],[2.6,2.76,141,262,112,140],[2.78,2.98,141,466,150,58],[3.52,3.7,141,525,160,46]]);
+  spot($('spB'),T,[[5.35,5.55,...cellB(12),34,34],[6.2,6.6,141,438,150,62],[7.82,8.0,141,229,150,44],[8.22,8.52,141,154,150,62]]);
   /* ===== la tarjeta que viaja de un celular al otro ===== */
   const tt=R(T,4.32,4.78), tv=Math.min(R(T,4.28,4.34),1-R(T,4.76,4.84));
   const tk=$('ticket');
@@ -549,7 +579,8 @@ function render(T,time){
 let cur=0;
 function target(){const el=$('scroll');const max=el.offsetHeight-innerHeight;return C(scrollY/max)*SEG}
 let frozen=false;
-function loop(time){if(frozen){requestAnimationFrame(loop);return}const tg=target();cur+=(tg-cur)*.14;if(Math.abs(tg-cur)<.0005)cur=tg;render(cur,time);requestAnimationFrame(loop)}
+const t0=performance.now();
+function loop(time){if(frozen){requestAnimationFrame(loop);return}const tg=Math.max(target(),.3*C((time-t0-250)/1500));cur+=(tg-cur)*.14;if(Math.abs(tg-cur)<.0005)cur=tg;render(cur,time);requestAnimationFrame(loop)}
 cur=target();requestAnimationFrame(loop);
 window.__render=(T)=>{frozen=true;cur=T;render(T,0)}; // para pruebas
 })();
