@@ -577,7 +577,12 @@ function renderOld(T,time){
 
 /* ---------- scroll suave ---------- */
 let cur=0;
-function target(){const el=$('scroll');const max=el.offsetHeight-innerHeight;return C(scrollY/max)*SEG}
+// si está metida en un iframe con data-scroll (bloque HTML libre del editor), la mueve el scroll de la página de afuera
+let fe=null;try{fe=window.frameElement;if(fe&&fe.dataset.scroll===undefined)fe=null}catch(e){fe=null}
+if(fe)$('scroll').style.height='100%';
+function target(){
+  if(fe){const box=fe.parentElement.getBoundingClientRect();const ph=window.parent.innerHeight;return C(-box.top/Math.max(1,box.height-ph))*SEG}
+  const el=$('scroll');const max=el.offsetHeight-innerHeight;return C(scrollY/max)*SEG}
 let frozen=false;
 const t0=performance.now();
 function loop(time){if(frozen){requestAnimationFrame(loop);return}const tg=Math.max(target(),.3*C((time-t0-250)/1500));cur+=(tg-cur)*.14;if(Math.abs(tg-cur)<.0005)cur=tg;render(cur,time);requestAnimationFrame(loop)}
