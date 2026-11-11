@@ -436,6 +436,7 @@
   .music:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
   .music svg { width: 56%; height: 56%; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
   .music--right { right: 24px; } .music--left { left: 24px; }
+  .music--bt.music--left { left: var(--mu-off, 80px); } .music--bt.music--right { right: var(--mu-off, 80px); }
   @media (max-width: 720px) { .music--lift { bottom: calc(98px + env(safe-area-inset-bottom)); } }
   .backtop--center { left: 50%; margin-left: calc(var(--bt-size) / -2); }
   .backtop--light { --bt-fg: #111; --bt-bg: rgba(255,255,255,.62); --bt-line: rgba(0,0,0,.14); --bt-bg-h: rgba(255,255,255,.85); box-shadow: 0 6px 22px rgba(0,0,0,.16); }
@@ -6021,6 +6022,7 @@ const RAIL_CSS = `
 @keyframes wrPiedra { 0%,100% { transform: rotate(-7deg) scale(1); } 50% { transform: rotate(9deg) scale(1.045); } }
 .wr-it svg { position: relative; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 2px rgba(0,40,30,.35)); }
 .wr-it:focus-visible { outline: 2px solid #fff; outline-offset: 2px; pointer-events: auto; }
+html.wr-on .progress-rail { right: auto; left: 3vw; }
 .wr-zona { right: 0; bottom: 0; width: 84px; z-index: 26; touch-action: none; user-select: none; -webkit-user-select: none; pointer-events: auto; }
 .wr-etq { right: 94px; z-index: 26; transform: translateY(-50%); font-weight: 500; font-size: .98rem; letter-spacing: .01em; color: #fff; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .3s;
   text-shadow: 0 0 14px rgba(var(--wr-oscuro), .75), 0 1px 3px rgba(var(--wr-oscuro), .45); }
@@ -6115,6 +6117,7 @@ function weebRailMount(host, C, contained) {
   const box = host.parentElement || host;
   const vibrar = (ms) =&gt; { try { navigator.vibrate &amp;&amp; navigator.vibrate(ms); } catch (e) { /* sin vibración */ } };
   let H = 0, M = 0, pos = INICIAL, a = 0, aT = 0, vel = 0, destino = INICIAL, arrastrando = false, inercia = false, snapping = false, quiere = false, preguntando = -1, ultimo = INICIAL;
+  if (!contained) document.documentElement.classList.add("wr-on");
   let raf = 0, tPrev = 0, tPreg = 0, tCol = 0, abriendo = null, anims = [], muerto = false;
   const yRest = (i) =&gt; { let y = H - REST_B; for (let j = i; j &lt; N - 1; j++) y -= 24 + 2.4 * (N - 2 - j); return y; };
   const xRest = (i) =&gt; 24 * Math.pow(i / Math.max(1, N - 1), 1.5);
@@ -6143,13 +6146,13 @@ function weebRailMount(host, C, contained) {
   const frame = (now) =&gt; {
     const dt = Math.min(0.05, (now - tPrev) / 1000); tPrev = now; raf = 0;
     if (inercia) {
-      pos += vel * dt; vel *= Math.exp(-dt * 3.6);
+      pos += vel * dt; vel *= Math.exp(-dt * 2.8);
       if (pos &lt; 0) { pos = 0; vel = 0; } else if (pos &gt; N - 1) { pos = N - 1; vel = 0; }
-      if (Math.abs(vel) &lt; 0.5) { inercia = false; vel = 0; destino = clamp(Math.round(pos), 0, N - 1); snapping = true; }
+      if (Math.abs(vel) &lt; 1.4) { inercia = false; vel = 0; destino = clamp(Math.round(pos), 0, N - 1); snapping = true; }
     } else if (snapping) {
       const d = destino - pos;
-      if (reduce || Math.abs(d) &lt; 0.004) { pos = destino; snapping = false; if (quiere) { quiere = false; preguntar(destino); } else if (!arrastrando) programarColapso(900); }
-      else pos += d * (1 - Math.exp(-dt * 16));
+      if (reduce || Math.abs(d) &lt; 0.02) { pos = destino; snapping = false; if (quiere) { quiere = false; preguntar(destino); } else if (!arrastrando) programarColapso(900); }
+      else pos += d * (1 - Math.exp(-dt * 22));
     }
     const ad = aT - a; a = reduce || Math.abs(ad) &lt; 0.002 ? aT : a + ad * (1 - Math.exp(-dt * (ad &gt; 0 ? 6 : 4)));
     pintar();
@@ -6225,7 +6228,7 @@ function weebRailMount(host, C, contained) {
     } else {
       pos = clamp(pos, 0, N - 1);
       const m0 = muestras[0], m1 = muestras[muestras.length - 1], dtm = (m1[0] - m0[0]) / 1000, v = dtm &gt; 0.01 ? (m1[1] - m0[1]) / dtm : 0;
-      if (Math.abs(v) &gt; 1.6 &amp;&amp; !reduce) { vel = clamp(v * 0.7, -9, 9); inercia = true; }
+      if (Math.abs(v) &gt; 1.6 &amp;&amp; !reduce) { vel = clamp(v * 0.9, -14, 14); inercia = true; }
       else { destino = clamp(Math.round(pos), 0, N - 1); snapping = true; }
     }
     kick();
@@ -6253,7 +6256,7 @@ function weebRailMount(host, C, contained) {
     intentar();
   }
   return () =&gt; {
-    muerto = true; cancelAnimationFrame(raf); clearTimeout(tPreg); clearTimeout(tCol); clearTimeout(hintT);
+    muerto = true; try { document.documentElement.classList.remove("wr-on"); } catch (e) { /* ok */ } cancelAnimationFrame(raf); clearTimeout(tPreg); clearTimeout(tCol); clearTimeout(hintT);
     document.removeEventListener("pointerdown", onDocDown); window.removeEventListener("pageshow", onShow); window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", medir);
     host.innerHTML = "";
   };
@@ -6578,8 +6581,8 @@ function MusicToggle() {
   const sz = MUSIC.size || 46;
   return (
     <button type="button" aria-label={playing ? "Silenciar la música" : "Activar la música"} aria-pressed={playing} onClick={toggle}
-      className={"music music--" + (MUSIC.position === "right" ? "right" : "left") + (on ? " is-on" : "") + (FAB.enabled &amp;&amp; !railHidesFab() ? " music--lift" : "")}
-      style={{ "--mu-size": sz + "px", ...(MUSIC.color ? { "--mu-bg": MUSIC.color } : {}) }}>
+      className={"music music--" + (MUSIC.position === "right" ? "right" : "left") + (on ? " is-on" : "") + (FAB.enabled &amp;&amp; !railHidesFab() ? " music--lift" : "") + (BACKTOP.enabled &amp;&amp; BACKTOP.position === MUSIC.position &amp;&amp; MUSIC.position !== "center" ? " music--bt" : "")}
+      style={{ "--mu-size": sz + "px", "--mu-off": ((BACKTOP.size || 46) + 34) + "px", ...(MUSIC.color ? { "--mu-bg": MUSIC.color } : {}) }}>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path ref={pathRef} d="M3 12H21" /></svg>
     </button>
   );
