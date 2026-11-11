@@ -6146,7 +6146,7 @@ function weebRailMount(host, C, contained) {
   const frame = (now) =&gt; {
     const dt = Math.min(0.05, (now - tPrev) / 1000); tPrev = now; raf = 0;
     if (inercia) {
-      pos += vel * dt; vel *= Math.exp(-dt * 2.8);
+      pos += vel * dt; vel *= Math.exp(-dt * 3.2);
       if (pos &lt; 0) { pos = 0; vel = 0; } else if (pos &gt; N - 1) { pos = N - 1; vel = 0; }
       if (Math.abs(vel) &lt; 1.4) { inercia = false; vel = 0; destino = clamp(Math.round(pos), 0, N - 1); snapping = true; }
     } else if (snapping) {
@@ -6202,7 +6202,7 @@ function weebRailMount(host, C, contained) {
     }, reduce ? 0 : 480);
   });
   let y0 = 0, pos0 = 0, movio = false, idDedo = null, muestras = [], estabaChico = false;
-  zona.addEventListener("pointerdown", (e) =&gt; {
+  zona.addEventListener("pointerdown", (e) =&gt; { hintOff = true; clearTimeout(hintT);
     if (abriendo) return;
     if (preguntando &gt;= 0) cancelar();
     estabaChico = a &lt; 0.5; arrastrando = true; inercia = false; snapping = false; quiere = false; movio = false; idDedo = e.pointerId; y0 = e.clientY; pos0 = pos; muestras = [[performance.now(), pos]];
@@ -6228,28 +6228,39 @@ function weebRailMount(host, C, contained) {
     } else {
       pos = clamp(pos, 0, N - 1);
       const m0 = muestras[0], m1 = muestras[muestras.length - 1], dtm = (m1[0] - m0[0]) / 1000, v = dtm &gt; 0.01 ? (m1[1] - m0[1]) / dtm : 0;
-      if (Math.abs(v) &gt; 1.6 &amp;&amp; !reduce) { vel = clamp(v * 0.9, -14, 14); inercia = true; }
+      if (Math.abs(v) &gt; 1.6 &amp;&amp; !reduce) { vel = clamp(v * 0.55, -11, 11); inercia = true; }
       else { destino = clamp(Math.round(pos), 0, N - 1); snapping = true; }
     }
     kick();
   };
   zona.addEventListener("pointerup", soltar); zona.addEventListener("pointercancel", soltar);
+  let tRueda = 0;
+  zona.addEventListener("wheel", (e) => {
+    if (abriendo) return;
+    e.preventDefault(); hintOff = true; clearTimeout(hintT);
+    if (preguntando >= 0) cancelar();
+    const dy = e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY;
+    destino = clamp((snapping || inercia ? destino : pos) + dy / 110, 0, N - 1); inercia = false; vel = 0; snapping = true; quiere = false; aT = 1;
+    clearTimeout(tCol); riel.classList.remove("quieta");
+    clearTimeout(tRueda); tRueda = setTimeout(() => { destino = clamp(Math.round(destino), 0, N - 1); snapping = true; quiere = true; kick(); }, 220);
+    kick();
+  }, { passive: false });
   riel.addEventListener("keydown", (e) =&gt; { if (e.key === "Enter" || e.key === " ") { const t = e.target.closest &amp;&amp; e.target.closest(".wr-it"); if (t) { e.preventDefault(); aT = 1; destino = +t.dataset.i; snapping = true; quiere = true; kick(); } } });
   const onScroll = () =&gt; { if (a &lt; 0.05 &amp;&amp; !arrastrando) riel.classList.add("quieta"); };
   const medir = () =&gt; { H = contained ? box.clientHeight : window.innerHeight; M = Math.round(H * (1 - ALTO)); pintar(); };
   window.addEventListener("scroll", onScroll, { passive: true }); window.addEventListener("resize", medir); medir();
   /* aviso la primera vez (cuando ya terminó el loader): los botones se despliegan solos, se mueven un poquito y se achican */
-  let hintT = 0, vio = false; try { vio = localStorage.getItem("wr_hint_v1") === "1"; } catch (e) { /* sin almacenamiento */ }
+  let hintOff = false; let hintT = 0, vio = false; try { vio = localStorage.getItem("wr_hint_v1") === "1"; } catch (e) { /* sin almacenamiento */ }
   if (!vio &amp;&amp; !reduce &amp;&amp; !contained) {
     let tries = 0;
     const intentar = () =&gt; {
       if (muerto) return;
       if (document.querySelector(".ldr") &amp;&amp; tries++ &lt; 80) { hintT = setTimeout(intentar, 500); return; }
       hintT = setTimeout(() =&gt; {
-        if (arrastrando || preguntando &gt;= 0 || muerto) return;
+        if (arrastrando || preguntando &gt;= 0 || muerto || hintOff) return;
         aT = 1; kick();
-        setTimeout(() =&gt; { if (arrastrando || preguntando &gt;= 0 || muerto) return; destino = INICIAL - 1.4; snapping = true; quiere = false; kick(); }, 700);
-        setTimeout(() =&gt; { if (arrastrando || preguntando &gt;= 0 || muerto) return; destino = INICIAL; snapping = true; quiere = false; kick(); }, 1500);
+        setTimeout(() =&gt; { if (arrastrando || preguntando &gt;= 0 || muerto || hintOff) return; destino = INICIAL - 1.4; snapping = true; quiere = false; kick(); }, 700);
+        setTimeout(() =&gt; { if (arrastrando || preguntando &gt;= 0 || muerto || hintOff) return; destino = INICIAL; snapping = true; quiere = false; kick(); }, 1500);
         try { localStorage.setItem("wr_hint_v1", "1"); } catch (e) { /* sin almacenamiento */ }
       }, 900);
     };
