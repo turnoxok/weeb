@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Botones laterales · Planeta Niños (prueba v1)</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
+<style>
+  :root { --verde:#3F8A28; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; font-family:'Montserrat',system-ui,sans-serif; }
+  /* "sitio": una página larga para comprobar que el scroll sigue andando con el dedo fuera de la barra */
+  body { height:600vh; background:linear-gradient(#3bb5e8 0%,#9fe0c0 35%,#f5e9a8 65%,#f7b27a 100%); color:#fff; }
+  .sitio { position:fixed; inset:0; display:grid; place-content:center; text-align:center; padding:24px 90px 24px 24px; pointer-events:none; }
+  .sitio h2 { margin:0 0 8px; font-size:1.5rem; font-weight:800; text-shadow:0 2px 12px rgba(0,0,0,.25); }
+  .sitio p { margin:0; font-weight:600; opacity:.9; text-shadow:0 1px 8px rgba(0,0,0,.25); }
+  .sitio b { display:block; margin-top:14px; font-size:2.4rem; font-variant-numeric:tabular-nums; }
+
+  /* ---------- barra lateral ---------- */
+  .riel { position:fixed; top:0; right:0; bottom:0; width:76px; z-index:50; touch-action:none; user-select:none; -webkit-user-select:none; transition:opacity .5s; }
+  .riel.quieta { opacity:.5; }
+  .marca { position:fixed; right:76px; width:0; height:0; z-index:51; pointer-events:none; border-top:6px solid transparent; border-bottom:6px solid transparent; border-left:8px solid rgba(255,255,255,.9); transform:translateY(-50%); filter:drop-shadow(0 1px 3px rgba(0,0,0,.35)); transition:opacity .4s; }
+  .it { position:absolute; left:50%; top:0; width:42px; height:42px; margin:-21px 0 0 -21px; border:0; padding:0; border-radius:50%; background:rgba(22,30,26,.62); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); color:#fff; display:grid; place-items:center; will-change:transform,opacity; cursor:pointer; }
+  .it::before { content:''; position:absolute; inset:0; border-radius:50%; background:var(--c); opacity:var(--k,0); }
+  .it svg { position:relative; width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .it:focus-visible { outline:3px solid #fff; outline-offset:2px; }
+  .it.sel { box-shadow:0 0 0 5px color-mix(in srgb, var(--c) 35%, transparent), 0 10px 22px -8px var(--c); }
+
+  /* nombre mientras deslizás */
+  .etq { position:fixed; right:94px; z-index:51; transform:translateY(-50%); font-weight:700; font-size:.92rem; color:#fff; padding:7px 12px; border-radius:12px; background:rgba(22,30,26,.62); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); opacity:0; pointer-events:none; transition:opacity .15s; white-space:nowrap; }
+  .etq.on { opacity:1; }
+  /* pregunta al soltar */
+  .pregunta { position:fixed; right:92px; z-index:52; transform:translateY(-50%) scale(.6); transform-origin:100% 50%; opacity:0; pointer-events:none; max-width:calc(100vw - 112px); display:flex; align-items:center; gap:10px; padding:8px 8px 8px 16px; border-radius:18px; background:rgba(22,30,26,.78); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); color:#fff; box-shadow:0 14px 30px -12px rgba(0,0,0,.5); transition:transform .38s cubic-bezier(.2,1.3,.4,1), opacity .2s; }
+  .pregunta.on { transform:translateY(-50%) scale(1); opacity:1; pointer-events:auto; }
+  .pregunta span { font-weight:700; font-size:.92rem; line-height:1.2; }
+  .pregunta button { font:700 .84rem 'Montserrat',sans-serif; min-height:40px; padding:0 16px; border-radius:13px; border:0; color:#fff; cursor:pointer; }
+  .pregunta .si { background:var(--c,#3F8A28); }
+  .pregunta .no { background:rgba(255,255,255,.14); }
+  .pregunta button:focus-visible { outline:3px solid #fff; outline-offset:1px; }
+
+  /* sección que se abre */
+  .abre { position:fixed; inset:0; z-index:80; display:none; flex-direction:column; align-items:center; justify-content:center; gap:14px; text-align:center; padding:24px; color:#fff; background:var(--c); }
+  .abre .gr { width:84px; height:84px; border-radius:50%; background:rgba(255,255,255,.2); display:grid; place-items:center; }
+  .abre .gr svg { width:44px; height:44px; fill:none; stroke:#fff; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .abre h3 { margin:0; font-size:1.8rem; font-weight:800; }
+  .abre p { margin:0; font-weight:500; opacity:.9; max-width:300px; }
+  .abre button { margin-top:10px; font:700 .95rem 'Montserrat',sans-serif; min-height:48px; padding:0 26px; border:0; border-radius:15px; background:rgba(255,255,255,.95); color:#1c2a20; cursor:pointer; }
+  @media (prefers-reduced-motion: reduce) { .pregunta { transition:opacity .2s; transform:translateY(-50%); } }
+</style>
+</head>
+<body>
+<div class="sitio"><div><h2>Acá va el sitio 3D</h2><p>Scrolleá con el dedo en cualquier parte de la pantalla. Los botones de la derecha se deslizan aparte.</p><b id="pc">0%</b></div></div>
+
+<div class="marca" id="marca" aria-hidden="true"></div>
+<div class="riel" id="riel" role="toolbar" aria-label="Accesos rápidos"></div>
+<div class="etq" id="etq"></div>
+<div class="pregunta" id="preg" role="dialog" aria-live="polite"><span id="ptxt"></span><button class="si" id="si" type="button">Sí</button><button class="no" id="no" type="button">No</button></div>
+<div class="abre" id="abre"><div class="gr" id="agr"></div><h3 id="at"></h3><p id="ap">Acá se abriría esta parte del sitio.</p><button id="vol" type="button">Volver</button></div>
+
+<script>
+(function () {
+  /* ================= BOTONES (se editan por cliente) ================= */
+  var ITEMS = [
+    { id: 'planes',      nombre: 'Planes',       icono: 'precio',     color: '#3F8A28', pregunta: '¿Ver los planes?',        si: 'Ver' },
+    { id: 'galeria',     nombre: 'Galería',      icono: 'fotos',      color: '#3BB5E8', pregunta: '¿Ver la galería?',        si: 'Ver' },
+    { id: 'invitacion',  nombre: 'Invitaciones', icono: 'invitacion', color: '#E0457B', pregunta: '¿Diseñar tu invitación?', si: 'Ir' },
+    { id: 'reservar',    nombre: 'Reservar',     icono: 'calendario', color: '#E8693A', pregunta: '¿Ir a reservar?',         si: 'Ir' },
+    { id: 'panel',       nombre: 'Panel',        icono: 'panel',      color: '#7B4FD8', pregunta: '¿Entrar al panel?',       si: 'Entrar' },
+    { id: 'mapa',        nombre: 'Cómo llegar',  icono: 'mapa',       color: '#E0A800', pregunta: '¿Abrir el mapa?',         si: 'Abrir' },
+    { id: 'whatsapp',    nombre: 'WhatsApp',     icono: 'chat',       color: '#1FAF5A', pregunta: '¿Abrir WhatsApp?',        si: 'Abrir' }
+  ];
+  var INICIAL = 3;      // el que queda en la marca al entrar (Reservar)
+  var MARCA = 0.65;     // la marca está al 35% de abajo para arriba
+  /* ==================================================================== */
+  var ICONOS = {
+    precio: '<path d="M3.5 12.2V4.8a1.3 1.3 0 0 1 1.3-1.3h7.4a1.3 1.3 0 0 1 .9.4l8 8a1.3 1.3 0 0 1 0 1.8l-7.4 7.4a1.3 1.3 0 0 1-1.8 0l-8-8a1.3 1.3 0 0 1-.4-.9z"/><circle cx="8" cy="8" r="1.3"/>',
+    fotos: '<rect x="3" y="4.5" width="18" height="15" rx="3"/><circle cx="8.5" cy="10" r="1.6"/><path d="M3.5 17l5-4.5 4 3.5 3-2.5 5 4"/>',
+    invitacion: '<rect x="3" y="5.5" width="18" height="13.5" rx="3"/><path d="M3.5 7.5l8.5 6 8.5-6"/>',
+    calendario: '<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8.5 14.5l2.2 2.2 4.3-4.4"/>',
+    panel: '<rect x="3.5" y="3.5" width="7" height="8" rx="2"/><rect x="13.5" y="3.5" width="7" height="5" rx="2"/><rect x="13.5" y="11.5" width="7" height="9" rx="2"/><rect x="3.5" y="14.5" width="7" height="6" rx="2"/>',
+    mapa: '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/>',
+    chat: '<path d="M4 20l1.4-4.2A8 8 0 1 1 8.4 18.6z"/><path d="M9.2 9.3c.3 2.2 2.6 4.4 5.2 5.2l1.2-1.4-2-1-.9.7a4.4 4.4 0 0 1-1.8-1.8l.7-.9-1-2z"/>'
+  };
+  var riel = document.getElementById('riel'), marca = document.getElementById('marca'), etq = document.getElementById('etq'),
+      preg = document.getElementById('preg'), ptxt = document.getElementById('ptxt'), si = document.getElementById('si'), no = document.getElementById('no'),
+      abre = document.getElementById('abre'), pc = document.getElementById('pc');
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var GAP = 54, M = 0, pos = INICIAL, destino = INICIAL, arrastrando = false, preguntando = -1, raf = 0, ultimo = INICIAL, quietoT = 0;
+  var els = ITEMS.map(function (it, i) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'it'; b.style.setProperty('--c', it.color);
+    b.setAttribute('aria-label', it.nombre); b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICONOS[it.icono] + '</svg>';
+    b.dataset.i = i; riel.appendChild(b); return b;
+  });
+  function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+  function medir() { M = Math.round(innerHeight * MARCA); marca.style.top = M + 'px'; etq.style.top = M + 'px'; preg.style.top = M + 'px'; pintar(); }
+
+  function pintar() {
+    els.forEach(function (el, i) {
+      var d = Math.abs(i - pos), s = clamp(1.55 - 0.5 * d, 0.5, 1.55), y = M + (i - pos) * GAP;
+      el.style.transform = 'translateY(' + y + 'px) scale(' + s.toFixed(3) + ')';
+      el.style.opacity = clamp(1.1 - 0.3 * d, 0.12, 1).toFixed(2);
+      el.style.setProperty('--k', clamp(1.3 - d * 1.6, 0, 1).toFixed(2));
+      el.style.zIndex = String(100 - Math.round(d * 10));
+    });
+  }
+  function cercano() { return clamp(Math.round(pos), 0, ITEMS.length - 1); }
+  function vibrar(ms) { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} }
+  function marcaActual() {
+    var k = cercano();
+    if (k !== ultimo) { ultimo = k; vibrar(6); }
+    els.forEach(function (el, i) { el.classList.toggle('sel', i === k && Math.abs(pos - k) < 0.25); });
+    if (arrastrando && preguntando < 0) { etq.textContent = ITEMS[k].nombre; etq.classList.add('on'); } else etq.classList.remove('on');
+  }
+  function animar() {
+    cancelAnimationFrame(raf);
+    (function paso() {
+      var d = destino - pos;
+      if (reduce || Math.abs(d) < 0.003) { pos = destino; pintar(); marcaActual(); if (!arrastrando && preguntando < 0 && !animar.nopreguntar) preguntar(cercano()); return; }
+      pos += d * 0.22; pintar(); marcaActual(); raf = requestAnimationFrame(paso);
+    })();
+  }
+
+  /* ---- pregunta delicada al soltar ---- */
+  var tPreg = 0;
+  function preguntar(i) {
+    preguntando = i; var it = ITEMS[i];
+    ptxt.textContent = it.pregunta; si.textContent = it.si; preg.style.setProperty('--c', it.color);
+    etq.classList.remove('on'); preg.classList.add('on'); marca.style.opacity = '.0';
+    els.forEach(function (el, j) { if (j !== i) el.style.opacity = '.28'; });
+    clearTimeout(tPreg); tPreg = setTimeout(cancelar, 7000);
+    vibrar(10);
+  }
+  function cancelar() {
+    clearTimeout(tPreg); preguntando = -1; preg.classList.remove('on'); marca.style.opacity = ''; pintar(); marcaActual();
+  }
+  no.addEventListener('click', cancelar);
+  document.addEventListener('pointerdown', function (e) { if (preguntando >= 0 && !preg.contains(e.target) && !riel.contains(e.target)) cancelar(); });
+
+  /* ---- abrir con efecto: un círculo del color del botón crece desde el botón ---- */
+  var abriendo = null;
+  si.addEventListener('click', function () {
+    var i = preguntando; if (i < 0) return; var it = ITEMS[i], r = els[i].getBoundingClientRect();
+    var x = r.left + r.width / 2, y = r.top + r.height / 2;
+    abre.style.setProperty('--c', it.color); document.getElementById('agr').innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICONOS[it.icono] + '</svg>';
+    document.getElementById('at').textContent = it.nombre; abre.style.display = 'flex'; abriendo = { x: x, y: y };
+    cancelar(); vibrar(14);
+    if (!reduce && abre.animate) abre.animate([{ clipPath: 'circle(0px at ' + x + 'px ' + y + 'px)' }, { clipPath: 'circle(150vmax at ' + x + 'px ' + y + 'px)' }], { duration: 650, easing: 'cubic-bezier(.65,0,.25,1)' });
+  });
+  document.getElementById('vol').addEventListener('click', function () {
+    var a = abriendo || { x: innerWidth - 40, y: M };
+    if (!reduce && abre.animate) { var an = abre.animate([{ clipPath: 'circle(150vmax at ' + a.x + 'px ' + a.y + 'px)' }, { clipPath: 'circle(0px at ' + a.x + 'px ' + a.y + 'px)' }], { duration: 450, easing: 'ease-in', fill: 'forwards' }); an.onfinish = function () { abre.style.display = 'none'; an.cancel(); }; }
+    else abre.style.display = 'none';
+  });
+
+  /* ---- dedo: solo la barra se arrastra; el resto de la pantalla scrollea normal ---- */
+  var y0 = 0, pos0 = 0, movio = false, idDedo = null;
+  riel.addEventListener('pointerdown', function (e) {
+    if (preguntando >= 0) cancelar();
+    arrastrando = true; movio = false; idDedo = e.pointerId; y0 = e.clientY; pos0 = pos; cancelAnimationFrame(raf); animar.nopreguntar = true;
+    try { riel.setPointerCapture(e.pointerId); } catch (x) {}
+    riel.classList.remove('quieta'); clearTimeout(quietoT);
+  });
+  riel.addEventListener('pointermove', function (e) {
+    if (!arrastrando || e.pointerId !== idDedo) return;
+    var dy = e.clientY - y0; if (Math.abs(dy) > 6) movio = true;
+    var p = pos0 - dy / GAP, n = ITEMS.length - 1;
+    pos = p < 0 ? p * 0.35 : p > n ? n + (p - n) * 0.35 : p;   // en los extremos se pone "elástico"
+    pintar(); marcaActual();
+  });
+  function soltar(e) {
+    if (!arrastrando || (e && e.pointerId !== idDedo)) return;
+    arrastrando = false;
+    if (!movio) { var t = e && e.target && e.target.closest && e.target.closest('.it'); destino = t ? +t.dataset.i : cercano(); }
+    else destino = cercano();
+    animar.nopreguntar = false; animar();
+    quietoT = setTimeout(function () { if (preguntando < 0) riel.classList.add('quieta'); }, 2500);
+  }
+  riel.addEventListener('pointerup', soltar); riel.addEventListener('pointercancel', soltar);
+  /* teclado: Enter / espacio sobre un botón */
+  riel.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { var t = e.target.closest && e.target.closest('.it'); if (t) { e.preventDefault(); destino = +t.dataset.i; animar.nopreguntar = false; animar(); } } });
+
+  /* ---- scroll del sitio: la barra se vuelve más tenue mientras scrolleás ---- */
+  var sT = 0;
+  addEventListener('scroll', function () {
+    pc.textContent = Math.round(scrollY / Math.max(1, document.documentElement.scrollHeight - innerHeight) * 100) + '%';
+    if (preguntando < 0 && !arrastrando) { riel.classList.add('quieta'); }
+  }, { passive: true });
+  addEventListener('resize', medir);
+  medir();
+  /* aviso la primera vez: la barra se mueve sola un poquito */
+  var vio = false; try { vio = localStorage.getItem('pn_riel_v1') === '1'; } catch (e) {}
+  if (!vio && !reduce) setTimeout(function () {
+    if (arrastrando || preguntando >= 0) return;
+    var t0 = performance.now();
+    (function g(n) { if (arrastrando || preguntando >= 0) return; var t = (n - t0) / 1400; if (t >= 1) { pos = INICIAL; pintar(); marcaActual(); return; } pos = INICIAL - Math.sin(t * Math.PI * 2) * 0.9 * (1 - t); pintar(); requestAnimationFrame(g); })(t0);
+    try { localStorage.setItem('pn_riel_v1', '1'); } catch (e) {}
+  }, 900);
+  marcaActual();
+})();
+</script>
+</body>
+</html>
