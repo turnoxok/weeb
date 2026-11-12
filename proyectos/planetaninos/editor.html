@@ -3128,7 +3128,7 @@ function useVideoTexture(url, loop, scrub) {
       if (pr &amp;&amp; pr.then) pr.then(() =&gt; video.pause()).catch(() =&gt; {});
       else video.pause();
     };
-    let tasa = 18; const kick = scrub ? wake : tryPlay;
+    const kick = scrub ? wake : tryPlay;
     const onReady = () =&gt; {
       if (cancelled || tex) return;
       tex = new THREE.VideoTexture(video);
@@ -6014,6 +6014,7 @@ const RAIL_CSS = `
 .wr--c .wr-f { position: absolute; }
 .wr-velo { inset: 0; z-index: 24; pointer-events: none; opacity: 0; transition: opacity .35s; background: rgba(255,255,255,.08); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
 .wr-velo.on { opacity: 1; }
+.wr-velo.wr-lite { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(255,255,255,.14); }
 .wr-riel { top: 0; right: 0; bottom: 0; width: 84px; z-index: 25; pointer-events: none; transition: opacity .5s; }
 .wr-riel.quieta { opacity: .7; }
 .wr-it { position: absolute; left: 50%; top: 0; width: 44px; height: 44px; margin: -22px 0 0 -22px; border: 0; padding: 0; background: none; color: #fff; display: grid; place-items: center; will-change: transform, opacity; pointer-events: none; }
@@ -6142,8 +6143,11 @@ function weebRailMount(host, C, contained) {
     velo.classList.toggle("on", BLUR &amp;&amp; !abriendo &amp;&amp; a &gt; 0.5 &amp;&amp; (arrastrando || inercia || snapping || preguntando &gt;= 0));      // el fondo se difumina ya mientras deslizás, así se ve mejor cada icono
     if (!arrastrando) zona.style.top = a &gt; 0.5 ? "0px" : (yRest(0) - 30) + "px";
   };
+  let tasa = 18; let lite = false, fAc = 0, fN = 0;
   const kick = () =&gt; { if (!raf &amp;&amp; !muerto) { tPrev = performance.now(); raf = requestAnimationFrame(frame); } };
   const frame = (now) =&gt; {
+    const real = now - tPrev;
+    if (!lite &amp;&amp; arrastrando &amp;&amp; a &gt; 0.9 &amp;&amp; velo.classList.contains("on")) { fAc += real; fN++; if (fN &gt;= 12) { if (fAc / fN &gt; 45) { lite = true; velo.classList.add("wr-lite"); } fAc = 0; fN = 0; } } else if (!arrastrando) { fAc = 0; fN = 0; }
     const dt = Math.min(0.05, (now - tPrev) / 1000); tPrev = now; raf = 0;
     if (inercia) {
       pos += vel * dt; vel *= Math.exp(-dt * 3.2);
@@ -6232,7 +6236,7 @@ function weebRailMount(host, C, contained) {
     } else {
       pos = clamp(pos, 0, N - 1);
       const m0 = muestras[0], m1 = muestras[muestras.length - 1], dtm = (m1[0] - m0[0]) / 1000, v = dtm &gt; 0.01 ? (m1[1] - m0[1]) / dtm : 0;
-      { const sesgo = reduce || Math.abs(v) &lt; 2.2 ? 0 : clamp(v * 0.2, -1.6, 1.6); destino = clamp(Math.round(pos + sesgo), 0, N - 1); tasa = Math.abs(destino - pos) &gt; 1.2 ? 9 : 18; snapping = true; }
+      { const sesgo = reduce || dtm &gt; 0.15 || Math.abs(pos - Math.round(pos)) &lt; 0.001 || Math.abs(v) &lt; 2.2 ? 0 : clamp(v * 0.2, -1.6, 1.6); destino = clamp(Math.round(pos + sesgo), 0, N - 1); tasa = Math.abs(destino - pos) &gt; 1.2 ? 9 : 18; snapping = true; }
     }
     kick();
   };
