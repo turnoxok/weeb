@@ -331,7 +331,8 @@
   VID.src = './assets/inv/fondo.mp4';   /* si el video no carga, se usan las imágenes fondo1-4 */
   VID.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none'; document.body.appendChild(VID);
   function vidOk() { return VID.readyState >= 2 && VID.videoWidth > 0; }
-  function vidEnd() { try { if (VID.currentTime > .3 || !SNAP) VID.currentTime = .05; } catch (e) {} }   /* en reposo se ve el primer cuadro: la nena y el nene en el salón */
+  function restT() { return Math.max(0, (VID.duration || 13) - .12); }
+  function vidEnd() { try { if (Math.abs(VID.currentTime - restT()) > .3 || !SNAP) VID.currentTime = restT(); } catch (e) {} }   /* en reposo se ve el último cuadro: la nena y el nene en el salón */
   var SNAP = null;   // cuadro de reposo (el primero), para no mostrar nada raro mientras el video busca
   VID.addEventListener('loadeddata', vidEnd);
   VID.addEventListener('seeked', function () { if (!playing) rerender(); });
@@ -344,7 +345,7 @@
   function drawBG(c, t) {
     if (vidOk() && !VID.seeking) {
       cover(c, VID, 0, 0, W, H, 1.02);
-      if (VID.currentTime < .3) { if (!SNAP) { SNAP = document.createElement('canvas'); SNAP.width = 540; SNAP.height = 960; } cover(SNAP.getContext('2d'), VID, 0, 0, 540, 960, 1.02); }
+      if (Math.abs(VID.currentTime - restT()) < .3) { if (!SNAP) { SNAP = document.createElement('canvas'); SNAP.width = 540; SNAP.height = 960; } cover(SNAP.getContext('2d'), VID, 0, 0, 540, 960, 1.02); }
     } else if (SNAP) c.drawImage(SNAP, 0, 0, W, H);
     else if (BG[3] && BG[3].complete && BG[3].naturalWidth) cover(c, BG[3], 0, 0, W, H, 1.02);
     else { c.fillStyle = '#68c359'; c.fillRect(0, 0, W, H); }
