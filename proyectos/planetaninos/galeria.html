@@ -57,12 +57,12 @@
 
   /* ---------- carrusel ---------- */
   .show{position:relative;padding:clamp(10px,3vh,30px) 0 12px}
-  .track{display:flex;gap:clamp(12px,2.4vw,28px);overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain;padding:18px calc((100vw - var(--sw))/2) 26px;scroll-padding:0 calc((100vw - var(--sw))/2)}
+  .track{display:flex;gap:clamp(12px,2.4vw,28px);overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain;scroll-behavior:auto;padding:18px calc((100vw - var(--sw))/2) 26px;scroll-padding:0 calc((100vw - var(--sw))/2)}
   .track::-webkit-scrollbar{display:none}
-  .sl{flex:none;width:var(--sw);scroll-snap-align:center;position:relative}
+  .sl{flex:none;width:var(--sw);scroll-snap-align:center;scroll-snap-stop:always;position:relative}
   .js .sl{opacity:0;transform:translateY(70px)}
   .in .sl{opacity:1;transform:none;transition:opacity .9s var(--ease),transform 1.1s var(--ease);transition-delay:calc(var(--i)*110ms)}
-  .card{display:block;width:100%;height:var(--sh);border-radius:clamp(20px,3vw,34px);overflow:hidden;position:relative;background:rgba(255,255,255,.1);box-shadow:0 30px 60px -30px rgba(8,24,6,.75);transform:scale(var(--s,1));opacity:var(--o,1);transition:box-shadow .3s}
+  .card{display:block;width:100%;height:var(--sh);border-radius:clamp(20px,3vw,34px);overflow:hidden;position:relative;background:rgba(255,255,255,.1);box-shadow:0 22px 40px -26px rgba(8,24,6,.7);transform:scale(var(--s,1));will-change:transform;transition:none}
   .card img{position:absolute;left:-9%;top:0;width:118%;height:100%;object-fit:cover;object-position:var(--pos,50% 50%);transform:translate3d(var(--px,0),0,0);will-change:transform;-webkit-user-drag:none;user-select:none}
   .card:after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 55%,rgba(10,30,8,.62));pointer-events:none}
   .card .zoom{position:absolute;right:14px;top:14px;z-index:2;width:42px;height:42px;border-radius:50%;background:rgba(30,58,25,.78);display:grid;place-items:center;opacity:0;transform:scale(.7);transition:.35s var(--ease)}
@@ -223,16 +223,13 @@ var slides=[].slice.call(track.children),cur=0,num=$('#num'),prog=$('#prog');
 
 /* efectos del carrusel según la posición de cada foto */
 function efectos(){
-  var r=track.getBoundingClientRect(),cx=r.left+r.width/2,best=0,bd=1e9;
-  slides.forEach(function(s,i){
-    var b=s.getBoundingClientRect(),d=(b.left+b.width/2-cx)/b.width,a=Math.min(1,Math.abs(d));
-    s.firstChild.style.setProperty('--s',(1-.1*a).toFixed(3));
-    s.firstChild.style.setProperty('--o',(1-.5*a).toFixed(3));
-    s.firstChild.style.setProperty('--px',(-d*9).toFixed(2)+'%');
-    if(Math.abs(d)<bd){bd=Math.abs(d);best=i}
-  });
-  slides.forEach(function(s,i){s.classList.toggle('on',i===best)});
-  if(best!==cur){cur=best;num.textContent=pad(cur+1);num.style.transform='translateY(14px)';num.style.opacity='0';requestAnimationFrame(function(){requestAnimationFrame(function(){num.style.transition='transform .45s cubic-bezier(.2,.8,.2,1),opacity .45s';num.style.transform='none';num.style.opacity='1'})});num.style.transition='none';}
+  var r=track.getBoundingClientRect(),cx=r.left+r.width/2,best=0,bd=1e9,ds=[];
+  for(var i=0;i<N;i++){var b=slides[i].getBoundingClientRect();ds.push((b.left+b.width/2-cx)/b.width)}  /* primero se lee todo... */
+  for(i=0;i<N;i++){var d=ds[i],a=Math.min(1,Math.abs(d)),st=slides[i].firstChild.style;   /* ...y después se escribe */
+    st.setProperty('--s',(1-.08*a).toFixed(3));st.setProperty('--px',(-d*9).toFixed(2)+'%');
+    if(Math.abs(d)<bd){bd=Math.abs(d);best=i}}
+  for(i=0;i<N;i++)slides[i].classList.toggle('on',i===best);
+  if(best!==cur){cur=best;num.textContent=pad(cur+1)}
   var mx=track.scrollWidth-track.clientWidth;prog.style.transform='scaleX('+Math.max(.04,mx?track.scrollLeft/mx:1).toFixed(3)+')';
   $('#prev').disabled=cur===0;$('#next').disabled=cur===N-1;
 }

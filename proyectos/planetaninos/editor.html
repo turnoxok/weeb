@@ -512,6 +512,11 @@
   /* Solo flechas: sin fondo ni texto. Se van solas después de unos scrolls (.app-root--hint-off). */
   .scroll-hint { padding: 0; gap: 0; background: none; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; transition: opacity .6s ease; }
   .scroll-hint__chev i { width: 18px; height: 18px; margin-top: -9px; border-right-color: #fff; border-bottom-color: #fff; filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.45)); }
+  .scroll-hint__chev { position: relative; width: 26px; height: 42px; border: 2px solid rgba(255,255,255,.95); border-radius: 14px; background: rgba(24,50,20,.32); filter: drop-shadow(0 2px 6px rgba(0,0,0,.4)); }
+  .scroll-hint__chev i { display: none; }
+  .scroll-hint__chev::after { content: ""; position: absolute; left: 50%; top: 8px; width: 4px; height: 8px; margin-left: -2px; border-radius: 3px; background: #b1c74d; animation: wbRueda 1.7s ease-in-out infinite; }
+  @keyframes wbRueda { 0% { transform: translateY(0); opacity: 1; } 70% { transform: translateY(14px); opacity: 0; } 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .scroll-hint__chev::after { animation: none; } }
   @keyframes scrollHintFloat { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 7px); } }
   @keyframes scrollHintChev { 0%, 100% { opacity: 0.2; } 45% { opacity: 1; } }
 
