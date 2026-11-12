@@ -230,9 +230,9 @@
     c.restore();
   }
   function pin(c, x, y, s) {
-    c.save(); c.translate(x, y); c.fillStyle = '#35c4df';
+    c.save(); c.translate(x, y); c.fillStyle = '#3f9a31';
     c.beginPath(); c.arc(0, 0, 26 * s, Math.PI * .85, Math.PI * .15 + Math.PI * 2); c.lineTo(0, 44 * s); c.closePath(); c.fill();
-    c.fillStyle = '#406c38'; c.beginPath(); c.arc(0, 0, 10 * s, 0, 7); c.fill();
+    c.fillStyle = '#fafff9'; c.beginPath(); c.arc(0, 0, 10 * s, 0, 7); c.fill();
     c.restore();
   }
 
@@ -304,14 +304,26 @@
     c.fillStyle = g; c.fillRect(x0, y0, x1 - x0, y1 - y0);
   }
 
+  // silueta blanca que acompaña la forma de las letras (como un sticker recortado)
+  var STK = null;
+  function sticker(lw, lh) {
+    if (STK && STK.k === lw) return STK;
+    var pad = Math.round(lw * .036), r = Math.round(lw * .026), w = Math.round(lw + pad * 2), h = Math.round(lh + pad * 2);
+    var a = document.createElement('canvas'); a.width = w; a.height = h; var x = a.getContext('2d');
+    x.drawImage(LOGO, pad, pad, lw, lh); x.globalCompositeOperation = 'source-in'; x.fillStyle = '#fff'; x.fillRect(0, 0, w, h);
+    var b = document.createElement('canvas'); b.width = w; b.height = h; var y = b.getContext('2d');
+    [r, r * .66, r * .33].forEach(function (rad) { for (var k = 0; k < 32; k++) { var an = k / 32 * Math.PI * 2; y.drawImage(a, Math.cos(an) * rad, Math.sin(an) * rad); } });
+    y.drawImage(a, 0, 0); b.k = lw; b.pad = pad; STK = b; return b;
+  }
+
   // Fondo: video de una toma recorriendo la escena 3D (una sola vez; al final queda el último cuadro)
   var VID = document.createElement('video');
   VID.muted = true; VID.defaultMuted = true; VID.playsInline = true; VID.setAttribute('playsinline', ''); VID.setAttribute('webkit-playsinline', ''); VID.preload = 'auto';
   VID.src = './assets/inv/fondo.mp4';   /* si el video no carga, se usan las imágenes fondo1-4 */
   VID.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none'; document.body.appendChild(VID);
   function vidOk() { return VID.readyState >= 2 && VID.videoWidth > 0; }
-  function vidEnd() { try { if (VID.duration && VID.currentTime < VID.duration - .3) VID.currentTime = Math.max(0, VID.duration - .04); } catch (e) {} }
-  var SNAP = null;   // último cuadro del recorrido, para no mostrar nada raro mientras el video busca
+  function vidEnd() { try { if (VID.currentTime > .3 || !SNAP) VID.currentTime = .05; } catch (e) {} }   /* en reposo se ve el primer cuadro: la nena y el nene en el salón */
+  var SNAP = null;   // cuadro de reposo (el primero), para no mostrar nada raro mientras el video busca
   VID.addEventListener('loadeddata', vidEnd);
   VID.addEventListener('seeked', function () { if (!playing) rerender(); });
   function vidStart(cb) {       // vuelve al inicio, arranca y recién ahí avisa (para sincronizar con la animación)
@@ -323,8 +335,8 @@
   function drawBG(c, t) {
     if (vidOk() && !VID.seeking) {
       cover(c, VID, 0, 0, W, H, 1.02);
-      if (VID.duration && VID.currentTime > VID.duration - .25) { if (!SNAP) { SNAP = document.createElement('canvas'); SNAP.width = 540; SNAP.height = 960; } cover(SNAP.getContext('2d'), VID, 0, 0, 540, 960, 1.02); }
-    } else if (SNAP && VID.currentTime > 1) c.drawImage(SNAP, 0, 0, W, H);
+      if (VID.currentTime < .3) { if (!SNAP) { SNAP = document.createElement('canvas'); SNAP.width = 540; SNAP.height = 960; } cover(SNAP.getContext('2d'), VID, 0, 0, 540, 960, 1.02); }
+    } else if (SNAP) c.drawImage(SNAP, 0, 0, W, H);
     else if (BG[3] && BG[3].complete && BG[3].naturalWidth) cover(c, BG[3], 0, 0, W, H, 1.02);
     else { c.fillStyle = '#68c359'; c.fillRect(0, 0, W, H); }
     var ov = c.createLinearGradient(0, 0, 0, H); ov.addColorStop(0, 'rgba(61,142,48,.22)'); ov.addColorStop(.5, 'rgba(70,152,56,.10)'); ov.addColorStop(1, 'rgba(46,113,35,.40)');
@@ -403,7 +415,7 @@
     var a1 = outCubic(prog(t, 0, .7));
     c.save(); c.globalAlpha = a1; c.translate(0, (1 - a1) * -40);
     var lw = L(720), lh = lw * .2;
-    if (LOGO.complete && LOGO.naturalWidth) { lh = lw * LOGO.naturalHeight / LOGO.naturalWidth; c.shadowColor = 'rgba(24,57,18,.5)'; c.shadowBlur = FAST ? 0 : 14; c.shadowOffsetY = 6; c.drawImage(LOGO, CX - lw / 2, Y(150), lw, lh); c.shadowColor = 'transparent'; }
+    if (LOGO.complete && LOGO.naturalWidth) { lh = lw * LOGO.naturalHeight / LOGO.naturalWidth; var st = sticker(lw, lh), pd = st.pad; c.shadowColor = 'rgba(14,44,10,.45)'; c.shadowBlur = FAST ? 0 : 18; c.shadowOffsetY = 8; c.drawImage(st, CX - lw / 2 - pd, Y(150) - pd); c.shadowColor = 'transparent'; c.drawImage(LOGO, CX - lw / 2, Y(150), lw, lh); }
     c.restore();
 
     // foto en aro cian con corona
@@ -469,23 +481,27 @@
 
     // barra inferior curva: fecha / hora | dónde es
     var a6 = outCubic(prog(t, 2.4, 3.2)); c.save(); c.globalAlpha = a6; c.translate(0, (1 - a6) * 60);
-    var by = 1587, bh = L(136), half = L(461);
+    var by = 1566, bh = 262, half = 490, mid = by + bh / 2;
     (function (c) {
-      plate(c, CX - half, by, half * 2, bh, bh / 2, '#58b849', '#36802a', '#5bd0e7', 0);
-      c.fillStyle = 'rgba(91,208,231,.7)'; c.fillRect(CX - 2, by + 22, 4, bh - 44);
-      var mid = by + bh / 2;
-      // mitad izquierda: calendario + fecha y hora, texto centrado
-      var lf = fit(c, S.fecha, 330, 44, 800, 26), g = lf * 1.15, lwid = Math.max(c.measureText(S.fecha).width, c.measureText(S.hora).width);
-      var blockW = 70 + 26 + lwid, lx = CX - half + (half - blockW) / 2 + 8, tcx = lx + 96 + lwid / 2;
-      calIcon(c, lx, mid - 36, 1);
-      c.textAlign = 'center'; c.font = '800 ' + lf + 'px ' + F;
-      stext(c, S.fecha, tcx, mid - g / 2 + .35 * lf, '#fafff9'); stext(c, S.hora, tcx, mid + g / 2 + .35 * lf, '#ff8a4c');
-      // mitad derecha: pin + título y dirección, texto centrado
-      c.font = '800 36px ' + F; var tw = Math.max(c.measureText('¿DÓNDE ES?').width, (c.font = '700 34px ' + F, c.measureText(LUGAR).width));
-      var rblock = 52 + 24 + tw, rx = CX + (half - rblock) / 2, rcx = rx + 76 + tw / 2;
-      pin(c, rx + 22, mid - 8, 1);
-      c.font = '800 36px ' + F; stext(c, '¿DÓNDE ES?', rcx, mid - 22 + .35 * 36, '#5bd0e7', false);
-      c.font = '700 34px ' + F; stext(c, LUGAR, rcx, mid + 22 + .35 * 34, '#fafff9', false);
+      // tarjeta blanca, bien legible sobre cualquier fondo
+      c.save(); c.shadowColor = 'rgba(10,38,8,.5)'; c.shadowBlur = FAST ? 0 : 36; c.shadowOffsetY = 16;
+      c.fillStyle = '#fafff9'; c.beginPath(); c.roundRect ? c.roundRect(CX - half, by, half * 2, bh, 62) : c.rect(CX - half, by, half * 2, bh); c.fill(); c.restore();
+      c.fillStyle = 'rgba(64,108,56,.22)'; c.fillRect(CX + 6, by + 34, 4, bh - 68);
+      c.textAlign = 'center'; c.lineJoin = 'round';
+      // izquierda: fecha grande y la hora en una pastilla verde
+      var lcx = CX - half / 2 + 8, lw2 = 450;
+      var fs = fit(c, S.fecha, lw2, 52, 800, 30); c.fillStyle = '#23431d'; c.fillText(S.fecha, lcx, by + 82);
+      var hs = 74; c.font = '800 ' + hs + 'px ' + F; var hw = c.measureText(S.hora).width + 76, hh = 104, hx = lcx - hw / 2, hy = by + 112;
+      var gg = c.createLinearGradient(0, hy, 0, hy + hh); gg.addColorStop(0, '#6ed05d'); gg.addColorStop(1, '#3f9a31');
+      c.fillStyle = gg; c.beginPath(); c.roundRect ? c.roundRect(hx, hy, hw, hh, hh / 2) : c.rect(hx, hy, hw, hh); c.fill();
+      c.fillStyle = '#fff'; c.font = '800 ' + hs + 'px ' + F; c.fillText(S.hora, lcx, hy + hh / 2 + hs * .34);
+      // derecha: pin + dónde es + dirección en hasta 2 renglones
+      var rcx = CX + half / 2 + 22, rw = 360;
+      c.font = '800 34px ' + F; c.fillStyle = '#36802a'; c.fillText('¿DÓNDE ES?', rcx, by + 70);
+      var l1, l2, parts = LUGAR.split(/,\s*/); l1 = parts[0]; l2 = parts.slice(1).join(', ');
+      var f1 = fit(c, l1, rw, 54, 800, 34); c.fillStyle = '#23431d'; c.fillText(l1, rcx, by + 140);
+      if (l2) { var f2 = fit(c, l2, rw, 46, 700, 30); c.fillStyle = '#3d6a34'; c.fillText(l2, rcx, by + 196); }
+      pin(c, rcx - 190, by + 44, .8);
     })(c);
     c.restore();
     c.restore();
