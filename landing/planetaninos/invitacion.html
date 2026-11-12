@@ -571,7 +571,7 @@
     }).then(function (d) { AUD = d; return d; });
     return buf.then(function (d) { return { ctx: ctx, buf: d }; }, function () { try { ctx.close(); } catch (e) {} return null; });
   }
-  function hacerVideo(btn, label, cb) {
+  function hacerVideoMR(btn, label, cb) {
     if (!window.MediaRecorder) { msg('Este navegador no puede grabar video. Probá con Chrome o Safari actualizados.'); return; }
     btn.disabled = true; msg('Preparando el video…');
     prepararAudio().then(function (au) {
@@ -613,6 +613,82 @@
       }
     });
   }
+
+  /* Video cuadro por cuadro (WebCodecs + MP4): cada imagen se dibuja y se codifica con su tiempo exacto, así el video dura siempre 13 s
+     y sale completo aunque el celular sea lento (grabar en vivo se cortaba). Si el navegador no puede, se usa la grabación en vivo. */
+  function cargarScript(src) { return new Promise(function (ok, no) { var s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+  function adts(buf) {      // parte el audio AAC en cuadros
+    var u = new Uint8Array(buf), i = 0, out = [], sr = [96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000], info = null;
+    while (i + 7 < u.length) {
+      if (u[i] !== 0xFF || (u[i + 1] & 0xF0) !== 0xF0) { i++; continue; }
+      var len = ((u[i + 3] & 3) << 11) | (u[i + 4] << 3) | (u[i + 5] >> 5), hdr = (u[i + 1] & 1) ? 7 : 9;
+      if (!info) info = { sampleRate: sr[(u[i + 2] >> 2) & 15], channels: ((u[i + 2] & 1) << 2) | (u[i + 3] >> 6), obj: ((u[i + 2] >> 6) & 3) + 1, idx: (u[i + 2] >> 2) & 15 };
+      if (len < hdr || i + len > u.length) break;
+      out.push(u.subarray(i + hdr, i + len)); i += len;
+    }
+    return { frames: out, info: info };
+  }
+  function hacerVideoWC(btn, label, cb, caer) {
+    if (!(window.VideoEncoder && window.VideoFrame && window.Mp4Muxer !== null)) return caer();
+    var FPS = 24, N = Math.round(DUR * FPS), VW = SMALL() ? 540 : 720, VH = VW * 16 / 9, enc = null, cancel = false;
+    var codecs = /[?&]vp9\b/.test(location.search) ? [['vp09.00.10.08', 'vp9']] : [['avc1.42002a', 'avc'], ['avc1.4d002a', 'avc'], ['avc1.640028', 'avc']];
+    btn.disabled = true; msg('Preparando el video…');
+    var falla = function (e) { try { if (enc) enc.close(); } catch (x) {} FAST = false; btn.disabled = false; if (window.console) console.warn('video por cuadros no disponible', e); caer(); };
+    Promise.all([window.Mp4Muxer ? 0 : cargarScript('./assets/inv/mp4-muxer.min.js'), fetch('./assets/inv/musica-13s.aac').then(function (r) { return r.ok ? r.arrayBuffer() : null; }, function () { return null; })]).then(function (r) {
+      var audio = r[1] ? adts(r[1]) : null;
+      return Promise.all(codecs.map(function (c) { return VideoEncoder.isConfigSupported({ codec: c[0], width: VW, height: VH, bitrate: 4e6, framerate: FPS }).then(function (o) { return o && o.supported ? c : null; }, function () { return null; }); })).then(function (ok) {
+        var c = ok.filter(Boolean)[0]; if (!c) throw new Error('sin codificador'); return { c: c, audio: audio };
+      });
+    }).then(function (o) {
+      var c = o.c, audio = o.audio && o.audio.frames.length ? o.audio : null, target = new Mp4Muxer.ArrayBufferTarget();
+      var opts = { target: target, video: { codec: c[1], width: VW, height: VH, frameRate: FPS }, fastStart: 'in-memory', firstTimestampBehavior: 'offset' };
+      if (audio) opts.audio = { codec: 'aac', numberOfChannels: audio.info.channels || 2, sampleRate: audio.info.sampleRate };
+      var mux = new Mp4Muxer.Muxer(opts), err = null;
+      enc = new VideoEncoder({ output: function (ch, meta) { mux.addVideoChunk(ch, meta); }, error: function (e) { err = e; } });
+      enc.configure({ codec: c[0], width: VW, height: VH, bitrate: 4e6, framerate: FPS, latencyMode: 'quality' });
+      if (audio) {
+        var asc = new Uint8Array(2); asc[0] = (audio.info.obj << 3) | (audio.info.idx >> 1); asc[1] = ((audio.info.idx & 1) << 7) | ((audio.info.channels || 2) << 3);
+        var dur = 1024 / audio.info.sampleRate * 1e6;
+        audio.frames.forEach(function (fr, k) { mux.addAudioChunkRaw(fr, 'key', Math.round(k * dur), Math.round(dur), k ? undefined : { decoderConfig: { codec: 'mp4a.40.2', numberOfChannels: audio.info.channels || 2, sampleRate: audio.info.sampleRate, description: asc } }); });
+      }
+      var cv = document.createElement('canvas'); cv.width = VW; cv.height = VH; var cx = cv.getContext('2d'); FAST = true;
+      try { VID.pause(); } catch (e) {}
+      var i = 0, vdur = 0;
+      function listo() {   // espera a que el video de fondo tenga datos
+        return new Promise(function (ok) {
+          if (vidOk() || VID.error) { ok(); return; }
+          var f = function () { if (vidOk()) { VID.removeEventListener('loadeddata', f); VID.removeEventListener('canplay', f); ok(); } };
+          VID.addEventListener('loadeddata', f); VID.addEventListener('canplay', f); try { VID.load(); } catch (e) {} setTimeout(function () { ok(); }, 8000);
+        });
+      }
+      function irA(t) {
+        return new Promise(function (ok) {
+          if (VID.error || !VID.videoWidth) { ok(); return; }
+          var to = Math.min(t, Math.max(0, vdur - .05)), done = false, fin = function () { if (done) return; done = true; VID.removeEventListener('seeked', fin); ok(); };
+          if (Math.abs(VID.currentTime - to) < .001) { ok(); return; }
+          VID.addEventListener('seeked', fin); VID.currentTime = to; setTimeout(fin, 700);
+        });
+      }
+      function paso() {
+        if (err) throw err;
+        if (i >= N) return enc.flush().then(function () { if (err) throw err; mux.finalize(); return new Blob([target.buffer], { type: 'video/mp4' }); });
+        var t = i / FPS;
+        return irA(t).then(function () {
+          cx.clearRect(0, 0, VW, VH); draw(cx, VW / W, t);
+          var fr = new VideoFrame(cv, { timestamp: Math.round(i * 1e6 / FPS), duration: Math.round(1e6 / FPS) });
+          enc.encode(fr, { keyFrame: i % 48 === 0 }); fr.close(); i++;
+          if (i % 4 === 0) btn.textContent = 'Armando ' + Math.round(i / N * 100) + '%';
+          return (enc.encodeQueueSize > 6 ? new Promise(function (r) { setTimeout(r, 30); }) : new Promise(function (r) { setTimeout(r, 0); })).then(paso);
+        });
+      }
+      msg('Armando el video… puede tardar un poco; dejá esta pantalla abierta.');
+      return listo().then(function () { vdur = VID.duration || 0; return paso(); }).then(function (blob) {
+        FAST = false; btn.disabled = false; btn.textContent = label; vidEnd();
+        var ver0 = sig(); VCACHE = { blob: blob, ext: 'mp4', ver: ver0 }; cb(blob, 'mp4', !!audio);
+      });
+    }).catch(falla);
+  }
+  function hacerVideo(btn, label, cb) { hacerVideoWC(btn, label, cb, function () { hacerVideoMR(btn, label, cb); }); }
 
   $('bjpg').onclick = function () {
     hacerJpg(function (b) { if (b) { save(b, 'invitacion-' + slug() + '.jpg'); msg('Listo: se descargó la imagen.'); } else msg('No se pudo generar la imagen.'); });
