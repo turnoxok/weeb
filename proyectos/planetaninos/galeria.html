@@ -2,71 +2,281 @@
 <html lang="es-AR">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Galería de fotos — Planeta Niños</title>
 <meta name="description" content="Fotos del salón de Planeta Niños, Oro Verde." />
 <meta name="theme-color" content="#406c38" />
+<script>document.documentElement.classList.add('js')</script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="preload" as="image" href="./assets/galeria/galeria-01.webp" />
 <style>
-  @font-face{font-family:'Baloo 2';font-weight:700;src:url(./assets/inv/baloo2-700.woff2) format('woff2')}
-  @font-face{font-family:'Baloo 2';font-weight:800;src:url(./assets/inv/baloo2-800.woff2) format('woff2')}
-  :root{--bg:#406c38;--bg2:#325a2b;--fg:#fafff9;--ac:#b1c74d;--cy:#b1c74d;--li:#83b27c;--off:#ebebef;--yl:#b1c74d}
+  @font-face{font-family:'Baloo 2';font-weight:700;font-display:swap;src:url(./assets/inv/baloo2-700.woff2) format('woff2')}
+  @font-face{font-family:'Baloo 2';font-weight:800;font-display:swap;src:url(./assets/inv/baloo2-800.woff2) format('woff2')}
+  :root{--bg:#406c38;--bg2:#2f5429;--fg:#fafff9;--ac:#b1c74d;--ink:#1e3a19;--ease:cubic-bezier(.2,.8,.2,1);--sw:84vw;--sh:min(64svh,560px)}
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{background:var(--bg);color:var(--fg);font-family:'Montserrat',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-  body{padding:clamp(20px,4vw,48px) clamp(16px,4vw,40px) 40px;position:relative;overflow-x:hidden}
-  body:before,body:after{content:"";position:fixed;border-radius:50%;pointer-events:none;z-index:0}
-  body:before{width:340px;height:340px;right:-120px;top:-90px;background:radial-gradient(circle,rgba(177,199,77,.22),transparent 68%)}
-  body:after{width:380px;height:380px;left:-140px;bottom:-120px;background:radial-gradient(circle,rgba(177,199,77,.20),transparent 68%)}
+  html{background:var(--bg2)}
+  html,body{color:var(--fg);font-family:'Montserrat',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{background:linear-gradient(var(--bg),var(--bg2));min-height:100svh;overflow-x:hidden;position:relative}
   a{color:inherit}
-  .wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto}
-  .brand{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:26px}
-  .brand img{height:44px;width:auto;display:block;max-width:60%}
-  .back{color:#fff;opacity:.85;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 14px;border:1px solid rgba(255,255,255,.35);border-radius:999px;white-space:nowrap}
-  .back:hover{opacity:1;background:rgba(255,255,255,.08)}
-  .eyebrow{display:inline-block;background:rgba(177,199,77,.16);color:#d4e48a;font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:6px 12px;border-radius:999px;margin-bottom:14px}
-  h1{font-family:'Baloo 2','Montserrat',system-ui,sans-serif;font-size:clamp(2rem,5.4vw,3.4rem);line-height:1.02;letter-spacing:-.01em;font-weight:800;margin-bottom:12px}
-  h1 em{font-style:normal;color:var(--cy)}
-  .lead{max-width:38em;opacity:.88;line-height:1.6;margin-bottom:34px;font-size:clamp(.98rem,1.9vw,1.1rem)}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-  .grid figure{aspect-ratio:4/3;border-radius:20px;overflow:hidden;background:rgba(235,235,239,.08);border:1.5px dashed rgba(235,235,239,.3);display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;font-weight:600;opacity:.85}
-  .grid img{width:100%;height:100%;object-fit:cover;display:block}
-  .cta{margin-top:30px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:22px;border-radius:22px;background:rgba(235,235,239,.1);border:1.5px solid rgba(235,235,239,.16)}
-  .cta p{font-weight:600;max-width:30em;line-height:1.45}
-  .cta a{text-decoration:none;font:700 .98rem 'Montserrat',system-ui,sans-serif;padding:13px 22px;border-radius:999px;border:2px solid var(--ac);background:#b1c74d;color:#1e3a19}
-  @media (max-width:700px){.cta{flex-direction:column;align-items:stretch;text-align:center}.cta a{text-align:center}}
+  button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;-webkit-tap-highlight-color:transparent}
+
+  /* barra de avance de toda la página */
+  .bar{position:fixed;left:0;top:0;height:3px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:var(--ac);z-index:150}
+
+  /* formas que flotan al scrollear */
+  .orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;will-change:transform}
+  .o1{width:46vmax;height:46vmax;right:-22vmax;top:-14vmax;background:radial-gradient(circle,rgba(177,199,77,.26),transparent 66%)}
+  .o2{width:52vmax;height:52vmax;left:-26vmax;bottom:-20vmax;background:radial-gradient(circle,rgba(255,255,255,.1),transparent 66%)}
+
+  .wrap{position:relative;z-index:1}
+  .brand{padding:68px clamp(18px,5vw,56px) 0;max-width:1240px;margin:0 auto}
+  .brand img{height:44px;width:auto;display:block}
+
+  /* ---------- portada ---------- */
+  .hero{max-width:1240px;margin:0 auto;padding:clamp(28px,6vh,64px) clamp(18px,5vw,56px) clamp(26px,5vh,48px);min-height:min(70svh,640px);display:flex;flex-direction:column;justify-content:center}
+  .eyebrow{align-self:flex-start;background:rgba(177,199,77,.18);color:#dcea9a;font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:7px 14px;border-radius:999px;margin-bottom:20px}
+  h1{font-family:'Baloo 2','Montserrat',system-ui,sans-serif;font-weight:800;font-size:clamp(2.6rem,9.2vw,6.4rem);line-height:.98;letter-spacing:-.015em;max-width:12em}
+  h1 .w{display:inline-block;overflow:hidden;vertical-align:top;padding:.04em .06em .12em;margin:-.04em -.06em -.12em}
+  h1 .w>span{display:inline-block}
+  h1 em{font-style:normal;color:var(--ac)}
+  .lead{max-width:34em;margin-top:22px;opacity:.9;line-height:1.6;font-size:clamp(1rem,2vw,1.2rem)}
+  .cue{margin-top:34px;display:inline-flex;align-items:center;gap:12px;font-weight:600;font-size:.85rem;opacity:.85}
+  .cue i{width:26px;height:42px;border:2px solid rgba(255,255,255,.7);border-radius:14px;position:relative}
+  .cue i:after{content:"";position:absolute;left:50%;top:8px;width:4px;height:8px;margin-left:-2px;border-radius:3px;background:var(--ac);animation:rueda 1.7s ease-in-out infinite}
+  @keyframes rueda{0%{transform:translateY(0);opacity:1}70%{transform:translateY(14px);opacity:0}100%{opacity:0}}
+
+  /* entrada de textos */
+  .js .eyebrow,.js .lead,.js .cue{opacity:0;transform:translateY(18px)}
+  .js h1 .w>span{transform:translateY(110%) rotate(4deg)}
+  .go .eyebrow{opacity:1;transform:none;transition:opacity .7s var(--ease),transform .7s var(--ease)}
+  .go h1 .w>span{transform:none;transition:transform 1s var(--ease);transition-delay:calc(var(--i)*90ms + 150ms)}
+  .go .lead{opacity:.9;transform:none;transition:opacity .8s var(--ease) .75s,transform .8s var(--ease) .75s}
+  .go .cue{opacity:.85;transform:none;transition:opacity .8s var(--ease) 1s,transform .8s var(--ease) 1s}
+
+  /* ---------- carrusel ---------- */
+  .show{position:relative;padding:clamp(10px,3vh,30px) 0 12px}
+  .track{display:flex;gap:clamp(12px,2.4vw,28px);overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain;padding:18px calc((100vw - var(--sw))/2) 26px;scroll-padding:0 calc((100vw - var(--sw))/2)}
+  .track::-webkit-scrollbar{display:none}
+  .sl{flex:none;width:var(--sw);scroll-snap-align:center;position:relative}
+  .js .sl{opacity:0;transform:translateY(70px)}
+  .in .sl{opacity:1;transform:none;transition:opacity .9s var(--ease),transform 1.1s var(--ease);transition-delay:calc(var(--i)*110ms)}
+  .card{display:block;width:100%;height:var(--sh);border-radius:clamp(20px,3vw,34px);overflow:hidden;position:relative;background:rgba(255,255,255,.1);box-shadow:0 30px 60px -30px rgba(8,24,6,.75);transform:scale(var(--s,1));opacity:var(--o,1);transition:box-shadow .3s}
+  .card img{position:absolute;left:-9%;top:0;width:118%;height:100%;object-fit:cover;object-position:var(--pos,50% 50%);transform:translate3d(var(--px,0),0,0);will-change:transform;-webkit-user-drag:none;user-select:none}
+  .card:after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 55%,rgba(10,30,8,.62));pointer-events:none}
+  .card .zoom{position:absolute;right:14px;top:14px;z-index:2;width:42px;height:42px;border-radius:50%;background:rgba(30,58,25,.78);display:grid;place-items:center;opacity:0;transform:scale(.7);transition:.35s var(--ease)}
+  .sl.on .zoom{opacity:1;transform:none}
+  .zoom svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round}
+  .cap{text-align:left;position:absolute;left:clamp(16px,2.4vw,30px);right:16px;bottom:clamp(14px,2.2vw,26px);z-index:2;pointer-events:none}
+  .cap b{display:block;font:800 clamp(1.3rem,3.4vw,2.2rem)/1.05 'Baloo 2','Montserrat',sans-serif;overflow:hidden}
+  .cap b span{display:block;transform:translateY(105%);transition:transform .7s var(--ease)}
+  .cap small{display:block;margin-top:6px;font-weight:500;font-size:clamp(.85rem,1.6vw,1rem);opacity:0;transform:translateY(12px);transition:opacity .6s var(--ease) .12s,transform .6s var(--ease) .12s}
+  .sl.on .cap b span{transform:none}.sl.on .cap small{opacity:.92;transform:none}
+
+  .ui{max-width:1240px;margin:0 auto;padding:0 clamp(18px,5vw,56px);display:flex;align-items:center;gap:18px}
+  .count{font:800 1.6rem 'Baloo 2',sans-serif;letter-spacing:.02em;min-width:5.2em;display:flex;align-items:baseline;gap:6px}
+  .count .n{display:inline-block;height:1.2em;overflow:hidden;line-height:1.2}
+  .count .n span{display:block;transition:transform .5s var(--ease)}
+  .count small{font:600 .9rem 'Montserrat',sans-serif;opacity:.7}
+  .line{flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,.2);overflow:hidden}
+  .line i{display:block;height:100%;width:100%;transform-origin:0 50%;transform:scaleX(.2);background:var(--ac);border-radius:4px}
+  .nav{display:none;gap:10px}
+  .nav button{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center;transition:background .25s,transform .2s}
+  .nav button:hover{background:var(--ac)}.nav button:hover svg{stroke:var(--ink)}
+  .nav button:active{transform:scale(.92)}.nav button:disabled{opacity:.35;cursor:default;background:rgba(255,255,255,.1)}
+  .nav svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .hint{max-width:1240px;margin:12px auto 0;padding:0 clamp(18px,5vw,56px);font-size:.85rem;opacity:.7}
+
+  /* ---------- todas las fotos ---------- */
+  .all{max-width:1240px;margin:0 auto;padding:clamp(50px,9vh,110px) clamp(18px,5vw,56px) 10px}
+  .all h2{font:800 clamp(1.8rem,5vw,3.2rem)/1.05 'Baloo 2','Montserrat',sans-serif;margin-bottom:22px}
+  .mos{min-height:120px;display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(10px,1.6vw,18px);grid-auto-flow:dense}
+  .mos button{position:relative;border-radius:clamp(16px,2vw,26px);overflow:hidden;aspect-ratio:4/3;background:rgba(255,255,255,.1);clip-path:inset(0 0 0 0 round 22px)}
+  .mos button.big{grid-column:span 2;aspect-ratio:16/9}
+  .mos img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .9s var(--ease)}
+  .mos button:hover img{transform:scale(1.07)}
+  .js .mos button{clip-path:inset(0 0 100% 0 round 22px)}
+  .js .mos button img{transform:scale(1.25)}
+  .mos button.in{clip-path:inset(0 0 0 0 round 22px);transition:clip-path 1.1s var(--ease);transition-delay:calc(var(--i)*90ms)}
+  .mos button.in img{transform:none;transition:transform 1.4s var(--ease);transition-delay:calc(var(--i)*90ms)}
+  .mos button.in:hover img{transform:scale(1.07);transition-delay:0s;transition-duration:.9s}
+
+  .cta{max-width:1240px;margin:clamp(40px,8vh,90px) auto 0;width:calc(100% - clamp(36px,10vw,112px));display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;padding:clamp(20px,3vw,32px);border-radius:26px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.18)}
+  .cta p{font-weight:600;max-width:30em;line-height:1.45;font-size:clamp(1rem,2vw,1.2rem)}
+  .cta a{text-decoration:none;font:700 1rem 'Montserrat',system-ui,sans-serif;padding:14px 26px;border-radius:999px;background:var(--ac);color:var(--ink);transition:transform .2s,box-shadow .3s;box-shadow:0 14px 28px -14px rgba(0,0,0,.5)}
+  .cta a:hover{transform:translateY(-2px)}
+  .js .cta{opacity:0;transform:translateY(40px)}.cta.in{opacity:1;transform:none;transition:opacity .8s var(--ease),transform .9s var(--ease)}
+  footer{padding:34px 20px calc(34px + env(safe-area-inset-bottom));text-align:center;font-size:.8rem;opacity:.7}
+
+  /* ---------- foto en grande ---------- */
+  .lb{position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;justify-content:center;align-items:center;background:#0e220b;opacity:0;visibility:hidden;transition:opacity .3s,visibility 0s .3s;touch-action:pan-y}
+  .lb.on{opacity:1;visibility:visible;transition-delay:0s}
+  .lb figure{width:100%;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:calc(64px + env(safe-area-inset-top)) clamp(8px,3vw,60px) 8px}
+  .lb img{max-width:100%;max-height:100%;object-fit:contain;border-radius:14px;transform:scale(.92);opacity:0;transition:transform .45s var(--ease),opacity .35s;box-shadow:0 30px 80px rgba(0,0,0,.5);-webkit-user-drag:none;user-select:none}
+  .lb.on img{transform:none;opacity:1}
+  .lb .t{padding:6px 20px calc(20px + env(safe-area-inset-bottom));text-align:center;min-height:74px}
+  .lb .t b{display:block;font:800 1.25rem 'Baloo 2',sans-serif}.lb .t small{opacity:.8}
+  .lb .x,.lb .p,.lb .n{position:absolute;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.15);display:grid;place-items:center;z-index:2;transition:background .2s}
+  .lb .x:hover,.lb .p:hover,.lb .n:hover{background:var(--ac)}.lb .x:hover svg,.lb .p:hover svg,.lb .n:hover svg{stroke:var(--ink)}
+  .lb .x{right:14px;top:calc(12px + env(safe-area-inset-top))}
+  .lb .p,.lb .n{top:50%;margin-top:-34px}.lb .p{left:14px}.lb .n{right:14px}
+  .lb svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .lb .c{position:absolute;left:18px;top:calc(22px + env(safe-area-inset-top));font:700 .95rem 'Montserrat',sans-serif;opacity:.85}
+  @media(max-width:700px){.lb .p,.lb .n{display:none}}
+
+  /* ---------- según el aparato ---------- */
+  @media(min-width:700px){:root{--sw:min(70vw,820px);--sh:min(64svh,600px)}.mos{grid-template-columns:repeat(3,1fr)}.nav{display:flex}.hint{display:none}}
+  @media(min-width:1100px){:root{--sw:min(62vw,1040px);--sh:min(70svh,680px)}.mos button.big{grid-column:span 2;grid-row:span 2;aspect-ratio:auto}}
+  @media(min-width:1100px) and (max-height:700px){:root{--sh:62svh}}
+  @media(hover:none){.nav{display:none}.hint{display:block}}
+
   .weeb-back{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:12px;z-index:200;display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 15px;border:0;border-radius:999px;background:rgba(30,58,25,.82);color:#fff;font:600 .85rem 'Montserrat',system-ui,sans-serif;text-decoration:none;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent}
   .weeb-back:active{transform:scale(.96)}
-  body{padding-top:68px!important}
+  a:focus-visible,button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+
+  @media(prefers-reduced-motion:reduce){
+    .js .eyebrow,.js .lead,.js .cue,.js .sl,.js .cta{opacity:1;transform:none}.js h1 .w>span{transform:none}
+    .js .mos button{clip-path:none}.js .mos button img{transform:none}
+    .cue i:after{animation:none}.cap b span,.cap small{transition:none;transform:none;opacity:1}
+    *{transition-duration:.01ms!important;animation-duration:.01ms!important}
+  }
 </style>
 </head>
 <body>
 <a class="weeb-back" href="./">← Volver al sitio</a>
+<div class="bar" id="bar"></div>
+<div class="orb o1" id="o1"></div><div class="orb o2" id="o2"></div>
+
 <div class="wrap">
   <div class="brand"><img src="./assets/models/planetaninos-logo.png" alt="Planeta Niños" /></div>
 
-  <div class="eyebrow">Galería</div>
-  <h1>Conocé el salón de <em>Planeta Niños</em></h1>
-  <p class="lead">Acá van tus fotos.</p>
+  <header class="hero" id="hero">
+    <div class="eyebrow">Galería</div>
+    <h1 id="t">
+      <span class="w" style="--i:0"><span>Conocé</span></span>
+      <span class="w" style="--i:1"><span>el</span></span>
+      <span class="w" style="--i:2"><span>salón</span></span>
+      <span class="w" style="--i:3"><span>de</span></span>
+      <span class="w" style="--i:4"><span><em>Planeta</em></span></span>
+      <span class="w" style="--i:5"><span><em>Niños</em></span></span>
+    </h1>
+    <p class="lead">Mirá los juegos, los rincones y todo lo que te espera. Deslizá las fotos y tocá la que más te guste para verla en grande.</p>
+    <div class="cue" aria-hidden="true"><i></i><span>Seguí bajando</span></div>
+  </header>
 
-  <!-- Para agregar una foto: copiarla a assets/galeria/ y reemplazar un cuadro por
-       <figure><img src="./assets/galeria/foto1.jpg" alt="Descripción de la foto" loading="lazy" /></figure> -->
-  <div class="grid">
-    <figure>Acá va tu foto</figure><figure>Acá va tu foto</figure><figure>Acá va tu foto</figure>
-    <figure>Acá va tu foto</figure><figure>Acá va tu foto</figure><figure>Acá va tu foto</figure>
-  </div>
+  <section class="show" id="show" aria-label="Fotos del salón">
+    <div class="track" id="track" tabindex="0" aria-roledescription="carrusel"></div>
+    <div class="ui">
+      <div class="count" aria-live="polite"><span class="n"><span id="num">01</span></span><small id="tot">/ 05</small></div>
+      <div class="line"><i id="prog"></i></div>
+      <div class="nav"><button id="prev" aria-label="Foto anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><button id="next" aria-label="Foto siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div>
+    </div>
+    <p class="hint">Deslizá hacia el costado para ver más</p>
+  </section>
 
-  <div class="cta">
+  <section class="all" aria-label="Todas las fotos">
+    <h2 id="h2">Todas las fotos</h2>
+    <div class="mos" id="mos"></div>
+  </section>
+
+  <div class="cta" id="cta">
     <p>¿Te gustó? Mirá qué días hay lugar y dejá tu reserva.</p>
     <a href="./reservar/">Ver disponibilidad</a>
   </div>
+  <footer>Planeta Niños · Av. Los Cisnes 2351, Oro Verde</footer>
 </div>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Foto en grande">
+  <div class="c" id="lc"></div>
+  <button class="x" id="lx" aria-label="Cerrar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <button class="p" id="lp" aria-label="Foto anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <button class="n" id="ln" aria-label="Foto siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+  <figure><img id="li" alt="" /></figure>
+  <div class="t"><b id="lt"></b><small id="ls"></small></div>
+</div>
+
 <script>
+/* Para sumar fotos: copiarlas a assets/galeria/ y agregar una línea acá.
+   src = archivo, t = título, d = descripción corta, pos = qué parte se ve en pantallas angostas (ej. '50% 40%'), big = 1 para que se vea más grande en la grilla. */
+var FOTOS=[
+ {src:'./assets/galeria/galeria-01.webp',t:'Un planeta entero para festejar',d:'El salón visto de punta a punta',pos:'50% 50%',big:1},
+ {src:'./assets/galeria/galeria-02.webp',t:'Acá empieza la fiesta',d:'Los anfitriones te reciben en el centro del salón',pos:'50% 40%'},
+ {src:'./assets/galeria/galeria-03.webp',t:'Torre de juegos y tobogán',d:'Para trepar, deslizarse y explorar',pos:'40% 50%'},
+ {src:'./assets/galeria/galeria-04.webp',t:'El arco del marciano',d:'La entrada al planeta más divertido',pos:'50% 50%'},
+ {src:'./assets/galeria/galeria-05.webp',t:'Hamacas y rincón de juegos',d:'Espacio para jugar sin parar',pos:'50% 50%'}
+];
+(function(){
+var $=function(s){return document.querySelector(s)},N=FOTOS.length,pad=function(n){return(n<10?'0':'')+n};
+var track=$('#track'),mos=$('#mos'),reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+var ZOOM='<span class="zoom"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></span>';
+FOTOS.forEach(function(f,i){
+  var s=document.createElement('figure');s.className='sl';s.style.setProperty('--i',i);
+  s.innerHTML='<button class="card" type="button" aria-label="Ver en grande: '+f.t+'" style="--pos:'+(f.pos||'50% 50%')+'"><img src="'+f.src+'" alt="'+f.t+'. '+f.d+'" draggable="false"'+(i>1?' loading="lazy"':'')+' decoding="async">'+ZOOM+'<span class="cap"><b><span>'+f.t+'</span></b><small>'+f.d+'</small></span></button>';
+  s.firstChild.addEventListener('click',function(){abrir(i)});
+  track.appendChild(s);
+  var m=document.createElement('button');m.type='button';m.style.setProperty('--i',i);if(f.big)m.className='big';m.setAttribute('aria-label','Ver en grande: '+f.t);
+  m.innerHTML='<img src="'+f.src+'" alt="" loading="lazy" decoding="async">';m.addEventListener('click',function(){abrir(i)});mos.appendChild(m);
+});
+$('#tot').textContent='/ '+pad(N);
+var slides=[].slice.call(track.children),cur=0,num=$('#num'),prog=$('#prog');
+
+/* efectos del carrusel según la posición de cada foto */
+function efectos(){
+  var r=track.getBoundingClientRect(),cx=r.left+r.width/2,best=0,bd=1e9;
+  slides.forEach(function(s,i){
+    var b=s.getBoundingClientRect(),d=(b.left+b.width/2-cx)/b.width,a=Math.min(1,Math.abs(d));
+    s.firstChild.style.setProperty('--s',(1-.1*a).toFixed(3));
+    s.firstChild.style.setProperty('--o',(1-.5*a).toFixed(3));
+    s.firstChild.style.setProperty('--px',(-d*9).toFixed(2)+'%');
+    if(Math.abs(d)<bd){bd=Math.abs(d);best=i}
+  });
+  slides.forEach(function(s,i){s.classList.toggle('on',i===best)});
+  if(best!==cur){cur=best;num.textContent=pad(cur+1);num.style.transform='translateY(14px)';num.style.opacity='0';requestAnimationFrame(function(){requestAnimationFrame(function(){num.style.transition='transform .45s cubic-bezier(.2,.8,.2,1),opacity .45s';num.style.transform='none';num.style.opacity='1'})});num.style.transition='none';}
+  var mx=track.scrollWidth-track.clientWidth;prog.style.transform='scaleX('+Math.max(.04,mx?track.scrollLeft/mx:1).toFixed(3)+')';
+  $('#prev').disabled=cur===0;$('#next').disabled=cur===N-1;
+}
+var pend=0;track.addEventListener('scroll',function(){if(!pend){pend=requestAnimationFrame(function(){pend=0;efectos()})}},{passive:true});
+addEventListener('resize',efectos);
+function ir(i){i=Math.max(0,Math.min(N-1,i));var s=slides[i];track.scrollTo({left:s.offsetLeft-(track.clientWidth-s.offsetWidth)/2,behavior:reduce?'auto':'smooth'})}
+$('#prev').onclick=function(){ir(cur-1)};$('#next').onclick=function(){ir(cur+1)};
+track.addEventListener('keydown',function(e){if(e.key==='ArrowRight'){e.preventDefault();ir(cur+1)}if(e.key==='ArrowLeft'){e.preventDefault();ir(cur-1)}});
+/* arrastrar con el mouse en la compu */
+(function(){var down=0,x0=0,l0=0,moved=0;
+  track.addEventListener('pointerdown',function(e){if(e.pointerType!=='mouse')return;down=1;moved=0;x0=e.clientX;l0=track.scrollLeft});
+  addEventListener('pointermove',function(e){if(!down)return;var dx=e.clientX-x0;if(Math.abs(dx)>5&&!moved){moved=1;track.style.scrollSnapType='none';track.style.cursor='grabbing'}if(moved)track.scrollLeft=l0-dx});
+  addEventListener('pointerup',function(){if(!down)return;down=0;if(moved){track.style.scrollSnapType='';track.style.cursor='';ir(cur);setTimeout(function(){moved=0},0)}});
+  track.addEventListener('click',function(e){if(moved){e.stopPropagation();e.preventDefault()}},true);
+})();
+
+/* foto en grande */
+var lb=$('#lb'),li=$('#li'),li_i=0,lastFocus=null;
+function pintar(i){li_i=(i+N)%N;var f=FOTOS[li_i];li.style.opacity=0;li.style.transform='scale(.96)';setTimeout(function(){li.src=f.src;li.alt=f.t;$('#lt').textContent=f.t;$('#ls').textContent=f.d;$('#lc').textContent=pad(li_i+1)+' / '+pad(N);li.style.opacity='';li.style.transform=''},120)}
+function abrir(i){lastFocus=document.activeElement;lb.classList.add('on');document.documentElement.style.overflow='hidden';var f=FOTOS[i];li_i=i;li.src=f.src;li.alt=f.t;$('#lt').textContent=f.t;$('#ls').textContent=f.d;$('#lc').textContent=pad(i+1)+' / '+pad(N);$('#lx').focus()}
+function cerrar(){lb.classList.remove('on');document.documentElement.style.overflow='';ir(li_i);if(lastFocus&&lastFocus.focus)lastFocus.focus()}
+$('#lx').onclick=cerrar;$('#lp').onclick=function(){pintar(li_i-1)};$('#ln').onclick=function(){pintar(li_i+1)};
+lb.addEventListener('click',function(e){if(e.target===lb||e.target.tagName==='FIGURE')cerrar()});
+addEventListener('keydown',function(e){if(!lb.classList.contains('on'))return;if(e.key==='Escape')cerrar();if(e.key==='ArrowRight')pintar(li_i+1);if(e.key==='ArrowLeft')pintar(li_i-1)});
+(function(){var x0=null,y0=0;lb.addEventListener('touchstart',function(e){x0=e.touches[0].clientX;y0=e.touches[0].clientY},{passive:true});
+  lb.addEventListener('touchend',function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.3)pintar(li_i+(dx<0?1:-1));else if(dy>90&&Math.abs(dy)>Math.abs(dx)*1.5)cerrar()},{passive:true})})();
+
+/* aparecer al llegar + movimiento con el scroll de la página */
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.18});
+io.observe($('#show'));io.observe($('#cta'));
+var io2=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){[].forEach.call(mos.children,function(b){b.classList.add('in')});io2.disconnect()}})},{threshold:.12});io2.observe(mos);
+var bar=$('#bar'),o1=$('#o1'),o2=$('#o2'),hero=$('#hero'),tk=0;
+function pagina(){tk=0;var y=scrollY,mx=document.documentElement.scrollHeight-innerHeight;bar.style.transform='scaleX('+(mx>0?Math.min(1,y/mx):0).toFixed(4)+')';
+  if(!reduce){o1.style.transform='translate3d(0,'+(y*.12).toFixed(1)+'px,0)';o2.style.transform='translate3d(0,'+(-y*.08).toFixed(1)+'px,0)';var k=Math.min(1,y/500);hero.style.transform='translate3d(0,'+(y*.18).toFixed(1)+'px,0)';hero.style.opacity=(1-k*.85).toFixed(3)}}
+addEventListener('scroll',function(){if(!tk)tk=requestAnimationFrame(pagina)},{passive:true});pagina();efectos();
+
+/* arranca la animación de textos cuando está lista la primera foto */
+var arrancar=function(){document.body.classList.add('go')},im=new Image();im.onload=im.onerror=arrancar;im.src=FOTOS[0].src;setTimeout(arrancar,1200);
+
 /* Dentro del sitio (iframe) "Volver al sitio" cierra la página y el 3D sigue cargado; suelta, vuelve al sitio normal. */
-(function(){var emb=window.parent!==window;
+var emb=window.parent!==window;
 document.querySelectorAll('.weeb-back').forEach(function(a){a.addEventListener('click',function(e){if(emb){e.preventDefault();parent.postMessage('weeb-cerrar',location.origin);}});});
-if(emb)document.querySelectorAll('a[href^="./"]:not(.weeb-back)').forEach(function(a){var h=a.getAttribute('href');if(/(\/|\.html)$/.test(h))a.addEventListener('click',function(e){e.preventDefault();parent.postMessage({weebOpen:h},location.origin);});});})();
+if(emb)document.querySelectorAll('a[href^="./"]:not(.weeb-back)').forEach(function(a){var h=a.getAttribute('href');if(/(\/|\.html)$/.test(h))a.addEventListener('click',function(e){e.preventDefault();parent.postMessage({weebOpen:h},location.origin);});});
+})();
 </script>
 </body>
 </html>
