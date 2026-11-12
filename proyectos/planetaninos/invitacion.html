@@ -35,6 +35,10 @@
   .btns{display:flex;flex-wrap:wrap;gap:12px}
   button{font:700 1rem 'Montserrat',system-ui,sans-serif;padding:15px 24px;border-radius:999px;border:2px solid var(--ac);background:#b1c74d;color:#1e3a19;cursor:pointer;transition:.2s;min-height:52px;flex:1 1 150px;box-shadow:0 12px 24px -10px rgba(177,199,77,.8)}
   button:hover{transform:translateY(-2px);filter:brightness(1.07)}
+  .dl-row{margin-top:12px}
+  button.wa{display:inline-flex;align-items:center;justify-content:center;gap:9px;background:#fff;border-color:#fff;color:#1e3a19;box-shadow:0 12px 24px -12px rgba(0,0,0,.45)}
+  button.wa svg{width:22px;height:22px;fill:#25a244;flex:none}
+  button.wa.listo{background:#b1c74d;border-color:#b1c74d}
   button.sec{background:rgba(235,235,239,.08);border-color:var(--off);color:var(--off);box-shadow:none}
   button:disabled{opacity:.55;cursor:wait;transform:none}
   #msg{font-size:.9rem;min-height:1.3em;color:var(--cy);font-weight:600;margin-top:12px}
@@ -93,18 +97,22 @@
       <div class="hd">
         <div class="eyebrow">Invitaciones online</div>
         <h1>Armá la invitación de tu fiesta en <em>Planeta Niños</em></h1>
-        <p class="lead">Tocás la invitación, completás los datos del festejo y descargás la imagen JPG o el video animado para mandarlo por WhatsApp.</p>
+        <p class="lead">Tocás la invitación, completás los datos del festejo y la mandás por WhatsApp con la imagen o el video, la hora, la dirección y el mapa.</p>
         <ol class="steps">
           <li><i>1</i><span>Tocá el círculo y subí la foto<small>La del cumpleañero</small></span></li>
           <li><i>2</i><span>Escribí el nombre y la edad<small>Directo sobre la invitación</small></span></li>
           <li><i>3</i><span>Elegí la fecha y la hora<small>Tocá el cartel de abajo</small></span></li>
-          <li><i>4</i><span>Descargá en JPG o en video<small>Listo para compartir por WhatsApp</small></span></li>
+          <li><i>4</i><span>Enviala por WhatsApp<small>Con imagen o video, dirección y mapa</small></span></li>
         </ol>
       </div>
       <div class="ctrl">
         <div class="mobhint">Tocá la invitación para editarla</div>
-        <div class="btns">
-          <button type="button" id="bjpg">Descargar JPG</button>
+        <div class="btns wa-row">
+          <button type="button" id="wimg" class="wa"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15.1L2 22l5-1.3A10 10 0 1012 2zm5.2 13.9c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.8s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.4.6c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.1 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1.1c.2-.2.4-.2.6-.1l2 1c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg>Enviar imagen</button>
+          <button type="button" id="wvid" class="wa"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15.1L2 22l5-1.3A10 10 0 1012 2zm5.2 13.9c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.8s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.4.6c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.1 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1.1c.2-.2.4-.2.6-.1l2 1c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg>Enviar video</button>
+        </div>
+        <div class="btns dl-row">
+          <button type="button" id="bjpg" class="sec">Descargar JPG</button>
           <button type="button" id="bmp4" class="sec">Descargar video</button>
           <button type="button" id="bplay" class="sec">▶ Animación</button>
         </div>
@@ -135,8 +143,9 @@
   var BG = ['fondo1.jpg', 'fondo2.jpg', 'fondo3.jpg', 'fondo4.jpg'].map(function (n) { var i = new Image(); i.src = './assets/inv/' + n; i.onload = rerender; return i; });
   var SHEEP = new Image(); SHEEP.src = './assets/models/planetaninos-logo.png'; SHEEP.onload = rerender;   // el marciano: solo como relleno cuando no hay foto
   var LOGO = new Image(); LOGO.src = './assets/models/logo-slogan.svg'; LOGO.onload = rerender;   // el nombre, sin marciano
-  var photo = null, FAST = false;
-  var DEFOTO = new Image(); DEFOTO.onload = function () { if (!photo) { photo = DEFOTO; rerender(); } }; DEFOTO.src = './assets/inv/foto.jpg';
+  var photo = null, FAST = false, PHV = 0;
+  function sig() { return JSON.stringify(state()) + '|' + PHV; }
+  var DEFOTO = new Image(); DEFOTO.onload = function () { if (!photo) { photo = DEFOTO; PHV++; rerender(); } }; DEFOTO.src = './assets/inv/foto.jpg';
 
   (function () { var d = new Date(); d.setDate(d.getDate() + ((6 - d.getDay() + 7) % 7 || 7)); $('fecha').value = d.toISOString().slice(0, 10); })();
 
@@ -535,7 +544,7 @@
       im.onload = function () {
         var m = 1400, s = Math.min(1, m / Math.max(im.width, im.height)), cv = document.createElement('canvas');
         cv.width = Math.round(im.width * s); cv.height = Math.round(im.height * s); cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height);
-        photo = cv; $('fhint').className = 'fhint off'; rerender();
+        photo = cv; PHV++; $('fhint').className = 'fhint off'; rerender();
       };
       im.src = rd.result;
     };
@@ -546,35 +555,85 @@
   function save(blob, name) { var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000); }
   function msg(t) { $('msg').textContent = t || ''; }
 
-  $('bjpg').onclick = function () {
+  function hacerJpg(cb) {
     var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
     var f0 = FAST; FAST = false; draw(cv.getContext('2d'), 1, 99); FAST = f0;
-    cv.toBlob(function (b) { if (b) { save(b, 'invitacion-' + slug() + '.jpg'); msg('Listo: se descargó la imagen.'); } else msg('No se pudo generar la imagen.'); }, 'image/jpeg', .92);
-  };
-
-  $('bmp4').onclick = function () {
+    cv.toBlob(function (b) { cb(b); }, 'image/jpeg', .92);
+  }
+  var VCACHE = null;   // video ya grabado para los datos actuales
+  function hacerVideo(btn, label, cb) {
     if (!window.MediaRecorder) { msg('Este navegador no puede grabar video. Probá con Chrome o Safari actualizados.'); return; }
     var types = ['video/mp4;codecs=avc1.42E01E', 'video/mp4;codecs=avc1.4D401E', 'video/mp4;codecs=avc1.64001F', 'video/mp4;codecs=avc1', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
     var mime = types.filter(function (t) { return MediaRecorder.isTypeSupported(t); })[0];
     if (!mime) { msg('Este navegador no puede grabar video.'); return; }
     var ext = mime.indexOf('mp4') >= 0 ? 'mp4' : 'webm';
     var cv = document.createElement('canvas'); var VW = SMALL() ? 540 : 720, VH = VW * 16 / 9; cv.width = VW; cv.height = VH; var cx = cv.getContext('2d'); FAST = true;
-    var stream = cv.captureStream(30), rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 5000000 }), chunks = [];
+    var stream = cv.captureStream(30), rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 5000000 }), chunks = [], ver0 = sig();
     rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
     rec.onstop = function () {
-      FAST = false; $('bmp4').disabled = false; $('bmp4').textContent = 'Descargar video';
-      save(new Blob(chunks, { type: mime.split(';')[0] }), 'invitacion-' + slug() + '.' + ext);
-      msg(ext === 'mp4' ? 'Listo: se descargó el video MP4.' : 'Listo: se descargó el video (formato WebM, porque este navegador no graba MP4).');
+      FAST = false; btn.disabled = false; btn.textContent = label;
+      var blob = new Blob(chunks, { type: mime.split(';')[0] }); VCACHE = { blob: blob, ext: ext, ver: ver0 };
+      cb(blob, ext);
     };
-    $('bmp4').disabled = true; msg('Generando el video… son unos 13 segundos.');
+    btn.disabled = true; msg('Generando el video… son unos 13 segundos.');
     var s0;
     vidStart(function () { s0 = performance.now(); rec.start(250); tick(); });
     function tick() {
       var t = (performance.now() - s0) / 1000;
       if (t >= DUR) { rec.stop(); vidEnd(); return; }
-      $('bmp4').textContent = 'Grabando ' + Math.round(t / DUR * 100) + '%';
+      btn.textContent = 'Grabando ' + Math.round(t / DUR * 100) + '%';
       cx.clearRect(0, 0, VW, VH); draw(cx, VW / W, t); requestAnimationFrame(tick);
     }
+  }
+
+  $('bjpg').onclick = function () {
+    hacerJpg(function (b) { if (b) { save(b, 'invitacion-' + slug() + '.jpg'); msg('Listo: se descargó la imagen.'); } else msg('No se pudo generar la imagen.'); });
+  };
+  $('bmp4').onclick = function () {
+    hacerVideo($('bmp4'), 'Descargar video', function (blob, ext) {
+      save(blob, 'invitacion-' + slug() + '.' + ext);
+      msg(ext === 'mp4' ? 'Listo: se descargó el video MP4.' : 'Listo: se descargó el video (formato WebM, porque este navegador no graba MP4).');
+    });
+  };
+
+  /* ---- compartir por WhatsApp: imagen o video + texto con fecha, hora, dirección y mapa ---- */
+  var MAPS = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Planeta Niños, ' + LUGAR + ', Entre Ríos');
+  function textoWa() {
+    var S = state(), l = ['¡Estás invitado al cumple de ' + S.nombre + '! 🎉'];
+    if (S.edad) l.push('Cumple ' + S.edad + (+S.edad === 1 ? ' año' : ' años') + ' 🎂');
+    l.push('');
+    if (S.fecha) l.push('📅 ' + S.fecha);
+    if (S.hora) l.push('🕒 ' + S.hora);
+    l.push('📍 Planeta Niños — ' + LUGAR);
+    l.push('Cómo llegar: ' + MAPS);
+    l.push('', '¡Te esperamos! 💚');
+    return l.join('\n');
+  }
+  function enviar(blob, nombre, tipo) {
+    var file; try { file = new File([blob], nombre, { type: blob.type || tipo }); } catch (e) { file = null; }
+    var txt = textoWa();
+    if (file && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+      navigator.share({ files: [file], text: txt, title: 'Invitación' }).then(function () { msg('Listo: elegí WhatsApp y el contacto.'); }, function (e) {
+        if (e && e.name === 'AbortError') { msg(''); return; }
+        msg('No se pudo abrir el menú de compartir. Probá con Descargar y mandalo a mano.');
+      });
+      return;
+    }
+    // compu o navegador sin compartir archivos: se descarga y se abre WhatsApp con el texto listo
+    save(blob, nombre);
+    msg('Se descargó el archivo. En WhatsApp pegá el texto y adjuntá la ' + (tipo.indexOf('video') === 0 ? 'video' : 'imagen') + ' descargada.');
+    window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank', 'noopener');
+  }
+  $('wimg').onclick = function () {
+    hacerJpg(function (b) { if (b) enviar(b, 'invitacion-' + slug() + '.jpg', 'image/jpeg'); else msg('No se pudo generar la imagen.'); });
+  };
+  var WV = $('wvid'), WVL = WV.innerHTML;
+  WV.onclick = function () {
+    if (VCACHE && VCACHE.ver === sig()) { enviar(VCACHE.blob, 'invitacion-' + slug() + '.' + VCACHE.ext, VCACHE.blob.type || 'video/mp4'); WV.innerHTML = WVL; WV.classList.remove('listo'); return; }
+    hacerVideo(WV, "Enviar video", function () {
+      // el navegador pide un toque nuevo para compartir: el video ya quedó listo
+      WV.innerHTML = '✔ Listo: tocá para enviar'; WV.classList.add('listo'); msg('El video está listo. Tocá el botón verde para enviarlo por WhatsApp.');
+    });
   };
 
   function units() { var b = $('box'); if (b) document.documentElement.style.setProperty('--u', (b.clientWidth / W) + 'px'); }
