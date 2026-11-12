@@ -561,38 +561,66 @@
     cv.toBlob(function (b) { cb(b); }, 'image/jpeg', .92);
   }
   var VCACHE = null;   // video ya grabado para los datos actuales
+  /* música del video: se mezcla en la grabación (con entrada y salida suaves). Si no carga, el video sale igual, sin música. */
+  var MUSICA = './assets/audio/musica.mp3', AUD = null;
+  function prepararAudio() {
+    var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return Promise.resolve(null);
+    var ctx; try { ctx = new AC(); if (ctx.resume) ctx.resume(); } catch (e) { return Promise.resolve(null); }
+    var buf = AUD ? Promise.resolve(AUD) : fetch(MUSICA).then(function (r) { return r.arrayBuffer(); }).then(function (ab) {
+      return new Promise(function (ok, no) { var p = ctx.decodeAudioData(ab, ok, no); if (p && p.then) p.then(ok, no); });
+    }).then(function (d) { AUD = d; return d; });
+    return buf.then(function (d) { return { ctx: ctx, buf: d }; }, function () { try { ctx.close(); } catch (e) {} return null; });
+  }
   function hacerVideo(btn, label, cb) {
     if (!window.MediaRecorder) { msg('Este navegador no puede grabar video. Probá con Chrome o Safari actualizados.'); return; }
-    var types = ['video/mp4;codecs=avc1.42E01E', 'video/mp4;codecs=avc1.4D401E', 'video/mp4;codecs=avc1.64001F', 'video/mp4;codecs=avc1', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
-    var mime = types.filter(function (t) { return MediaRecorder.isTypeSupported(t); })[0];
-    if (!mime) { msg('Este navegador no puede grabar video.'); return; }
-    var ext = mime.indexOf('mp4') >= 0 ? 'mp4' : 'webm';
-    var cv = document.createElement('canvas'); var VW = SMALL() ? 540 : 720, VH = VW * 16 / 9; cv.width = VW; cv.height = VH; var cx = cv.getContext('2d'); FAST = true;
-    var stream = cv.captureStream(30), rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 5000000 }), chunks = [], ver0 = sig();
-    rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
-    rec.onstop = function () {
-      FAST = false; btn.disabled = false; btn.textContent = label;
-      var blob = new Blob(chunks, { type: mime.split(';')[0] }); VCACHE = { blob: blob, ext: ext, ver: ver0 };
-      cb(blob, ext);
-    };
-    btn.disabled = true; msg('Generando el video… son unos 13 segundos.');
-    var s0;
-    vidStart(function () { s0 = performance.now(); rec.start(250); tick(); });
-    function tick() {
-      var t = (performance.now() - s0) / 1000;
-      if (t >= DUR) { rec.stop(); vidEnd(); return; }
-      btn.textContent = 'Grabando ' + Math.round(t / DUR * 100) + '%';
-      cx.clearRect(0, 0, VW, VH); draw(cx, VW / W, t); requestAnimationFrame(tick);
-    }
+    btn.disabled = true; msg('Preparando el video…');
+    prepararAudio().then(function (au) {
+      var types = au
+        ? ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1.4D401E,mp4a.40.2', 'video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
+        : ['video/mp4;codecs=avc1.42E01E', 'video/mp4;codecs=avc1.4D401E', 'video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+      var mime = types.filter(function (t) { return MediaRecorder.isTypeSupported(t); })[0];
+      if (!mime) { btn.disabled = false; msg('Este navegador no puede grabar video.'); return; }
+      var ext = mime.indexOf('mp4') >= 0 ? 'mp4' : 'webm';
+      var cv = document.createElement('canvas'); var VW = SMALL() ? 540 : 720, VH = VW * 16 / 9; cv.width = VW; cv.height = VH; var cx = cv.getContext('2d'); FAST = true;
+      var stream = cv.captureStream(30), src = null, gain = null;
+      if (au) {
+        try {
+          var dest = au.ctx.createMediaStreamDestination(); gain = au.ctx.createGain(); gain.gain.value = 0;
+          src = au.ctx.createBufferSource(); src.buffer = au.buf; src.loop = true; src.connect(gain); gain.connect(dest);
+          dest.stream.getAudioTracks().forEach(function (tr) { stream.addTrack(tr); });
+        } catch (e) { src = null; }
+      }
+      var rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4000000, audioBitsPerSecond: 128000 }), chunks = [], ver0 = sig();
+      rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+      rec.onstop = function () {
+        FAST = false; btn.disabled = false; btn.textContent = label;
+        try { if (src) src.stop(); au && au.ctx.close(); } catch (e) {}
+        var blob = new Blob(chunks, { type: mime.split(';')[0] }); VCACHE = { blob: blob, ext: ext, ver: ver0 };
+        cb(blob, ext, !!src);
+      };
+      msg('Generando el video… son unos 13 segundos.');
+      var s0, ult = 0;
+      vidStart(function () {
+        s0 = performance.now(); rec.start(500);
+        if (src) { var n = au.ctx.currentTime; gain.gain.setValueAtTime(0, n); gain.gain.linearRampToValueAtTime(.9, n + .8); gain.gain.setValueAtTime(.9, n + DUR - 1.6); gain.gain.linearRampToValueAtTime(0, n + DUR - .1); src.start(0); }
+        tick();
+      });
+      function tick() {
+        var t = (performance.now() - s0) / 1000;
+        if (t >= DUR) { try { rec.requestData(); } catch (e) {} rec.stop(); vidEnd(); return; }
+        btn.textContent = 'Grabando ' + Math.round(t / DUR * 100) + '%';
+        cx.clearRect(0, 0, VW, VH); draw(cx, VW / W, t); requestAnimationFrame(tick);
+      }
+    });
   }
 
   $('bjpg').onclick = function () {
     hacerJpg(function (b) { if (b) { save(b, 'invitacion-' + slug() + '.jpg'); msg('Listo: se descargó la imagen.'); } else msg('No se pudo generar la imagen.'); });
   };
   $('bmp4').onclick = function () {
-    hacerVideo($('bmp4'), 'Descargar video', function (blob, ext) {
+    hacerVideo($('bmp4'), 'Descargar video', function (blob, ext, conMusica) {
       save(blob, 'invitacion-' + slug() + '.' + ext);
-      msg(ext === 'mp4' ? 'Listo: se descargó el video MP4.' : 'Listo: se descargó el video (formato WebM, porque este navegador no graba MP4).');
+      msg(ext === 'mp4' ? 'Listo: se descargó el video MP4' + (conMusica ? ' con música.' : '.') : 'Listo: se descargó el video (formato WebM, porque este navegador no graba MP4).');
     });
   };
 
