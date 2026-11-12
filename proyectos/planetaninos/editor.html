@@ -6138,11 +6138,12 @@ function weebRailMount(host, C, contained) {
     });
     const mov = arrastrando || inercia || (snapping &amp;&amp; preguntando &lt; 0);
     etq.style.top = M + "px"; preg.style.top = M + "px";
-    if (k !== ultimo) { ultimo = k; }
+    if (k !== ultimo) { ultimo = k; vibrar(6); }
     if (mov &amp;&amp; a &gt; 0.85) { etq.textContent = ITEMS[k].label; etq.classList.add("on"); } else etq.classList.remove("on");
     velo.classList.toggle("on", BLUR &amp;&amp; !abriendo &amp;&amp; a &gt; 0.5 &amp;&amp; (arrastrando || inercia || snapping || preguntando &gt;= 0));      // el fondo se difumina ya mientras deslizás, así se ve mejor cada icono
     if (!arrastrando) zona.style.top = a &gt; 0.5 ? "0px" : (yRest(0) - 30) + "px";
   };
+  let pausado = false; const pausar = () =&gt; { const q = !contained &amp;&amp; !muerto &amp;&amp; (a &gt; 0.05 || aT &gt; 0 || preguntando &gt;= 0 || !!abriendo); if (q !== pausado) { pausado = q; try { window.dispatchEvent(new CustomEvent("wb-pausa-3d", { detail: q })); } catch (e) { /* sin evento */ } } };
   let tasa = 18; let lite = false, fAc = 0, fN = 0;
   const kick = () =&gt; { if (!raf &amp;&amp; !muerto) { tPrev = performance.now(); raf = requestAnimationFrame(frame); } };
   const frame = (now) =&gt; {
@@ -6150,16 +6151,16 @@ function weebRailMount(host, C, contained) {
     if (!lite &amp;&amp; arrastrando &amp;&amp; a &gt; 0.9 &amp;&amp; velo.classList.contains("on")) { fAc += real; fN++; if (fN &gt;= 12) { if (fAc / fN &gt; 45) { lite = true; velo.classList.add("wr-lite"); } fAc = 0; fN = 0; } } else if (!arrastrando) { fAc = 0; fN = 0; }
     const dt = Math.min(0.05, (now - tPrev) / 1000); tPrev = now; raf = 0;
     if (inercia) {
-      pos += vel * dt; vel *= Math.exp(-dt * 3.2);
+      pos += vel * dt; vel *= Math.exp(-dt * 2.6);
       if (pos &lt; 0) { pos = 0; vel = 0; } else if (pos &gt; N - 1) { pos = N - 1; vel = 0; }
-      if (Math.abs(vel) &lt; 1.4) { inercia = false; vel = 0; destino = clamp(Math.round(pos), 0, N - 1); snapping = true; }
+      if (Math.abs(vel) &lt; 0.5) { inercia = false; vel = 0; destino = clamp(Math.round(pos), 0, N - 1); snapping = true; }
     } else if (snapping) {
       const d = destino - pos;
-      if (reduce || Math.abs(d) &lt; 0.02) { pos = destino; snapping = false; if (quiere) { quiere = false; preguntar(destino); } else if (!arrastrando) programarColapso(900); }
-      else pos += d * (1 - Math.exp(-dt * tasa));
+      if (reduce || Math.abs(d) &lt; 0.004) { pos = destino; snapping = false; if (quiere) { quiere = false; preguntar(destino); } else if (!arrastrando) programarColapso(900); }
+      else pos += d * (1 - Math.exp(-dt * 16));
     }
     const ad = aT - a; a = reduce || Math.abs(ad) &lt; 0.002 ? aT : a + ad * (1 - Math.exp(-dt * (ad &gt; 0 ? 6 : 4)));
-    pintar();
+    pausar(); pintar();
     if (arrastrando || inercia || snapping || a !== aT) kick();
   };
   const programarColapso = (ms) =&gt; { clearTimeout(tCol); tCol = setTimeout(() =&gt; { if (!arrastrando &amp;&amp; !inercia &amp;&amp; !snapping &amp;&amp; preguntando &lt; 0 &amp;&amp; !abriendo) { aT = 0; kick(); } }, ms); };
@@ -6219,10 +6220,9 @@ function weebRailMount(host, C, contained) {
   zona.addEventListener("pointermove", (e) =&gt; {
     if (!arrastrando || e.pointerId !== idDedo) return;
     const dy = e.clientY - y0; if (Math.abs(dy) &gt; 6) movio = true; if (!movio) return;
-    const p = detente(pos0 - dy / GAP);
+    const p = pos0 - dy / GAP;
     pos = p &lt; 0 ? p * 0.35 : p &gt; N - 1 ? N - 1 + (p - N + 1) * 0.35 : p;
-    const t = performance.now(); muestras.push([t, pos]);
-    { const n = Math.round(pos); if (Math.abs(pos - n) &lt; 0.001 &amp;&amp; pos &gt;= 0 &amp;&amp; pos &lt;= N - 1) { if (n !== bloqueado) { bloqueado = n; vibrar(9); pop(n); } } else bloqueado = -1; } while (muestras.length &gt; 2 &amp;&amp; t - muestras[0][0] &gt; 90) muestras.shift();
+    const t = performance.now(); muestras.push([t, pos]); while (muestras.length &gt; 2 &amp;&amp; t - muestras[0][0] &gt; 90) muestras.shift();
     kick();
   });
   const soltar = (e) =&gt; {
@@ -6236,7 +6236,8 @@ function weebRailMount(host, C, contained) {
     } else {
       pos = clamp(pos, 0, N - 1);
       const m0 = muestras[0], m1 = muestras[muestras.length - 1], dtm = (m1[0] - m0[0]) / 1000, v = dtm &gt; 0.01 ? (m1[1] - m0[1]) / dtm : 0;
-      { const sesgo = reduce || dtm &gt; 0.15 || Math.abs(pos - Math.round(pos)) &lt; 0.001 || Math.abs(v) &lt; 2.2 ? 0 : clamp(v * 0.2, -1.6, 1.6); destino = clamp(Math.round(pos + sesgo), 0, N - 1); tasa = Math.abs(destino - pos) &gt; 1.2 ? 9 : 18; snapping = true; }
+      if (Math.abs(v) &gt; 1.6 &amp;&amp; !reduce) { vel = clamp(v, -22, 22); inercia = true; }
+      else { destino = clamp(Math.round(pos), 0, N - 1); snapping = true; }
     }
     kick();
   };
@@ -6265,7 +6266,7 @@ function weebRailMount(host, C, contained) {
     intentar();
   }
   return () =&gt; {
-    muerto = true; try { document.documentElement.classList.remove("wr-on"); } catch (e) { /* ok */ } cancelAnimationFrame(raf); clearTimeout(tPreg); clearTimeout(tCol); clearTimeout(hintT);
+    muerto = true; pausar(); try { document.documentElement.classList.remove("wr-on"); } catch (e) { /* ok */ } cancelAnimationFrame(raf); clearTimeout(tPreg); clearTimeout(tCol); clearTimeout(hintT);
     document.removeEventListener("pointerdown", onDocDown); window.removeEventListener("pageshow", onShow); window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", medir);
     host.innerHTML = "";
   };
@@ -7472,7 +7473,11 @@ const S2D_CSS = `
 function FrameGate({ active }) {
   const setFrameloop = useThree((st) =&gt; st.setFrameloop);
   const invalidate = useThree((st) =&gt; st.invalidate);
-  useEffect(() =&gt; { try { setFrameloop(active ? "always" : "never"); if (active) invalidate(); } catch (e) { /* sin R3F */ } }, [active]);
+  const pausa = useRef(false);
+  const aplicar = () =&gt; { try { const on = active &amp;&amp; !pausa.current; setFrameloop(on ? "always" : "never"); if (on) invalidate(); } catch (e) { /* sin R3F */ } };
+  useEffect(() =&gt; { aplicar(); }, [active]);
+  /* el menú de iconos pausa el 3D mientras se usa: el celular queda libre para moverlo suave */
+  useEffect(() =&gt; { const h = (e) =&gt; { pausa.current = !!(e &amp;&amp; e.detail); aplicar(); }; window.addEventListener("wb-pausa-3d", h); return () =&gt; window.removeEventListener("wb-pausa-3d", h); }, [active]);
   return null;
 }
 
