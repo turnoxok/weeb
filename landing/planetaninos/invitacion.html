@@ -424,7 +424,7 @@
     var a1 = outCubic(prog(t, 0, .7));
     c.save(); c.globalAlpha = a1; c.translate(0, (1 - a1) * -40);
     var lw = L(720), lh = lw * .2;
-    if (LOGO.complete && LOGO.naturalWidth) { lh = lw * LOGO.naturalHeight / LOGO.naturalWidth; var st = sticker(lw, lh), pd = st.pad; c.shadowColor = 'rgba(14,44,10,.45)'; c.shadowBlur = FAST ? 0 : 18; c.shadowOffsetY = 8; c.drawImage(st, CX - lw / 2 - pd, Y(150) - pd); c.shadowColor = 'transparent'; c.drawImage(LOGO, CX - lw / 2, Y(150), lw, lh); }
+    if (LOGO.complete && LOGO.naturalWidth) { lh = lw * LOGO.naturalHeight / LOGO.naturalWidth; var st = sticker(lw, lh), pd = st.pad; c.shadowColor = 'rgba(10,40,8,.45)'; c.shadowBlur = FAST ? 0 : 22; c.shadowOffsetY = 12; c.drawImage(st, CX - lw / 2 - pd, Y(150) - pd); c.shadowColor = 'transparent'; c.drawImage(LOGO, CX - lw / 2, Y(150), lw, lh); }
     c.restore();
 
     // foto en aro cian con corona
@@ -449,7 +449,7 @@
       plate(c, -L(320), -L(59), L(640), L(118), L(52), '#68c859', '#409232', '#5bd0e7', 0);
       c.font = '800 80px ' + F; fit(c, '¡ESTÁS INVITADO!', L(563), 80, 800);
       var w1 = c.measureText('¡ESTÁS ').width, w2 = c.measureText('INVITADO!').width, x0 = -(w1 + w2) / 2, fs1 = parseInt(c.font.match(/(\d+)px/)[1], 10);
-      c.textAlign = 'left'; stext(c, '¡ESTÁS ', x0, fs1 * .3, '#fafff9'); stext(c, 'INVITADO!', x0 + w1, fs1 * .3, '#ff8a4c'); c.textAlign = 'center';
+      c.textAlign = 'left'; stext(c, '¡ESTÁS ', x0, fs1 * .3, '#fafff9'); stext(c, 'INVITADO!', x0 + w1, fs1 * .3, '#5bd0e7'); c.textAlign = 'center';
     });
     c.restore();
 
