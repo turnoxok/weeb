@@ -275,7 +275,7 @@
     }
     var fsz = parseInt((c.font.match(/(\d+)px/) || [0, 40])[1], 10);
     c.fillStyle = fill; c.fillText(txt, x, y);
-    if (sh !== false && fill !== '#ff8a4c' && fsz > 60) { c.globalAlpha = .5; c.lineWidth = 2; c.strokeStyle = 'rgba(255,255,255,.9)'; c.strokeText(txt, x, y - 1); }
+    if (sh !== false && fill !== '#ff8a4c' && fsz > 60) { c.globalAlpha = .45; c.fillStyle = 'rgba(255,255,255,.9)'; c.fillText(txt, x, y - 2); c.globalAlpha = 1; c.fillStyle = fill; c.fillText(txt, x, y); }
     c.restore();
   }
   var WCV = {};
@@ -472,8 +472,8 @@
       var ag = c.createLinearGradient(0, -195, 0, 10); ag.addColorStop(0, '#ffa466'); ag.addColorStop(1, '#f2631f');
       c.save(); c.fillStyle = '#a63a0d'; for (var e = FAST ? 5 : 9; e >= 1; e--) c.fillText(S.edad, 0, e);
       c.shadowColor = 'rgba(18,56,12,.55)'; c.shadowBlur = FAST ? 0 : 22; c.shadowOffsetY = FAST ? 14 : 20; c.fillText(S.edad, 0, 9); c.shadowColor = 'transparent';
-      c.fillStyle = ag; c.fillText(S.edad, 0, 0);
-      c.globalAlpha = .4; c.lineWidth = 3; c.strokeStyle = '#fff'; c.strokeText(S.edad, 0, -2); c.restore();
+      c.fillStyle = 'rgba(255,255,255,.55)'; c.fillText(S.edad, 0, -3);   /* brillo del borde de arriba (sin trazo: el trazo mostraba las uniones internas del número) */
+      c.fillStyle = ag; c.fillText(S.edad, 0, 0); c.restore();
       c.restore();
       c.font = '800 ' + Math.round(L(56)) + 'px ' + F; stext(c, +S.edad === 1 ? 'año' : 'años', CX, 1500, '#fff');
       c.restore();
