@@ -6104,7 +6104,7 @@ function weebGoItem(it) {
 function weebRailMount(host, C, contained) {
   const hexRgb = (h, d) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(h || "").trim()); const v = m ? parseInt(m[1], 16) : d; return ((v >> 16) & 255) + "," + ((v >> 8) & 255) + "," + (v & 255); };
   const marca = hexRgb(C.railColor, 0x3F8A28), oscuro = hexRgb(C.railDark, 0x16461A);
-  host.style.setProperty("--wr-marca", marca); host.style.setProperty("--wr-oscuro", oscuro); host.style.setProperty("--wr-font", C.font || "'Montserrat', sans-serif");
+  host.style.setProperty("--wr-marca", marca); host.setAttribute("data-lenis-prevent", ""); host.setAttribute("data-no-snap", ""); host.style.setProperty("--wr-oscuro", oscuro); host.style.setProperty("--wr-font", C.font || "'Montserrat', sans-serif");
   const ITEMS = (C.items || []).filter((it) => it && String(it.label || "").trim()).map((it) => ({ it, label: String(it.label), icon: railIconFor(it),
     ask: it.ask || ((it.newTab || /^(https?:\/\/(wa\.me|api\.whatsapp|www\.google|maps)|tel:|mailto:)/i.test(it.href || "")) ? "¿Abrir " + it.label + "?" : "¿Ir a " + it.label + "?") }));
   const N = ITEMS.length;
@@ -6246,24 +6246,15 @@ function weebRailMount(host, C, contained) {
     kick();
   };
   zona.addEventListener("pointerup", soltar); zona.addEventListener("pointercancel", soltar);
-  let tRueda = 0;
-  zona.addEventListener("wheel", (e) => {
-    if (abriendo) return;
-    e.preventDefault(); hintOff = true; clearTimeout(hintT);
-    if (preguntando >= 0) cancelar();
-    const dy = e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY;
-    destino = clamp((snapping || inercia ? destino : pos) + dy / 110, 0, N - 1); inercia = false; vel = 0; snapping = true; quiere = false; aT = 1;
-    clearTimeout(tCol); riel.classList.remove("quieta");
-    clearTimeout(tRueda); tRueda = setTimeout(() => { destino = clamp(Math.round(destino), 0, N - 1); snapping = true; quiere = true; kick(); }, 220);
-    kick();
-  }, { passive: false });
+  /* el dedo sobre los botones no tiene que mover el 3D de atrás */
+  ["touchstart", "touchmove", "touchend"].forEach((t) => zona.addEventListener(t, (e) => e.stopPropagation(), { passive: true }));
   riel.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { const t = e.target.closest && e.target.closest(".wr-it"); if (t) { e.preventDefault(); aT = 1; destino = +t.dataset.i; snapping = true; quiere = true; kick(); } } });
   const onScroll = () => { if (a < 0.05 && !arrastrando) riel.classList.add("quieta"); };
   const medir = () => { H = contained ? box.clientHeight : window.innerHeight; M = Math.round(H * (1 - ALTO)); pintar(); };
   window.addEventListener("scroll", onScroll, { passive: true }); window.addEventListener("resize", medir); medir();
   /* aviso la primera vez (cuando ya terminó el loader): los botones se despliegan solos, se mueven un poquito y se achican */
   let hintOff = false; let hintT = 0, vio = false; try { vio = localStorage.getItem("wr_hint_v1") === "1"; } catch (e) { /* sin almacenamiento */ }
-  if (!vio && !reduce && !contained) {
+  if (false) { /* aviso automático desactivado: confundía */
     let tries = 0;
     const intentar = () => {
       if (muerto) return;
