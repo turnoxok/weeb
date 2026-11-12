@@ -34,10 +34,11 @@ const IC = { agenda: '<rect x="3" y="4" width="18" height="17" rx="3"/><path d="
 const S = { cfg: null, pub: null, token: localStorage.getItem('weeb_token') || '', user: null, view: 'agenda', mes: mesDe(hoy()), reFiltro: 'prox', reQ: '', cajaMes: mesDe(hoy()), salones: [], turnos: [], instalar: null };
 const $app = () => $('#app');
 
+async function fetchSeguro(url, opts) { const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 45000); try { return await fetch(url, { ...(opts || {}), signal: ctl.signal }); } catch (e) { throw new Error(e && e.name === 'AbortError' ? 'Está tardando demasiado. Probá de nuevo en un momento.' : 'No hay conexión. Revisá tu internet y probá de nuevo.'); } finally { clearTimeout(tm); } }
 async function llamar(action, data, publico) {
   const get = publico === 'get';
   const url = S.cfg.api + (get ? '?' + new URLSearchParams({ action, ...(data || {}) }) : '');
-  const r = await fetch(url, get ? {} : { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, token: S.token, ...(data || {}) }) });
+  const r = await fetchSeguro(url, get ? {} : { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, token: S.token, ...(data || {}) }) });
   let j; try { j = await r.json(); } catch (e) { throw new Error('No hay conexión con el servidor. Probá de nuevo.'); }
   if (!j.ok) { if (j.error === 'NO_AUTORIZADO' && S.token) { salir(true); } const e = new Error(j.mensaje || j.error); e.codigo = j.error; throw e; }
   return j.data;

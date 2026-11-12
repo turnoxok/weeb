@@ -14,8 +14,9 @@ function h(tag, props, ...kids) {
   if ('value' in post) e.value = post.value; if ('checked' in post) e.checked = !!post.checked; return e;
 }
 const S = { cfg: null, pub: null, mes: '', disp: null, fecha: '', slot: null };
+async function fetchSeguro(url, opts) { const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 45000); try { return await fetch(url, { ...(opts || {}), signal: ctl.signal }); } catch (e) { throw new Error(e && e.name === 'AbortError' ? 'Está tardando demasiado. Probá de nuevo en un momento.' : 'No hay conexión. Revisá tu internet y probá de nuevo.'); } finally { clearTimeout(tm); } }
 async function llamar(action, data, post) {
-  const r = await fetch(S.cfg.api + (post ? '' : '?' + new URLSearchParams({ action, ...(data || {}) })), post ? { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, ...(data || {}) }) } : {});
+  const r = await fetchSeguro(S.cfg.api + (post ? '' : '?' + new URLSearchParams({ action, ...(data || {}) })), post ? { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, ...(data || {}) }) } : {});
   let j; try { j = await r.json(); } catch (e) { throw new Error('No hay conexión. Probá de nuevo o escribinos por WhatsApp.'); }
   if (!j.ok) { const e = new Error(j.mensaje || j.error); e.codigo = j.error; throw e; } return j.data;
 }
@@ -33,7 +34,7 @@ const pagina = (paso, ...c) => $('#app').replaceChildren(h('div', { class: 'page
 
 async function iniciar() {
   S.cfg = await (await fetch('config.json', { cache: 'no-store' })).json();
-  try { S.pub = await llamar('config'); } catch (e) { $('#app').replaceChildren(h('p', { class: 'empty', style: 'text-align:center;padding:30vh 1rem' }, e.message)); return; }
+  try { S.pub = await llamar('config'); } catch (e) { $('#app').replaceChildren(h('div', { style: 'text-align:center;padding:26vh 1.2rem' }, h('p', { class: 'empty' }, e.message), h('button', { class: 'btn', onclick: () => location.reload() }, 'Reintentar')), window.parent !== window ? h('button', { class: 'weeb-back', onclick: () => parent.postMessage('weeb-cerrar', location.origin) }, '← Volver al sitio') : S.cfg.volver ? h('a', { class: 'weeb-back', href: S.cfg.volver }, '← Volver al sitio') : ''); return; }
   document.title = 'Reservar · ' + S.pub.nombre;
   const id = new URLSearchParams(location.search).get('reserva');
   if (id) return estado(id);
