@@ -6141,9 +6141,9 @@ function weebRailMount(host, C, contained) {
     if (k !== ultimo) { ultimo = k; vibrar(6); }
     if (mov &amp;&amp; a &gt; 0.85) { etq.textContent = ITEMS[k].label; etq.classList.add("on"); } else etq.classList.remove("on");
     velo.classList.toggle("on", BLUR &amp;&amp; !abriendo &amp;&amp; a &gt; 0.5 &amp;&amp; (arrastrando || inercia || snapping || preguntando &gt;= 0));      // el fondo se difumina ya mientras deslizás, así se ve mejor cada icono
-    if (!arrastrando) zona.style.top = a &gt; 0.5 ? "0px" : (yRest(0) - 30) + "px";
+    if (!arrastrando) zona.style.top = aT &gt; 0.5 ? "0px" : (yRest(0) - 30) + "px";
   };
-  let pausado = false; const pausar = () =&gt; { const q = !contained &amp;&amp; !muerto &amp;&amp; (a &gt; 0.05 || aT &gt; 0 || preguntando &gt;= 0 || !!abriendo); if (q !== pausado) { pausado = q; try { window.dispatchEvent(new CustomEvent("wb-pausa-3d", { detail: q })); } catch (e) { /* sin evento */ } } };
+  let pausado = false; const pausar = () =&gt; { const q = !contained &amp;&amp; !muerto &amp;&amp; (aT &gt; 0 || preguntando &gt;= 0 || !!abriendo); if (q !== pausado) { pausado = q; try { window.dispatchEvent(new CustomEvent("wb-pausa-3d", { detail: q })); } catch (e) { /* sin evento */ } } };
   let tasa = 18; let lite = false, fAc = 0, fN = 0;
   const kick = () =&gt; { if (!raf &amp;&amp; !muerto) { tPrev = performance.now(); raf = requestAnimationFrame(frame); } };
   const frame = (now) =&gt; {
@@ -6173,7 +6173,7 @@ function weebRailMount(host, C, contained) {
       c.animate([{ transform: "rotate(" + ang + "deg) translateY(-6px) scaleY(.2)", opacity: 0 }, { transform: "rotate(" + ang + "deg) translateY(-14px) scaleY(1)", opacity: 1, offset: 0.4 }, { transform: "rotate(" + ang + "deg) translateY(-18px) scaleY(.3)", opacity: 0 }], { duration: 650, delay: 180 + n * 50, easing: "ease-out" });
     });
   };
-  const cancelar = () =&gt; { clearTimeout(tPreg); preguntando = -1; preg.classList.remove("on"); pintar(); programarColapso(1200); };
+  const cancelar = () =&gt; { clearTimeout(tPreg); preguntando = -1; preg.classList.remove("on"); pintar(); programarColapso(250); };
   no.addEventListener("click", cancelar);
   const onDocDown = (e) =&gt; { if (preguntando &gt;= 0 &amp;&amp; !abriendo &amp;&amp; !preg.contains(e.target) &amp;&amp; !zona.contains(e.target)) cancelar(); };
   document.addEventListener("pointerdown", onDocDown);
