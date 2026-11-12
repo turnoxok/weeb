@@ -3128,7 +3128,7 @@ function useVideoTexture(url, loop, scrub) {
       if (pr &amp;&amp; pr.then) pr.then(() =&gt; video.pause()).catch(() =&gt; {});
       else video.pause();
     };
-    const kick = scrub ? wake : tryPlay;
+    let tasa = 18; const kick = scrub ? wake : tryPlay;
     const onReady = () =&gt; {
       if (cancelled || tex) return;
       tex = new THREE.VideoTexture(video);
@@ -6152,7 +6152,7 @@ function weebRailMount(host, C, contained) {
     } else if (snapping) {
       const d = destino - pos;
       if (reduce || Math.abs(d) &lt; 0.02) { pos = destino; snapping = false; if (quiere) { quiere = false; preguntar(destino); } else if (!arrastrando) programarColapso(900); }
-      else pos += d * (1 - Math.exp(-dt * 22));
+      else pos += d * (1 - Math.exp(-dt * tasa));
     }
     const ad = aT - a; a = reduce || Math.abs(ad) &lt; 0.002 ? aT : a + ad * (1 - Math.exp(-dt * (ad &gt; 0 ? 6 : 4)));
     pintar();
@@ -6228,8 +6228,7 @@ function weebRailMount(host, C, contained) {
     } else {
       pos = clamp(pos, 0, N - 1);
       const m0 = muestras[0], m1 = muestras[muestras.length - 1], dtm = (m1[0] - m0[0]) / 1000, v = dtm &gt; 0.01 ? (m1[1] - m0[1]) / dtm : 0;
-      if (Math.abs(v) &gt; 1.6 &amp;&amp; !reduce) { vel = clamp(v * 0.55, -11, 11); inercia = true; }
-      else { destino = clamp(Math.round(pos), 0, N - 1); snapping = true; }
+      { const sesgo = reduce || Math.abs(v) &lt; 2.2 ? 0 : clamp(v * 0.2, -1.6, 1.6); destino = clamp(Math.round(pos + sesgo), 0, N - 1); tasa = Math.abs(destino - pos) &gt; 1.2 ? 9 : 18; snapping = true; }
     }
     kick();
   };
