@@ -631,7 +631,7 @@
   }
   function hacerVideoWC(btn, label, cb, caer) {
     if (!(window.VideoEncoder && window.VideoFrame && window.Mp4Muxer !== null)) return caer();
-    var FPS = 24, N = Math.round(DUR * FPS), VW = SMALL() ? 540 : 720, VH = VW * 16 / 9, enc = null, cancel = false;
+    var RVFC = !!(VID.requestVideoFrameCallback), FPS = RVFC ? 30 : 24, N = Math.round(DUR * FPS), VW = SMALL() ? 540 : 720, VH = VW * 16 / 9, enc = null, cancel = false;
     var codecs = /[?&]vp9\b/.test(location.search) ? [['vp09.00.10.08', 'vp9']] : [['avc1.42002a', 'avc'], ['avc1.4d002a', 'avc'], ['avc1.640028', 'avc']];
     btn.disabled = true; msg('Preparando el video…');
     var falla = function (e) { try { if (enc) enc.close(); } catch (x) {} FAST = false; btn.disabled = false; if (window.console) console.warn('video por cuadros no disponible', e); caer(); };
@@ -683,7 +683,50 @@
         });
       }
       msg('Armando el video… puede tardar un poco; dejá esta pantalla abierta.');
-      return listo().then(function () { vdur = VID.duration || 0; return paso(); }).then(function (blob) {
+      function fin() { return enc.flush().then(function () { if (err) throw err; mux.finalize(); return new Blob([target.buffer], { type: 'video/mp4' }); }); }
+      /* Camino principal: el video de fondo se reproduce despacio y se toma cada cuadro en orden (sin saltos de un lado al otro). */
+      function porReproduccion() {
+        return new Promise(function (ok, no) {
+          var last = -1, cuadros = 0, dur = VID.duration || DUR, terminado = false, tope = setTimeout(function () { cierre(); }, 120000);
+          function cierre() { if (terminado) return; terminado = true; clearTimeout(tope); try { VID.pause(); } catch (e) {} VID.playbackRate = 1; ok(); }
+          function espera() { if (err) { terminado = true; clearTimeout(tope); return no(err); } if (enc.encodeQueueSize > 3) setTimeout(espera, 25); else { try { VID.play(); } catch (e) {} VID.requestVideoFrameCallback(cuadro); } }
+          function cuadro(now, md) {
+            if (terminado) return;
+            var t = md.mediaTime;
+            if (t > last + .002) {
+              try {
+                cx.clearRect(0, 0, VW, VH); draw(cx, VW / W, t);
+                var fr = new VideoFrame(cv, { timestamp: Math.round(t * 1e6), duration: Math.round(1e6 / FPS) });
+                enc.encode(fr, { keyFrame: cuadros % 60 === 0 }); fr.close(); cuadros++; last = t;
+              } catch (e) { terminado = true; clearTimeout(tope); return no(e); }
+              if (cuadros % 6 === 0) btn.textContent = 'Armando ' + Math.min(99, Math.round(t / dur * 100)) + '%';
+            }
+            if (VID.ended || t >= dur - .04) { cierre(); return; }
+            if (enc.encodeQueueSize > 3) { try { VID.pause(); } catch (e) {} setTimeout(espera, 25); } else VID.requestVideoFrameCallback(cuadro);
+          }
+          VID.addEventListener('ended', cierre, { once: true });
+          var s0 = function () { VID.removeEventListener('seeked', s0); VID.playbackRate = .4; VID.muted = true; VID.requestVideoFrameCallback(cuadro); var p = VID.play(); if (p && p.catch) p.catch(no); };
+          VID.pause(); if (VID.currentTime < .01) s0(); else { VID.addEventListener('seeked', s0); VID.currentTime = 0; setTimeout(function () { if (!last && !cuadros) s0(); }, 3000); }
+        });
+      }
+      /* Respaldo: si el navegador no avisa cada cuadro, se busca cada instante del video. */
+      function porBusqueda() {
+        var N2 = N;
+        function paso() {
+          if (err) throw err;
+          if (i >= N2) return Promise.resolve();
+          var t = i / FPS;
+          return irA(t).then(function () {
+            cx.clearRect(0, 0, VW, VH); draw(cx, VW / W, t);
+            var fr = new VideoFrame(cv, { timestamp: Math.round(i * 1e6 / FPS), duration: Math.round(1e6 / FPS) });
+            enc.encode(fr, { keyFrame: i % 48 === 0 }); fr.close(); i++;
+            if (i % 4 === 0) btn.textContent = 'Armando ' + Math.round(i / N2 * 100) + '%';
+            return new Promise(function (r) { setTimeout(r, enc.encodeQueueSize > 6 ? 30 : 0); }).then(paso);
+          });
+        }
+        return paso();
+      }
+      return listo().then(function () { vdur = VID.duration || 0; return (RVFC && vdur ? porReproduccion() : porBusqueda()); }).then(fin).then(function (blob) {
         FAST = false; btn.disabled = false; btn.textContent = label; vidEnd();
         var ver0 = sig(); VCACHE = { blob: blob, ext: 'mp4', ver: ver0 }; cb(blob, 'mp4', !!audio);
       });
