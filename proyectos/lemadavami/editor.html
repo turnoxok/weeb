@@ -6571,12 +6571,12 @@ function MusicToggle() {
   };
   useEffect(() => {
     draw();
-    const th = MUSIC.showAfter || 0;
+    const th = MUSIC.showAfter || 0; let tPre = 0; const pre = function () { if (document.querySelector(".ldr")) { tPre = setTimeout(pre, 600); return; } prep(); }; tPre = setTimeout(pre, 1200);  /* baja la música apenas termina la carga, así ya está lista cuando la tocás */
     const f = () => { const p = window.scrollY / Math.max(1, document.documentElement.scrollHeight - window.innerHeight); if (window.scrollY > 4 && p >= th) { setOn(true); prep(); } };
     f(); window.addEventListener("scroll", f, { passive: true });
     const vis = () => { const s = st.current, a = s.audio; if (!a) return; if (document.hidden) { s.resume = s.playing && !a.paused; if (s.resume) a.pause(); } else if (s.resume) { s.resume = false; a.volume = 0; a.play().then(() => fade(vol, 700)).catch(() => {}); } };
     document.addEventListener("visibilitychange", vis);
-    return () => { window.removeEventListener("scroll", f); document.removeEventListener("visibilitychange", vis); const s = st.current; cancelAnimationFrame(s.raf); cancelAnimationFrame(s.fadeRaf); if (s.audio) { s.audio.pause(); s.audio = null; } };
+    return () => { clearTimeout(tPre); window.removeEventListener("scroll", f); document.removeEventListener("visibilitychange", vis); const s = st.current; cancelAnimationFrame(s.raf); cancelAnimationFrame(s.fadeRaf); if (s.audio) { s.audio.pause(); s.audio = null; } };
   }, []);
   const toggle = () => {
     const s = st.current; if (s.audio && s.audio.error) s.audio = null; prep(); const a = s.audio; if (!a) return;
