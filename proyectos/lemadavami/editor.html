@@ -6137,7 +6137,7 @@ function weebRailMount(host, C, contained) {
     });
     const mov = arrastrando || inercia || (snapping &amp;&amp; preguntando &lt; 0);
     etq.style.top = M + "px"; preg.style.top = M + "px";
-    if (k !== ultimo) { ultimo = k; vibrar(6); }
+    if (k !== ultimo) { ultimo = k; }
     if (mov &amp;&amp; a &gt; 0.85) { etq.textContent = ITEMS[k].label; etq.classList.add("on"); } else etq.classList.remove("on");
     velo.classList.toggle("on", BLUR &amp;&amp; !abriendo &amp;&amp; a &gt; 0.5 &amp;&amp; (arrastrando || inercia || snapping || preguntando &gt;= 0));      // el fondo se difumina ya mientras deslizás, así se ve mejor cada icono
     if (!arrastrando) zona.style.top = a &gt; 0.5 ? "0px" : (yRest(0) - 30) + "px";
@@ -6201,20 +6201,24 @@ function weebRailMount(host, C, contained) {
       setTimeout(cerrarCirculo, 2300);          // si seguimos en la misma página, el círculo se cierra y se ve el destino
     }, reduce ? 0 : 480);
   });
+  const detente = (v) =&gt; { if (v &lt;= 0 || v &gt;= N - 1) return v; const n = Math.round(v), f = v - n, af = Math.abs(f), z = 0.16; if (af &lt;= z) return n; return n + Math.sign(f) * 0.5 * ((af - z) / (0.5 - z)); };   /* ranura: cerca de cada posición el icono queda trabado, como el clic de una caja fuerte */
+  let bloqueado = -1;
+  const pop = (n) =&gt; { if (reduce) return; try { if (etq.animate) etq.animate([{ scale: 1 }, { scale: 1.12, offset: 0.4 }, { scale: 1 }], { duration: 240, easing: "ease-out" }); if (els[n] &amp;&amp; els[n].animate) els[n].animate([{ scale: 1 }, { scale: 1.2, offset: 0.4 }, { scale: 1 }], { duration: 240, easing: "ease-out" }); } catch (e) { /* sin animación */ } };
   let y0 = 0, pos0 = 0, movio = false, idDedo = null, muestras = [], estabaChico = false;
   zona.addEventListener("pointerdown", (e) =&gt; { hintOff = true; clearTimeout(hintT);
     if (abriendo) return;
     if (preguntando &gt;= 0) cancelar();
-    estabaChico = a &lt; 0.5; arrastrando = true; inercia = false; snapping = false; quiere = false; movio = false; idDedo = e.pointerId; y0 = e.clientY; pos0 = pos; muestras = [[performance.now(), pos]];
+    estabaChico = a &lt; 0.5; bloqueado = Math.round(pos); arrastrando = true; inercia = false; snapping = false; quiere = false; movio = false; idDedo = e.pointerId; y0 = e.clientY; pos0 = pos; muestras = [[performance.now(), pos]];
     try { zona.setPointerCapture(e.pointerId); } catch (x) { /* sin captura */ }
     clearTimeout(tCol); riel.classList.remove("quieta"); aT = 1; kick();
   });
   zona.addEventListener("pointermove", (e) =&gt; {
     if (!arrastrando || e.pointerId !== idDedo) return;
     const dy = e.clientY - y0; if (Math.abs(dy) &gt; 6) movio = true; if (!movio) return;
-    const p = pos0 - dy / GAP;
+    const p = detente(pos0 - dy / GAP);
     pos = p &lt; 0 ? p * 0.35 : p &gt; N - 1 ? N - 1 + (p - N + 1) * 0.35 : p;
-    const t = performance.now(); muestras.push([t, pos]); while (muestras.length &gt; 2 &amp;&amp; t - muestras[0][0] &gt; 90) muestras.shift();
+    const t = performance.now(); muestras.push([t, pos]);
+    { const n = Math.round(pos); if (Math.abs(pos - n) &lt; 0.001 &amp;&amp; pos &gt;= 0 &amp;&amp; pos &lt;= N - 1) { if (n !== bloqueado) { bloqueado = n; vibrar(9); pop(n); } } else bloqueado = -1; } while (muestras.length &gt; 2 &amp;&amp; t - muestras[0][0] &gt; 90) muestras.shift();
     kick();
   });
   const soltar = (e) =&gt; {
