@@ -146,16 +146,16 @@ p['fab'].update(waText='¡Hola! Quiero consultar por una reserva en Casa Aventur
 p['progressBar']['color'] = NARANJA; p['backTop']['color'] = NARANJA
 p['site2d'].update(bg=VERDE_OSC, text='#ffffff', accent=NARANJA)
 m = p['menu']; m.update(logoUrl='./assets/models/casaaventuras-logo.png', logoSize=64, autoContrast=False, btnColor=VERDE_OSC, btnBg='#ffffff', btnBgAlpha=0.75, bgColor=VERDE_OSC, bgColor2=VERDE, hoverColor=NARANJA, signUrl='', signText='')
-m['items'] = [{'label': 'Inicio', 'type': 'pose', 'pose': 1, 'href': '', 'newTab': False}, {'label': 'Disponibilidad', 'type': 'url', 'href': './reservar/', 'newTab': False},
-              {'label': 'Panel', 'type': 'url', 'href': './panel/', 'newTab': False}, {'label': 'Instagram', 'type': 'url', 'href': 'https://www.instagram.com/casa.aventuras/', 'newTab': True}]
+m['items'] = [{'label': 'Inicio', 'type': 'pose', 'pose': 1, 'href': '', 'newTab': False}, {'label': 'Disponibilidad', 'type': 'url', 'href': './reservar/', 'newTab': False}, {'label': 'Instagram', 'type': 'url', 'href': 'https://www.instagram.com/casa.aventuras/', 'newTab': True}]
 sec3d = p['sections'][0]; foot = [s for s in p['sections'] if s.get('type') == 'footer'][0]
 foot.update(logo='./assets/models/casaaventuras-logo.png', text='Salón de fiestas y eventos infantiles. ¡Tu fiesta, una aventura!',
-            col1Links='Inicio | #3d\nDisponibilidad | ./reservar/\nPanel | ./panel/\nInstagram | https://www.instagram.com/casa.aventuras/', address='', phone='', whatsapp='', copyright='© 2026 Casa Aventuras')
+            col1Links='Inicio | #3d\nDisponibilidad | ./reservar/\nInstagram | https://www.instagram.com/casa.aventuras/', address='', phone='', whatsapp='', copyright='© 2026 Casa Aventuras')
 p['sections'] = [sec3d, foot]
 p['seo'].update(title='Casa Aventuras — Salón de fiestas infantiles', description='Salón de fiestas y eventos infantiles. Reservá tu fecha online.', siteName=NOM, lang='es-AR', url='', image='', themeColor=VERDE_OSC,
                 businessType='EntertainmentBusiness', businessName=NOM, instagram='https://www.instagram.com/casa.aventuras/', favicon='./assets/models/favicon.png', imageAlt=NOM, logo='', email='', areaServed='',
                 content='Casa Aventuras es un salón de fiestas y eventos infantiles.\n\n## Qué ofrece\n\n- Salón para cumpleaños y festejos infantiles.\n- Reservas online: elegí el día y el horario.\n')
-p['loader'].update(enabled=True, background='#ffffff', lineColor=NARANJA, minMs=1400)
+LOGO_SVG = open(SRC + '/svg/logo-completo.svg', encoding='utf-8').read()
+p['loader'].update(enabled=True, svg=LOGO_SVG, background='#ffffff', lineColor=NARANJA, minMs=1400)
 JS = os.path.join(OUT, 'Weeb_Proyecto_Actual.json')
 json.dump(p, open(JS, 'w'), ensure_ascii=False, indent=1)
 AP = os.path.join(REPO, 'herramientas', 'agregar_pieza.py')
@@ -187,4 +187,9 @@ for sub in ('reservar', 'panel'):
     open(os.path.join(d, 'index.html'), 'w', encoding='utf-8').write(h)
 sw = os.path.join(OUT, 'panel', 'sw.js'); s_ = open(sw, encoding='utf-8').read().replace("'panel.css', 'icon-192.png'", "'panel.css', 'tema.css', 'icon-192.png'").replace('weeb-panel-v1', 'weeb-panel-v2'); open(sw, 'w', encoding='utf-8').write(s_)
 mf = os.path.join(OUT, 'panel', 'manifest.webmanifest'); j = json.load(open(mf)); j['background_color'] = j['theme_color'] = '#2f6a33'; json.dump(j, open(mf, 'w'), ensure_ascii=False, indent=1)
-print('ok reservas/panel')
+cj = os.path.join(OUT, 'reservar', 'config.json'); c = json.load(open(cj))
+c['demo'] = {'nombre': NOM, 'logoUrl': '../assets/models/casaaventuras-logo.png', 'colorPrincipal': NARANJA, 'whatsapp': '', 'direccion': '', 'mapsUrl': '', 'transferAlias': '', 'transferCbu': '', 'transferTitular': ''}
+c['demoAviso'] = 'Esto es una demostración: las reservas reales se activan cuando se conecta la hoja de Casa Aventuras.'
+json.dump(c, open(cj, 'w'), ensure_ascii=False, indent=1)
+shutil.rmtree(os.path.join(OUT, 'panel'))   # el panel usa la hoja de otro cliente: no se publica en la demo hasta tener la hoja propia
+print('ok reservas')

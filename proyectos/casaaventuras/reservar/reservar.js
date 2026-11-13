@@ -16,9 +16,10 @@ function h(tag, props, ...kids) {
 const S = { cfg: null, pub: null, mes: '', disp: null, fecha: '', slot: null };
 async function fetchSeguro(url, opts) { const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 45000); try { return await fetch(url, { ...(opts || {}), signal: ctl.signal }); } catch (e) { throw new Error(e && e.name === 'AbortError' ? 'Está tardando demasiado. Probá de nuevo en un momento.' : 'No hay conexión. Revisá tu internet y probá de nuevo.'); } finally { clearTimeout(tm); } }
 async function llamar(action, data, post) {
+  if (post && S.cfg.demo) throw new Error(S.cfg.demoAviso || 'Esto es una demostración: las reservas se activan cuando se conecta la hoja del salón.');
   const r = await fetchSeguro(S.cfg.api + (post ? '' : '?' + new URLSearchParams({ action, ...(data || {}) })), post ? { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, ...(data || {}) }) } : {});
   let j; try { j = await r.json(); } catch (e) { throw new Error('No hay conexión. Probá de nuevo o escribinos por WhatsApp.'); }
-  if (!j.ok) { const e = new Error(j.mensaje || j.error); e.codigo = j.error; throw e; } return j.data;
+  if (!j.ok) { const e = new Error(j.mensaje || j.error); e.codigo = j.error; throw e; } return action === 'config' && S.cfg.demo ? Object.assign(j.data, S.cfg.demo) : j.data;   // config.json puede traer "demo": nombre/logo/contacto propios sin tocar la hoja
 }
 const wa = (txt) => S.pub.whatsapp ? 'https://wa.me/' + S.pub.whatsapp.replace(/\D/g, '') + (txt ? '?text=' + encodeURIComponent(txt) : '') : '';
 function cabecera() {
