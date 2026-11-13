@@ -64,8 +64,8 @@ import struct, io, math
 import numpy as np
 from PIL import Image
 CX, CZ = -6.939, -1.590                     # centro de la plataforma del pelotero (x, z del visor)
-ZL, R, HC, N, K = 7.0, 4.35, 2.5, 32, 24    # borde inferior de la carpa, radio, alto del cono, segmentos, anillos
-G, UU, VV, DF = 16, 10, 4, 0.55             # festón: medios círculos, columnas, filas, profundidad
+ZL, R, HC, N, K = 7.0, 4.35, 2.5, 96, 20    # borde inferior de la carpa, radio, alto del cono, segmentos, anillos
+G, UU, VV, DF = 16, 20, 8, 0.55             # festón: medios círculos, columnas, filas, profundidad
 def techo_glb():
     P, NR, UV, IDX = [], [], [], []
     def quad(a, b, c, d, na, nb, nc, nd, u):
@@ -82,14 +82,14 @@ def techo_glb():
         for j in range(N):
             ids = [(k, j), (k, (j + 1) % N), (k + 1, (j + 1) % N), (k + 1, j)]
             pts = [rc(*q) for q in ids]; ns = [nrm(*q) for q in ids]
-            quad(pts[0], pts[3], pts[2], pts[1], ns[0], ns[3], ns[2], ns[1], .25 if (j // 2) % 2 == 0 else .75)
+            quad(pts[0], pts[3], pts[2], pts[1], ns[0], ns[3], ns[2], ns[1], .25 if (j // (N // G)) % 2 == 0 else .75)
     # festón colgando del borde, color opuesto al gajo que tiene arriba
     RB = R * 1.005
     for g in range(G):
         a0, a1 = 2 * math.pi * g / G, 2 * math.pi * (g + 1) / G
         def fp(u, v):
             a = a0 + (a1 - a0) * u / UU; d = DF * math.sin(math.pi * u / UU) ** .7
-            return ver(RB * math.cos(a), ZL - d * v / VV, -RB * math.sin(a)), ver(math.cos(a), 0, -math.sin(a))
+            return ver(RB * math.cos(a), ZL + 0.02 - (d + 0.02) * v / VV, -RB * math.sin(a)), ver(math.cos(a), 0, -math.sin(a))
         for u in range(UU):
             for v in range(VV):
                 q = [fp(u, v), fp(u + 1, v), fp(u + 1, v + 1), fp(u, v + 1)]
