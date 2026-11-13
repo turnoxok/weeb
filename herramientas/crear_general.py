@@ -158,3 +158,71 @@ b64 = base64.b64encode(json.dumps(p, ensure_ascii=False).encode()).decode()
 new = re.sub(r'(<script id="embedded-project-b64" type="text/plain">)[^<]*(</script>)', lambda m_: m_.group(1) + b64 + m_.group(2), src, count=1)
 open(os.path.join(OUT, 'editor.html'), 'w', encoding='utf-8').write(new)
 print('ok: quitados', len(quitar), 'objetos', len(p['objects']))
+
+# ================= páginas: planes, galería, invitaciones, reservas y panel (genéricas) =================
+import random, subprocess, sys, glob
+from PIL import ImageFilter
+random.seed(7)
+def gen_texto(s):
+    for a, b in [('Combo Despegue', 'Combo Básico'), ('Combo%20Despegue', 'Combo%20B%C3%A1sico'), ('Combo Órbita', 'Combo Clásico'), ('Combo%20%C3%93rbita', 'Combo%20Cl%C3%A1sico'),
+                 ('Combo Galaxia', 'Combo Completo'), ('Combo%20Galaxia', 'Combo%20Completo'),
+                 ('Desde $180.000', 'Desde $000.000'), ('Desde $260.000', 'Desde $000.000'), ('Desde $380.000', 'Desde $000.000'),
+                 ("', Entre Ríos'", "''"), ('Planeta Niños eventos infantiles', 'Tu salón · eventos infantiles'),
+                 ('./assets/models/planetaninos-logo.png', './assets/models/logo-placeholder.png'), ('./assets/models/planetaninos-marciano.png', './assets/models/logo-placeholder.png'),
+                 ('Av. Los Cisnes 2351, Oro Verde', 'Tu dirección, tu ciudad'), ('Los Cisnes 2351', 'tu dirección'), ('343 622 22 63', 'Tu teléfono'), ('5493436222263', ''),
+                 ('Planeta%20Ni%C3%B1os', 'tu%20sal%C3%B3n'), ('Planeta Niños', 'Tu salón'), ('Oro Verde', 'tu ciudad')]:
+        s = s.replace(a, b)
+    return s
+for f in ('planes.html', 'galeria.html', 'invitacion.html'):
+    open(os.path.join(OUT, f), 'w', encoding='utf-8').write(gen_texto(open(os.path.join(PN, f), encoding='utf-8').read()))
+
+# fondos y foto de la invitación (sin marciano): degradé con círculos y papelitos, por la paleta
+def fondo(c1, c2, n):
+    W_, H_ = 1080, 1920; im = Image.new('RGB', (W_, H_)); px = im.load()
+    a, b = tuple(int(c1[i:i+2], 16) for i in (1, 3, 5)), tuple(int(c2[i:i+2], 16) for i in (1, 3, 5))
+    for y in range(H_):
+        t = y / H_; col = tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
+        for x in range(0, W_, 1): px[x, y] = col
+    ov = Image.new('RGBA', (W_, H_), (0, 0, 0, 0)); d = ImageDraw.Draw(ov)
+    for _ in range(5):
+        r = random.randint(120, 260); x, y = random.randint(0, W_), random.randint(0, H_ // 2); d.ellipse((x - r, y - r, x + r, y + r), fill=(255, 255, 255, 34))
+    for _ in range(70):
+        r = random.randint(5, 11); x, y = random.randint(0, W_), random.randint(0, H_); d.ellipse((x - r, y - r, x + r, y + r), fill=random.choice([(247, 154, 46, 220), (233, 70, 143, 220), (63, 185, 234, 220), (245, 201, 58, 220), (115, 67, 196, 220)]))
+    im = Image.alpha_composite(im.convert('RGBA'), ov).convert('RGB'); im.save(os.path.join(OUT, 'assets', 'inv', f'fondo{n}.jpg'), quality=82)
+os.makedirs(os.path.join(OUT, 'assets', 'inv'), exist_ok=True)
+for f_ in os.listdir(os.path.join(PN, 'assets', 'inv')):
+    if f_ not in ('fondo.mp4', 'fondo1.jpg', 'fondo2.jpg', 'fondo3.jpg', 'fondo4.jpg', 'foto.jpg'): shutil.copy(os.path.join(PN, 'assets', 'inv', f_), os.path.join(OUT, 'assets', 'inv', f_))
+for n, (c1, c2) in enumerate([('#5FC8F0', '#BFE9C5'), ('#7CC23A', '#CDE88F'), ('#F58CB4', '#FBD2A6'), ('#8E6BD8', '#8FD3F2')], 1): fondo(c1, c2, n)
+ph = Image.new('RGB', (664, 630), '#9ED8F2'); d = ImageDraw.Draw(ph)
+for y in range(630): d.line((0, y, 664, y), fill=(int(158 + 60 * y / 630), int(216 + 20 * y / 630), int(242 - 30 * y / 630)))
+d.ellipse((232, 120, 432, 320), fill='#ffffff'); d.rounded_rectangle((152, 340, 512, 700), 150, fill='#ffffff'); ph.save(os.path.join(OUT, 'assets', 'inv', 'foto.jpg'), quality=85)
+os.makedirs(os.path.join(OUT, 'assets', 'audio'), exist_ok=True)
+for f_ in os.listdir(os.path.join(PN, 'assets', 'audio')): shutil.copy(os.path.join(PN, 'assets', 'audio', f_), os.path.join(OUT, 'assets', 'audio', f_))
+
+# galería: capturas del escenario nuevo (si existen); título y descripción acá
+GAL = [('gal_33.png', 'Un salón para festejar', 'El salón visto de punta a punta', '50% 50%', 1), ('gal_40.png', 'Acá empieza la fiesta', 'La entrada y el arco', '50% 40%', 0),
+       ('gal_47.png', 'Torre de juegos y tobogán', 'Para trepar, deslizarse y explorar', '40% 50%', 0), ('gal_58.png', 'Mesas y metegol', 'Un rincón para compartir', '50% 50%', 0),
+       ('gal_64.png', 'Hamacas y rincón de juegos', 'Espacio para jugar sin parar', '50% 50%', 0), ('gal_72.png', 'Rayuela y colores en el piso', 'Para saltar y jugar desde que llegás', '45% 50%', 0)]
+if all(os.path.exists('/tmp/pnb/' + g[0]) for g in GAL):
+    gd = os.path.join(OUT, 'assets', 'galeria'); shutil.rmtree(gd, ignore_errors=True); os.makedirs(gd)
+    for i, g in enumerate(GAL, 1): Image.open('/tmp/pnb/' + g[0]).convert('RGB').save(os.path.join(gd, f'galeria-{i:02d}.webp'), quality=82)
+    gh = open(os.path.join(OUT, 'galeria.html'), encoding='utf-8').read()
+    nuevo = 'var FOTOS=[\n' + ',\n'.join(f" {{src:'./assets/galeria/galeria-{i:02d}.webp',t:'{g[1]}',d:'{g[2]}',pos:'{g[3]}'" + (',big:1' if g[4] else '') + (',wide:1' if i == len(GAL) else '') + '}' for i, g in enumerate(GAL, 1)) + '\n];'
+    gh = re.sub(r'var FOTOS=\[.*?\n\];', lambda m_: nuevo, gh, count=1, flags=re.S); open(os.path.join(OUT, 'galeria.html'), 'w', encoding='utf-8').write(gh)
+
+# reservas y panel (plantillas); la hoja de cálculo de cada cliente se conecta después con --api
+API = 'https://script.google.com/macros/s/PENDIENTE/exec'
+subprocess.run([sys.executable, os.path.join(REPO, 'reservas', 'herramientas', 'armar_cliente.py'), '--api', API, '--nombre', 'Tu salón', '--color', '#7CC23A', '--logo', os.path.join(M, 'logo-placeholder.png'), '--salida', OUT], check=True, stdout=subprocess.DEVNULL)
+tema = gen_texto(open(os.path.join(PN, 'reservar', 'tema.css'), encoding='utf-8').read())
+for sub in ('reservar', 'panel'):
+    d_ = os.path.join(OUT, sub); open(os.path.join(d_, 'tema.css'), 'w', encoding='utf-8').write(tema)
+    h = open(os.path.join(d_, 'index.html'), encoding='utf-8').read()
+    if 'tema.css' not in h: h = re.sub(r'(<link rel="stylesheet" href="(?:reservar|panel)\.css">)', r'\1\n<link rel="stylesheet" href="tema.css">', h, count=1)
+    open(os.path.join(d_, 'index.html'), 'w', encoding='utf-8').write(h.replace('content="#2b1c44"', 'content="#2f6a33"'))
+sw = os.path.join(OUT, 'panel', 'sw.js'); s_ = open(sw, encoding='utf-8').read().replace("'panel.css', 'icon-192.png'", "'panel.css', 'tema.css', 'icon-192.png'").replace('weeb-panel-v1', 'weeb-panel-v2'); open(sw, 'w', encoding='utf-8').write(s_)
+mf = os.path.join(OUT, 'panel', 'manifest.webmanifest'); j = json.load(open(mf)); j['background_color'] = j['theme_color'] = '#2f6a33'; json.dump(j, open(mf, 'w'), ensure_ascii=False, indent=1)
+cj = os.path.join(OUT, 'reservar', 'config.json'); c = json.load(open(cj))
+c['demo'] = {'nombre': 'Tu salón', 'logoUrl': '../assets/models/logo-placeholder.png', 'colorPrincipal': '#7CC23A', 'whatsapp': '', 'direccion': '', 'mapsUrl': '', 'transferAlias': '', 'transferCbu': '', 'transferTitular': ''}
+c['demoAviso'] = 'Esto es una demostración: las reservas reales se activan cuando se conecta la hoja de cálculo del salón.'
+json.dump(c, open(cj, 'w'), ensure_ascii=False, indent=1)
+print('ok páginas')
