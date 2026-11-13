@@ -1,0 +1,37 @@
+/* Tu salón — tema verde: fondo verde oscuro, destacados verde claro + blanco */
+:root{--brand:#b1c74d;--brand-ink:#1e3a19;--bg:#406c38;--card:rgba(255,255,255,.11);--card-solid:#356030;--ink:#ffffff;--mute:rgba(255,255,255,.74);--line:rgba(255,255,255,.17);--line2:rgba(255,255,255,.28);--ok:#8be3ae;--warn:#f4cf6a;--bad:#ff9186;--glow:rgba(177,199,77,.36)}
+html{background:#355c2e}
+body{display:flow-root;min-height:100vh;min-height:100dvh}
+body{background:linear-gradient(#406c38,#2f5429)!important;background-attachment:scroll!important;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(120% 50% at 50% -10%,rgba(177,199,77,.24),rgba(177,199,77,0) 62%),radial-gradient(80% 40% at 100% 100%,rgba(255,255,255,.06),rgba(255,255,255,0) 60%);transform:translateZ(0)}
+/* scroll liviano: sin desenfoques costosos sobre listas largas */
+.glass,.card,.cal,.slot,.item,.resumen,.cal button.libre,.btn.soft,.sheet-back,.top,.tabs{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.card,.item,.slot,.resumen{background:rgba(255,255,255,.12)}
+.cal button.libre{background:rgba(255,255,255,.13)}
+.top{background:rgba(48,86,41,.96)}
+.tabs{background:rgba(44,80,38,.97)}
+.sheet-back{background:rgba(14,32,11,.6)}
+.sheet{background:linear-gradient(#477a3d,#386230);will-change:transform}
+.sheet-body{overscroll-behavior:contain}
+select option{background:#386230}
+input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(177,199,77,.3)}
+.toast{background:#fff;color:#1e3a19}.toast.ok{background:#fff;color:#1e3a19}
+.btn.bad{color:#3a0f0a}
+.weeb-back{background:rgba(30,58,25,.82)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.cal .day.off,.cal .day.off:hover{background:rgba(0,0,0,.16)}
+/* carga suave: el marciano flota */
+.tw3d{content:url(../assets/models/logo-placeholder.png);width:84px;height:auto;animation:flota 2.4s ease-in-out infinite;transform:none}
+@keyframes flota{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-7px)}}
+@media(prefers-reduced-motion:reduce){.tw3d{animation:none}}
+#app>*,.page>*,.wrap>*{animation:tfade .35s ease-out both}
+@keyframes tfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){#app>*,.page>*,.wrap>*{animation:none}}
+.btn,.slot,.item,.cal button,.days label,.seg button,.slotbtns button{transition:background-color .25s,border-color .25s,box-shadow .25s,transform .2s,opacity .2s}
+/* botones de opción propios (antes se veían violeta del navegador) */
+input[type=radio],input[type=checkbox]{-webkit-appearance:none;appearance:none;width:22px;height:22px;min-width:22px;min-height:22px;padding:0;flex:none;margin:0;border:2px solid rgba(255,255,255,.6);background:transparent;display:inline-grid;place-content:center;cursor:pointer;transition:border-color .2s,background-color .2s}
+input[type=radio]{border-radius:50%}input[type=checkbox]{border-radius:7px}
+input[type=radio]::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--brand-ink);transform:scale(0);transition:transform .18s}
+input[type=checkbox]::after{content:"";width:10px;height:6px;border:solid var(--brand-ink);border-width:0 0 2.5px 2.5px;transform:rotate(-45deg) scale(0);margin-top:-2px;transition:transform .18s}
+input[type=radio]:checked,input[type=checkbox]:checked{background:var(--brand);border-color:var(--brand)}
+input[type=radio]:checked::after{transform:scale(1)}input[type=checkbox]:checked::after{transform:rotate(-45deg) scale(1)}
+input[type=radio]:focus-visible,input[type=checkbox]:focus-visible{outline:2px solid #fff;outline-offset:2px}

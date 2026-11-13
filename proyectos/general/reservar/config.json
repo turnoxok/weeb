@@ -1,0 +1,16 @@
+{
+ "api": "https://script.google.com/macros/s/PENDIENTE/exec",
+ "volver": "../",
+ "demo": {
+  "nombre": "Tu salón",
+  "logoUrl": "../assets/models/logo-placeholder.png",
+  "colorPrincipal": "#7CC23A",
+  "whatsapp": "",
+  "direccion": "",
+  "mapsUrl": "",
+  "transferAlias": "",
+  "transferCbu": "",
+  "transferTitular": ""
+ },
+ "demoAviso": "Esto es una demostración: las reservas reales se activan cuando se conecta la hoja de cálculo del salón."
+}

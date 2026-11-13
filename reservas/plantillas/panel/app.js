@@ -36,6 +36,7 @@ const $app = () => $('#app');
 
 async function fetchSeguro(url, opts) { const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 45000); try { return await fetch(url, { ...(opts || {}), signal: ctl.signal }); } catch (e) { throw new Error(e && e.name === 'AbortError' ? 'Está tardando demasiado. Probá de nuevo en un momento.' : 'No hay conexión. Revisá tu internet y probá de nuevo.'); } finally { clearTimeout(tm); } }
 async function llamar(action, data, publico) {
+  if (/PENDIENTE/.test(S.cfg.api || '')) throw new Error('Panel de demostración: se activa cuando se conecta la hoja de cálculo del salón.');
   const get = publico === 'get';
   const url = S.cfg.api + (get ? '?' + new URLSearchParams({ action, ...(data || {}) }) : '');
   const r = await fetchSeguro(url, get ? {} : { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, token: S.token, ...(data || {}) }) });

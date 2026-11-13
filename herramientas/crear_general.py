@@ -174,7 +174,10 @@ def gen_texto(s):
         s = s.replace(a, b)
     return s
 for f in ('planes.html', 'galeria.html', 'invitacion.html'):
-    open(os.path.join(OUT, f), 'w', encoding='utf-8').write(gen_texto(open(os.path.join(PN, f), encoding='utf-8').read()))
+    t_ = gen_texto(open(os.path.join(PN, f), encoding='utf-8').read())
+    if f == 'galeria.html':   # título animado palabra por palabra: "Conocé el salón de Planeta Niños" -> "Conocé nuestro salón"
+        t_ = re.sub(r'<span class="w" style="--i:0"><span>Conocé</span></span>.*?<span><em>Niños</em></span></span>', '<span class="w" style="--i:0"><span>Conocé</span></span>\n      <span class="w" style="--i:1"><span>nuestro</span></span>\n      <span class="w" style="--i:2"><span><em>salón</em></span></span>', t_, count=1, flags=re.S)
+    open(os.path.join(OUT, f), 'w', encoding='utf-8').write(t_)
 
 # fondos y foto de la invitación (sin marciano): degradé con círculos y papelitos, por la paleta
 def fondo(c1, c2, n):
@@ -200,9 +203,9 @@ os.makedirs(os.path.join(OUT, 'assets', 'audio'), exist_ok=True)
 for f_ in os.listdir(os.path.join(PN, 'assets', 'audio')): shutil.copy(os.path.join(PN, 'assets', 'audio', f_), os.path.join(OUT, 'assets', 'audio', f_))
 
 # galería: capturas del escenario nuevo (si existen); título y descripción acá
-GAL = [('gal_33.png', 'Un salón para festejar', 'El salón visto de punta a punta', '50% 50%', 1), ('gal_40.png', 'Acá empieza la fiesta', 'La entrada y el arco', '50% 40%', 0),
-       ('gal_47.png', 'Torre de juegos y tobogán', 'Para trepar, deslizarse y explorar', '40% 50%', 0), ('gal_58.png', 'Mesas y metegol', 'Un rincón para compartir', '50% 50%', 0),
-       ('gal_64.png', 'Hamacas y rincón de juegos', 'Espacio para jugar sin parar', '50% 50%', 0), ('gal_72.png', 'Rayuela y colores en el piso', 'Para saltar y jugar desde que llegás', '45% 50%', 0)]
+GAL = [('gal_40.png', 'Un salón para festejar', 'El salón visto de punta a punta', '50% 50%', 1), ('gal_47.png', 'Torre de juegos y tobogán', 'Para trepar, deslizarse y explorar', '40% 50%', 0),
+       ('gal_52.png', 'Hamacas y rincón de juegos', 'Espacio para jugar sin parar', '50% 50%', 0), ('gal_58.png', 'Pelotero y mesas', 'Un lugar para cada momento de la fiesta', '50% 50%', 0),
+       ('gal_64.png', 'Acá empieza la fiesta', 'Los anfitriones te reciben', '50% 40%', 0), ('gal_72.png', 'Rayuela y colores en el piso', 'Para saltar y jugar desde que llegás', '45% 50%', 0)]
 if all(os.path.exists('/tmp/pnb/' + g[0]) for g in GAL):
     gd = os.path.join(OUT, 'assets', 'galeria'); shutil.rmtree(gd, ignore_errors=True); os.makedirs(gd)
     for i, g in enumerate(GAL, 1): Image.open('/tmp/pnb/' + g[0]).convert('RGB').save(os.path.join(gd, f'galeria-{i:02d}.webp'), quality=82)
