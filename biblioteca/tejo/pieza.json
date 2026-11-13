@@ -2,7 +2,7 @@
  "nombre": "tejo",
  "titulo": "Tejo (juego)",
  "version": 1,
- "origen": "lemadavami",
+ "origen": "proyecto anterior",
  "madre": "tej_000",
  "nota": "Mesa de tejo con patas, ranuras, fichas y mandos, en un solo grupo (la madre es el marco). Roles: marco, tablero, ranura, pata, ficha, mando, mando_detalle, ficha_detalle.",
  "roles": {

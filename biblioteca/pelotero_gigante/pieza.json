@@ -2,7 +2,7 @@
  "nombre": "pelotero_gigante",
  "titulo": "Pelotero gigante (cuerpos, pelotas, contenedores, puente, tobogán, palo y tubos)",
  "version": 1,
- "origen": "lemadavami",
+ "origen": "proyecto anterior",
  "madre": "pel_000",
  "nota": "UN solo grupo plano; la madre es la primera reja: mover/escalar/girar la madre mueve todo (--pos, --giro, --escala). Incluye los rellenos de pelotas (objetos \"pelotas\": se cambian sus colores en el editor, ficha Pelotas). Roles: reja, tobogan_rampa, tobogan_cuerpo, tobogan_detalle, puente_piso, puente_estructura, puente_zocalo, puente_remaches, tubo, palo, tapa, tapa_2, piso, piso_2, tobogan_tubo, tobogan_tubo_2, tobogan_tubo_3, semitubo, semitubo_2, pelotas, contenedor, contenedor_largo, contenedor_largo_tapa.",
  "roles": {

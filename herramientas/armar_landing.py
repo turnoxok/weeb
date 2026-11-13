@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Arma la carpeta MÍNIMA para publicar un cliente como landing (ej.: tuweeb.com/lemadavami/).
+"""Arma la carpeta MÍNIMA para publicar un cliente como landing (ej.: tuweeb.com/demo/).
 
-Uso:  python3 herramientas/armar_landing.py lemadavami [nombre-de-carpeta]
+Uso:  python3 herramientas/armar_landing.py demo [nombre-de-carpeta]
 Resultado: landing/<nombre>/ con solo lo que el sitio usa de verdad:
   index.html, invitacion.html, planes.html, galeria.html, reservar/, panel/ y los archivos de assets/ que se nombran en esas páginas.
 NO se copia: editor.html, el proyecto .json ni los archivos que no usa nadie.

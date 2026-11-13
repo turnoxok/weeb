@@ -2,7 +2,7 @@
  "nombre": "metegol",
  "titulo": "Metegol",
  "version": 1,
- "origen": "lemadavami",
+ "origen": "proyecto anterior",
  "madre": "met_000",
  "nota": "Metegol en un solo grupo (la madre es el marco). Roles de colores: jugadores/jugadores_2 y palanca/palanca_2 son los dos equipos. Roles: marco, cancha, arco, pata, jugadores, jugadores_2, marco_arriba, palanca, palanca_2.",
  "roles": {

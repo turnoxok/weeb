@@ -2,7 +2,7 @@
  "nombre": "torta_fondo",
  "titulo": "Torta - fondo (4 capas)",
  "version": 1,
- "origen": "lemadavami",
+ "origen": "proyecto anterior",
  "madre": "torta_fondo_00",
  "nota": "Fondo de torta en un solo grupo (madre = capa de atrás). Roles: fondo, fondo_2, fondo_3, fondo_4. Va con torta_juego (mesa+sillas), que se pone aparte delante.",
  "roles": {

@@ -8,7 +8,7 @@ require('fs').mkdirSync(OUT, { recursive: true });
   const errores = []; p.on('pageerror', e => errores.push(e.message)); p.on('console', m => { if (m.type() === 'error' && !/ERR_TUNNEL|ERR_NAME|fonts\.g/.test(m.text())) errores.push(m.text()); }); p.on('dialog', d => d.accept());
   const ok = (n) => console.log('  ok  ' + n); const shot = async n => { await p.waitForTimeout(400); await p.screenshot({ path: `${OUT}/${n}.png` }); };
   await p.goto('http://localhost:8781/'); await p.waitForSelector('form');
-  assert.equal(await p.title(), 'Panel · Lemadavami'); await shot('01-login'); ok('muestra login con el nombre del negocio');
+  assert.equal(await p.title(), 'Panel · Salón Demo'); await shot('01-login'); ok('muestra login con el nombre del negocio');
   await p.fill('input[name=email]', 'dueno@mail.com'); await p.fill('input[name=clave]', 'mala'); await p.click('button:has-text("Entrar")'); await p.waitForSelector('.toast.err'); ok('clave incorrecta muestra error');
   await p.fill('input[name=clave]', 'clave-segura-123'); await p.click('button:has-text("Entrar")'); await p.waitForSelector('.cal .day'); await shot('02-agenda'); ok('entra y muestra la agenda');
   // reservar a mano desde el calendario: sábado 7 de nov
@@ -36,8 +36,8 @@ require('fs').mkdirSync(OUT, { recursive: true });
   await p.click('.tabs button:has-text("Caja")'); await p.waitForSelector('.stats'); await p.click('button:has-text("+ Movimiento")'); await p.fill('input[name=monto]', '8000'); await p.fill('input[name=categoria]', 'Limpieza'); await p.click('.sheet button:has-text("Guardar")'); await p.waitForSelector('.item:has-text("Limpieza")');
   const stats = await p.locator('.stats').innerText(); assert(stats.includes('$100.000') && stats.includes('$8.000'), stats); await shot('09-caja'); ok('caja: cobros, egreso y balance');
   // ajustes
-  await p.click('.tabs button:has-text("Ajustes")'); await p.waitForSelector('input[name=nombre]'); await p.fill('input[name=nombre]', 'Lemadavami Fiestas'); await p.click('button:has-text("Guardar ajustes")'); await p.waitForSelector('.toast.ok'); await p.waitForTimeout(500);
-  assert.equal(a.get({ action: 'config' }).data.nombre, 'Lemadavami Fiestas'); await shot('10-ajustes'); ok('ajustes se guardan');
+  await p.click('.tabs button:has-text("Ajustes")'); await p.waitForSelector('input[name=nombre]'); await p.fill('input[name=nombre]', 'Salón Demo Fiestas'); await p.click('button:has-text("Guardar ajustes")'); await p.waitForSelector('.toast.ok'); await p.waitForTimeout(500);
+  assert.equal(a.get({ action: 'config' }).data.nombre, 'Salón Demo Fiestas'); await shot('10-ajustes'); ok('ajustes se guardan');
   // recarga mantiene la sesión; salir
   await p.reload(); await p.waitForSelector('.tabs'); ok('la sesión sigue después de recargar'); await p.click('button[aria-label=Salir]'); await p.waitForSelector('form'); ok('salir');
   // escritorio

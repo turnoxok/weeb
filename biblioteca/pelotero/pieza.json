@@ -2,7 +2,7 @@
  "nombre": "pelotero",
  "titulo": "Pelotero (marco de tubos + reja)",
  "version": 1,
- "origen": "lemadavami 2026-11-01",
+ "origen": "proyecto anterior",
  "madre": "pelotero_00",
  "nota": "Madre = la reja (plana, de frente). 4 tubos (abajo, arriba, lateral izq./der.) hechos con un anillo extruido largo. Roles: reja (color original del SVG, #e6e6e6) y tubo.",
  "roles": {

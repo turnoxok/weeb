@@ -2,7 +2,7 @@
  "nombre": "torta_juego",
  "titulo": "Torta - juego de mesa (mesa, pata y 4 sillas)",
  "version": 1,
- "origen": "lemadavami",
+ "origen": "proyecto anterior",
  "madre": "torta_juego_00",
  "nota": "Mesa redonda con pata y 4 sillas en un solo grupo (madre = tablero de la mesa, acostado rx -90). Roles: mesa, pata, silla..silla_4. Va aparte de torta_fondo.",
  "roles": {

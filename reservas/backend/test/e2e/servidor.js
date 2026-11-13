@@ -6,7 +6,7 @@ const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '
 function semilla() {
   const a = crear(); a.setNow(Date.parse('2026-11-05T12:00:00-03:00')); a.run('instalar()');
   a.run("definirUsuario_('dueno@mail.com','clave-segura-123','Ana','admin')");
-  const cfg = { nombre: 'Lemadavami', colorPrincipal: '#8149bd', whatsapp: '5491155551234', direccion: 'Av. Siempreviva 742', mapsUrl: 'https://maps.google.com/?q=x', transferAlias: 'lemadavami.fiestas', transferTitular: 'Ana Pérez', transferCbu: '0000003100012345678901', transferBanco: 'Mercado Pago', emailAdmin: 'dueno@mail.com' };
+  const cfg = { nombre: 'Salón Demo', colorPrincipal: '#8149bd', whatsapp: '5491155551234', direccion: 'Av. Siempreviva 742', mapsUrl: 'https://maps.google.com/?q=x', transferAlias: 'demo.fiestas', transferTitular: 'Ana Pérez', transferCbu: '0000003100012345678901', transferBanco: 'Mercado Pago', emailAdmin: 'dueno@mail.com' };
   Object.keys(cfg).forEach(k => a.run(`actualizar_('Config', leer_('Config').filter(r => r.clave === '${k}')[0]._row, { valor: ${JSON.stringify(cfg[k])} })`));
   const adm = (accion, p) => { const lg = a.post({ action: 'login', email: 'dueno@mail.com', clave: 'clave-segura-123' }); return a.post(Object.assign({ action: accion, token: lg.data.token }, p)); };
   adm('admin.guardarTurno', { salonId: 'S1', dias: '5,6,0', inicio: '14:00', fin: '18:00', etiqueta: 'Tarde', precio: 100000, senaTipo: 'pct', senaValor: 30 });

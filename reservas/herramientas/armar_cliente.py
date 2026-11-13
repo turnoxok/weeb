@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Arma las carpetas de un cliente: <salida>/panel (PWA del dueño) y <salida>/reservar (página de reservas).
-uso: armar_cliente.py --api https://script.google.com/macros/s/.../exec --nombre "Lemadavami" --color "#8149bd" [--logo logo.png] --salida proyectos/lemadavami
+uso: armar_cliente.py --api https://script.google.com/macros/s/.../exec --nombre "Salón Demo" --color "#8149bd" [--logo logo.png] --salida proyectos/demo
 Todo lo demás (logo, colores, WhatsApp, turnos, precios) se configura desde el panel / la hoja, no acá."""
 import argparse, json, os, shutil, sys
 AQUI = os.path.dirname(os.path.abspath(__file__)); PL = os.path.join(AQUI, '..', 'plantillas')

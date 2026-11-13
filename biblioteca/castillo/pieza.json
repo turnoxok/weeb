@@ -2,7 +2,7 @@
  "nombre": "castillo",
  "titulo": "Castillo (con parlantes y micrófonos)",
  "version": 1,
- "origen": "lemadavami",
+ "origen": "proyecto anterior",
  "madre": "cas_000",
  "nota": "Castillo en un solo grupo (la madre es el frente). Las luces (spots) del castillo NO van en el grupo: se ponen aparte. Roles: frente, arco, arco_2, fondo, plataforma, torre, torre_base, torre_tope, micro, parlante, parlante_detalle.",
  "roles": {

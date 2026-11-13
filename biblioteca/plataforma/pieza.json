@@ -2,7 +2,7 @@
  "nombre": "plataforma",
  "titulo": "Plataforma (base de la escena)",
  "version": 1,
- "origen": "lemadavami",
+ "origen": "proyecto anterior",
  "madre": "pla_000",
  "nota": "Base de 3 capas apiladas (base, capa, detalle) para apoyar la escena; la madre es la base. Roles: base, capa, detalle.",
  "roles": {
