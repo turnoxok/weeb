@@ -16,7 +16,7 @@
  ],
  "version": 1,
  "savedAt": "2026-11-13T12:00:00.000Z",
- "projectName": "basefiestas",
+ "projectName": "general",
  "modelUrl": "",
  "charScale": 1,
  "charCenterY": 0,
@@ -7174,29 +7174,6 @@
  },
  "objects": [
   {
-   "id": "obj-pn-0",
-   "label": "Letrado logo",
-   "type": "image",
-   "url": "./assets/models/logo-slogan.svg",
-   "previewUrl": null,
-   "billboard": false,
-   "visible": true,
-   "color": "#d68cff",
-   "lit": true,
-   "ext": 0.07,
-   "rev": false,
-   "litBase": 0.12,
-   "bev": 0.16,
-   "seg": 64,
-   "matRough": null,
-   "shCast": true,
-   "shadows": true,
-   "folder": null,
-   "float": 0,
-   "parent": "obj-1793839170005",
-   "mat": "matte"
-  },
-  {
    "type": "image",
    "url": "./assets/models/tw_media_esfera.svg",
    "videoMode": "scroll",
@@ -7276,47 +7253,6 @@
    "scrubTo": 100,
    "shCast": false,
    "id": "obj-1793905967918",
-   "folder": "fld-13"
-  },
-  {
-   "type": "image",
-   "url": "./assets/models/tw_cono.svg",
-   "videoMode": "scroll",
-   "scrollFrom": 0,
-   "scrollTo": 1,
-   "loop": true,
-   "glow": 0,
-   "glass": 0,
-   "hue": 0,
-   "sat": 1,
-   "light": 1,
-   "tint": "#ffffff",
-   "tintAmt": 0,
-   "glassMatch": "",
-   "shadows": true,
-   "lit": true,
-   "litBase": 0.2,
-   "cornerRadius": 0,
-   "borderWidth": 0,
-   "borderColor": "#ffffff",
-   "billboard": false,
-   "ext": 0.01,
-   "bev": 0.0,
-   "seg": 0,
-   "rev": true,
-   "mat": "matte",
-   "matColor": "#F5C93A",
-   "matRough": 0.45,
-   "float": 0,
-   "floatSpeed": 2.9,
-   "label": "Pelotero techo",
-   "visible": true,
-   "color": "#7ee787",
-   "previewUrl": null,
-   "scrubFrom": 0,
-   "scrubTo": 100,
-   "shCast": true,
-   "id": "obj-1793995751633-1",
    "folder": "fld-13"
   },
   {
@@ -9797,32 +9733,6 @@
    "previewUrl": null
   },
   {
-   "id": "obj-torre3d",
-   "label": "Torre 3D",
-   "type": "model",
-   "url": "./assets/models/torre-3d.glb",
-   "previewUrl": null,
-   "billboard": false,
-   "visible": true,
-   "color": "#ffffff",
-   "lit": true,
-   "shadows": true,
-   "shCast": true
-  },
-  {
-   "id": "obj-1794163004943",
-   "label": "Torre 3D (copia)",
-   "type": "model",
-   "url": "./assets/models/torre-3d.glb",
-   "previewUrl": null,
-   "billboard": false,
-   "visible": true,
-   "color": "#ffffff",
-   "lit": true,
-   "shadows": true,
-   "shCast": true
-  },
-  {
    "id": "obj-nene",
    "label": "Nene",
    "type": "model",
@@ -10220,841 +10130,26 @@
    "lightShadow": true
   },
   {
-   "type": "image",
-   "url": "./assets/models/tw_cono.svg",
-   "videoMode": "scroll",
-   "scrollFrom": 0,
-   "scrollTo": 1,
-   "loop": true,
-   "glow": 0,
-   "glass": 0,
+   "id": "obj-techo-pelotero",
+   "label": "Techo pelotero",
+   "type": "model",
+   "url": "./assets/models/techo-pelotero.glb",
+   "previewUrl": null,
+   "billboard": false,
+   "visible": true,
+   "color": "#ffffff",
+   "lit": true,
+   "shadows": true,
+   "shCast": true,
+   "folder": "fld-13",
+   "tint": "#F5C93A",
+   "tintAmt": 1,
    "hue": 0,
    "sat": 1,
-   "light": 1,
-   "tint": "#ffffff",
-   "tintAmt": 0,
-   "glassMatch": "",
-   "shadows": true,
-   "lit": true,
-   "litBase": 0.2,
-   "cornerRadius": 0,
-   "borderWidth": 0,
-   "borderColor": "#ffffff",
-   "billboard": false,
-   "ext": 0.01,
-   "bev": 0.0,
-   "seg": 0,
-   "rev": true,
-   "mat": "matte",
-   "matColor": "#E9468F",
-   "matRough": 0.45,
-   "float": 0,
-   "floatSpeed": 2.9,
-   "label": "Pelotero techo falda",
-   "visible": true,
-   "color": "#7ee787",
-   "previewUrl": null,
-   "scrubFrom": 0,
-   "scrubTo": 100,
-   "shCast": true,
-   "id": "obj-techo-falda",
-   "folder": "fld-13"
-  },
-  {
-   "type": "image",
-   "url": "./assets/models/tw_esfera.svg",
-   "videoMode": "scroll",
-   "scrollFrom": 0,
-   "scrollTo": 1,
-   "loop": true,
-   "glow": 0,
-   "glass": 0,
-   "hue": 0,
-   "sat": 1,
-   "light": 1,
-   "tint": "#ffffff",
-   "tintAmt": 0,
-   "glassMatch": "",
-   "shadows": true,
-   "lit": true,
-   "litBase": 0.2,
-   "cornerRadius": 0,
-   "borderWidth": 0,
-   "borderColor": "#ffffff",
-   "billboard": false,
-   "ext": 0.01,
-   "bev": 0.3,
-   "seg": 0,
-   "rev": true,
-   "mat": "matte",
-   "matColor": "#3FB9EA",
-   "matRough": 0.3,
-   "float": 0,
-   "floatSpeed": 2.9,
-   "label": "Pelotero techo bolita",
-   "visible": true,
-   "color": "#7ee787",
-   "previewUrl": null,
-   "scrubFrom": 0,
-   "scrubTo": 100,
-   "shCast": true,
-   "id": "obj-techo-bola",
-   "folder": "fld-13"
+   "light": 1
   }
  ],
  "objectTransformsByKf": {
-  "obj-pn-0": {
-   "pose-f1": {
-    "position": [
-     -0.04212942975932756,
-     -0.06640131420378204,
-     0.01601953117978172
-    ],
-    "scale": 0.466461423640265,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-0-6597": {
-    "position": [
-     -0.05185307410614397,
-     -0.07107084322237256,
-     0.014518611810802717
-    ],
-    "scale": 0.44,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-1-2473": {
-    "position": [
-     -0.008437669083675929,
-     -0.052744293434920486,
-     0.016440056785891555
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-2-6124": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-3-9596": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-4-824": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-5-4272": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-6-2162": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-7-8695": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-f2": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1-0-813": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.024014977124609427
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-f3": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.026795146138267834
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-0": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-1": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-2": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-3": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-4": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-5": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-6": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-7": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-8": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-9": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-10": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-f4": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-a1": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-s1": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-a2": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-s2": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-a3": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-s3": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-s4": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-0": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-1": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-2": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-3": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-4": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-5": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-6": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-7": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-8": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794241527607": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794241694711": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794242589741": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794243968196": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794249355926": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794249429787": {
-    "position": [
-     -0.005756558045148979,
-     -0.06308527413109077,
-     0.04403611744342251
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794250508540": {
-    "position": [
-     -0.005756558045149074,
-     -0.0630852741310921,
-     0.09563273109875792
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794251943037": {
-    "position": [
-     -0.005756558045149074,
-     -0.0630852741310921,
-     0.09563273109875792
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794251981269": {
-    "position": [
-     -0.005756558045149074,
-     -0.0630852741310921,
-     0.09563273109875792
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794252005433": {
-    "position": [
-     -0.005756558045149074,
-     -0.0630852741310921,
-     0.09563273109875792
-    ],
-    "scale": 0.4,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   }
-  },
   "obj-1793839170005": {
    "pose-f1": {
     "position": [
@@ -41381,758 +40476,6 @@
     "sx": 1.0000000000000002,
     "sy": 1,
     "rz": 0
-   }
-  },
-  "obj-1793995751633-1": {
-   "pose-f1": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-f2": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-f3": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-f4": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-0-0-6597": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-0-1-2473": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-0-2-6124": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-0-3-9596": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-0-4-824": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-0-5-4272": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-0-6-2162": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-0-7-8695": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-1-0-813": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t34-0": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t34-1": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t34-2": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t34-3": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t34-4": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t34-5": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t34-6": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t34-7": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t34-8": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t34-9": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t34-10": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t45-a1": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t45-s1": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t45-a2": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t45-s2": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t45-a3": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t45-s3": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t45-s4": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t59-0": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t59-1": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t59-2": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t59-3": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t59-4": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t59-5": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t59-6": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t59-7": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-t59-8": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-1794241527607": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-1794241694711": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-1794242589741": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-1794243968196": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-1794249355926": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-1794249429787": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-1794250508540": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-1794251943037": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-1794251981269": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
-   },
-   "pose-1794252005433": {
-    "position": [
-     -6.939,
-     8.18,
-     -1.59
-    ],
-    "scale": 4.45,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 0.5617977528089887
    }
   },
   "obj-1793995751633-2": {
@@ -121847,758 +120190,6 @@
     "fadeDir": "ltr"
    }
   },
-  "obj-torre3d": {
-   "pose-f1": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-f2": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-f3": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-f4": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-0-6597": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-1-2473": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-2-6124": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-3-9596": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-4-824": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-5-4272": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-6-2162": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-7-8695": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1-0-813": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-0": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-1": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-2": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-3": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-4": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-5": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-6": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-7": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-8": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-9": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-10": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-a1": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-s1": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-a2": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-s2": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-a3": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-s3": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-s4": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-0": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-1": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-2": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-3": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-4": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-5": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-6": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-7": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-8": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794241527607": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794241694711": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794242589741": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794243968196": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794249355926": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794249429787": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794250508540": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794251943037": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794251981269": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794252005433": {
-    "position": [
-     3.430260479504719,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": 62.32380216046136,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   }
-  },
   "obj-nene": {
    "pose-f1": {
     "position": [
@@ -144701,758 +142292,6 @@
     "rz": 0
    }
   },
-  "obj-1794163004943": {
-   "pose-f1": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-f2": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-f3": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-f4": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-0-6597": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-1-2473": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-2-6124": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-3-9596": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-4-824": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-5-4272": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-6-2162": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-0-7-8695": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1-0-813": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-0": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-1": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-2": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-3": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-4": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-5": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-6": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-7": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-8": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-9": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t34-10": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-a1": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-s1": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-a2": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-s2": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-a3": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-s3": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t45-s4": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-0": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-1": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-2": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-3": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-4": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-5": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-6": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-7": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-t59-8": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794241527607": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794241694711": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794242589741": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794243968196": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794249355926": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794249429787": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794250508540": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794251943037": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794251981269": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   },
-   "pose-1794252005433": {
-    "position": [
-     -3.6549343856476124,
-     -0.08890920136294311,
-     -7.841404519432199
-    ],
-    "scale": 6.95,
-    "rotationY": -24.49033376060505,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "sx": 1,
-    "sy": 1,
-    "rx": 0,
-    "rz": 0
-   }
-  },
   "obj-1794233621304": {
    "pose-f1": {
     "position": [
@@ -146313,1508 +143152,756 @@
     "rz": 0
    }
   },
-  "obj-techo-falda": {
+  "obj-techo-pelotero": {
    "pose-f1": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-f2": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-f3": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-f4": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-0-0-6597": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-0-1-2473": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-0-2-6124": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-0-3-9596": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-0-4-824": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-0-5-4272": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-0-6-2162": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-0-7-8695": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-1-0-813": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t34-0": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t34-1": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t34-2": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t34-3": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t34-4": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t34-5": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t34-6": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t34-7": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t34-8": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t34-9": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t34-10": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t45-a1": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t45-s1": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t45-a2": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t45-s2": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t45-a3": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t45-s3": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t45-s4": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t59-0": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t59-1": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t59-2": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t59-3": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t59-4": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t59-5": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t59-6": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t59-7": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-t59-8": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-1794241527607": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-1794241694711": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-1794242589741": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-1794243968196": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-1794249355926": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-1794249429787": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-1794250508540": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-1794251943037": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-1794251981269": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
+    "sx": 1,
+    "sy": 1
    },
    "pose-1794252005433": {
     "position": [
      -6.939,
-     6.77,
+     8.255,
      -1.59
     ],
-    "scale": 4.806000000000001,
+    "scale": 8.7435,
     "rotationY": 0,
     "hidden": false,
     "fadeDir": "ltr",
     "rx": 0,
     "rz": 0,
-    "sx": 1.0,
-    "sy": 0.0873907615480649
-   }
-  },
-  "obj-techo-bola": {
-   "pose-f1": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-f2": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-f3": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-f4": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-0-0-6597": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-0-1-2473": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-0-2-6124": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-0-3-9596": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-0-4-824": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-0-5-4272": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-0-6-2162": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-0-7-8695": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-1-0-813": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t34-0": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t34-1": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t34-2": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t34-3": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t34-4": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t34-5": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t34-6": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t34-7": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t34-8": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t34-9": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t34-10": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t45-a1": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t45-s1": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t45-a2": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t45-s2": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t45-a3": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t45-s3": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t45-s4": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t59-0": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t59-1": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t59-2": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t59-3": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t59-4": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t59-5": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t59-6": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t59-7": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-t59-8": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-1794241527607": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-1794241694711": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-1794242589741": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-1794243968196": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-1794249355926": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-1794249429787": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-1794250508540": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-1794251943037": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-1794251981269": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
-   },
-   "pose-1794252005433": {
-    "position": [
-     -6.939,
-     9.655000000000001,
-     -1.59
-    ],
-    "scale": 0.75,
-    "rotationY": 0,
-    "hidden": false,
-    "fadeDir": "ltr",
-    "rx": 0,
-    "rz": 0,
-    "sx": 1.0,
-    "sy": 1.0
+    "sx": 1,
+    "sy": 1
    }
   }
  },
