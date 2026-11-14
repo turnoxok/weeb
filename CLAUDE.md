@@ -26,3 +26,11 @@ El sandbox no llega a esm.sh/unpkg. Se puede renderizar igual: instalar con npm 
 
 ## Estilo
 Reservas y panel: oscuro con vidrio translúcido, paleta tuweeb (violeta + naranja #e8693a), Montserrat, logo de tuweeb por defecto. Botones flotantes del sitio: vidrio oscuro sin borde, barra única centrada.
+
+## Pensar como especialista antes de tocar
+Ante cualquier problema (lentitud, peso, algo que se ve mal), primero preguntarme qué haría un especialista en 3D y en webs de este tipo, y hacer eso directamente, sin medir ni parchar de a poco hasta que me lo pidan. Medir solo para confirmar el resultado, no para encontrar el camino.
+Lo que un especialista haría siempre acá:
+- Preparar de antemano lo pesado (piezas 3D ya armadas, modelos comprimidos) y no construirlo al abrir el sitio.
+- Empezar a bajar lo pesado desde el primer segundo, en paralelo con el código.
+- Que el cargador muestre progreso real (nunca un contador clavado en 000).
+- Mirar los números en el celular y en la PC, en visita nueva (incógnito) y en visita repetida.
