@@ -204,5 +204,35 @@ t('servicio tuweeb: pago total, dominio con fecha propia y ediciones usadas', ()
   const s = a.adm('admin.servicio').data; assert.equal(s.estado, 'pagado'); assert.equal(s.saldo, 0); assert.equal(s.proximaCuota, null); assert.equal(s.vencimiento, '2027-11-12'); assert.equal(s.edicionesRestantes, 2); });
 t('instalar crea Planes, Servicio y ServicioPagos sin duplicar', () => { const a = crear(); a.run('instalar()'); a.run('instalar()'); ['Planes', 'Servicio', 'ServicioPagos'].forEach(h => assert(a.hojas[h], h)); assert.equal(a.run('leer_("Servicio").length'), a.run('Object.keys(SERVICIO_DEF).length')); });
 
+console.log('Comprobante de seña');
+const PNG = Buffer.from('iVBORw0KGgo=', 'base64').toString('base64');
+t('el cliente sube el comprobante: queda en Drive, la hoja guarda el enlace y el dueño lo ve', () => {
+  const a = nuevo(); const [t1] = conTurnos(a); const r = a.post(cli({ turnoId: t1 })).data; assert.equal(r.comprobante, null);
+  const c = a.post({ action: 'comprobante', id: r.id, nombre: 'seña.png', tipo: 'image/png', datos: 'data:image/png;base64,' + PNG }); assert(c.ok, JSON.stringify(c));
+  assert.equal(c.data.comprobante.origen, 'cliente'); assert.equal(a.get({ action: 'estado', id: r.id }).data.comprobante.tipo, 'png');
+  assert(!JSON.stringify(c.data).includes('drive.google'), 'el cliente no recibe el enlace');
+  assert.equal(a.drive.archivos.length, 1); assert.equal(a.drive.archivos[0].compartido, 'linkview');
+  const d = a.adm('admin.reserva', { id: r.id }).data; assert(d.comprobante.url.includes('drive.google')); assert.equal(d.comprobante.nombre, 'seña.png');
+  assert(a.mails.some(m => /Comprobante/.test(m.subject)));
+});
+t('reemplazar manda el anterior a la papelera; el dueño también puede subir y quitar', () => {
+  const a = nuevo(); const [t1] = conTurnos(a); const r = a.post(cli({ turnoId: t1 })).data;
+  a.post({ action: 'comprobante', id: r.id, nombre: 'a.pdf', tipo: 'application/pdf', datos: PNG });
+  const c = a.adm('admin.comprobante', { id: r.id, nombre: 'b.jpg', tipo: 'image/jpeg', datos: PNG }); assert(c.ok, JSON.stringify(c));
+  assert.equal(c.data.comprobante.origen, 'dueño'); assert.equal(a.drive.archivos[0].papelera, true); assert.equal(a.drive.archivos[1].papelera, false);
+  const q = a.adm('admin.comprobanteEliminar', { id: r.id }); assert.equal(q.data.comprobante, null); assert.equal(a.drive.archivos[1].papelera, true);
+});
+t('rechaza tipos raros, vacíos, muy pesados, reservas inexistentes o vencidas', () => {
+  const a = nuevo(); const [t1] = conTurnos(a); const r = a.post(cli({ turnoId: t1 })).data;
+  assert.equal(a.post({ action: 'comprobante', id: r.id, tipo: 'application/x-msdownload', datos: PNG }).error, 'ARCHIVO_INVALIDO');
+  assert.equal(a.post({ action: 'comprobante', id: r.id, tipo: 'image/png', datos: '' }).error, 'ARCHIVO_INVALIDO');
+  assert.equal(a.post({ action: 'comprobante', id: r.id, tipo: 'image/png', datos: 'A'.repeat(9 * 1024 * 1024) }).error, 'ARCHIVO_GRANDE');
+  assert.equal(a.post({ action: 'comprobante', id: 'Rnada', tipo: 'image/png', datos: PNG }).error, 'NO_ENCONTRADA');
+  assert.equal(a.get({ action: 'comprobante', id: r.id }).error, 'METODO');
+  a.adm('admin.cancelar', { id: r.id }); assert.equal(a.post({ action: 'comprobante', id: r.id, tipo: 'image/png', datos: PNG }).error, 'NO_DISPONIBLE');
+  assert.equal(a.drive.archivos.length, 0);
+});
+t('el panel exige sesión para subir o quitar comprobantes', () => { const a = nuevo(); assert.equal(a.post({ action: 'admin.comprobante', id: 'x' }).error, 'NO_AUTORIZADO'); assert.equal(a.post({ action: 'admin.comprobanteEliminar', id: 'x' }).error, 'NO_AUTORIZADO'); });
+
 console.log(`\n${n} pruebas ok, ${fallos} con fallas`);
 process.exit(fallos ? 1 : 0);

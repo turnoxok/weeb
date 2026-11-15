@@ -150,6 +150,27 @@ function diaSheet(f, ag) {
 }
 
 /* ───── DETALLE DE RESERVA ───── */
+function leerArchivo(f) {
+  return new Promise((ok, mal) => {
+    const fin = (blob, tipo) => { const fr = new FileReader(); fr.onload = () => ok({ nombre: f.name, tipo, datos: String(fr.result).split(',')[1] || '' }); fr.onerror = () => mal(new Error('No pudimos leer el archivo')); fr.readAsDataURL(blob); };
+    if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { if (f.size > 4.5 * 1048576) return mal(new Error('El archivo pesa demasiado (máximo 4 MB)')); return fin(f, f.type); }
+    const img = new Image(), url = URL.createObjectURL(f);
+    img.onload = () => { const k = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); c.toBlob(b => b ? fin(b, 'image/jpeg') : mal(new Error('No pudimos preparar la foto')), 'image/jpeg', 0.82); };
+    img.onerror = () => { URL.revokeObjectURL(url); mal(new Error('No pudimos abrir esa imagen. Probá con otra foto o un PDF.')); };
+    img.src = url;
+  });
+}
+function bloqueComprobante(id, c) {
+  const inp = h('input', { type: 'file', accept: 'image/*,application/pdf', style: 'display:none' });
+  inp.addEventListener('change', () => { const f = inp.files && inp.files[0]; if (!f) return; accion($('.subir', inp.parentNode), async () => { const a = await leerArchivo(f); await api('admin.comprobante', { id, ...a }); toast('Comprobante guardado', 'ok'); await refrescar(); detalle(id); }); });
+  const esImg = c && c.tipo !== 'pdf', cuando = c && c.fecha ? new Date(c.fecha).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }) : '';
+  return h('div', null, h('h3', { class: 'sec' }, 'Comprobante de la seña'),
+    c ? h('a', { class: 'comp', href: c.url, target: '_blank', rel: 'noopener' }, esImg ? h('img', { src: 'https://drive.google.com/thumbnail?id=' + c.id + '&sz=w800', alt: 'Comprobante', loading: 'lazy', onerror: e => e.target.replaceWith(h('span', { class: 'pdf' }, 'FOTO')) }) : h('span', { class: 'pdf' }, 'PDF'),
+      h('span', { class: 'main' }, h('b', null, c.nombre), h('span', { class: 'muted small' }, (c.origen === 'cliente' ? 'Lo subió el cliente' : 'Lo cargaste vos') + (cuando ? ' · ' + cuando : '')), h('span', { class: 'small' }, 'Tocá para abrirlo'))) :
+      h('p', { class: 'muted small' }, 'Todavía no hay comprobante. Lo puede subir el cliente al reservar, o lo cargás vos acá (foto o PDF).'),
+    h('div', { class: 'row', style: 'margin-top:.6rem' }, h('button', { class: 'btn soft subir', onclick: () => inp.click() }, c ? 'Reemplazar' : 'Subir comprobante'), inp,
+      c ? h('button', { class: 'btn bad', onclick: e => { if (!confirm('¿Quitar el comprobante? Se manda a la papelera de Drive.')) return; accion(e.target, async () => { await api('admin.comprobanteEliminar', { id }); toast('Comprobante quitado', 'ok'); await refrescar(); detalle(id); }); } }, 'Quitar') : ''));
+}
 async function detalle(id) {
   sheet('Reserva', h('p', { class: 'empty' }, h('img', { class: 'tw3d', src: 'tuweeb-icono.svg', alt: 'tuweeb' })));
   let d; try { d = await api('admin.reserva', { id }); } catch (e) { cerrar(); toast(e.message, 'err'); return; }
@@ -168,6 +189,7 @@ async function detalle(id) {
       r.estado === 'pendiente' && r.venceEn ? [h('dt', null, 'Vence'), h('dd', null, new Date(r.venceEn).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }))] : '', h('dt', null, 'Código'), h('dd', { class: 'small' }, r.id)),
     h('div', { class: 'money' }, h('div', null, h('b', null, money(r.total)), h('span', null, 'Total')), h('div', null, h('b', null, money(r.sena)), h('span', null, 'Seña')), h('div', null, h('b', null, money(r.pagado)), h('span', null, 'Pagado')), h('div', null, h('b', { class: r.saldo > 0 ? 'neg' : 'pos' }, money(r.saldo)), h('span', null, 'Saldo'))),
     h('div', { class: 'progress' }, h('i', { style: 'width:' + pct + '%' })),
+    bloqueComprobante(id, d.comprobante),
     h('h3', { class: 'sec' }, 'Pagos'), d.pagos.length ? h('div', { class: 'list' }, d.pagos.map(p => h('div', { class: 'item static' }, h('div', { class: 'when' }, fcorta(p.fecha)), h('div', { class: 'main' }, h('b', null, money(p.monto)), h('span', { class: 'muted small' }, p.metodo + (p.nota ? ' · ' + p.nota : ''))),
       h('button', { class: 'icon', 'aria-label': 'Eliminar pago', onclick: e => { if (!confirm('¿Eliminar este pago?')) return; accion(e.target, async () => { await api('admin.pagoEliminar', { pagoId: p.id }); await refrescar(); detalle(id); }); } }, '🗑')))) : h('p', { class: 'muted small' }, 'Todavía no hay pagos.'),
     r.estado !== 'cancelada' && r.estado !== 'vencida' ? [h('h3', { class: 'sec' }, 'Registrar pago'), pf] : '',

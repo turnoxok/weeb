@@ -13,6 +13,9 @@ const { iniciar } = require('./servidor'); const assert = require('assert'); con
   await p.click('#go'); await p.waitForSelector('text=Casi listo'); await shot('r4-pendiente'); assert((await p.locator('body').innerText()).includes('demo.fiestas')); assert((await p.locator('body').innerText()).includes('$30.000')); ok('reserva con seña: muestra los datos de transferencia');
   const url = p.url(); assert(url.includes('?reserva=R')); ok('queda un link propio de la reserva');
   assert.equal(a.run('leer_("Reservas")[0].estado'), 'pendiente'); assert.equal(a.mails.length, 2);
+  assert(await p.locator('text=Subir comprobante de la transferencia').count()); await p.setInputFiles('input[type=file]', { name: 'seña.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64') });
+  await p.waitForSelector('text=Comprobante recibido'); await shot('r4b-comprobante'); assert.equal(a.drive.archivos.length, 1); assert.equal(a.run('leer_("Reservas")[0].compOrigen'), 'cliente'); assert(await p.locator('text=Cambiar comprobante').count()); ok('el cliente sube el comprobante desde la página y queda confirmado en pantalla');
+  await p.reload(); await p.waitForSelector('text=Comprobante recibido'); ok('al volver a entrar con el link sigue viéndose el comprobante');
   // el dueño confirma el pago → la página lo refleja
   a.setNow(Date.parse('2026-11-05T12:00:00-03:00')); const lg = a.post({ action: 'login', email: 'dueno@mail.com', clave: 'clave-segura-123' }); a.post({ action: 'admin.pago', token: lg.data.token, id: a.run('leer_("Reservas")[0].id'), monto: 30000, metodo: 'transferencia' });
   await p.reload(); await p.waitForSelector('text=Reserva confirmada'); await shot('r5-confirmada'); ok('al registrar el pago, el link muestra "Reserva confirmada"');

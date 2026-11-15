@@ -104,10 +104,33 @@ async function enviar(f) {
   }
 }
 
+/* ───── comprobante de seña: el cliente sube foto o PDF ───── */
+function leerArchivo(f) {
+  return new Promise((ok, mal) => {
+    const fin = (blob, tipo) => { const fr = new FileReader(); fr.onload = () => ok({ nombre: f.name, tipo, datos: String(fr.result).split(',')[1] || '' }); fr.onerror = () => mal(new Error('No pudimos leer el archivo')); fr.readAsDataURL(blob); };
+    if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { if (f.size > 4.5 * 1048576) return mal(new Error('El archivo pesa demasiado (máximo 4 MB)')); return fin(f, f.type); }
+    const img = new Image(), url = URL.createObjectURL(f);
+    img.onload = () => { const k = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); c.toBlob(b => b ? fin(b, 'image/jpeg') : mal(new Error('No pudimos preparar la foto')), 'image/jpeg', 0.82); };
+    img.onerror = () => { URL.revokeObjectURL(url); mal(new Error('No pudimos abrir esa imagen. Probá con otra foto o un PDF.')); };
+    img.src = url;
+  });
+}
+function bloqueComprobante(r) {
+  const c = r.comprobante, msg = h('p', { class: 'small', style: 'margin-top:.6rem' }), inp = h('input', { type: 'file', accept: 'image/*,application/pdf', style: 'display:none' });
+  const btn = h('button', { class: c ? 'btn line block' : 'btn block', style: 'margin-top:.8rem', onclick: () => inp.click() }, c ? 'Cambiar comprobante' : 'Subir comprobante de la transferencia');
+  inp.addEventListener('change', async () => {
+    const f = inp.files && inp.files[0]; if (!f) return;
+    S.subiendo = true; btn.disabled = true; btn.textContent = 'Enviando…'; msg.className = 'small muted'; msg.textContent = 'Subiendo el archivo, no cierres esta página.';
+    try { const a = await leerArchivo(f); r = await llamar('comprobante', { id: r.id, ...a }, true); S.subiendo = false; resultado(r, false); }
+    catch (e) { S.subiendo = false; btn.disabled = false; btn.textContent = c ? 'Cambiar comprobante' : 'Subir comprobante de la transferencia'; msg.className = 'small err'; msg.textContent = e.message + ' Podés mandarlo por WhatsApp.'; inp.value = ''; }
+  });
+  return h('div', { class: 'card', style: 'margin-top:1rem' }, h('h3', { style: 'margin-bottom:.3rem' }, c ? '✓ Comprobante recibido' : 'Mandanos el comprobante'),
+    h('p', { class: 'muted small' }, c ? 'Recibimos «' + c.nombre + '». En cuanto revisemos el pago, confirmamos tu reserva.' : 'Sacale una foto o subí el PDF de la transferencia. Así confirmamos tu reserva más rápido.'), inp, btn, msg);
+}
 /* ───── 3. resultado y estado ───── */
 async function estado(id) {
   let r; try { r = await llamar('estado', { id }); } catch (e) { return pagina(4, h('div', { class: 'err' }, e.codigo === 'NO_ENCONTRADA' ? 'No encontramos esa reserva. Revisá el link o escribinos por WhatsApp.' : e.message)); }
-  resultado(r, false); if (r.estado === 'pendiente') setTimeout(() => { if (new URLSearchParams(location.search).get('reserva') === id) estado(id); }, 20000);
+  resultado(r, false); if (r.estado === 'pendiente') setTimeout(() => { if (!S.subiendo && new URLSearchParams(location.search).get('reserva') === id) estado(id); }, 20000);
 }
 function copiar(label, valor) { return h('div', { class: 'copy' }, h('div', null, h('span', null, label), h('b', null, valor)), h('button', { class: 'btn soft sm', onclick: e => { navigator.clipboard && navigator.clipboard.writeText(valor); e.target.textContent = '¡Copiado!'; setTimeout(() => (e.target.textContent = 'Copiar'), 1500); } }, 'Copiar')); }
 function resultado(r, nueva) {
@@ -117,7 +140,7 @@ function resultado(r, nueva) {
     const t = r.transferencia, aviso = wa(`Hola! Ya hice la transferencia de la seña. Reserva ${r.id}, a nombre de ${r.nombre}, ${flarga(r.fecha)} de ${r.inicio} a ${r.fin} hs.`);
     return pagina(4, h('div', { class: 'big' }, h('div', { class: 'ico w' }, '⏳'), h('h2', null, nueva ? '¡Casi listo!' : 'Reserva pendiente de pago'), h('p', null, fh), h('p', { class: 'muted' }, 'Guardamos el turno para vos hasta el ' + new Date(r.venceEn).toLocaleString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }))),
       t ? h('div', { class: 'card' }, h('h3', { style: 'margin-bottom:.4rem' }, 'Transferí la seña de ' + money(t.importe)), t.alias ? copiar('Alias', t.alias) : '', t.cbu ? copiar('CBU / CVU', t.cbu) : '', t.titular ? copiar('Titular', t.titular) : '', t.banco ? h('p', { class: 'muted small' }, 'Banco o billetera: ' + t.banco) : '', t.nota ? h('p', { class: 'small' }, t.nota) : '') : h('div', { class: 'card' }, h('p', null, 'Para confirmar el turno, coordiná el pago de la seña con nosotros.')),
-      aviso ? h('a', { class: 'btn block', style: 'margin-top:1rem', href: aviso, target: '_blank', rel: 'noopener' }, 'Ya transferí: avisar por WhatsApp') : '', h('p', { class: 'muted small', style: 'text-align:center;margin-top:.8rem' }, 'Cuando confirmemos el pago, esta página y tu mail van a mostrar la reserva como confirmada. Guardá este link para volver.'), cod);
+      t ? bloqueComprobante(r) : '', aviso ? h('a', { class: (r.comprobante ? 'btn line block' : 'btn line block'), style: 'margin-top:1rem', href: aviso, target: '_blank', rel: 'noopener' }, (r.comprobante ? 'Avisar por WhatsApp' : 'Prefiero avisar por WhatsApp')) : '', h('p', { class: 'muted small', style: 'text-align:center;margin-top:.8rem' }, 'Cuando confirmemos el pago, esta página y tu mail van a mostrar la reserva como confirmada. Guardá este link para volver.'), cod);
   }
   return pagina(4, h('div', { class: 'big' }, h('div', { class: 'ico b' }, '✕'), h('h2', null, r.estado === 'vencida' ? 'La reserva venció' : 'Reserva cancelada'), h('p', { class: 'muted' }, r.estado === 'vencida' ? 'No recibimos la seña a tiempo y el turno se liberó. Podés volver a reservar.' : 'Esta reserva fue cancelada.')), cod, volver);
 }

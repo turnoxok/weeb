@@ -18,6 +18,10 @@ require('fs').mkdirSync(OUT, { recursive: true });
   await p.click('button:has-text("Guardar reserva")'); await p.waitForSelector('.sheet:has-text("Doña Rosa")'); await p.waitForSelector('.money'); await shot('05-detalle');
   const txt = await p.locator('.money').innerText(); assert(txt.includes('$100.000') && txt.includes('$70.000'), txt); ok('reserva a mano con pago en efectivo: saldo correcto');
   await p.fill('form input[name=monto]', '70000'); await p.click('button:has-text("Registrar pago")'); await p.waitForSelector('.chip.saldada'); ok('registrar el saldo la deja saldada');
+  assert(await p.locator('text=Todavía no hay comprobante').count()); await p.setInputFiles('.sheet input[type=file]', { name: 'ticket.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 prueba') });
+  await p.waitForSelector('.comp:has-text("ticket.pdf")'); await shot('05b-comprobante'); assert((await p.locator('.comp').innerText()).includes('Lo cargaste vos')); ok('el dueño sube un PDF como comprobante');
+  await p.setInputFiles('.sheet input[type=file]', { name: 'foto.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64') }); await p.waitForSelector('.comp:has-text("foto.png")'); assert.equal(a.drive.archivos.filter(f => !f.papelera).length, 1); ok('reemplazar deja un solo comprobante');
+  await p.click('button:has-text("Quitar")'); await p.waitForSelector('text=Todavía no hay comprobante'); ok('el dueño quita el comprobante');
   await p.click('.sheet-head .icon'); await p.waitForTimeout(400);
   // el turno quedó ocupado en la API pública
   const disp = await (await fetch('http://localhost:8781/exec?action=disponibilidad&mes=2026-11')).json(); assert.equal(disp.data.dias['2026-11-07'][0].estado, 'ocupado'); ok('el turno quedó ocupado en el calendario público');

@@ -64,3 +64,10 @@ El simulador (`test/mock.js`) reemplaza Sheets, Mail, Cache y Lock; los tests de
 - Sin comisión por pagos online por ahora; los mails salen desde la cuenta de la hoja.
 - Login con mail y clave propios (sin Google Cloud): un trámite menos por cliente.
 - Varios salones soportados desde el modelo.
+
+## Comprobante de seña
+- El cliente lo sube desde su página de reserva (foto o PDF; las fotos se achican en el celular) o lo carga el dueño desde el panel (Reemplazar / Quitar).
+- Los archivos se guardan en Drive, carpeta «Comprobantes de seña» (enlace "cualquiera con el link", imposible de adivinar). La hoja Reservas guarda solo `compId, compUrl, compNombre, compTipo, compFecha, compOrigen`.
+- El cliente nunca recibe el enlace de Drive; solo el panel. Si se reemplaza o quita, el archivo anterior va a la papelera de Drive.
+- Máx. 6 MB. Acciones nuevas: `comprobante` (público, POST), `admin.comprobante`, `admin.comprobanteEliminar`. Avisa por mail al dueño cuando lo sube el cliente.
+- Al actualizar el Apps Script hay que volver a ejecutar `instalar()` (agrega las columnas) y publicar una **nueva versión** de la implementación; Drive pide aceptar el permiso de nuevo.

@@ -2,7 +2,7 @@
 const fs = require('fs'), vm = require('vm'), path = require('path');
 function crear(opts = {}) {
   const hojas = {}; let uuid = 0;
-  const mails = [], cache = {}, props = {}, triggers = [];
+  const mails = [], cache = {}, props = {}, triggers = [], drive = { carpetas: [], archivos: [] };
   const tokens = opts.tokens || {};
   function Hoja(nombre) {
     const h = { nombre, filas: [[]], frozen: 0, formatos: {} };
@@ -37,9 +37,10 @@ function crear(opts = {}) {
       DigestAlgorithm: { SHA_256: 'sha256' }, Charset: { UTF_8: 'utf8' },
       computeDigest: (alg, s) => [...require('crypto').createHash('sha256').update(s, 'utf8').digest()].map(b => (b > 127 ? b - 256 : b)),
       computeHmacSha256Signature: (s, k) => [...require('crypto').createHmac('sha256', k).update(s, 'utf8').digest()].map(b => (b > 127 ? b - 256 : b)),
+      base64Decode: s => [...Buffer.from(s, 'base64')],
       base64EncodeWebSafe: s => Buffer.from(s, 'utf8').toString('base64url'),
       base64DecodeWebSafe: s => [...Buffer.from(s, 'base64url')],
-      newBlob: b => ({ getDataAsString: () => Buffer.from(b).toString('utf8') }),
+      newBlob: (b, tipo, nombre) => ({ bytes: b, tipo, nombre, getDataAsString: () => Buffer.from(b).toString('utf8') }),
       getUuid: () => 'u' + String(++uuid).padStart(8, '0') + '-aaaa-bbbb-cccc-' + Math.random().toString(16).slice(2, 14),
       formatDate: (d, tz, f) => {
         const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(d).map(x => [x.type, x.value]));
@@ -50,12 +51,17 @@ function crear(opts = {}) {
     MailApp: { sendEmail: m => mails.push(m), getRemainingDailyQuota: () => 100 },
     ScriptApp: { getProjectTriggers: () => triggers.slice(), deleteTrigger: t => triggers.splice(triggers.indexOf(t), 1),
       newTrigger: f => { const t = { getHandlerFunction: () => f, f }; const b = { timeBased: () => b, everyMinutes: () => b, everyDays: () => b, atHour: () => b, create: () => { triggers.push(t); return t; } }; return b; } },
-    DriveApp: {}
+    DriveApp: {
+      Access: { ANYONE_WITH_LINK: 'link' }, Permission: { VIEW: 'view' },
+      getFoldersByName: n => { const f = drive.carpetas.filter(c => c.n === n); let i = 0; return { hasNext: () => i < f.length, next: () => f[i++] }; },
+      createFolder: n => { const c = { n, createFile: blob => { const f = { id: 'F' + (drive.archivos.length + 1), blob, papelera: false, compartido: null, getId() { return this.id; }, getUrl() { return 'https://drive.google.com/file/d/' + this.id + '/view'; }, setSharing(a, p) { this.compartido = a + p; }, setTrashed(v) { this.papelera = v; } }; drive.archivos.push(f); return f; } }; drive.carpetas.push(c); return c; },
+      getFileById: id => { const f = drive.archivos.filter(x => x.id === id)[0]; if (!f) throw new Error('no existe'); return f; }
+    }
   };
   vm.createContext(ctx);
   vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'Codigo.gs'), 'utf8'), ctx, { filename: 'Codigo.gs' });
   const api = {
-    ctx, ss, hojas, mails, triggers, cache,
+    ctx, ss, hojas, mails, triggers, cache, drive,
     // llamar como lo haría el navegador
     get(params) { return JSON.parse(ctx.doGet({ parameter: params }).getContent()); },
     post(body) { return JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(body) } }).getContent()); },

@@ -20,7 +20,8 @@ var TABLAS = {
   Turnos:      ['id', 'salonId', 'dias', 'inicio', 'fin', 'etiqueta', 'precio', 'senaTipo', 'senaValor', 'desde', 'hasta', 'activo'],
   Bloqueos:    ['id', 'desde', 'hasta', 'salonId', 'turnoId', 'motivo', 'creado'],
   Reservas:    ['id', 'creada', 'actualizada', 'salonId', 'fecha', 'turnoId', 'inicio', 'fin', 'nombre', 'telefono', 'email', 'personas', 'nota',
-                'total', 'sena', 'pagado', 'saldo', 'estado', 'origen', 'metodo', 'venceEn', 'extRef', 'planId', 'plan'],
+                'total', 'sena', 'pagado', 'saldo', 'estado', 'origen', 'metodo', 'venceEn', 'extRef', 'planId', 'plan',
+                'compId', 'compUrl', 'compNombre', 'compTipo', 'compFecha', 'compOrigen'],
   Planes:      ['id', 'nombre', 'descripcion', 'precio', 'senaTipo', 'senaValor', 'orden', 'activo'],
   Servicio:    ['clave', 'valor'],                                    // lo carga tuweeb (el cliente solo lo ve): precio del sitio, ediciones, dominio…
   ServicioPagos: ['id', 'fecha', 'monto', 'nota'],                    // cada pago del cliente a tuweeb (cuota o total)
@@ -224,9 +225,49 @@ function conLock_(fn) {
   lock.waitLock(25000);
   try { return fn(); } finally { lock.releaseLock(); }
 }
+/** Comprobante de seña: el archivo vive en Drive (carpeta propia); la hoja guarda solo el enlace. */
+var COMP_TIPOS = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/heic': 'heic', 'application/pdf': 'pdf' };
+var COMP_MAX = 6 * 1024 * 1024;
+function compPublico_(r) { return r.compId ? { nombre: r.compNombre, tipo: r.compTipo, fecha: r.compFecha, origen: r.compOrigen } : null; }
+function compAdmin_(r) { return r.compId ? { id: r.compId, url: r.compUrl, nombre: r.compNombre, tipo: r.compTipo, fecha: r.compFecha, origen: r.compOrigen } : null; }
+function compCarpeta_() {
+  var it = DriveApp.getFoldersByName('Comprobantes de seña');
+  return it.hasNext() ? it.next() : DriveApp.createFolder('Comprobantes de seña');
+}
+function compBorrarArchivo_(id) { try { if (id) DriveApp.getFileById(id).setTrashed(true); } catch (e) { log_('sistema', 'comp_borrar_error', e.message); } }
+/** Guarda (o reemplaza) el comprobante de una reserva. p: id, archivo {nombre, tipo, datos(base64)}. */
+function guardarComprobante_(id, p, origen) {
+  var r = porId_('Reservas', id); if (!r) throw err_('NO_ENCONTRADA', 'Reserva no encontrada');
+  var tipo = txt_(p.tipo, 60).toLowerCase(), ext = COMP_TIPOS[tipo];
+  if (!ext) throw err_('ARCHIVO_INVALIDO', 'Subí una foto (JPG, PNG) o un PDF');
+  var b64 = String(p.datos || '').replace(/^data:[^,]*,/, '').replace(/\s/g, '');
+  if (!b64) throw err_('ARCHIVO_INVALIDO', 'El archivo llegó vacío');
+  if (b64.length * 0.75 > COMP_MAX) throw err_('ARCHIVO_GRANDE', 'El archivo pesa demasiado (máximo 6 MB)');
+  var bytes = Utilities.base64Decode(b64);
+  if (!bytes.length) throw err_('ARCHIVO_INVALIDO', 'El archivo llegó vacío');
+  var nombre = txt_(p.nombre, 80).replace(/[\\\/:*?"<>|]/g, '_') || ('comprobante.' + ext);
+  var blob = Utilities.newBlob(bytes, tipo, 'Seña ' + r.id + ' · ' + r.nombre + '.' + ext);
+  var f = compCarpeta_().createFile(blob);
+  try { f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (e) { log_('sistema', 'comp_share_error', e.message); }
+  compBorrarArchivo_(r.compId);
+  actualizar_('Reservas', r._row, { compId: f.getId(), compUrl: f.getUrl(), compNombre: nombre, compTipo: ext, compFecha: new Date(ahora_()).toISOString(), compOrigen: origen, actualizada: new Date(ahora_()).toISOString() });
+  invalidar_();
+  return porId_('Reservas', id);
+}
+function comprobante_(p) {
+  var id = txt_(p.id, 40), r = id && porId_('Reservas', id);
+  if (!r) throw err_('NO_ENCONTRADA', 'Reserva no encontrada');
+  if (r.estado === 'cancelada' || r.estado === 'vencida' || (r.estado === 'pendiente' && r.venceEn && Date.parse(r.venceEn) <= ahora_())) throw err_('NO_DISPONIBLE', 'Esta reserva ya no admite comprobantes. Escribinos por WhatsApp.');
+  return conLock_(function () {
+    r = guardarComprobante_(id, p, 'cliente'); log_('web', 'comprobante', id);
+    try { var cfg = config_(); if (cfg.emailsActivos && cfg.emailAdmin && MailApp.getRemainingDailyQuota() > 3) MailApp.sendEmail({ to: cfg.emailAdmin, subject: '[Panel] Comprobante de seña · ' + r.nombre, htmlBody: '<p>' + r.nombre + ' subió el comprobante de la reserva ' + r.id + ' (' + r.fecha + ').</p><p><a href="' + r.compUrl + '">Ver comprobante</a></p>', name: 'Weeb Reservas' }); } catch (e) { log_('sistema', 'mail_error', e.message); }
+    return reservaPublica_(r);
+  });
+}
+
 function reservaPublica_(r, extra) {
   var cfg = config_(), o = { id: r.id, estado: r.estado, fecha: r.fecha, inicio: r.inicio, fin: r.fin, salonId: r.salonId, nombre: r.nombre,
-    total: r.total, sena: r.sena, pagado: r.pagado, saldo: r.saldo, venceEn: r.venceEn, metodo: r.metodo, plan: r.plan || '' };
+    total: r.total, sena: r.sena, pagado: r.pagado, saldo: r.saldo, venceEn: r.venceEn, metodo: r.metodo, plan: r.plan || '', comprobante: compPublico_(r) };
   if (r.estado === 'pendiente' && r.metodo === 'transferencia') {
     o.transferencia = { titular: cfg.transferTitular, cbu: cfg.transferCbu, alias: cfg.transferAlias, banco: cfg.transferBanco, nota: cfg.transferNota, importe: r.sena - r.pagado };
   }
@@ -433,7 +474,7 @@ function adminCrearReserva_(p, u) {
 }
 function reservaCompleta_(id) {
   var r = porId_('Reservas', id); if (!r) throw err_('NO_ENCONTRADA', 'Reserva no encontrada');
-  return { reserva: limpio_(r), pagos: leer_('Pagos').filter(function (x) { return x.reservaId === id; }).map(limpio_) };
+  return { reserva: limpio_(r), comprobante: compAdmin_(r), pagos: leer_('Pagos').filter(function (x) { return x.reservaId === id; }).map(limpio_) };
 }
 function adminPagoInterno_(id, p, u) {
   if (!porId_('Reservas', id)) throw err_('NO_ENCONTRADA', 'Reserva no encontrada');
@@ -470,6 +511,10 @@ var ADMIN = {
     }).sort(function (a, b) { return a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : a.inicio < b.inicio ? -1 : 1; }).map(limpio_);
   },
   'admin.reserva': function (p) { return reservaCompleta_(txt_(p.id)); },
+  'admin.comprobante': function (p, u) { return conLock_(function () { var id = txt_(p.id, 40); guardarComprobante_(id, p, 'dueño'); log_(u.email, 'comprobante', id); return reservaCompleta_(id); }); },
+  'admin.comprobanteEliminar': function (p, u) { return conLock_(function () {
+    var id = txt_(p.id, 40), r = porId_('Reservas', id); if (!r) throw err_('NO_ENCONTRADA', 'Reserva no encontrada');
+    compBorrarArchivo_(r.compId); actualizar_('Reservas', r._row, { compId: '', compUrl: '', compNombre: '', compTipo: '', compFecha: '', compOrigen: '' }); invalidar_(); log_(u.email, 'comprobante_borrado', id); return reservaCompleta_(id); }); },
   'admin.crearReserva': adminCrearReserva_,
   'admin.actualizarReserva': function (p, u) {
     return conLock_(function () {
@@ -587,6 +632,7 @@ function despachar_(p, esPost) {
   if (a === 'config') return configPublica_();
   if (a === 'disponibilidad') return disponibilidad_(p);
   if (a === 'estado') return estado_(p);
+  if (a === 'comprobante') { if (!esPost) throw err_('METODO', 'Usá POST'); return comprobante_(p); }
   if (a === 'login') { if (!esPost) throw err_('METODO', 'Usá POST'); return login_(p); }
   if (a === 'reservar') { if (!esPost) throw err_('METODO', 'Usá POST'); return reservar_(p); }
   if (a.indexOf('admin.') === 0) {
