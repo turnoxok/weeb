@@ -322,5 +322,22 @@ t('página de planes: textos y bloques editables desde el panel, y públicos', (
   assert.equal(a.post({ action: 'admin.guardarContenido', seccion: 'faq', titulo: 'x' }).error, 'NO_AUTORIZADO');
 });
 
+t('fotos de la página: se suben desde el panel, quedan visibles y se limpian al cambiarlas o borrarlas', () => {
+  const a = nuevo(); const png = Buffer.from('iVBORw0KGgo=', 'base64').toString('base64');
+  assert.equal(a.post({ action: 'admin.subirFoto', nombre: 'x.png', tipo: 'image/png', datos: png }).error, 'NO_AUTORIZADO');
+  assert.equal(a.adm('admin.subirFoto', { nombre: 'x.pdf', tipo: 'application/pdf', datos: png }).error, 'ARCHIVO_INVALIDO');
+  assert.equal(a.adm('admin.subirFoto', { nombre: 'x.png', tipo: 'image/png', datos: '' }).error, 'ARCHIVO_INVALIDO');
+  assert.equal(a.adm('admin.subirFoto', { nombre: 'x.png', tipo: 'image/png', datos: 'A'.repeat(6 * 1024 * 1024) }).error, 'ARCHIVO_GRANDE');
+  const f1 = a.adm('admin.subirFoto', { nombre: 'Salón grande.PNG', tipo: 'image/png', datos: png }); assert(f1.ok, JSON.stringify(f1)); assert(/^https:\/\/lh3\.googleusercontent\.com\/d\/F\d+=w1600$/.test(f1.data.url), f1.data.url);
+  const arch = a.drive.archivos[a.drive.archivos.length - 1]; assert.equal(arch.compartido, 'linkview');
+  const b = a.adm('admin.guardarContenido', { seccion: 'detalle', titulo: 'El salón', imagen: f1.data.url }); assert(b.ok, JSON.stringify(b)); assert.equal(a.get({ action: 'config' }).data.contenido[0].imagen, f1.data.url);
+  const f2 = a.adm('admin.subirFoto', { nombre: 'otra.jpg', tipo: 'image/jpeg', datos: png });
+  a.adm('admin.guardarContenido', { id: b.data.id, seccion: 'detalle', titulo: 'El salón', imagen: f2.data.url }); assert.equal(arch.papelera, true);   // la foto reemplazada va a la papelera
+  const arch2 = a.drive.archivos[a.drive.archivos.length - 1]; assert.equal(arch2.papelera, false);
+  a.adm('admin.borrarContenido', { id: b.data.id }); assert.equal(arch2.papelera, true);
+  const ajeno = a.drive.carpetas.length; assert(ajeno >= 1);   // una foto de otra carpeta (link pegado) nunca se toca
+  const c = a.adm('admin.guardarContenido', { seccion: 'detalle', titulo: 'Ext', imagen: 'https://lh3.googleusercontent.com/d/AJENOAJENO12=w800' }); assert(c.ok); assert(a.adm('admin.borrarContenido', { id: c.data.id }).ok);
+});
+
 console.log(`\n${n} pruebas ok, ${fallos} con fallas`);
 process.exit(fallos ? 1 : 0);

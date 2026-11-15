@@ -450,10 +450,21 @@ function textosPg(cfg) {
     h('button', { class: 'btn block' }, 'Guardar textos'));
   sheet('Textos de la página de planes', f);
 }
+/** Foto de un bloque: se sube desde el celular o la compu (se achica sola); también se puede pegar un link. */
+function campoFoto(url0) {
+  const val = inp('imagen', { type: 'hidden', value: url0 }), prev = h('div', { class: 'fotoprev' }), foto = u => (/^https?:/i.test(u) ? u : '../' + String(u).replace(/^\.\//, ''));
+  const pintar = () => { prev.replaceChildren(val.value ? h('img', { src: foto(val.value), alt: 'Foto', style: 'max-width:100%;max-height:180px;border-radius:12px;display:block;margin-bottom:.5rem', onerror: e => e.target.replaceWith(h('span', { class: 'muted small' }, 'No se pudo mostrar la foto.')) }) : h('p', { class: 'muted small' }, 'Todavía no hay foto.')); };
+  const sel = h('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp,image/*', style: 'display:none' });
+  const subir = h('button', { type: 'button', class: 'btn soft sm', onclick: () => sel.click() }, val.value ? 'Cambiar foto' : 'Subir foto');
+  sel.addEventListener('change', async () => { const f = sel.files && sel.files[0]; if (!f) return; await accion(subir, async () => { const a = await leerArchivo(f); const r = await api('admin.subirFoto', a); val.value = r.url; pintar(); toast('Foto subida. Tocá Guardar para publicarla.', 'ok'); }); subir.textContent = val.value ? 'Cambiar foto' : 'Subir foto'; sel.value = ''; });
+  const quitar = h('button', { type: 'button', class: 'btn line sm', onclick: () => { val.value = ''; subir.textContent = 'Subir foto'; pintar(); } }, 'Quitar foto');
+  pintar();
+  return h('div', { class: 'field' }, h('span', null, 'Foto'), prev, h('div', { class: 'row' }, subir, quitar), sel, val);
+}
 function bloquePg(x, tit, campos) {
   const nuevo = !x.id, ET = { titulo: x.seccion === 'faq' ? 'Pregunta' : x.seccion === 'pasos' ? 'Paso' : 'Título', texto: x.seccion === 'faq' ? 'Respuesta' : 'Texto', etiqueta: 'Etiqueta chica (arriba del título)', imagen: 'Foto (link https:// o una foto del sitio, ej. assets/galeria/galeria-01.webp)' };
   const f = h('form', { onsubmit: ev => { ev.preventDefault(); const d = datos(f); accion($('button.btn.block', f), async () => { await api('admin.guardarContenido', { id: x.id, seccion: x.seccion, titulo: d.titulo, texto: d.texto, etiqueta: d.etiqueta, imagen: d.imagen, orden: d.orden, activo: d.activo }); toast('Guardado', 'ok'); cerrar(); render(); }); } },
-    ...campos.map(k => campo(ET[k], k === 'texto' ? h('textarea', { name: k, rows: 4, maxlength: '600' }, x[k] || '') : inp(k, { required: k === 'titulo', maxlength: k === 'imagen' ? '300' : '160', value: x[k] || '' }))),
+    ...campos.map(k => k === 'imagen' ? campoFoto(x.imagen || '') : campo(ET[k], k === 'texto' ? h('textarea', { name: k, rows: 4, maxlength: '600' }, x[k] || '') : inp(k, { required: k === 'titulo', maxlength: k === 'imagen' ? '300' : '160', value: x[k] || '' }))),
     h('div', { class: 'grid2' }, campo('Orden (1, 2, 3…)', inp('orden', { type: 'number', value: x.orden || '' })), h('label', { class: 'row', style: 'align-self:end;margin-bottom:1rem' }, inp('activo', { type: 'checkbox', checked: x.activo !== false }), 'Se muestra')),
     h('button', { class: 'btn block' }, 'Guardar'),
     nuevo ? '' : h('button', { type: 'button', class: 'btn line block', style: 'margin-top:.6rem', onclick: e => { if (!confirm('¿Borrar esto de la página de planes?')) return; accion(e.target, async () => { await api('admin.borrarContenido', { id: x.id }); toast('Borrado', 'ok'); cerrar(); render(); }); } }, 'Borrar'));

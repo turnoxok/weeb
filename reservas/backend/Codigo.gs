@@ -287,6 +287,28 @@ function guardarComprobante_(id, p, origen) {
   invalidar_();
   return porId_('Reservas', id);
 }
+/** Fotos de la página de planes: se suben desde el panel, viven en Drive (carpeta propia, visibles con el link) y la hoja guarda solo la dirección. */
+var FOTO_TIPOS = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }, FOTO_MAX = 4 * 1024 * 1024, FOTO_CARPETA = 'Fotos de la página';
+function fotoCarpeta_() { var it = DriveApp.getFoldersByName(FOTO_CARPETA); return it.hasNext() ? it.next() : DriveApp.createFolder(FOTO_CARPETA); }
+function fotoIdDe_(url) { var m = /^https:\/\/lh3\.googleusercontent\.com\/d\/([\w-]{2,})/.exec(String(url || '')); return m ? m[1] : ''; }
+/** Manda a la papelera una foto que subimos nosotros (solo si está en nuestra carpeta; nunca toca otros archivos de Drive). */
+function fotoBorrar_(url) {
+  var id = fotoIdDe_(url); if (!id) return;
+  try { var f = DriveApp.getFileById(id), ps = f.getParents(), ok = false; while (ps.hasNext()) if (ps.next().getName() === FOTO_CARPETA) ok = true; if (ok) f.setTrashed(true); } catch (e) { log_('sistema', 'foto_borrar_error', e.message); }
+}
+function subirFoto_(p, u) {
+  var tipo = txt_(p.tipo, 60).toLowerCase(), ext = FOTO_TIPOS[tipo];
+  if (!ext) throw err_('ARCHIVO_INVALIDO', 'Subí una foto JPG, PNG o WebP');
+  var b64 = String(p.datos || '').replace(/^data:[^,]*,/, '').replace(/\s/g, '');
+  if (!b64) throw err_('ARCHIVO_INVALIDO', 'La foto llegó vacía');
+  if (b64.length * 0.75 > FOTO_MAX) throw err_('ARCHIVO_GRANDE', 'La foto pesa demasiado (máximo 4 MB)');
+  var bytes = Utilities.base64Decode(b64); if (!bytes.length) throw err_('ARCHIVO_INVALIDO', 'La foto llegó vacía');
+  var nombre = txt_(p.nombre, 80).replace(/[\\\/:*?"<>|]/g, '_').replace(/\.[A-Za-z0-9]+$/, '') || 'foto';
+  var f = fotoCarpeta_().createFile(Utilities.newBlob(bytes, tipo, nombre + '.' + ext));
+  try { f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (e) { log_('sistema', 'foto_share_error', e.message); }
+  log_(u.email, 'foto_subida', f.getId());
+  return { id: f.getId(), url: 'https://lh3.googleusercontent.com/d/' + f.getId() + '=w1600' };
+}
 function comprobante_(p) {
   var id = txt_(p.id, 40), r = id && porId_('Reservas', id);
   if (!r) throw err_('NO_ENCONTRADA', 'Reserva no encontrada');
@@ -710,6 +732,7 @@ var ADMIN = {
       guardarPrecios_(x.id, {}); borrar_('Planes', x._row); invalidar_(); log_(u.email, 'plan_borrado', x.id); return { id: x.id, borrado: true };
     });
   },
+  'admin.subirFoto': subirFoto_,
   'admin.contenido': function () { return leer_('Contenido').sort(function (a, b) { return a.orden - b.orden; }).map(limpio_); },
   'admin.guardarContenido': function (p, u) {
     var sec = txt_(p.seccion, 20); if (!SECCIONES[sec]) throw err_('DATO_INVALIDO', 'Sección desconocida');
@@ -719,14 +742,14 @@ var ADMIN = {
     return conLock_(function () {
       var cur = p.id && porId_('Contenido', p.id);
       if (!cur && !p.orden) d.orden = leer_('Contenido').filter(function (x) { return x.seccion === sec; }).length + 1;
-      if (cur) actualizar_('Contenido', cur._row, d); else { d.id = nuevoId_('CT'); agregar_('Contenido', d); cur = d; }
+      if (cur) { if (cur.imagen && cur.imagen !== d.imagen) fotoBorrar_(cur.imagen); actualizar_('Contenido', cur._row, d); } else { d.id = nuevoId_('CT'); agregar_('Contenido', d); cur = d; }
       invalidar_(); log_(u.email, 'contenido', cur.id); return limpio_(porId_('Contenido', cur.id));
     });
   },
   'admin.borrarContenido': function (p, u) {
     return conLock_(function () {
       var x = porId_('Contenido', txt_(p.id)); if (!x) throw err_('NO_ENCONTRADO', 'No encontrado');
-      borrar_('Contenido', x._row); invalidar_(); log_(u.email, 'contenido_borrado', x.id); return { id: x.id, borrado: true };
+      fotoBorrar_(x.imagen); borrar_('Contenido', x._row); invalidar_(); log_(u.email, 'contenido_borrado', x.id); return { id: x.id, borrado: true };
     });
   },
   'admin.servicio': function () { return servicio_(); },

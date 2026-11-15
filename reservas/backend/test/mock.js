@@ -54,7 +54,7 @@ function crear(opts = {}) {
     DriveApp: {
       Access: { ANYONE_WITH_LINK: 'link' }, Permission: { VIEW: 'view' },
       getFoldersByName: n => { const f = drive.carpetas.filter(c => c.n === n); let i = 0; return { hasNext: () => i < f.length, next: () => f[i++] }; },
-      createFolder: n => { const c = { n, createFile: blob => { const f = { id: 'F' + (drive.archivos.length + 1), blob, papelera: false, compartido: null, getId() { return this.id; }, getUrl() { return 'https://drive.google.com/file/d/' + this.id + '/view'; }, setSharing(a, p) { this.compartido = a + p; }, setTrashed(v) { this.papelera = v; } }; drive.archivos.push(f); return f; } }; drive.carpetas.push(c); return c; },
+      createFolder: n => { const c = { n, createFile: blob => { const f = { id: 'F' + (drive.archivos.length + 1), blob, papelera: false, compartido: null, getId() { return this.id; }, getUrl() { return 'https://drive.google.com/file/d/' + this.id + '/view'; }, setSharing(a, p) { this.compartido = a + p; }, setTrashed(v) { this.papelera = v; }, getParents() { let i = 0; const l = [c]; return { hasNext: () => i < l.length, next: () => ({ getName: () => l[i++].n }) }; } }; drive.archivos.push(f); return f; } }; drive.carpetas.push(c); return c; },
       getFileById: id => { const f = drive.archivos.filter(x => x.id === id)[0]; if (!f) throw new Error('no existe'); return f; }
     }
   };
