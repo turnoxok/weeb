@@ -157,6 +157,7 @@ function configPublica_() {
   CFG_PUBLICA.forEach(function (k) { o[k] = c[k]; });
   o.salones = leer_('Salones').filter(function (s) { return s.activo; }).sort(function (a, b) { return a.orden - b.orden; })
     .map(function (s) { return { id: s.id, nombre: s.nombre, capacidad: s.capacidad }; });
+  o.turnos = leer_('Turnos').filter(function (t) { return t.activo; }).map(function (t) { return { id: t.id, salonId: t.salonId, dias: String(t.dias), inicio: t.inicio, fin: t.fin, etiqueta: t.etiqueta, desde: t.desde, hasta: t.hasta }; });
   var pm = preciosMapa_();
   o.planes = planesActivos_().map(function (p) { return { id: p.id, nombre: p.nombre, descripcion: p.descripcion, precio: p.precio, sena: calcSena_(p, p.precio), senaTipo: p.senaTipo, senaValor: p.senaValor, precios: pm[p.id] || {} }; });
   return o;
@@ -444,6 +445,38 @@ function primeraClave_(p) {
     return login_({ email: email, clave: clave });
   });
 }
+/** «Olvidé mi clave»: manda un código de 6 números por mail al usuario registrado. Siempre responde igual (no revela si el mail existe). */
+function olvideClave_(p) {
+  var email = txt_(p.email, 120).toLowerCase(), cache = CacheService.getScriptCache(), ok = { enviado: true, mensaje: 'Si ese mail tiene acceso al panel, te mandamos un código. Revisá tu bandeja (y el spam).' };
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw err_('DATO_INVALIDO', 'Escribí tu mail');
+  var kq = 'rq:' + email, pedidos = Number(cache.get(kq) || 0);
+  if (pedidos >= 3) throw err_('DEMASIADOS_INTENTOS', 'Ya pediste varios códigos. Esperá una hora y probá de nuevo.');
+  cache.put(kq, String(pedidos + 1), 3600);
+  var u = porId_('Usuarios', email); if (!u || !u.activo) { log_(email, 'olvide_clave_desconocido', ''); return ok; }
+  var codigo = String(Math.floor(100000 + Math.random() * 900000));
+  cache.put('rc:' + email, JSON.stringify({ h: firmar_(codigo + ':' + email), n: 0 }), 900);
+  try {
+    if (MailApp.getRemainingDailyQuota() < 1) throw new Error('sin cuota de mails');
+    MailApp.sendEmail({ to: u.email, subject: 'Tu código para cambiar la clave del panel', name: config_().nombre || 'Panel',
+      htmlBody: '<p>Tu código para elegir una clave nueva es:</p><p style="font-size:28px;letter-spacing:6px"><b>' + codigo + '</b></p><p>Vale 15 minutos. Si no lo pediste vos, ignorá este mail: tu clave actual sigue funcionando.</p>' });
+  } catch (e) { log_(email, 'mail_error', e.message); throw err_('MAIL_ERROR', 'No pudimos mandar el mail. Probá de nuevo en un rato o escribinos por WhatsApp.'); }
+  log_(email, 'olvide_clave', ''); return ok;
+}
+/** Elige una clave nueva con el código que llegó por mail (vale 15 minutos y 5 intentos). */
+function restablecerClave_(p) {
+  var email = txt_(p.email, 120).toLowerCase(), codigo = String(p.codigo || '').replace(/\D/g, ''), clave = String(p.clave || ''), cache = CacheService.getScriptCache(), k = 'rc:' + email;
+  var rec = null; try { rec = JSON.parse(cache.get(k) || 'null'); } catch (e) {}
+  if (!rec) throw err_('CODIGO_INVALIDO', 'El código venció o no es correcto. Pedí uno nuevo.');
+  if (rec.n >= 5) { cache.remove(k); throw err_('CODIGO_INVALIDO', 'Demasiados intentos. Pedí un código nuevo.'); }
+  if (!iguales_(firmar_(codigo + ':' + email), rec.h)) { rec.n++; cache.put(k, JSON.stringify(rec), 900); log_(email, 'codigo_incorrecto', ''); throw err_('CODIGO_INVALIDO', 'El código no es correcto.'); }
+  if (clave.length < 8) throw err_('DATO_INVALIDO', 'La clave debe tener al menos 8 caracteres');
+  return conLock_(function () {
+    var cur = porId_('Usuarios', email); if (!cur || !cur.activo) throw err_('CODIGO_INVALIDO', 'El código venció o no es correcto. Pedí uno nuevo.');
+    var sal = Utilities.getUuid().replace(/-/g, '').slice(0, 16);
+    actualizar_('Usuarios', cur._row, { sal: sal, claveHash: hashClave_(clave, sal) }); cache.remove(k); cache.remove('lf:' + email); log_(email, 'clave_restablecida', '');
+    return login_({ email: email, clave: clave });
+  });
+}
 function autenticar_(token) {
   if (!token || token.indexOf('.') < 0) throw err_('NO_AUTORIZADO', 'Iniciá sesión');
   var partes = token.split('.');
@@ -691,6 +724,8 @@ function despachar_(p, esPost) {
   if (a === 'disponibilidad') return disponibilidad_(p);
   if (a === 'estado') return estado_(p);
   if (a === 'comprobante') { if (!esPost) throw err_('METODO', 'Usá POST'); return comprobante_(p); }
+  if (a === 'olvideClave') { if (!esPost) throw err_('METODO', 'Usá POST'); return olvideClave_(p); }
+  if (a === 'restablecerClave') { if (!esPost) throw err_('METODO', 'Usá POST'); return restablecerClave_(p); }
   if (a === 'primeraClave') { if (!esPost) throw err_('METODO', 'Usá POST'); return primeraClave_(p); }
   if (a === 'login') { if (!esPost) throw err_('METODO', 'Usá POST'); return login_(p); }
   if (a === 'reservar') { if (!esPost) throw err_('METODO', 'Usá POST'); return reservar_(p); }

@@ -45,7 +45,10 @@ require('fs').mkdirSync(OUT, { recursive: true });
   assert.equal(a.get({ action: 'config' }).data.nombre, 'Salón Demo Fiestas'); await shot('10-ajustes'); ok('ajustes se guardan');
   // recarga mantiene la sesión; salir
   await p.reload(); await p.waitForSelector('.tabs'); ok('la sesión sigue después de recargar'); await p.click('button[aria-label=Salir]'); await p.waitForSelector('form'); ok('salir');
+  await p.click('button:has-text("¿Olvidaste tu clave?")'); await p.waitForSelector('button:has-text("Mandarme el código")'); await p.fill('input[name=email]', 'dueno@mail.com'); await p.click('button:has-text("Mandarme el código")'); await p.waitForSelector('input[name=codigo]');
+  const cod = /<b>(\d{6})<\/b>/.exec(a.mails[a.mails.length - 1].htmlBody)[1]; await p.fill('input[name=codigo]', cod); await p.fill('input[name=clave]', 'clave-nueva-456'); await p.fill('input[name=repetir]', 'clave-nueva-456'); await p.click('button:has-text("Guardar y entrar")'); await p.waitForSelector('.tabs'); ok('olvidé mi clave: llega el código por mail, elige la clave nueva y entra');
+  await p.click('button[aria-label=Salir]'); await p.waitForSelector('form');
   // escritorio
-  await p.setViewportSize({ width: 1280, height: 800 }); await p.fill('input[name=email]', 'dueno@mail.com'); await p.fill('input[name=clave]', 'clave-segura-123'); await p.click('button:has-text("Entrar")'); await p.waitForSelector('.cal .day'); await shot('11-escritorio');
+  await p.setViewportSize({ width: 1280, height: 800 }); await p.fill('input[name=email]', 'dueno@mail.com'); await p.fill('input[name=clave]', 'clave-nueva-456'); await p.click('button:has-text("Entrar")'); await p.waitForSelector('.cal .day'); await shot('11-escritorio');
   assert.equal(errores.length, 0, errores.join('\n')); ok('sin errores en la consola'); await b.close(); srv.close(); console.log('\nPanel OK');
 })().catch(e => { console.error('FALLA', e.message); process.exit(1); });

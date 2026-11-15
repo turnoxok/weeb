@@ -287,5 +287,23 @@ t('precio del plan según el horario: reserva, cambio de plan y borrado', () => 
   assert(a.adm('admin.borrarPlan', { id: p1 }).ok);
 });
 
+t('olvidé mi clave: código por mail, clave nueva, límites y sin revelar mails', () => {
+  const a = nuevo(); const n0 = a.mails.length;
+  const x = a.post({ action: 'olvideClave', email: 'nadie@mail.com' }); assert(x.ok && x.data.enviado); assert.equal(a.mails.length, n0);
+  assert.equal(a.post({ action: 'olvideClave', email: 'no-es-mail' }).error, 'DATO_INVALIDO');
+  const r = a.post({ action: 'olvideClave', email: 'Dueno@Mail.com' }); assert(r.ok); assert.equal(a.mails.length, n0 + 1);
+  const m = a.mails[a.mails.length - 1]; assert.equal(m.to, 'dueno@mail.com'); const cod = /<b>(\d{6})<\/b>/.exec(m.htmlBody)[1];
+  assert.equal(a.post({ action: 'restablecerClave', email: 'dueno@mail.com', codigo: '000000', clave: 'otra-clave-123' }).error, 'CODIGO_INVALIDO');
+  assert.equal(a.post({ action: 'restablecerClave', email: 'dueno@mail.com', codigo: cod, clave: 'corta' }).error, 'DATO_INVALIDO');
+  const ok = a.post({ action: 'restablecerClave', email: 'dueno@mail.com', codigo: cod, clave: 'otra-clave-123' }); assert(ok.ok, JSON.stringify(ok)); assert(ok.data.token);
+  assert.equal(a.post({ action: 'login', email: 'dueno@mail.com', clave: 'clave-segura-123' }).error, 'CREDENCIALES');
+  assert(a.post({ action: 'login', email: 'dueno@mail.com', clave: 'otra-clave-123' }).ok);
+  assert.equal(a.post({ action: 'restablecerClave', email: 'dueno@mail.com', codigo: cod, clave: 'tercera-clave-123' }).error, 'CODIGO_INVALIDO');   // el código sirve una sola vez
+  assert.equal(a.get({ action: 'olvideClave', email: 'dueno@mail.com' }).error, 'METODO');
+  a.post({ action: 'olvideClave', email: 'dueno@mail.com' }); a.post({ action: 'olvideClave', email: 'dueno@mail.com' }); assert.equal(a.post({ action: 'olvideClave', email: 'dueno@mail.com' }).error, 'DEMASIADOS_INTENTOS');
+  const b = nuevo(); b.post({ action: 'olvideClave', email: 'dueno@mail.com' }); for (let i = 0; i < 5; i++) b.post({ action: 'restablecerClave', email: 'dueno@mail.com', codigo: '111111', clave: 'otra-clave-123' });
+  assert.equal(b.post({ action: 'restablecerClave', email: 'dueno@mail.com', codigo: '111111', clave: 'otra-clave-123' }).error, 'CODIGO_INVALIDO');
+});
+
 console.log(`\n${n} pruebas ok, ${fallos} con fallas`);
 process.exit(fallos ? 1 : 0);
