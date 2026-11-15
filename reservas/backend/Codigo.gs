@@ -23,6 +23,7 @@ var TABLAS = {
                 'total', 'sena', 'pagado', 'saldo', 'estado', 'origen', 'metodo', 'venceEn', 'extRef', 'planId', 'plan',
                 'compId', 'compUrl', 'compNombre', 'compTipo', 'compFecha', 'compOrigen', 'codigo'],
   Planes:      ['id', 'nombre', 'descripcion', 'precio', 'senaTipo', 'senaValor', 'orden', 'activo'],
+  Contenido:   ['id', 'seccion', 'orden', 'titulo', 'texto', 'imagen', 'etiqueta', 'activo'],   // lo que muestra la página de planes: incluido, adicionales, detalle (fotos), pasos, faq
   Precios:     ['id', 'planId', 'turnoId', 'precio'],             // precio de cada plan en cada horario (si falta, vale el precio base del plan)
   Servicio:    ['clave', 'valor'],                                    // lo carga tuweeb (el cliente solo lo ve): precio del sitio, ediciones, dominio…
   ServicioPagos: ['id', 'fecha', 'monto', 'nota'],                    // cada pago del cliente a tuweeb (cuota o total)
@@ -43,10 +44,21 @@ var CFG_DEF = {
   pagoTransferencia: true, pagoMercadoPago: false,
   transferTitular: '', transferCbu: '', transferAlias: '', transferBanco: '', transferNota: '',
   holdHorasTransferencia: 24, holdMinutosOnline: 20, autoConfirmarSinSena: true,
-  emailsActivos: true, emailAdmin: '', textoConfirmacion: '', urlReservas: ''
+  emailsActivos: true, emailAdmin: '', textoConfirmacion: '', urlReservas: '',
+  /* textos de la página de planes (se editan en el panel) */
+  pgEtiqueta: 'Planes y combos', pgTitulo: 'Elegí cómo querés festejar en *tu salón*', pgBajada: 'Combos pensados para que no tengas que preocuparte por nada. Si querés armar algo a tu medida, escribinos y lo hacemos.',
+  pgDestacado: 'El más elegido', pgBotonPlan: 'Reservar este combo',
+  pgCanjeTitulo: '¿Cuántos invitados van a ser?', pgCanjeTexto: 'Elegí el combo según la cantidad de invitados. Si más adelante se suman, pasás al combo siguiente y pagás solo la diferencia: no perdés la fecha ni lo que ya señaste. Entrá a «Mi reserva» con tu código y tocá «Ampliar mi plan».',
+  pgPromoPill: 'Promo por tiempo limitado', pgPromoTitulo: 'Congelá tu fecha', pgPromoTexto: 'Reservá con anticipación y congelá el precio de hoy con la seña. Con la promo pagás menos que en el horario más pedido.', pgPromoBoton: 'Congelá tu fecha',
+  pgIncluyeTitulo: 'Todo lo que incluye tu festejo', pgIncluyeSub: 'Vos disfrutás: del resto nos ocupamos nosotros.', pgAdicionalesTitulo: 'Podés sumar',
+  pgPasosTitulo: 'Reservar son tres pasos', pgPasosSub: 'Ves el calendario real, con los días que ya están ocupados. Sin esperar que alguien te conteste.', pgFaqTitulo: 'Preguntas que nos hacen todos',
+  pgCtaTexto: '¿Ya sabés la fecha? Mirá qué días hay lugar y dejá tu reserva.', pgCtaBoton: 'Ver disponibilidad', pgCtaWhatsapp: 'Escribinos por WhatsApp', pgNota: 'Consultá por fechas y promociones.'
 };
 var CFG_PUBLICA = ['nombre', 'logoUrl', 'colorPrincipal', 'whatsapp', 'direccion', 'mapsUrl', 'moneda', 'mesesAnticipacion', 'antelacionHoras',
-                   'pagoTransferencia', 'pagoMercadoPago', 'urlReservas'];
+                   'pagoTransferencia', 'pagoMercadoPago', 'urlReservas',
+                   'pgEtiqueta', 'pgTitulo', 'pgBajada', 'pgDestacado', 'pgBotonPlan', 'pgCanjeTitulo', 'pgCanjeTexto', 'pgPromoPill', 'pgPromoTitulo', 'pgPromoTexto', 'pgPromoBoton', 'pgIncluyeTitulo', 'pgIncluyeSub',
+                   'pgAdicionalesTitulo', 'pgPasosTitulo', 'pgPasosSub', 'pgFaqTitulo', 'pgCtaTexto', 'pgCtaBoton', 'pgCtaWhatsapp', 'pgNota'];
+var SECCIONES = { incluido: 1, adicionales: 1, detalle: 1, pasos: 1, faq: 1 };
 var CFG_MEMO = null;
 
 /* Lo que el cliente le paga a tuweeb por su sitio. Se carga en las pestañas Servicio y ServicioPagos de la hoja; en el panel el cliente solo lo ve. */
@@ -159,6 +171,7 @@ function configPublica_() {
     .map(function (s) { return { id: s.id, nombre: s.nombre, capacidad: s.capacidad }; });
   o.turnos = leer_('Turnos').filter(function (t) { return t.activo; }).map(function (t) { return { id: t.id, salonId: t.salonId, dias: String(t.dias), inicio: t.inicio, fin: t.fin, etiqueta: t.etiqueta, desde: t.desde, hasta: t.hasta }; });
   var pm = preciosMapa_();
+  o.contenido = leer_('Contenido').filter(function (x) { return x.activo && SECCIONES[x.seccion]; }).sort(function (a, b) { return a.orden - b.orden; }).map(function (x) { return { seccion: x.seccion, titulo: x.titulo, texto: x.texto, imagen: x.imagen, etiqueta: x.etiqueta }; });
   o.planes = planesActivos_().map(function (p) { return { id: p.id, nombre: p.nombre, descripcion: p.descripcion, precio: p.precio, sena: calcSena_(p, p.precio), senaTipo: p.senaTipo, senaValor: p.senaValor, precios: pm[p.id] || {} }; });
   return o;
 }
@@ -695,6 +708,25 @@ var ADMIN = {
     return conLock_(function () {
       var x = porId_('Planes', txt_(p.id)); if (!x) throw err_('NO_ENCONTRADO', 'Plan no encontrado');
       guardarPrecios_(x.id, {}); borrar_('Planes', x._row); invalidar_(); log_(u.email, 'plan_borrado', x.id); return { id: x.id, borrado: true };
+    });
+  },
+  'admin.contenido': function () { return leer_('Contenido').sort(function (a, b) { return a.orden - b.orden; }).map(limpio_); },
+  'admin.guardarContenido': function (p, u) {
+    var sec = txt_(p.seccion, 20); if (!SECCIONES[sec]) throw err_('DATO_INVALIDO', 'Sección desconocida');
+    var titulo = txt_(p.titulo, 160); if (!titulo) throw err_('DATO_INVALIDO', 'Falta el título');
+    var d = { seccion: sec, titulo: titulo, texto: txt_(p.texto, 600), imagen: txt_(p.imagen, 300), etiqueta: txt_(p.etiqueta, 60), orden: Math.round(Number(p.orden) || 0), activo: p.activo !== false };
+    if (d.imagen && !/^(https:\/\/|assets\/|\.\/assets\/)/i.test(d.imagen)) throw err_('DATO_INVALIDO', 'La imagen tiene que ser un link https o una foto del sitio (assets/...)');
+    return conLock_(function () {
+      var cur = p.id && porId_('Contenido', p.id);
+      if (!cur && !p.orden) d.orden = leer_('Contenido').filter(function (x) { return x.seccion === sec; }).length + 1;
+      if (cur) actualizar_('Contenido', cur._row, d); else { d.id = nuevoId_('CT'); agregar_('Contenido', d); cur = d; }
+      invalidar_(); log_(u.email, 'contenido', cur.id); return limpio_(porId_('Contenido', cur.id));
+    });
+  },
+  'admin.borrarContenido': function (p, u) {
+    return conLock_(function () {
+      var x = porId_('Contenido', txt_(p.id)); if (!x) throw err_('NO_ENCONTRADO', 'No encontrado');
+      borrar_('Contenido', x._row); invalidar_(); log_(u.email, 'contenido_borrado', x.id); return { id: x.id, borrado: true };
     });
   },
   'admin.servicio': function () { return servicio_(); },

@@ -305,5 +305,22 @@ t('olvidé mi clave: código por mail, clave nueva, límites y sin revelar mails
   assert.equal(b.post({ action: 'restablecerClave', email: 'dueno@mail.com', codigo: '111111', clave: 'otra-clave-123' }).error, 'CODIGO_INVALIDO');
 });
 
+t('página de planes: textos y bloques editables desde el panel, y públicos', () => {
+  const a = nuevo(); const pub = () => a.get({ action: 'config' }).data;
+  assert.equal(pub().pgBotonPlan, 'Reservar este combo'); assert.deepEqual(pub().contenido, []);
+  const g = a.adm('admin.guardarConfig', { valores: { pgTitulo: 'Festejá en *Mi Salón*', pgPromoTexto: 'Promo de verano' } }); assert(g.ok, JSON.stringify(g)); assert.equal(pub().pgTitulo, 'Festejá en *Mi Salón*');
+  assert.equal(a.adm('admin.guardarConfig', { valores: { pgInventado: 'x' } }).error, 'DATO_INVALIDO');
+  const f1 = a.adm('admin.guardarContenido', { seccion: 'faq', titulo: '¿Hay estacionamiento?', texto: 'Sí, en la puerta.' }); assert(f1.ok, JSON.stringify(f1));
+  const f2 = a.adm('admin.guardarContenido', { seccion: 'faq', titulo: '¿Se puede cambiar la fecha?', texto: 'Sí, hasta 3 días después.' }); assert.equal(f2.data.orden, 2);
+  const d1 = a.adm('admin.guardarContenido', { seccion: 'detalle', titulo: 'El salón', etiqueta: 'El lugar', imagen: 'assets/galeria/galeria-01.webp', orden: 1 }); assert(d1.ok);
+  assert.equal(a.adm('admin.guardarContenido', { seccion: 'detalle', titulo: 'X', imagen: 'javascript:alert(1)' }).error, 'DATO_INVALIDO');
+  assert.equal(a.adm('admin.guardarContenido', { seccion: 'otra', titulo: 'X' }).error, 'DATO_INVALIDO'); assert.equal(a.adm('admin.guardarContenido', { seccion: 'faq', titulo: '' }).error, 'DATO_INVALIDO');
+  assert.equal(pub().contenido.filter(x => x.seccion === 'faq').length, 2);
+  a.adm('admin.guardarContenido', { id: f2.data.id, seccion: 'faq', titulo: '¿Se puede cambiar la fecha?', activo: false }); assert.equal(pub().contenido.filter(x => x.seccion === 'faq').length, 1);
+  assert.equal(a.adm('admin.contenido').data.length, 3);
+  assert(a.adm('admin.borrarContenido', { id: f1.data.id }).ok); assert.equal(a.adm('admin.contenido').data.length, 2);
+  assert.equal(a.post({ action: 'admin.guardarContenido', seccion: 'faq', titulo: 'x' }).error, 'NO_AUTORIZADO');
+});
+
 console.log(`\n${n} pruebas ok, ${fallos} con fallas`);
 process.exit(fallos ? 1 : 0);

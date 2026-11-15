@@ -317,7 +317,7 @@ function movimientoNuevo() {
 
 /* ───── TURNOS, SALONES Y BLOQUEOS ───── */
 async function vTurnos(main) {
-  cargando(main); let bl; let pl = []; try { await cargarBase(); [bl, pl] = await Promise.all([api('admin.bloqueos'), api('admin.planes')]); } catch (e) { main.replaceChildren(h('p', { class: 'empty' }, e.message)); return; }
+  cargando(main); let bl, cfgPg, cont = []; let pl = []; try { await cargarBase(); [bl, pl, cfgPg, cont] = await Promise.all([api('admin.bloqueos'), api('admin.planes'), api('admin.config'), api('admin.contenido')]); } catch (e) { main.replaceChildren(h('p', { class: 'empty' }, e.message)); return; }
   const sen = t => t.senaTipo === 'pct' ? t.senaValor + '% de seña' : t.senaTipo === 'monto' ? money(t.senaValor) + ' de seña' : 'Sin seña', dias = t => h('span', { class: 'small' }, [1, 2, 3, 4, 5, 6, 0].map(d => String(t.dias).split(',').includes(String(d)) ? DIAS_L[d] : '·').join(' '));
   const bloques = S.salones.map(s => h('div', null, h('div', { class: 'bar', style: 'margin:1rem 0 .5rem' }, h('h3', null, s.nombre, s.activo ? '' : ' (inactivo)'), h('div', { class: 'row' }, h('button', { class: 'btn soft sm', onclick: () => salonForm(s) }, 'Editar salón'), h('button', { class: 'btn sm', onclick: () => turnoForm({ salonId: s.id }) }, '+ Turno'))),
     h('div', { class: 'list' }, S.turnos.filter(t => t.salonId === s.id).map(t => h('button', { class: 'item', onclick: () => turnoForm(t) }, h('div', { class: 'when' }, t.inicio, h('small', null, 'a ' + t.fin)), h('div', { class: 'main' }, h('b', null, (t.etiqueta || 'Turno') + ' · ' + horas(t.inicio, t.fin)), h('span', { class: 'muted small' }, money(t.precio) + ' · ' + sen(t) + (t.desde || t.hasta ? ` · ${t.desde || ''}→${t.hasta || ''}` : ''))), dias(t), t.activo ? '' : h('span', { class: 'chip' }, 'pausado'))),
@@ -327,6 +327,7 @@ async function vTurnos(main) {
     h('div', { class: 'bar', style: 'margin:1.6rem 0 .5rem' }, h('h3', null, 'Planes'), h('button', { class: 'btn sm', onclick: () => planForm({}) }, '+ Plan')),
     h('p', { class: 'muted small', style: 'margin-bottom:.5rem' }, 'Opcional. Si cargás planes, quien reserva elige día y horario y después un plan: el precio y la seña salen del plan. Sin planes, rige el precio de cada turno.'),
     pl.length ? h('div', { class: 'list' }, pl.map(p => h('button', { class: 'item', onclick: () => planForm(p) }, h('div', { class: 'main' }, h('b', null, p.nombre), h('span', { class: 'muted small' }, rangoPlan(p) + ' · ' + sen(p) + (p.descripcion ? ' · ' + p.descripcion : ''))), p.activo ? '' : h('span', { class: 'chip' }, 'pausado')))) : h('p', { class: 'empty' }, 'Todavía no hay planes. Las reservas usan el precio del turno.'),
+    paginaPlanes(cfgPg, cont),
     h('div', { class: 'bar', style: 'margin:1.6rem 0 .5rem' }, h('h3', null, 'Días y turnos bloqueados'), h('button', { class: 'btn sm', onclick: () => bloqueoNuevo() }, '+ Bloquear')),
     fut.length ? h('div', { class: 'list' }, fut.map(b => h('div', { class: 'item static' }, h('div', { class: 'main' }, h('b', null, b.hasta && b.hasta !== b.desde ? `${fcorta(b.desde)} → ${fcorta(b.hasta)}` : flarga(b.desde)), h('span', { class: 'muted small' }, (b.salonId === '*' ? 'Todos los salones' : salonDe(b.salonId)) + (b.turnoId !== '*' ? ' · un turno' : ' · todo el día') + (b.motivo ? ' · ' + b.motivo : ''))),
       h('button', { class: 'btn sm line', onclick: e => accion(e.target, async () => { await api('admin.desbloquear', { id: b.id }); vTurnos(main); }) }, 'Quitar')))) : h('p', { class: 'empty' }, 'No hay bloqueos cargados.'));
@@ -414,3 +415,46 @@ async function vAjustes(main) {
 }
 
 iniciar().catch(e => { $app().replaceChildren(h('p', { class: 'empty' }, 'No se pudo cargar el panel: ' + e.message)); });
+
+/* ───── Página de planes: todo lo que ve el cliente se edita acá ───── */
+const CAMPOS_PG = [
+  ['Arriba de todo', [['pgEtiqueta', 'Etiqueta chica'], ['pgTitulo', 'Título (las *palabras entre asteriscos* salen resaltadas)'], ['pgBajada', 'Bajada', 1]]],
+  ['Planes', [['pgDestacado', 'Cartel del plan del medio (vacío = sin cartel)'], ['pgBotonPlan', 'Texto del botón de cada plan']]],
+  ['Cambiar de plan', [['pgCanjeTitulo', 'Título'], ['pgCanjeTexto', 'Explicación', 1]]],
+  ['Promo (aparece sola si un horario tiene «promo» en su nombre)', [['pgPromoPill', 'Cartelito'], ['pgPromoTitulo', 'Título'], ['pgPromoTexto', 'Texto', 1], ['pgPromoBoton', 'Texto del botón']]],
+  ['Títulos de las secciones', [['pgIncluyeTitulo', 'Fotos y detalle: título'], ['pgIncluyeSub', 'Fotos y detalle: bajada'], ['pgAdicionalesTitulo', 'Adicionales: título'], ['pgPasosTitulo', 'Pasos: título'], ['pgPasosSub', 'Pasos: bajada', 1], ['pgFaqTitulo', 'Preguntas: título']]],
+  ['Final de la página', [['pgCtaTexto', 'Frase', 1], ['pgCtaBoton', 'Botón de disponibilidad'], ['pgCtaWhatsapp', 'Botón de WhatsApp'], ['pgNota', 'Nota al pie (después van el nombre y la dirección)']]]
+];
+const BLOQUES_PG = [
+  ['incluido', 'Incluido en todos los combos', 'Frases cortas que aparecen arriba, en etiquetas.', ['titulo']],
+  ['detalle', 'Fotos y detalle del festejo', 'Tarjetas con foto, título y texto.', ['etiqueta', 'titulo', 'texto', 'imagen']],
+  ['adicionales', 'Adicionales que se pueden sumar', 'Etiquetas con lo que se puede agregar.', ['titulo']],
+  ['pasos', 'Pasos para reservar', 'Los pasos que ve quien reserva.', ['titulo', 'texto']],
+  ['faq', 'Preguntas frecuentes', 'Pregunta y respuesta.', ['titulo', 'texto']]
+];
+function paginaPlanes(cfg, cont) {
+  return h('div', null,
+    h('div', { class: 'bar', style: 'margin:1.6rem 0 .5rem' }, h('h3', null, 'Página de planes'), h('a', { class: 'btn soft sm', href: '../planes.html', target: '_blank', rel: 'noopener' }, 'Ver la página')),
+    h('p', { class: 'muted small', style: 'margin-bottom:.6rem' }, 'La página de planes es la vitrina de lo que vendés y se arma sola con lo de acá: los planes y precios de arriba, más estos textos, fotos y preguntas. Cambiás algo y se ve al instante.'),
+    h('button', { class: 'btn soft block', style: 'margin-bottom:.8rem', onclick: () => textosPg(cfg) }, 'Editar títulos y textos'),
+    ...BLOQUES_PG.map(([sec, tit, ayuda, campos]) => { const l = cont.filter(x => x.seccion === sec).sort((a, b) => a.orden - b.orden);
+      return h('div', { style: 'margin-bottom:1rem' }, h('div', { class: 'bar', style: 'margin:.6rem 0 .3rem' }, h('b', null, tit), h('button', { class: 'btn sm', onclick: () => bloquePg({ seccion: sec }, tit, campos) }, '+ Agregar')),
+        h('p', { class: 'muted small', style: 'margin-bottom:.4rem' }, ayuda),
+        l.length ? h('div', { class: 'list' }, l.map(x => h('button', { class: 'item', onclick: () => bloquePg(x, tit, campos) }, h('div', { class: 'main' }, h('b', null, x.titulo), x.texto || x.etiqueta ? h('span', { class: 'muted small' }, [x.etiqueta, x.texto].filter(Boolean).join(' · ').slice(0, 90)) : ''), x.activo ? '' : h('span', { class: 'chip' }, 'oculto')))) : h('p', { class: 'empty' }, 'Todavía no hay nada. Esta parte no se muestra en la página.'));
+    }));
+}
+function textosPg(cfg) {
+  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f), valores = {}; CAMPOS_PG.forEach(([, cs]) => cs.forEach(([k]) => { valores[k] = x[k] || ''; })); accion($('button.btn.block', f), async () => { await api('admin.guardarConfig', { valores }); toast('Textos guardados', 'ok'); cerrar(); render(); }); } },
+    ...CAMPOS_PG.map(([tit, cs]) => h('div', { style: 'margin-bottom:.4rem' }, h('h4', { style: 'margin:.8rem 0 .4rem' }, tit), ...cs.map(([k, et, area]) => campo(et, area ? h('textarea', { name: k, rows: 3, maxlength: '500' }, cfg[k] || '') : inp(k, { value: cfg[k] || '', maxlength: '500' }))))),
+    h('button', { class: 'btn block' }, 'Guardar textos'));
+  sheet('Textos de la página de planes', f);
+}
+function bloquePg(x, tit, campos) {
+  const nuevo = !x.id, ET = { titulo: x.seccion === 'faq' ? 'Pregunta' : x.seccion === 'pasos' ? 'Paso' : 'Título', texto: x.seccion === 'faq' ? 'Respuesta' : 'Texto', etiqueta: 'Etiqueta chica (arriba del título)', imagen: 'Foto (link https:// o una foto del sitio, ej. assets/galeria/galeria-01.webp)' };
+  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const d = datos(f); accion($('button.btn.block', f), async () => { await api('admin.guardarContenido', { id: x.id, seccion: x.seccion, titulo: d.titulo, texto: d.texto, etiqueta: d.etiqueta, imagen: d.imagen, orden: d.orden, activo: d.activo }); toast('Guardado', 'ok'); cerrar(); render(); }); } },
+    ...campos.map(k => campo(ET[k], k === 'texto' ? h('textarea', { name: k, rows: 4, maxlength: '600' }, x[k] || '') : inp(k, { required: k === 'titulo', maxlength: k === 'imagen' ? '300' : '160', value: x[k] || '' }))),
+    h('div', { class: 'grid2' }, campo('Orden (1, 2, 3…)', inp('orden', { type: 'number', value: x.orden || '' })), h('label', { class: 'row', style: 'align-self:end;margin-bottom:1rem' }, inp('activo', { type: 'checkbox', checked: x.activo !== false }), 'Se muestra')),
+    h('button', { class: 'btn block' }, 'Guardar'),
+    nuevo ? '' : h('button', { type: 'button', class: 'btn line block', style: 'margin-top:.6rem', onclick: e => { if (!confirm('¿Borrar esto de la página de planes?')) return; accion(e.target, async () => { await api('admin.borrarContenido', { id: x.id }); toast('Borrado', 'ok'); cerrar(); render(); }); } }, 'Borrar'));
+  sheet((nuevo ? 'Agregar · ' : 'Editar · ') + tit, f);
+}
