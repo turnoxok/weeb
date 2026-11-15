@@ -57,16 +57,22 @@ async function calendario() {
   if (S.fecha && mesDe(S.fecha) === S.mes) horarios();
 }
 function calendario2() { setPaso(2); document.querySelectorAll('.cal button').forEach(b => b.classList.remove('sel')); document.querySelectorAll('.cal button').forEach(b => { if (b.getAttribute('aria-label') && b.getAttribute('aria-label').startsWith(flarga(S.fecha) + ' ')) b.classList.add('sel'); }); horarios(); }
+/** Precio y seña de un plan en el horario elegido (si el plan tiene precio puntual para ese horario, vale ese). */
+function valePlan(p, turnoId) {
+  const pr = p.precios && p.precios[turnoId] != null ? Number(p.precios[turnoId]) : p.precio;
+  const sena = p.senaTipo === 'pct' ? Math.round(pr * Math.min(100, Math.max(0, p.senaValor)) / 100) : p.senaTipo === 'monto' ? Math.min(pr, p.senaValor) : (p.senaTipo ? 0 : p.sena);
+  return { ...p, precio: pr, sena };
+}
 function horarios() {
   const sl = (S.disp.dias[S.fecha]) || [], multi = (S.pub.salones || []).length > 1, nom = id => ((S.pub.salones || []).find(s => s.id === id) || {}).nombre;
-  const cont = $('#horarios'); cont.replaceChildren(h('h2', { class: 't' }, 'Horarios del ' + flarga(S.fecha)), h('div', { class: 'slots' }, sl.map(s => s.estado !== 'libre' ? h('div', { class: 'slot off', 'aria-disabled': 'true' }, h('div', null, h('b', null, `${s.inicio} a ${s.fin} hs`), h('span', { class: 'muted small' }, (s.etiqueta ? s.etiqueta : '') + (multi ? ' · ' + nom(s.salonId) : ''))), h('div', { class: 'p muted' }, 'No disponible')) : h('button', { class: 'slot', onclick: () => { S.slot = s; S.plan = null; formulario(); } }, h('div', null, h('b', null, `${s.inicio} a ${s.fin} hs`), h('span', { class: 'muted small' }, (s.etiqueta ? s.etiqueta : '') + (multi ? ' · ' + nom(s.salonId) : ''))), (S.pub.planes || []).length ? h('div', { class: 'p small' }, 'Elegir') : h('div', { class: 'p' }, money(s.precio), h('div', { class: 'muted small', style: 'font-weight:600' }, s.sena > 0 ? 'Seña ' + money(s.sena) : 'Sin seña'))))));
+  const cont = $('#horarios'); cont.replaceChildren(h('h2', { class: 't' }, 'Horarios del ' + flarga(S.fecha)), h('div', { class: 'slots' }, sl.map(s => s.estado !== 'libre' ? h('div', { class: 'slot off', 'aria-disabled': 'true' }, h('div', null, h('b', null, `${s.inicio} a ${s.fin} hs`), h('span', { class: 'muted small' }, (s.etiqueta ? s.etiqueta : '') + (multi ? ' · ' + nom(s.salonId) : ''))), h('div', { class: 'p muted' }, 'No disponible')) : h('button', { class: 'slot', onclick: () => { S.slot = s; S.plan = null; formulario(); } }, h('div', null, h('b', null, `${s.inicio} a ${s.fin} hs`), h('span', { class: 'muted small' }, (s.etiqueta ? s.etiqueta : '') + (multi ? ' · ' + nom(s.salonId) : ''))), (S.pub.planes || []).length ? h('div', { class: 'p small' }, 'Desde ' + money(Math.min(...S.pub.planes.map(p => valePlan(p, s.turnoId).precio)))) : h('div', { class: 'p' }, money(s.precio), h('div', { class: 'muted small', style: 'font-weight:600' }, s.sena > 0 ? 'Seña ' + money(s.sena) : 'Sin seña'))))));
   cont.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /* ───── 2. datos y confirmación ───── */
 function formulario(error) {
   const s = S.slot, metodos = [S.pub.pagoTransferencia && ['transferencia', 'Transferencia bancaria', 'Te pasamos los datos y la reserva queda guardada para vos.'], S.pub.pagoMercadoPago && ['mercadopago', 'Mercado Pago', 'Pagás online con tarjeta o saldo.']].filter(Boolean);
-  const planes = S.pub.planes || [], tieneP = planes.length > 0, cur = () => tieneP ? (S.plan || null) : s;
+  const planes = (S.pub.planes || []).map(p => valePlan(p, s.turnoId)), tieneP = planes.length > 0, cur = () => tieneP ? (S.plan || null) : s;
   const totEl = h('div', null), payBox = h('div', { class: 'pay' }), goBtn = h('button', { class: 'btn block', id: 'go' }, 'Confirmar reserva');
   const act = () => {
     const c = cur(); totEl.textContent = c ? 'Total ' + money(c.precio) + (c.sena > 0 ? ' · Seña ' + money(c.sena) : ' · Sin seña') : 'Elegí un plan para ver el precio';

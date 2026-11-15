@@ -273,5 +273,19 @@ t('el dueño amplía el plan desde el panel: total y seña nuevos, lo pagado se 
   assert.equal(a.adm('admin.actualizarReserva', { id: r.id, planId: 'PLno' }).error, 'PLAN_INVALIDO');
 });
 
+t('precio del plan según el horario: reserva, cambio de plan y borrado', () => {
+  const a = nuevo(); const [t1, t2] = conTurnos(a); const [p1, p2] = planes3(a);
+  const g = a.adm('admin.guardarPlan', { id: p2, nombre: 'Órbita', precio: 260000, senaTipo: 'pct', senaValor: 30, precios: { [t2]: 330000, [t1]: 290000, TXX: 5 } });
+  assert(g.ok, JSON.stringify(g)); assert.deepEqual(g.data.precios, { [t1]: 290000, [t2]: 330000 });
+  const pub = a.get({ action: 'config' }).data.planes.find(p => p.id === p2); assert.equal(pub.precios[t2], 330000); assert.equal(pub.precio, 260000);
+  const r1 = a.post(cli({ turnoId: t2, planId: p2 })); assert(r1.ok, JSON.stringify(r1)); assert.equal(r1.data.total, 330000); assert.equal(r1.data.sena, 99000);
+  const r0 = a.post(cli({ turnoId: t1, planId: p1, nombre: 'Otra Persona', telefono: '1155550000', email: 'otra@mail.com', fecha: '2026-11-14' })); assert.equal(r0.data.total, 180000);
+  const c = a.adm('admin.actualizarReserva', { id: r0.data.id, planId: p2 }); assert(c.ok, JSON.stringify(c)); const rr = c.data.reserva || c.data; assert.equal(rr.total, 290000); assert.equal(rr.sena, 87000);
+  const m = a.adm('admin.crearReserva', { fecha: '2026-11-21', turnoId: t2, nombre: 'Rosa Maria', planId: p2 }); assert(m.ok, JSON.stringify(m)); assert.equal((m.data.reserva || m.data).total, 330000);
+  assert.equal(a.adm('admin.planes').data.find(p => p.id === p2).precios[t1], 290000);
+  a.adm('admin.guardarPlan', { id: p2, nombre: 'Órbita', precio: 260000, precios: {} }); assert.equal(Object.keys(a.get({ action: 'config' }).data.planes.find(p => p.id === p2).precios).length, 0);
+  assert(a.adm('admin.borrarPlan', { id: p1 }).ok);
+});
+
 console.log(`\n${n} pruebas ok, ${fallos} con fallas`);
 process.exit(fallos ? 1 : 0);

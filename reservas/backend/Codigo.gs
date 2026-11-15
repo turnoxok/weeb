@@ -23,6 +23,7 @@ var TABLAS = {
                 'total', 'sena', 'pagado', 'saldo', 'estado', 'origen', 'metodo', 'venceEn', 'extRef', 'planId', 'plan',
                 'compId', 'compUrl', 'compNombre', 'compTipo', 'compFecha', 'compOrigen', 'codigo'],
   Planes:      ['id', 'nombre', 'descripcion', 'precio', 'senaTipo', 'senaValor', 'orden', 'activo'],
+  Precios:     ['id', 'planId', 'turnoId', 'precio'],             // precio de cada plan en cada horario (si falta, vale el precio base del plan)
   Servicio:    ['clave', 'valor'],                                    // lo carga tuweeb (el cliente solo lo ve): precio del sitio, ediciones, dominio…
   ServicioPagos: ['id', 'fecha', 'monto', 'nota'],                    // cada pago del cliente a tuweeb (cuota o total)
   Pagos:       ['id', 'reservaId', 'fecha', 'monto', 'metodo', 'nota', 'creado', 'usuario'],
@@ -156,7 +157,8 @@ function configPublica_() {
   CFG_PUBLICA.forEach(function (k) { o[k] = c[k]; });
   o.salones = leer_('Salones').filter(function (s) { return s.activo; }).sort(function (a, b) { return a.orden - b.orden; })
     .map(function (s) { return { id: s.id, nombre: s.nombre, capacidad: s.capacidad }; });
-  o.planes = planesActivos_().map(function (p) { return { id: p.id, nombre: p.nombre, descripcion: p.descripcion, precio: p.precio, sena: calcSena_(p, p.precio) }; });
+  var pm = preciosMapa_();
+  o.planes = planesActivos_().map(function (p) { return { id: p.id, nombre: p.nombre, descripcion: p.descripcion, precio: p.precio, sena: calcSena_(p, p.precio), senaTipo: p.senaTipo, senaValor: p.senaValor, precios: pm[p.id] || {} }; });
   return o;
 }
 
@@ -190,6 +192,14 @@ function ocupante_(reservas, salonId, fecha, ini, fin, ignorarId) {
 }
 /** Planes (combos) que se pueden elegir al reservar. Si no hay ninguno activo, el precio sale del turno como siempre. */
 function planesActivos_() { return leer_('Planes').filter(function (p) { return p.activo; }).sort(function (a, b) { return a.orden - b.orden; }); }
+/** Precio de cada plan por horario: { planId: { turnoId: precio } }. */
+function preciosMapa_() {
+  var m = {}; leer_('Precios').forEach(function (x) { (m[x.planId] = m[x.planId] || {})[x.turnoId] = x.precio; }); return m;
+}
+/** Lo que vale un plan en un horario: el precio puntual si está cargado, si no el precio base del plan. */
+function precioPlan_(plan, turnoId, mapa) {
+  var m = (mapa || preciosMapa_())[plan.id]; return m && m[turnoId] != null && m[turnoId] !== '' ? m[turnoId] : plan.precio;
+}
 function calcSena_(t, total) {
   var s = 0;
   if (t.senaTipo === 'pct') s = Math.round(total * Math.min(100, Math.max(0, t.senaValor)) / 100);
@@ -311,7 +321,7 @@ function reservar_(p) {
       plan = planes.filter(function (x) { return x.id === txt_(p.planId); })[0];
       if (!plan) throw err_('PLAN_INVALIDO', 'Elegí un plan para tu fiesta');
     }
-    var total = plan ? plan.precio : t.precio, sena = calcSena_(plan || t, total), metodo = '', estado, vence = '';
+    var total = plan ? precioPlan_(plan, t.id) : t.precio, sena = calcSena_(plan || t, total), metodo = '', estado, vence = '';
     if (sena > 0) {
       metodo = p.metodo === 'mercadopago' ? 'mercadopago' : 'transferencia';
       if (metodo === 'mercadopago' && !cfg.pagoMercadoPago) throw err_('METODO_NO_DISPONIBLE', 'Ese medio de pago no está habilitado');
@@ -463,6 +473,15 @@ function validarPlan_(p) {
   return { nombre: nombre, descripcion: txt_(p.descripcion, 400), precio: Math.max(0, num_(p.precio || 0, 'precio')), senaTipo: tipo,
     senaValor: tipo === 'ninguna' ? 0 : Math.max(0, num_(p.senaValor || 0, 'seña')), orden: Math.round(Number(p.orden) || 0), activo: p.activo !== false };
 }
+/** Reemplaza los precios por horario de un plan. Solo valen horarios que existen y montos mayores a 0; el resto usa el precio base. */
+function guardarPrecios_(planId, precios) {
+  var validos = {}; leer_('Turnos').forEach(function (t) { validos[t.id] = 1; });
+  leer_('Precios').filter(function (x) { return x.planId === planId; }).sort(function (a, b) { return b._row - a._row; }).forEach(function (x) { borrar_('Precios', x._row); });
+  Object.keys(precios).forEach(function (tid) {
+    var v = Math.round(Number(precios[tid])); if (!validos[tid] || !(v > 0)) return;
+    agregar_('Precios', { id: nuevoId_('PR'), planId: planId, turnoId: tid, precio: v });
+  });
+}
 /** Estado de lo que el cliente le paga a tuweeb por su sitio (solo lectura para el cliente). */
 function servicio_() {
   var c = {}, k; for (k in SERVICIO_DEF) c[k] = SERVICIO_DEF[k];
@@ -494,7 +513,7 @@ function adminCrearReserva_(p, u) {
     if (!p.ignorarBloqueo && bloqueoDe_(leer_('Bloqueos'), t.salonId, p.fecha, t.id)) throw err_('BLOQUEADO', 'Ese turno está bloqueado');
     var plan = p.planId ? porId_('Planes', txt_(p.planId)) : null;
     if (p.planId && !plan) throw err_('PLAN_INVALIDO', 'Plan inexistente');
-    var total = p.total != null && p.total !== '' ? Math.max(0, num_(p.total, 'total')) : (plan ? plan.precio : t.precio);
+    var total = p.total != null && p.total !== '' ? Math.max(0, num_(p.total, 'total')) : (plan ? precioPlan_(plan, t.id) : t.precio);
     var sena = p.sena != null && p.sena !== '' ? Math.max(0, Math.min(total, num_(p.sena, 'seña'))) : calcSena_(plan || t, total);
     var iso = new Date(ahora_()).toISOString();
     var r = { id: nuevoId_('R'), codigo: nuevoCodigo_(), creada: iso, actualizada: iso, salonId: t.salonId, fecha: p.fecha, turnoId: t.id, inicio: t.inicio, fin: t.fin, nombre: nombre, telefono: txt_(p.telefono, 30),
@@ -558,7 +577,7 @@ var ADMIN = {
       if (p.personas != null) c.personas = Math.max(0, Math.round(num_(p.personas, 'personas')));
       if (p.planId && p.planId !== r.planId) {                              // ampliar / cambiar de plan: el total y la seña pasan a los del plan nuevo; lo ya pagado se mantiene
         var pl = porId_('Planes', txt_(p.planId, 40)); if (!pl) throw err_('PLAN_INVALIDO', 'Ese plan no existe');
-        c.planId = pl.id; c.plan = pl.nombre; if (p.total == null) c.total = pl.precio; if (p.sena == null) c.sena = calcSena_(pl, pl.precio);
+        c.planId = pl.id; c.plan = pl.nombre; var pp = precioPlan_(pl, r.turnoId); if (p.total == null) c.total = pp; if (p.sena == null) c.sena = calcSena_(pl, pp);
       }
       if (p.total != null) c.total = Math.max(0, num_(p.total, 'total'));
       if (p.sena != null) c.sena = Math.max(0, num_(p.sena, 'seña'));
@@ -629,19 +648,20 @@ var ADMIN = {
       borrar_('Turnos', t._row); invalidar_(); log_(u.email, 'turno_borrado', t.id); return { id: t.id, borrado: true };
     });
   },
-  'admin.planes': function () { return leer_('Planes').sort(function (a, b) { return a.orden - b.orden; }).map(limpio_); },
+  'admin.planes': function () { var pm = preciosMapa_(); return leer_('Planes').sort(function (a, b) { return a.orden - b.orden; }).map(function (x) { var o = limpio_(x); o.precios = pm[x.id] || {}; return o; }); },
   'admin.guardarPlan': function (p, u) {
     var d = validarPlan_(p);
     return conLock_(function () {
       var cur = p.id && porId_('Planes', p.id);
       if (cur) actualizar_('Planes', cur._row, d); else { d.id = nuevoId_('PL'); agregar_('Planes', d); cur = d; }
-      invalidar_(); log_(u.email, 'plan', cur.id); return limpio_(porId_('Planes', cur.id));
+      if (p.precios && typeof p.precios === 'object') guardarPrecios_(cur.id, p.precios);
+      invalidar_(); log_(u.email, 'plan', cur.id); var o = limpio_(porId_('Planes', cur.id)); o.precios = preciosMapa_()[cur.id] || {}; return o;
     });
   },
   'admin.borrarPlan': function (p, u) {   // las reservas ya hechas guardan el nombre y el precio del plan, así que se puede borrar sin perder nada
     return conLock_(function () {
       var x = porId_('Planes', txt_(p.id)); if (!x) throw err_('NO_ENCONTRADO', 'Plan no encontrado');
-      borrar_('Planes', x._row); invalidar_(); log_(u.email, 'plan_borrado', x.id); return { id: x.id, borrado: true };
+      guardarPrecios_(x.id, {}); borrar_('Planes', x._row); invalidar_(); log_(u.email, 'plan_borrado', x.id); return { id: x.id, borrado: true };
     });
   },
   'admin.servicio': function () { return servicio_(); },
