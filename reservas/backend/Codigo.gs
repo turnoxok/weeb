@@ -21,7 +21,7 @@ var TABLAS = {
   Bloqueos:    ['id', 'desde', 'hasta', 'salonId', 'turnoId', 'motivo', 'creado'],
   Reservas:    ['id', 'creada', 'actualizada', 'salonId', 'fecha', 'turnoId', 'inicio', 'fin', 'nombre', 'telefono', 'email', 'personas', 'nota',
                 'total', 'sena', 'pagado', 'saldo', 'estado', 'origen', 'metodo', 'venceEn', 'extRef', 'planId', 'plan',
-                'compId', 'compUrl', 'compNombre', 'compTipo', 'compFecha', 'compOrigen'],
+                'compId', 'compUrl', 'compNombre', 'compTipo', 'compFecha', 'compOrigen', 'codigo'],
   Planes:      ['id', 'nombre', 'descripcion', 'precio', 'senaTipo', 'senaValor', 'orden', 'activo'],
   Servicio:    ['clave', 'valor'],                                    // lo carga tuweeb (el cliente solo lo ve): precio del sitio, ediciones, dominio…
   ServicioPagos: ['id', 'fecha', 'monto', 'nota'],                    // cada pago del cliente a tuweeb (cuota o total)
@@ -42,10 +42,10 @@ var CFG_DEF = {
   pagoTransferencia: true, pagoMercadoPago: false,
   transferTitular: '', transferCbu: '', transferAlias: '', transferBanco: '', transferNota: '',
   holdHorasTransferencia: 24, holdMinutosOnline: 20, autoConfirmarSinSena: true,
-  emailsActivos: true, emailAdmin: '', textoConfirmacion: ''
+  emailsActivos: true, emailAdmin: '', textoConfirmacion: '', urlReservas: ''
 };
 var CFG_PUBLICA = ['nombre', 'logoUrl', 'colorPrincipal', 'whatsapp', 'direccion', 'mapsUrl', 'moneda', 'mesesAnticipacion', 'antelacionHoras',
-                   'pagoTransferencia', 'pagoMercadoPago'];
+                   'pagoTransferencia', 'pagoMercadoPago', 'urlReservas'];
 var CFG_MEMO = null;
 
 /* Lo que el cliente le paga a tuweeb por su sitio. Se carga en las pestañas Servicio y ServicioPagos de la hoja; en el panel el cliente solo lo ve. */
@@ -72,6 +72,15 @@ function solapan_(i1, f1, i2, f2) { var a = rango_(i1, f1), b = rango_(i2, f2); 
 function dow_(f) { var p = f.split('-').map(Number); return new Date(Date.UTC(p[0], p[1] - 1, p[2])).getUTCDay(); }
 function sumarMeses_(f, n) { var p = f.split('-').map(Number); return new Date(Date.UTC(p[0], p[1] - 1 + n, p[2])).toISOString().slice(0, 10); }
 function inicioMs_(fecha, ini) { return Date.parse(fecha + 'T' + ini + ':00' + OFFSET); }
+/** Código corto para el cliente: 6 letras MAYÚSCULAS y números sin confusiones (sin 0/O ni 1/I/L). */
+var COD_ABC = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+function nuevoCodigo_() {
+  var usados = {}; leer_('Reservas').forEach(function (r) { if (r.codigo) usados[r.codigo] = 1; });
+  for (var n = 0; n < 50; n++) { var c = ''; for (var i = 0; i < 6; i++) c += COD_ABC.charAt(Math.floor(Math.random() * COD_ABC.length)); if (!usados[c]) return c; }
+  throw err_('ERROR', 'No se pudo generar el código');
+}
+function normCodigo_(v) { return String(v == null ? '' : v).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12); }
+function asegurarCodigo_(r) { if (r && !r.codigo) { r.codigo = nuevoCodigo_(); actualizar_('Reservas', r._row, { codigo: r.codigo }); } return r; }
 function nuevoId_(pref) { return pref + Utilities.getUuid().replace(/-/g, '').slice(0, 10); }
 function num_(v, nombre) { var n = Number(v); if (!isFinite(n)) throw err_('DATO_INVALIDO', 'Número inválido: ' + nombre); return n; }
 
@@ -267,7 +276,9 @@ function comprobante_(p) {
 
 function reservaPublica_(r, extra) {
   var cfg = config_(), o = { id: r.id, estado: r.estado, fecha: r.fecha, inicio: r.inicio, fin: r.fin, salonId: r.salonId, nombre: r.nombre,
-    total: r.total, sena: r.sena, pagado: r.pagado, saldo: r.saldo, venceEn: r.venceEn, metodo: r.metodo, plan: r.plan || '', comprobante: compPublico_(r) };
+    total: r.total, sena: r.sena, pagado: r.pagado, saldo: r.saldo, venceEn: r.venceEn, metodo: r.metodo, plan: r.plan || '', comprobante: compPublico_(r),
+    codigo: r.codigo || '', personas: r.personas || 0, nota: r.nota || '' };
+  o.nombre = String(r.nombre || '').split(' ')[0];   // al consultar solo se muestra el primer nombre
   if (r.estado === 'pendiente' && r.metodo === 'transferencia') {
     o.transferencia = { titular: cfg.transferTitular, cbu: cfg.transferCbu, alias: cfg.transferAlias, banco: cfg.transferBanco, nota: cfg.transferNota, importe: r.sena - r.pagado };
   }
@@ -309,7 +320,7 @@ function reservar_(p) {
       vence = new Date(ahora_() + (metodo === 'mercadopago' ? cfg.holdMinutosOnline * 60000 : cfg.holdHorasTransferencia * 3600000)).toISOString();
     } else estado = cfg.autoConfirmarSinSena ? 'confirmada' : 'pendiente';
     var iso = new Date(ahora_()).toISOString();
-    var r = { id: nuevoId_('R'), creada: iso, actualizada: iso, salonId: t.salonId, fecha: p.fecha, turnoId: t.id, inicio: t.inicio, fin: t.fin, nombre: nombre, telefono: tel, email: mail,
+    var r = { id: nuevoId_('R'), codigo: nuevoCodigo_(), creada: iso, actualizada: iso, salonId: t.salonId, fecha: p.fecha, turnoId: t.id, inicio: t.inicio, fin: t.fin, nombre: nombre, telefono: tel, email: mail,
       personas: personas, nota: txt_(p.nota, 400), total: total, sena: sena, pagado: 0, saldo: total, estado: estado, origen: 'web', metodo: metodo, venceEn: vence, extRef: '', planId: plan ? plan.id : '', plan: plan ? plan.nombre : '' };
     agregar_('Reservas', r); invalidar_(); log_('web', 'reservar', r.id + ' ' + r.fecha + ' ' + r.inicio);
     notificar_(r, estado === 'confirmada' ? 'confirmada' : 'pendiente');
@@ -317,8 +328,14 @@ function reservar_(p) {
   });
 }
 function estado_(p) {
-  var id = txt_(p.id, 40), r = id && porId_('Reservas', id);
-  if (!r) throw err_('NO_ENCONTRADA', 'Reserva no encontrada');
+  var id = txt_(p.id, 40), cod = normCodigo_(p.codigo), r = null, cache = CacheService.getScriptCache();
+  if (id) { r = porId_('Reservas', id); if (r) asegurarCodigo_(r); }
+  else if (cod) {
+    if (Number(cache.get('cf') || 0) >= 40) throw err_('DEMASIADOS_INTENTOS', 'Hubo demasiados intentos. Probá de nuevo en unos minutos.');
+    r = leer_('Reservas').filter(function (x) { return x.codigo === cod; })[0] || null;
+    if (!r) cache.put('cf', String(Number(cache.get('cf') || 0) + 1), 900);
+  }
+  if (!r) throw err_('NO_ENCONTRADA', 'No encontramos esa reserva. Revisá el código.');
   if (r.estado === 'pendiente' && r.venceEn && Date.parse(r.venceEn) <= ahora_()) r.estado = 'vencida';
   return reservaPublica_(r);
 }
@@ -355,10 +372,12 @@ function notificar_(r, evento) {
     if (MailApp.getRemainingDailyQuota() < 4) return;
     var asunto = (evento === 'confirmada' ? 'Reserva confirmada' : 'Reserva recibida') + ' · ' + cfg.nombre;
     var filas = '<p>Fecha: <b>' + r.fecha + '</b> · ' + r.inicio + ' a ' + r.fin + ' hs</p>' + (r.plan ? '<p>Plan: <b>' + r.plan + '</b></p>' : '') + '<p>Total: $' + r.total + (r.sena ? ' · Seña: $' + r.sena : '') + ' · Pagado: $' + r.pagado + '</p>';
+    asegurarCodigo_(r);
+    var link = cfg.urlReservas ? cfg.urlReservas + (cfg.urlReservas.indexOf('?') < 0 ? '?' : '&') + 'codigo=' + r.codigo : '';
     var cuerpo = '<div style="font-family:Arial,sans-serif;max-width:520px">' + (cfg.logoUrl ? '<img src="' + cfg.logoUrl + '" style="max-height:60px"><br>' : '') +
       '<h2>' + asunto + '</h2><p>Hola ' + r.nombre + '!</p>' + filas +
       (evento === 'pendiente' && r.metodo === 'transferencia' ? '<p>Para confirmar, transferí la seña a <b>' + cfg.transferAlias + '</b> (' + cfg.transferTitular + ') y mandanos el comprobante.</p>' : '') +
-      (cfg.textoConfirmacion ? '<p>' + cfg.textoConfirmacion + '</p>' : '') + '<p>Código de reserva: ' + r.id + '</p><hr><small>Hecho con tuweeb</small></div>';
+      (cfg.textoConfirmacion ? '<p>' + cfg.textoConfirmacion + '</p>' : '') + '<p style="font-size:18px">Tu código de reserva: <b style="letter-spacing:2px">' + r.codigo + '</b></p>' + (link ? '<p><a href="' + link + '" style="background:#e8693a;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;display:inline-block">Ver el estado de mi reserva</a></p>' : '') + '<hr><small>Hecho con tuweeb</small></div>';
     if (r.email) MailApp.sendEmail({ to: r.email, subject: asunto, htmlBody: cuerpo, name: cfg.nombre });
     if (cfg.emailAdmin) MailApp.sendEmail({ to: cfg.emailAdmin, subject: '[Panel] ' + asunto + ' - ' + r.nombre, htmlBody: cuerpo, name: 'Weeb Reservas' });
   } catch (e) { log_('sistema', 'mail_error', e.message); }
@@ -478,7 +497,7 @@ function adminCrearReserva_(p, u) {
     var total = p.total != null && p.total !== '' ? Math.max(0, num_(p.total, 'total')) : (plan ? plan.precio : t.precio);
     var sena = p.sena != null && p.sena !== '' ? Math.max(0, Math.min(total, num_(p.sena, 'seña'))) : calcSena_(plan || t, total);
     var iso = new Date(ahora_()).toISOString();
-    var r = { id: nuevoId_('R'), creada: iso, actualizada: iso, salonId: t.salonId, fecha: p.fecha, turnoId: t.id, inicio: t.inicio, fin: t.fin, nombre: nombre, telefono: txt_(p.telefono, 30),
+    var r = { id: nuevoId_('R'), codigo: nuevoCodigo_(), creada: iso, actualizada: iso, salonId: t.salonId, fecha: p.fecha, turnoId: t.id, inicio: t.inicio, fin: t.fin, nombre: nombre, telefono: txt_(p.telefono, 30),
       email: txt_(p.email, 120).toLowerCase(), personas: Math.max(0, Math.round(Number(p.personas) || 0)), nota: txt_(p.nota, 400), total: total, sena: sena, pagado: 0, saldo: total,
       estado: p.estado === 'pendiente' ? 'pendiente' : 'confirmada', origen: 'manual', metodo: '', venceEn: '', extRef: '', planId: plan ? plan.id : '', plan: plan ? plan.nombre : '' };
     agregar_('Reservas', r);
@@ -488,7 +507,7 @@ function adminCrearReserva_(p, u) {
   });
 }
 function reservaCompleta_(id) {
-  var r = porId_('Reservas', id); if (!r) throw err_('NO_ENCONTRADA', 'Reserva no encontrada');
+  var r = porId_('Reservas', id); if (!r) throw err_('NO_ENCONTRADA', 'Reserva no encontrada'); asegurarCodigo_(r);
   return { reserva: limpio_(r), comprobante: compAdmin_(r), pagos: leer_('Pagos').filter(function (x) { return x.reservaId === id; }).map(limpio_) };
 }
 function adminPagoInterno_(id, p, u) {
@@ -537,6 +556,10 @@ var ADMIN = {
       var c = {}, ok = ['nombre', 'telefono', 'email', 'nota'];
       ok.forEach(function (k) { if (p[k] != null) c[k] = txt_(p[k], k === 'nota' ? 400 : 120); });
       if (p.personas != null) c.personas = Math.max(0, Math.round(num_(p.personas, 'personas')));
+      if (p.planId && p.planId !== r.planId) {                              // ampliar / cambiar de plan: el total y la seña pasan a los del plan nuevo; lo ya pagado se mantiene
+        var pl = porId_('Planes', txt_(p.planId, 40)); if (!pl) throw err_('PLAN_INVALIDO', 'Ese plan no existe');
+        c.planId = pl.id; c.plan = pl.nombre; if (p.total == null) c.total = pl.precio; if (p.sena == null) c.sena = calcSena_(pl, pl.precio);
+      }
       if (p.total != null) c.total = Math.max(0, num_(p.total, 'total'));
       if (p.sena != null) c.sena = Math.max(0, num_(p.sena, 'seña'));
       if (p.turnoId || p.fecha) {                                         // mover de día / turno

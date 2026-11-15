@@ -29,6 +29,13 @@ const { iniciar } = require('./servidor'); const assert = require('assert'); con
   const tid = a.run('leer_("Turnos").filter(t=>t.inicio=="19:00")[0].id'); a.post({ action: 'reservar', turnoId: tid, fecha: '2026-11-08', nombre: 'Ganador Veloz', telefono: '1133332222', email: '', metodo: 'transferencia' });
   await p.click('#go'); await p.waitForSelector('text=se acaba de ocupar'); await shot('r6-ocupado'); ok('si alguien gana el turno, avisa y vuelve al calendario');
   // reserva inexistente y escritorio
-  await p.goto('http://localhost:8783/?reserva=RNOEXISTE'); await p.waitForSelector('.err'); ok('código inexistente da un mensaje claro');
+  await p.goto('http://localhost:8783/?reserva=RNOEXISTE'); await p.waitForSelector('text=No encontramos esa reserva'); ok('código inexistente da un mensaje claro');
+  // consultar con el código corto
+  const cod = a.run('leer_("Reservas")[0].codigo'); assert(/^[A-Z2-9]{6}$/.test(cod), cod);
+  await p.goto('http://localhost:8783/'); await p.waitForSelector('.cal button.libre'); await p.click('button:has-text("Mi reserva")'); await p.waitForSelector('input[name=codigo]'); await shot('r7-consultar');
+  await p.fill('input[name=codigo]', 'zzzzzz'); await p.click('button:has-text("Ver mi reserva")'); await p.waitForSelector('.err'); ok('un código incorrecto avisa sin romper nada');
+  await p.fill('input[name=codigo]', cod.toLowerCase().slice(0, 3) + ' ' + cod.slice(3)); await p.click('button:has-text("Ver mi reserva")'); await p.waitForSelector('.codebox'); await shot('r8-ficha');
+  const ficha = await p.locator('body').innerText(); assert(ficha.includes(cod) && ficha.includes('Saldo a pagar') && ficha.includes('Juan') && ficha.includes('Ampliar mi plan'), ficha); assert(p.url().includes('codigo=' + cod)); ok('con el código se ve la reserva completa (estado, saldo, plan) y queda un link propio');
+  await p.goto('http://localhost:8783/?codigo=' + cod); await p.waitForSelector('.codebox'); ok('el link del mail con el código abre la reserva directo');
   assert.equal(errores.length, 0, errores.join('\n')); ok('sin errores en la consola'); await b.close(); srv.close(); console.log('\nReservar OK');
 })().catch(e => { console.error('FALLA', e.message); process.exit(1); });

@@ -248,5 +248,30 @@ t('usuario creado sin clave: al entrar pide elegirla; la elige una sola vez y qu
 });
 t('un usuario con clave no puede usar primeraClave para pisarla', () => { const a = nuevo(); assert.equal(a.post({ action: 'primeraClave', email: 'dueno@mail.com', clave: 'hackeo-123456' }).error, 'CREDENCIALES'); assert(a.post({ action: 'login', email: 'dueno@mail.com', clave: 'clave-segura-123' }).ok); });
 
+console.log('Código de reserva y consulta');
+t('cada reserva tiene un código corto sin letras confusas y se consulta con minúsculas, espacios o guiones', () => {
+  const a = nuevo(); const [t1] = conTurnos(a); const r = a.post(cli({ turnoId: t1 })).data;
+  assert(/^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{6}$/.test(r.codigo), r.codigo);
+  const c = r.codigo.toLowerCase().slice(0, 3) + ' - ' + r.codigo.slice(3);
+  const e = a.get({ action: 'estado', codigo: c }); assert(e.ok, JSON.stringify(e)); assert.equal(e.data.id, r.id); assert.equal(e.data.nombre, 'Juan'); assert.equal(e.data.personas, 20);
+  assert.equal(a.get({ action: 'estado', codigo: 'ZZZZZZ' }).error, 'NO_ENCONTRADA'); assert.equal(a.get({ action: 'estado' }).error, 'NO_ENCONTRADA');
+});
+t('los códigos no se repiten entre reservas', () => { const a = nuevo(); const [t1, t2] = conTurnos(a); const x = a.post(cli({ turnoId: t1 })).data.codigo, y = a.post(cli({ turnoId: t2, nombre: 'Otra Persona', telefono: '1155559999', email: 'o@mail.com' })).data.codigo; assert.notEqual(x, y); });
+t('reservas viejas sin código reciben uno al consultarlas', () => {
+  const a = nuevo(); const [t1] = conTurnos(a); const r = a.post(cli({ turnoId: t1 })).data; a.run(`actualizar_('Reservas', leer_('Reservas')[0]._row, { codigo: '' })`);
+  const e = a.get({ action: 'estado', id: r.id }); assert(/^[A-Z2-9]{6}$/.test(e.data.codigo)); assert.equal(a.get({ action: 'estado', codigo: e.data.codigo }).data.id, r.id);
+});
+t('el mail trae el código y el botón con el link si hay URL configurada', () => {
+  const a = nuevo(); a.run(`actualizar_('Config', leer_('Config').filter(r => r.clave === 'urlReservas')[0]._row, { valor: 'https://salon.com/reservar/' })`); const [t1] = conTurnos(a); const r = a.post(cli({ turnoId: t1 })).data;
+  const m = a.mails.find(x => x.to === 'juan@mail.com'); assert(m.htmlBody.includes(r.codigo)); assert(m.htmlBody.includes('https://salon.com/reservar/?codigo=' + r.codigo)); assert.equal(a.get({ action: 'config' }).data.urlReservas, 'https://salon.com/reservar/');
+});
+t('el dueño amplía el plan desde el panel: total y seña nuevos, lo pagado se mantiene', () => {
+  const a = nuevo(); const [t1] = conTurnos(a); const [p1, p2, p3] = planes3(a); const r = a.post(cli({ turnoId: t1, planId: p1 })).data;
+  a.adm('admin.pago', { id: r.id, monto: 54000, metodo: 'transferencia' });
+  const u = a.adm('admin.actualizarReserva', { id: r.id, planId: p3 }); assert(u.ok, JSON.stringify(u)); const x = u.data.reserva;
+  assert.equal(x.plan, 'Galaxia'); assert.equal(x.total, 380000); assert.equal(x.sena, 114000); assert.equal(x.pagado, 54000); assert.equal(x.saldo, 326000);
+  assert.equal(a.adm('admin.actualizarReserva', { id: r.id, planId: 'PLno' }).error, 'PLAN_INVALIDO');
+});
+
 console.log(`\n${n} pruebas ok, ${fallos} con fallas`);
 process.exit(fallos ? 1 : 0);

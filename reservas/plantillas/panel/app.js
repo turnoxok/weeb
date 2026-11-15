@@ -181,11 +181,13 @@ function bloqueComprobante(id, c) {
     h('div', { class: 'row', style: 'margin-top:.6rem' }, h('button', { class: 'btn soft subir', onclick: () => inp.click() }, c ? 'Reemplazar' : 'Subir comprobante'), inp,
       c ? h('button', { class: 'btn bad', onclick: e => { if (!confirm('¿Quitar el comprobante? Se manda a la papelera de Drive.')) return; accion(e.target, async () => { await api('admin.comprobanteEliminar', { id }); toast('Comprobante quitado', 'ok'); await refrescar(); detalle(id); }); } }, 'Quitar') : ''));
 }
+/** Link para que el cliente vea su reserva (lleva el código cargado). Usa la URL de Config si está; si no, la carpeta /reservar/ del mismo sitio. */
+function linkReserva(r) { const b = S.pub.urlReservas || new URL('../reservar/', location.href).href; return b + (b.indexOf('?') < 0 ? '?' : '&') + 'codigo=' + (r.codigo || ''); }
 async function detalle(id) {
   sheet('Reserva', h('p', { class: 'empty' }, h('img', { class: 'tw3d', src: 'tuweeb-icono.svg', alt: 'tuweeb' })));
   let d; try { d = await api('admin.reserva', { id }); } catch (e) { cerrar(); toast(e.message, 'err'); return; }
   const r = d.reserva, tel = r.telefono.replace(/\D/g, ''), pct = r.total ? Math.min(100, Math.round(r.pagado / r.total * 100)) : 0;
-  const wa = tel ? 'https://wa.me/' + (tel.length <= 10 ? '54' + tel : tel) + '?text=' + encodeURIComponent(`Hola ${r.nombre.split(' ')[0]}! Te escribimos de ${S.pub.nombre} por tu reserva del ${flarga(r.fecha)} de ${r.inicio} a ${r.fin} hs.`) : '';
+  const wa = tel ? 'https://wa.me/' + (tel.length <= 10 ? '54' + tel : tel) + '?text=' + encodeURIComponent(`Hola ${r.nombre.split(' ')[0]}! Te escribimos de ${S.pub.nombre} por tu reserva del ${flarga(r.fecha)} de ${r.inicio} a ${r.fin} hs.\n\nTu código de reserva es ${r.codigo || r.id}. Con ese código o con este link podés ver el estado, el saldo y subir el comprobante de la seña:\n${linkReserva(r)}`) : '';
   const pf = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(pf); accion($('button', pf), async () => { await api('admin.pago', { id, monto: x.monto, metodo: x.metodo, fecha: x.fecha, nota: x.nota }); toast('Pago registrado', 'ok'); await refrescar(); detalle(id); }); } },
     h('div', { class: 'grid2' }, campo('Monto', inp('monto', { type: 'number', step: '1', required: true, value: r.estado === 'pendiente' && r.sena > r.pagado ? r.sena - r.pagado : Math.max(0, r.saldo) })),
       campo('Medio', h('select', { name: 'metodo' }, ['efectivo', 'transferencia', 'mercadopago', 'otro'].map(m => h('option', { value: m }, m === 'mercadopago' ? 'Mercado Pago' : m[0].toUpperCase() + m.slice(1))))) ),
@@ -196,7 +198,7 @@ async function detalle(id) {
     h('dl', { class: 'kv' }, h('dt', null, 'Fecha'), h('dd', null, flarga(r.fecha)), h('dt', null, 'Horario'), h('dd', null, `${r.inicio} a ${r.fin} (${horas(r.inicio, r.fin)})` + (S.salones.length > 1 ? ' · ' + salonDe(r.salonId) : '')),
       h('dt', null, 'Contacto'), h('dd', null, r.telefono ? h('a', { href: 'tel:' + r.telefono }, r.telefono) : '—', r.email ? [' · ', h('a', { href: 'mailto:' + r.email }, r.email)] : ''),
       r.plan ? [h('dt', null, 'Plan'), h('dd', null, r.plan)] : '', h('dt', null, 'Invitados'), h('dd', null, r.personas || '—'), r.nota ? [h('dt', null, 'Nota'), h('dd', null, r.nota)] : '', h('dt', null, 'Origen'), h('dd', null, r.origen === 'manual' ? 'Cargada a mano' : 'Web'),
-      r.estado === 'pendiente' && r.venceEn ? [h('dt', null, 'Vence'), h('dd', null, new Date(r.venceEn).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }))] : '', h('dt', null, 'Código'), h('dd', { class: 'small' }, r.id)),
+      r.estado === 'pendiente' && r.venceEn ? [h('dt', null, 'Vence'), h('dd', null, new Date(r.venceEn).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }))] : '', h('dt', null, 'Código'), h('dd', null, h('b', { style: 'letter-spacing:.18em' }, r.codigo || r.id))),
     h('div', { class: 'money' }, h('div', null, h('b', null, money(r.total)), h('span', null, 'Total')), h('div', null, h('b', null, money(r.sena)), h('span', null, 'Seña')), h('div', null, h('b', null, money(r.pagado)), h('span', null, 'Pagado')), h('div', null, h('b', { class: r.saldo > 0 ? 'neg' : 'pos' }, money(r.saldo)), h('span', null, 'Saldo'))),
     h('div', { class: 'progress' }, h('i', { style: 'width:' + pct + '%' })),
     bloqueComprobante(id, d.comprobante),
@@ -207,7 +209,7 @@ async function detalle(id) {
     h('div', { class: 'row' },
       r.estado === 'pendiente' ? h('button', { class: 'btn', onclick: e => accion(e.target, async () => { await api('admin.actualizarReserva', { id, estado: 'confirmada' }); toast('Reserva confirmada', 'ok'); await refrescar(); detalle(id); }) }, 'Confirmar sin pago') : '',
       r.estado === 'cancelada' || r.estado === 'vencida' ? h('button', { class: 'btn', onclick: e => accion(e.target, async () => { await api('admin.actualizarReserva', { id, estado: 'confirmada' }); toast('Reserva reactivada', 'ok'); await refrescar(); detalle(id); }) }, 'Reactivar') : '',
-      h('button', { class: 'btn soft', onclick: () => editar(r) }, 'Editar / mover'), wa ? h('a', { class: 'btn soft', href: wa, target: '_blank', rel: 'noopener' }, 'WhatsApp') : '',
+      h('button', { class: 'btn soft', onclick: () => editar(r) }, 'Editar / mover'), wa ? h('a', { class: 'btn soft', href: wa, target: '_blank', rel: 'noopener' }, 'Enviar link por WhatsApp') : '', h('button', { class: 'btn soft', onclick: e => { navigator.clipboard && navigator.clipboard.writeText(linkReserva(r)); e.target.textContent = '¡Link copiado!'; setTimeout(() => (e.target.textContent = 'Copiar link'), 1800); } }, 'Copiar link'),
       r.estado !== 'cancelada' && r.estado !== 'vencida' ? h('button', { class: 'btn bad', onclick: e => { if (!confirm('¿Cancelar la reserva? El turno queda libre.')) return; accion(e.target, async () => { await api('admin.cancelar', { id }); toast('Reserva cancelada', 'ok'); await refrescar(); detalle(id); }); } }, 'Cancelar reserva') : ''));
   sheet('Reserva', cuerpo);
 }
@@ -215,8 +217,9 @@ function refrescar() { cargandoSilencioso = true; return Promise.resolve().then(
 let cargandoSilencioso = false;
 
 function editar(r) {
-  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f); accion($('button.btn:not(.line)', f), async () => { await api('admin.actualizarReserva', { id: r.id, nombre: x.nombre, telefono: x.telefono, email: x.email, personas: x.personas, nota: x.nota, total: x.total, sena: x.sena }); toast('Guardado', 'ok'); await refrescar(); detalle(r.id); }); } },
+  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f); accion($('button.btn:not(.line)', f), async () => { const cambioPlan = x.planId && x.planId !== r.planId, datosEd = { id: r.id, nombre: x.nombre, telefono: x.telefono, email: x.email, personas: x.personas, nota: x.nota }; if (cambioPlan) datosEd.planId = x.planId; if (!cambioPlan || String(x.total) !== String(r.total)) datosEd.total = x.total; if (!cambioPlan || String(x.sena) !== String(r.sena)) datosEd.sena = x.sena; await api('admin.actualizarReserva', datosEd); toast('Guardado', 'ok'); await refrescar(); detalle(r.id); }); } },
     campo('Nombre', inp('nombre', { required: true, value: r.nombre })), h('div', { class: 'grid2' }, campo('Teléfono', inp('telefono', { value: r.telefono })), campo('Mail', inp('email', { type: 'email', value: r.email }))),
+    (S.pub.planes || []).length ? campo('Plan (cambiarlo recalcula total y seña)', h('select', { name: 'planId' }, h('option', { value: '' }, r.plan ? r.plan + ' (actual)' : 'Sin plan'), (S.pub.planes || []).filter(pl => pl.id !== r.planId).map(pl => h('option', { value: pl.id }, pl.nombre + ' · ' + money(pl.precio))))) : '',
     h('div', { class: 'grid2' }, campo('Invitados', inp('personas', { type: 'number', value: r.personas })), campo('Total $', inp('total', { type: 'number', value: r.total }))), campo('Seña $', inp('sena', { type: 'number', value: r.sena })),
     campo('Nota', h('textarea', { name: 'nota', rows: 2 }, r.nota)), h('button', { class: 'btn block' }, 'Guardar cambios'),
     h('h3', { class: 'sec' }, 'Mover a otro día o turno'), moverUI(r), h('button', { type: 'button', class: 'btn line block', style: 'margin-top:1rem', onclick: () => detalle(r.id) }, 'Volver'));
