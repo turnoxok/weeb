@@ -164,7 +164,16 @@ function guardarConfig_(p, usuario) {
   return configAdmin_();
 }
 function configAdmin_() { var c = config_(), o = {}; Object.keys(CFG_DEF).forEach(function (k) { o[k] = c[k]; }); return o; }
+/** La respuesta pública de configuración se guarda en caché: leer 6 pestañas de la hoja tarda ~2 s y la pide cada visita a la página de planes y a reservar.
+ *  Se renueva sola al guardar algo desde el panel (cambia la versión) o a los 10 minutos si alguien edita la hoja a mano. */
 function configPublica_() {
+  var cache = CacheService.getScriptCache(), ck = 'cfgp:' + ver_(), hit = cache.get(ck);
+  if (hit) { try { return JSON.parse(hit); } catch (e) {} }
+  var o = configPublicaArmar_();
+  try { cache.put(ck, JSON.stringify(o), 600); } catch (e) {}
+  return o;
+}
+function configPublicaArmar_() {
   var c = config_(), o = {};
   CFG_PUBLICA.forEach(function (k) { o[k] = c[k]; });
   o.salones = leer_('Salones').filter(function (s) { return s.activo; }).sort(function (a, b) { return a.orden - b.orden; })
