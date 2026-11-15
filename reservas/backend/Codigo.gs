@@ -391,6 +391,7 @@ function login_(p) {
   var email = txt_(p.email, 120).toLowerCase(), clave = String(p.clave || ''), cache = CacheService.getScriptCache(), k = 'lf:' + email;
   if (Number(cache.get(k) || 0) >= 5) throw err_('DEMASIADOS_INTENTOS', 'Demasiados intentos. Esperá 15 minutos.');
   var u = email && porId_('Usuarios', email);
+  if (u && u.activo && !u.claveHash) throw err_('CLAVE_PENDIENTE', 'Todavía no elegiste tu clave. Elegila ahora.');   // usuario creado sin clave: la elige él mismo la primera vez
   if (!u || !u.activo || !u.claveHash || !iguales_(hashClave_(clave, u.sal), u.claveHash)) {
     cache.put(k, String(Number(cache.get(k) || 0) + 1), 900); log_(email, 'login_fallido', '');
     throw err_('CREDENCIALES', 'Mail o clave incorrectos');
@@ -399,6 +400,20 @@ function login_(p) {
   var cuerpo = Utilities.base64EncodeWebSafe(JSON.stringify({ e: u.email, r: u.rol || 'admin', v: u.claveHash.slice(0, 8), x: ahora_() + 14 * 86400000 }));
   log_(u.email, 'login', '');
   return { token: cuerpo + '.' + firmar_(cuerpo), email: u.email, nombre: u.nombre, rol: u.rol || 'admin' };
+}
+/** Primera clave: solo sirve mientras el usuario fue creado SIN clave. Después ya no se puede usar (cambiarla exige entrar). */
+function primeraClave_(p) {
+  var email = txt_(p.email, 120).toLowerCase(), clave = String(p.clave || ''), cache = CacheService.getScriptCache(), k = 'lf:' + email;
+  if (Number(cache.get(k) || 0) >= 5) throw err_('DEMASIADOS_INTENTOS', 'Demasiados intentos. Esperá 15 minutos.');
+  var u = email && porId_('Usuarios', email);
+  if (!u || !u.activo || u.claveHash) { cache.put(k, String(Number(cache.get(k) || 0) + 1), 900); throw err_('CREDENCIALES', 'No se puede elegir la clave de este usuario'); }
+  if (clave.length < 8) throw err_('DATO_INVALIDO', 'La clave debe tener al menos 8 caracteres');
+  return conLock_(function () {
+    var cur = porId_('Usuarios', email); if (!cur || cur.claveHash) throw err_('CREDENCIALES', 'No se puede elegir la clave de este usuario');
+    var sal = Utilities.getUuid().replace(/-/g, '').slice(0, 16);
+    actualizar_('Usuarios', cur._row, { sal: sal, claveHash: hashClave_(clave, sal) }); log_(email, 'primera_clave', '');
+    return login_({ email: email, clave: clave });
+  });
 }
 function autenticar_(token) {
   if (!token || token.indexOf('.') < 0) throw err_('NO_AUTORIZADO', 'Iniciá sesión');
@@ -633,6 +648,7 @@ function despachar_(p, esPost) {
   if (a === 'disponibilidad') return disponibilidad_(p);
   if (a === 'estado') return estado_(p);
   if (a === 'comprobante') { if (!esPost) throw err_('METODO', 'Usá POST'); return comprobante_(p); }
+  if (a === 'primeraClave') { if (!esPost) throw err_('METODO', 'Usá POST'); return primeraClave_(p); }
   if (a === 'login') { if (!esPost) throw err_('METODO', 'Usá POST'); return login_(p); }
   if (a === 'reservar') { if (!esPost) throw err_('METODO', 'Usá POST'); return reservar_(p); }
   if (a.indexOf('admin.') === 0) {

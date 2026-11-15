@@ -88,8 +88,17 @@ function firma() { return h('div', { class: 'firma' }, 'Hecho con ', h('a', { hr
 function logo(alto) { return h('img', { src: S.pub.logoUrl || 'weeb-logo.svg', alt: S.pub.nombre || 'tuweeb', style: 'max-height:' + alto + 'px', onerror: ev => { if (!ev.target.dataset.f) { ev.target.dataset.f = 1; ev.target.src = 'weeb-logo.svg'; } } }); }
 
 const volverBtn = () => h('button', { class: 'weeb-back', onclick: () => { if (window.parent !== window) parent.postMessage('weeb-cerrar', location.origin); else location.href = '../'; } }, '← Volver al sitio');
+async function iniciarSesion(r, email) { S.token = r.token; S.user = r; localStorage.setItem('weeb_token', r.token); localStorage.setItem('weeb_email', email); await entrar(); }
+/** Usuario creado sin clave: la elige él mismo la primera vez (solo funciona mientras no tenga una). */
+function pantallaPrimeraClave(email) {
+  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const d = datos(f); if (d.clave.length < 8) return toast('La clave tiene que tener al menos 8 caracteres', 'err'); if (d.clave !== d.repetir) return toast('Las dos claves no coinciden', 'err'); accion($('button', f), async () => { const r = await llamar('primeraClave', { email, clave: d.clave }, true); toast('Clave guardada', 'ok'); await iniciarSesion(r, email); }); } },
+    campo('Mail', inp('email', { type: 'email', value: email, readonly: true, autocomplete: 'username' })),
+    campo('Elegí tu clave (mínimo 8 caracteres)', inp('clave', { type: 'password', required: true, minlength: 8, autocomplete: 'new-password' })),
+    campo('Repetí la clave', inp('repetir', { type: 'password', required: true, minlength: 8, autocomplete: 'new-password' })), h('button', { class: 'btn block' }, 'Guardar y entrar'));
+  $app().replaceChildren(h('div', { class: 'login' }, logo(64), h('h1', null, S.pub.nombre || 'Panel'), h('p', { class: 'sub' }, 'Es tu primera vez: elegí la clave con la que vas a entrar siempre.'), f, h('button', { type: 'button', class: 'link', onclick: pantallaLogin }, 'Volver'), firma()));
+}
 function pantallaLogin() {
-  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const d = datos(f), b = $('button', f); accion(b, async () => { const r = await llamar('login', { email: d.email, clave: d.clave }); S.token = r.token; S.user = r; localStorage.setItem('weeb_token', r.token); localStorage.setItem('weeb_email', d.email); await entrar(); }); } },
+  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const d = datos(f), b = $('button', f); accion(b, async () => { let r; try { r = await llamar('login', { email: d.email, clave: d.clave }); } catch (e) { if (e.codigo === 'CLAVE_PENDIENTE') return pantallaPrimeraClave(d.email); throw e; } await iniciarSesion(r, d.email); }); } },
     campo('Mail', inp('email', { type: 'email', required: true, autocomplete: 'username', value: localStorage.getItem('weeb_email') || '' })),
     campo('Clave', inp('clave', { type: 'password', required: true, autocomplete: 'current-password' })), h('button', { class: 'btn block' }, 'Entrar'));
   $app().replaceChildren(h('div', { class: 'login' }, logo(64), h('h1', null, S.pub.nombre || 'Panel'), h('p', { class: 'sub' }, 'Entrá para gestionar tus reservas.'), f, h('button', { type: 'button', class: 'link', onclick: () => { const m = (datos(f).email || ''); window.open('https://wa.me/5493435020970?text=' + encodeURIComponent('Hola tuweeb, olvidé la clave del panel de ' + (S.pub.nombre || 'mi salón') + (m ? '. Mi mail: ' + m : '')), '_blank', 'noopener'); } }, '¿Olvidaste tu clave?'), volverBtn(), firma()));

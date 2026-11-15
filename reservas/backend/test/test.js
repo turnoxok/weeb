@@ -234,5 +234,19 @@ t('rechaza tipos raros, vacíos, muy pesados, reservas inexistentes o vencidas',
 });
 t('el panel exige sesión para subir o quitar comprobantes', () => { const a = nuevo(); assert.equal(a.post({ action: 'admin.comprobante', id: 'x' }).error, 'NO_AUTORIZADO'); assert.equal(a.post({ action: 'admin.comprobanteEliminar', id: 'x' }).error, 'NO_AUTORIZADO'); });
 
+console.log('Primera clave');
+t('usuario creado sin clave: al entrar pide elegirla; la elige una sola vez y queda adentro', () => {
+  const a = crear(); a.setNow(NOW); a.run('instalar()'); a.run("agregar_('Usuarios', { email: 'demo@mail.com', nombre: 'Demo', rol: 'admin', activo: true, sal: '', claveHash: '' })");
+  assert.equal(a.post({ action: 'login', email: 'demo@mail.com', clave: 'lo-que-sea' }).error, 'CLAVE_PENDIENTE');
+  assert.equal(a.post({ action: 'primeraClave', email: 'demo@mail.com', clave: 'corta' }).error, 'DATO_INVALIDO');
+  assert.equal(a.post({ action: 'primeraClave', email: 'otro@mail.com', clave: 'clave-larga-123' }).error, 'CREDENCIALES');
+  const r = a.post({ action: 'primeraClave', email: 'demo@mail.com', clave: 'clave-larga-123' }); assert(r.ok, JSON.stringify(r)); assert(r.data.token);
+  assert.equal(a.post({ action: 'primeraClave', email: 'demo@mail.com', clave: 'otra-clave-999' }).error, 'CREDENCIALES');
+  assert.equal(a.post({ action: 'login', email: 'demo@mail.com', clave: 'otra-clave-999' }).error, 'CREDENCIALES');
+  assert(a.post({ action: 'login', email: 'demo@mail.com', clave: 'clave-larga-123' }).ok);
+  assert.equal(a.post({ action: 'admin.ping', token: r.data.token }).ok, true);
+});
+t('un usuario con clave no puede usar primeraClave para pisarla', () => { const a = nuevo(); assert.equal(a.post({ action: 'primeraClave', email: 'dueno@mail.com', clave: 'hackeo-123456' }).error, 'CREDENCIALES'); assert(a.post({ action: 'login', email: 'dueno@mail.com', clave: 'clave-segura-123' }).ok); });
+
 console.log(`\n${n} pruebas ok, ${fallos} con fallas`);
 process.exit(fallos ? 1 : 0);
