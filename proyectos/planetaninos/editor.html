@@ -9831,7 +9831,7 @@ function seoMarkdown(text) {
   flush();
   return out;
 }
-function generateSeoPack(seoIn, dockIn, objects, sections) {
+function generateSeoPack(seoIn, dockIn, objects, sections, menuIn, fabIn) {
   const s = { ...DEFAULT_SEO, ...(seoIn || {}) }, d = { ...DEFAULT_DOCK, ...(dockIn || {}) };
   const title = String(s.title || s.siteName || "").trim();
   const desc = String(s.description || "").trim();
@@ -9851,6 +9851,8 @@ function generateSeoPack(seoIn, dockIn, objects, sections) {
     if (ext !== "svg" && ext !== "ico") head.push('<link rel="apple-touch-icon" href="' + seoEsc(fav) + '" />');
   }
   if (s.themeColor) head.push('<meta name="theme-color" content="' + seoEsc(s.themeColor) + '" />');
+  /* Si el sitio enlaza a planes o a reservas, los datos de planes se piden en segundo plano cuando el 3D ya cargó: la página de planes abre ya lista. */
+  if (/\.\/(planes\.html|reservar\/)/.test(JSON.stringify([(menuIn && menuIn.items) || [], fabIn && fabIn.enabled ? fabIn.reservarUrl : ""]))) head.push("<" + "script>(function(){function go(){fetch('./reservar/config.json').then(function(r){return r.json()}).then(function(c){return fetch(c.api+'?action=config')}).then(function(r){return r.json()}).then(function(j){if(j&&j.ok&&j.data&&j.data.planes)localStorage.setItem('planes-cfg-v3',JSON.stringify(j.data))}).catch(function(){})}addEventListener('load',function(){(window.requestIdleCallback||function(f){setTimeout(f,3000)})(go,{timeout:8000})})})();" + "</" + "script>");
   head.push('<meta property="og:type" content="website" />');
   head.push('<meta property="og:locale" content="' + seoEsc(String(s.lang || "es").replace("-", "_")) + '" />');
   if (title) head.push('<meta property="og:title" content="' + seoEsc(title) + '" />');
@@ -12644,7 +12646,7 @@ function App() {
   const postFxCode = useMemo(() => generatePostFxCode(postFx), [postFx]);
   const trailCode = useMemo(() => generateTrailCode(trail), [trail]);
   const reflectionCode = useMemo(() => generateReflectionCode(reflection), [reflection]);
-  const seoPack = useMemo(() => generateSeoPack(seo, dock, objects, sections), [seo, dock, objects, sections]);
+  const seoPack = useMemo(() => generateSeoPack(seo, dock, objects, sections, menu, fab), [seo, dock, objects, sections, menu, fab]);
   const sectionsCode = useMemo(() => generateSectionsCode(sections, site2d), [sections, site2d]);
   const loaderCode = useMemo(() => generateLoaderCode(loader), [loader]);
   const loaderCss = useMemo(() => generateLoaderCss(loader), [loader]);

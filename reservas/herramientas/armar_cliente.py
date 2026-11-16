@@ -36,3 +36,6 @@ json.dump({'name': 'Panel ' + a.nombre, 'short_name': a.nombre[:12], 'start_url'
            'icons': [{'src': 'icon-192.png', 'sizes': '192x192', 'type': 'image/png'}, {'src': 'icon-512.png', 'sizes': '512x512', 'type': 'image/png', 'purpose': 'any maskable'}]},
           open(os.path.join(d, 'manifest.webmanifest'), 'w'), ensure_ascii=False, indent=1)
 print(f'ok: {a.salida}/panel  y  {a.salida}/reservar')
+try:   # foto de los datos para que la página de planes abra al instante (si el backend aún no tiene planes, se omite)
+    sys.path.insert(0, AQUI); from congelar_datos import congelar; print('ok: %s (%d planes)' % congelar(api=a.api, salida=a.salida))
+except Exception as e: print('AVISO: sin foto de datos (%s). Se puede hacer después con congelar_datos.py' % e)
