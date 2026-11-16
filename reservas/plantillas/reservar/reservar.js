@@ -14,7 +14,7 @@ function h(tag, props, ...kids) {
   if ('value' in post) e.value = post.value; if ('checked' in post) e.checked = !!post.checked; return e;
 }
 const S = { cfg: null, pub: null, mes: '', disp: null, fecha: '', slot: null };
-async function fetchSeguro(url, opts) { const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 45000); try { return await fetch(url, { ...(opts || {}), signal: ctl.signal }); } catch (e) { throw new Error(e && e.name === 'AbortError' ? 'Está tardando demasiado. Probá de nuevo en un momento.' : 'No hay conexión. Revisá tu internet y probá de nuevo.'); } finally { clearTimeout(tm); } }
+async function fetchSeguro(url, opts) { if (window.TEMA && TEMA.demoId) { if (!window.DEMO_BACKEND) throw new Error('No se pudo iniciar la demo. Recargá la página.'); return DEMO_BACKEND.fetch(url, opts); } const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 45000); try { return await fetch(url, { ...(opts || {}), signal: ctl.signal }); } catch (e) { throw new Error(e && e.name === 'AbortError' ? 'Está tardando demasiado. Probá de nuevo en un momento.' : 'No hay conexión. Revisá tu internet y probá de nuevo.'); } finally { clearTimeout(tm); } }
 async function llamar(action, data, post) {
   if (/PENDIENTE/.test(S.cfg.api || '')) throw new Error((S.cfg.demoAviso) || 'Demostración: las reservas se activan cuando se conecta la hoja de cálculo del salón.');
   if (post && S.cfg.demo) throw new Error(S.cfg.demoAviso || 'Esto es una demostración: las reservas se activan cuando se conecta la hoja del salón.');

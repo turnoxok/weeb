@@ -34,7 +34,7 @@ const IC = { agenda: '<rect x="3" y="4" width="18" height="17" rx="3"/><path d="
 const S = { cfg: null, pub: null, token: localStorage.getItem('weeb_token') || '', user: null, view: 'agenda', mes: mesDe(hoy()), reFiltro: 'prox', reQ: '', cajaMes: mesDe(hoy()), salones: [], turnos: [], instalar: null };
 const $app = () => $('#app');
 
-async function fetchSeguro(url, opts) { const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 45000); try { return await fetch(url, { ...(opts || {}), signal: ctl.signal }); } catch (e) { throw new Error(e && e.name === 'AbortError' ? 'Está tardando demasiado. Probá de nuevo en un momento.' : 'No hay conexión. Revisá tu internet y probá de nuevo.'); } finally { clearTimeout(tm); } }
+async function fetchSeguro(url, opts) { if (window.TEMA && TEMA.demoId) { if (!window.DEMO_BACKEND) throw new Error('No se pudo iniciar la demo. Recargá la página.'); return DEMO_BACKEND.fetch(url, opts); } const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 45000); try { return await fetch(url, { ...(opts || {}), signal: ctl.signal }); } catch (e) { throw new Error(e && e.name === 'AbortError' ? 'Está tardando demasiado. Probá de nuevo en un momento.' : 'No hay conexión. Revisá tu internet y probá de nuevo.'); } finally { clearTimeout(tm); } }
 async function llamar(action, data, publico) {
   if (/PENDIENTE/.test(S.cfg.api || '')) throw new Error('Panel de demostración: se activa cuando se conecta la hoja de cálculo del salón.');
   const get = publico === 'get';
@@ -114,9 +114,9 @@ function pantallaOlvide(email0) {
 }
 function pantallaLogin() {
   const f = h('form', { onsubmit: ev => { ev.preventDefault(); const d = datos(f), b = $('button', f); accion(b, async () => { let r; try { r = await llamar('login', { email: d.email, clave: d.clave }); } catch (e) { if (e.codigo === 'CLAVE_PENDIENTE') return pantallaPrimeraClave(d.email); throw e; } await iniciarSesion(r, d.email); }); } },
-    campo('Mail', inp('email', { type: 'email', required: true, autocomplete: 'username', value: localStorage.getItem('weeb_email') || '' })),
-    campo('Clave', inp('clave', { type: 'password', required: true, autocomplete: 'current-password' })), h('button', { class: 'btn block' }, 'Entrar'));
-  $app().replaceChildren(h('div', { class: 'login' }, logo(64), h('h1', null, S.pub.nombre || 'Panel'), h('p', { class: 'sub' }, 'Entrá para gestionar tus reservas.'), f, h('button', { type: 'button', class: 'link', onclick: () => pantallaOlvide(datos(f).email) }, '¿Olvidaste tu clave?'), volverBtn(), firma()));
+    campo('Mail', inp('email', { type: 'email', required: true, autocomplete: 'username', value: (window.TEMA && TEMA.demo && TEMA.demo.email) || localStorage.getItem('weeb_email') || '' })),
+    campo('Clave', inp('clave', { type: 'password', required: true, autocomplete: 'current-password', value: (window.TEMA && TEMA.demoId) ? 'demo1234' : '' })), h('button', { class: 'btn block' }, 'Entrar'));
+  $app().replaceChildren(h('div', { class: 'login' }, logo(64), h('h1', null, S.pub.nombre || 'Panel'), h('p', { class: 'sub' }, (window.TEMA && TEMA.demoId) ? 'Es una demo: lo que cargues queda guardado en este dispositivo. Clave inicial: demo1234 (la podés cambiar en Seguridad).' : 'Entrá para gestionar tus reservas.'), f, h('button', { type: 'button', class: 'link', onclick: () => pantallaOlvide(datos(f).email) }, '¿Olvidaste tu clave?'), volverBtn(), firma()));
 }
 function salir(vencida) { S.token = ''; S.user = null; localStorage.removeItem('weeb_token'); cerrar(true); if (vencida) toast('La sesión venció. Volvé a entrar.', 'err'); pantallaLogin(); }
 

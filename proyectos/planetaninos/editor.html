@@ -7564,7 +7564,7 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")).render(&lt;App /&gt;);
+(window.TEMA ? TEMA.listo : Promise.resolve()).then(function () { createRoot(document.getElementById("root")).render(&lt;App /&gt;); });
 
 &lt;/script&gt;
 &lt;/body&gt;
@@ -9793,7 +9793,7 @@ ${kfLines}
     ],
   },`;
   }).join("\n");
-  return `const OBJECTS = [\n${objLines || "  // (sin objetos)"}\n];\nif (window.TEMA) { if (TEMA.logo3d) { OBJECTS.forEach(function (o) { if (o) { if (/logo-slogan[.]svg/.test(o.url || "")) { o.url = TEMA.logo3d.url; const m = Math.min(5.014 / TEMA.logo3d.aspect, 2.2); if (o.keyframes) o.keyframes.forEach(function (k) { k.scale = k.scale * m; }); } } }); } }`;
+  return `const OBJECTS = [\n${objLines || "  // (sin objetos)"}\n];\nif (window.TEMA) { TEMA.listo.then(function () { TEMA.aplicarObjetos(OBJECTS); }); }`;
 }
 
 /* ---- SEO / indexación ----
