@@ -91,7 +91,7 @@ function formulario(error) {
     h('div', { class: 'grid2' }, h('label', { class: 'field' }, h('span', null, 'Cantidad de invitados'), h('input', { name: 'personas', type: 'number', min: '1', max: '500', inputmode: 'numeric' })), ''),
     h('label', { class: 'field' }, h('span', null, 'Comentarios (opcional)'), h('textarea', { name: 'nota', rows: 2, maxlength: '400' })),
     payBox,
-    h('div', { class: 'hp', 'aria-hidden': 'true' }, h('input', { name: 'web', tabindex: '-1', autocomplete: 'off' })),
+    h('div', { class: 'hp', 'aria-hidden': 'true' }, h('input', { name: 'xr_cmp', type: 'text', tabindex: '-1', autocomplete: 'off', 'data-lpignore': 'true', 'data-1p-ignore': 'true' })),
     error ? h('div', { class: 'err' }, error) : '', goBtn,
     h('button', { type: 'button', class: 'btn line block', style: 'margin-top:.6rem', onclick: () => calendario() }, 'Volver'));
   pagina(3, h('h2', { class: 't' }, 'Tus datos'), h('div', { class: 'resumen' }, h('b', null, flarga(S.fecha)), `${s.inicio} a ${s.fin} hs` + (s.etiqueta ? ' · ' + s.etiqueta : ''), totEl), f);
@@ -101,7 +101,7 @@ function formulario(error) {
 async function enviar(f) {
   const b = $('#go'), x = Object.fromEntries(new FormData(f)); b.disabled = true; b.textContent = 'Reservando…';
   try {
-    const r = await llamar('reservar', { turnoId: S.slot.turnoId, fecha: S.fecha, nombre: x.nombre, telefono: x.telefono, email: x.email, personas: x.personas, nota: x.nota, metodo: x.metodo || 'transferencia', planId: S.plan ? S.plan.id : undefined, web: x.web }, true);
+    const r = await llamar('reservar', { turnoId: S.slot.turnoId, fecha: S.fecha, nombre: x.nombre, telefono: x.telefono, email: x.email, personas: x.personas, nota: x.nota, metodo: x.metodo || 'transferencia', planId: S.plan ? S.plan.id : undefined, web: x.xr_cmp }, true);
     history.replaceState(null, '', '?reserva=' + r.id); resultado(r, true);
   } catch (e) {
     if (e.codigo === 'PLAN_INVALIDO') { S.plan = null; S.pub = await llamar('config').catch(() => S.pub); return formulario(e.message); }

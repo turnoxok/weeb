@@ -4248,13 +4248,16 @@ function buildSvgExtrude(text, depthK, bevK, segK, lite, rev, arc) {
     weldParts(parts);
     return { parts, aspect: (box.max.x - box.min.x) / H, rev: true };
   }
+  if (/data-relieve/.test(text)) { const ar = new Map(); parts.forEach(function (pt) { const k = pt.color.getHexString(); let a = 0; pt.shapes.forEach(function (sh) { const bb = new THREE.Box2(); sh.getPoints(4).forEach(function (v) { bb.expandByPoint(v); }); a += (bb.max.x - bb.min.x) * (bb.max.y - bb.min.y); }); ar.set(k, (ar.get(k) || 0) + a); });
+    const ord = Array.from(ar.entries()).sort(function (x, y) { return y[1] - x[1]; }).map(function (e) { return e[0]; }); parts.forEach(function (pt) { pt.dm = 1 + 0.18 * ord.indexOf(pt.color.getHexString()); }); }
   parts.forEach((pt) =&gt; {
+    const dP = depth * (pt.dm || 1);   /* logos de demos: cada color con su propio relieve, así no se pisan las tapas */
     /* Bisel propio (ver bevelExtrudeGeometry): cada punto se corre según el grosor local, sin puntas ni cruces. Si algo falla, queda la pieza sin bisel. */
     let g = null;
-    if (b0 &gt; 0.0001) { try { g = bevelExtrudeGeometry(pt.shapes, depth, b0, Math.max(1, Math.min(lite ? 2 : 7, Math.round(1 + (b0 / H) * 300))), curveSeg, H);   /* menos escalones cuanto más chico es el bisel respecto de la pieza */ if (!g.attributes.position.count) g = null; } catch (e) { console.warn("Bisel propio falló:", e); g = null; } }
+    if (b0 &gt; 0.0001) { try { g = bevelExtrudeGeometry(pt.shapes, dP, b0, Math.max(1, Math.min(lite ? 2 : 7, Math.round(1 + (b0 / H) * 300))), curveSeg, H);   /* menos escalones cuanto más chico es el bisel respecto de la pieza */ if (!g.attributes.position.count) g = null; } catch (e) { console.warn("Bisel propio falló:", e); g = null; } }
     const own = !!g;   // el bisel propio ya trae sus normales lisas calculadas desde la forma
     if (g) g.translate(-cx, -cy, -(depth / 2 + b0));
-    else { g = new THREE.ExtrudeGeometry(pt.shapes, { depth, curveSegments: curveSeg, bevelEnabled: false }); g.translate(-cx, -cy, -depth / 2); }
+    else { g = new THREE.ExtrudeGeometry(pt.shapes, { depth: dP, curveSegments: curveSeg, bevelEnabled: false }); g.translate(-cx, -cy, -depth / 2); }
     g.scale(1 / H, 1 / H, 1 / H);
     if (own) { pt.geo = g; projectUVs(pt.geo, 1.6); } else { pt.geo = creaseSides(g); projectUVs(pt.geo, 1.6); g.dispose(); }
   });
