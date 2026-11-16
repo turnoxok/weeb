@@ -3711,8 +3711,17 @@ function relativeMatrix(obj, root) {
 }
 /* Color del objeto: matiz / saturación / luminosidad / tinte (se mezcla con el color original del material; con texturas el tinte multiplica la textura). */
 function gradeOf(o) { return { hue: (o &amp;&amp; o.hue) || 0, sat: o &amp;&amp; o.sat != null ? o.sat : 1, light: o &amp;&amp; o.light != null ? o.light : 1, tint: (o &amp;&amp; o.tint) || "#ffffff", tintAmt: (o &amp;&amp; o.tintAmt) || 0 }; }
+function temaColor(c) {
+  if (!window.TEMA) return c;
+  if (!TEMA.mapHsl) return c;
+  const q = { h: 0, s: 0, l: 0 };
+  c.getHSL(q, THREE.SRGBColorSpace);
+  const r = TEMA.mapHsl(q.h * 360, q.s, q.l);
+  if (r) c.setHSL(r[0] / 360, r[1], r[2], THREE.SRGBColorSpace);
+  return c;
+}
 function gradeColor(base, g) {
-  const c = base.clone();
+  const c = temaColor(base.clone());
   if (!g || (!g.hue &amp;&amp; g.sat === 1 &amp;&amp; g.light === 1 &amp;&amp; !g.tintAmt)) return c;
   const hsl = { h: 0, s: 0, l: 0 };
   c.getHSL(hsl);
@@ -4262,6 +4271,7 @@ function buildSvgExtrude(text, depthK, bevK, segK, lite, rev, arc) {
   return { parts, aspect: W / H };
 }
 function makeSvgMat(data, base, lite) {
+  if (base) { if (base.isColor) { base = base.clone(); if (window.TEMA) { if (TEMA.mapHsl) { const q = { h: 0, s: 0, l: 0 }; base.getHSL(q, THREE.SRGBColorSpace); const r = TEMA.mapHsl(q.h * 360, q.s, q.l); if (r) base.setHSL(r[0] / 360, r[1], r[2], THREE.SRGBColorSpace); } } } }
   const pr = SVG_MATS[data.mat] || SVG_MATS.plastic;
   const baseCol = new THREE.Color(data.matColor || pr.color || base);
   const rough = data.matRough != null ? data.matRough : pr.rough;
@@ -9793,7 +9803,7 @@ ${kfLines}
     ],
   },`;
   }).join("\n");
-  return `const OBJECTS = [\n${objLines || "  // (sin objetos)"}\n];`;
+  return `const OBJECTS = [\n${objLines || "  // (sin objetos)"}\n];\nif (window.TEMA) { if (TEMA.logo3d) { OBJECTS.forEach(function (o) { if (o) { if (/logo-slogan[.]svg/.test(o.url || "")) { o.url = TEMA.logo3d.url; const m = Math.min(5.014 / TEMA.logo3d.aspect, 2.2); if (o.keyframes) o.keyframes.forEach(function (k) { k.scale = k.scale * m; }); } } }); } }`;
 }
 
 /* ---- SEO / indexación ----
