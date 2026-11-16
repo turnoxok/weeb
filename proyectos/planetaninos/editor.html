@@ -6784,9 +6784,11 @@ function ldrPrepare(host, svgText, lineColor, swPx) {
     st.visibility = "hidden";
   });
   const n = items.length;
+  let im=null;if(window.TEMA&&window.TEMA.loaderImg){im=document.createElement("img");im.src=window.TEMA.loaderImg;im.alt="";im.style.cssText="position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;opacity:0;pointer-events:none";host.style.position="relative";host.appendChild(im)}
   return {
     count: n,
     setDraw(p) {
+      if(im)im.style.opacity=String(ldrClamp((p-.55)/.4));
       items.forEach((it, i) =&gt; {
         const start = (n &gt; 1 ? i / (n - 1) : 0) * (1 - LDR_SPAN);
         const f = ldrClamp((p - start) / LDR_SPAN);
