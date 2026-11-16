@@ -3710,7 +3710,7 @@ function relativeMatrix(obj, root) {
   return m;
 }
 /* Color del objeto: matiz / saturación / luminosidad / tinte (se mezcla con el color original del material; con texturas el tinte multiplica la textura). */
-function gradeOf(o) { return { hue: (o &amp;&amp; o.hue) || 0, sat: o &amp;&amp; o.sat != null ? o.sat : 1, light: o &amp;&amp; o.light != null ? o.light : 1, tint: (o &amp;&amp; o.tint) || "#ffffff", tintAmt: (o &amp;&amp; o.tintAmt) || 0 }; }
+function gradeOf(o) { return { hue: (o &amp;&amp; o.hue) || 0, sat: o &amp;&amp; o.sat != null ? o.sat : 1, light: o &amp;&amp; o.light != null ? o.light : 1, tint: (window.TEMA &amp;&amp; TEMA.hexEscena &amp;&amp; o &amp;&amp; o.tint) ? TEMA.hexEscena(o.tint) : ((o &amp;&amp; o.tint) || "#ffffff"), tintAmt: (o &amp;&amp; o.tintAmt) || 0 }; }
 function gradeColor(base, g) {
   const c = window.TEMA ? TEMA.colorear(base.clone()) : base.clone();
   if (!g || (!g.hue &amp;&amp; g.sat === 1 &amp;&amp; g.light === 1 &amp;&amp; !g.tintAmt)) return c;
