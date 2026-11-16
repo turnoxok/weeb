@@ -88,7 +88,7 @@ function firma() { return h('div', { class: 'firma' }, 'Hecho con ', h('a', { hr
 function logo(alto) { return h('img', { src: (window.TEMA && TEMA.logo) || S.pub.logoUrl || 'weeb-logo.svg', alt: S.pub.nombre || 'tuweeb', style: 'max-height:' + alto + 'px', onerror: ev => { if (!ev.target.dataset.f) { ev.target.dataset.f = 1; ev.target.src = 'weeb-logo.svg'; } } }); }
 
 const volverBtn = () => h('button', { class: 'weeb-back', onclick: () => { if (window.parent !== window) parent.postMessage('weeb-cerrar', location.origin); else location.href = '../'; } }, '← Volver al sitio');
-async function iniciarSesion(r, email) { S.token = r.token; S.user = r; localStorage.setItem('weeb_token', r.token); localStorage.setItem('weeb_email', email); await entrar(); }
+async function iniciarSesion(r, email) { S.token = r.token; S.user = r; localStorage.setItem('weeb_token', r.token); localStorage.setItem('weeb_email', email); try { localStorage.setItem('weeb_email_' + ((window.TEMA && TEMA.demoId) || ''), email); } catch (e) {} await entrar(); }
 /** Usuario creado sin clave: la elige él mismo la primera vez (solo funciona mientras no tenga una). */
 function pantallaPrimeraClave(email) {
   const f = h('form', { onsubmit: ev => { ev.preventDefault(); const d = datos(f); if (d.clave.length < 8) return toast('La clave tiene que tener al menos 8 caracteres', 'err'); if (d.clave !== d.repetir) return toast('Las dos claves no coinciden', 'err'); accion($('button', f), async () => { const r = await llamar('primeraClave', { email, clave: d.clave }, true); toast('Clave guardada', 'ok'); await iniciarSesion(r, email); }); } },
@@ -114,7 +114,7 @@ function pantallaOlvide(email0) {
 }
 function pantallaLogin() {
   const f = h('form', { onsubmit: ev => { ev.preventDefault(); const d = datos(f), b = $('button', f); accion(b, async () => { let r; try { r = await llamar('login', { email: d.email, clave: d.clave }); } catch (e) { if (e.codigo === 'CLAVE_PENDIENTE') return pantallaPrimeraClave(d.email); throw e; } await iniciarSesion(r, d.email); }); } },
-    campo('Mail', inp('email', { type: 'email', required: true, autocomplete: 'username', value: (window.TEMA && TEMA.demo && TEMA.demo.email) || localStorage.getItem('weeb_email') || '' })),
+    campo('Mail', inp('email', { type: 'email', required: true, autocomplete: 'username', value: localStorage.getItem('weeb_email_' + ((window.TEMA && TEMA.demoId) || '')) || (window.TEMA && TEMA.demo && TEMA.demo.email) || localStorage.getItem('weeb_email') || '' })),
     campo('Clave', inp('clave', { type: 'password', required: true, autocomplete: 'current-password', value: (window.TEMA && TEMA.demoId) ? 'demo1234' : '' })), h('button', { class: 'btn block' }, 'Entrar'));
   $app().replaceChildren(h('div', { class: 'login' }, logo(64), h('h1', null, S.pub.nombre || 'Panel'), h('p', { class: 'sub' }, (window.TEMA && TEMA.demoId) ? 'Es una demo: lo que cargues queda guardado en este dispositivo. Clave inicial: demo1234 (la podés cambiar en Seguridad).' : 'Entrá para gestionar tus reservas.'), f, h('button', { type: 'button', class: 'link', onclick: () => pantallaOlvide(datos(f).email) }, '¿Olvidaste tu clave?'), volverBtn(), firma()));
 }
@@ -410,9 +410,11 @@ async function vAjustes(main) {
     h('button', { class: 'btn block' }, 'Guardar ajustes'));
   const cf = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(cf); accion($('button', cf), async () => { const r = await api('admin.cambiarClave', { actual: x.actual, nueva: x.nueva }); S.token = r.token; localStorage.setItem('weeb_token', r.token); cf.reset(); toast('Clave cambiada', 'ok'); }); } },
     campo('Clave actual', inp('actual', { type: 'password', required: true, autocomplete: 'current-password' })), campo('Clave nueva (mínimo 8 caracteres)', inp('nueva', { type: 'password', required: true, minlength: '8', autocomplete: 'new-password' })), h('button', { class: 'btn line' }, 'Cambiar clave'));
+  const ce = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(ce); accion($('button', ce), async () => { const r = await api('admin.cambiarEmail', { email: x.email, clave: x.clave }); S.token = r.token; S.user = r; localStorage.setItem('weeb_token', r.token); localStorage.setItem('weeb_email', r.email); try { localStorage.setItem('weeb_email_' + ((window.TEMA && TEMA.demoId) || ''), r.email); } catch (e) {} ce.reset(); toast('Listo: ahora entrás con ' + r.email, 'ok'); render(); }); } },
+    campo('Mail nuevo (es tu usuario para entrar)', inp('email', { type: 'email', required: true, autocomplete: 'email' })), campo('Tu clave actual', inp('clave', { type: 'password', required: true, autocomplete: 'current-password' })), h('button', { class: 'btn line' }, 'Cambiar mi mail'));
   const ios = /iphone|ipad/i.test(navigator.userAgent) && !navigator.standalone;
   const app = S.instalar ? h('button', { class: 'btn soft', onclick: async () => { S.instalar.prompt(); await S.instalar.userChoice; S.instalar = null; render(); } }, '📲 Instalar como app') : ios ? h('p', { class: 'muted small' }, '📲 Para instalar en iPhone: tocá el botón Compartir de Safari y elegí "Agregar a inicio".') : h('p', { class: 'muted small' }, 'Si tu navegador lo permite, vas a ver acá el botón para instalar el panel como app.');
-  main.replaceChildren(h('div', { class: 'bar' }, h('h2', null, 'Ajustes')), h('div', { class: 'card' }, app), f, h('h3', { class: 'sec' }, 'Seguridad'), h('div', { class: 'card' }, h('p', { class: 'muted small' }, 'Sesión: ' + S.user.email), cf));
+  main.replaceChildren(h('div', { class: 'bar' }, h('h2', null, 'Ajustes')), h('div', { class: 'card' }, app), f, h('h3', { class: 'sec' }, 'Seguridad'), h('div', { class: 'card' }, h('p', { class: 'muted small' }, 'Tu usuario es tu mail: ' + S.user.email + '. Para cambiarlo alcanza con tu clave actual.'), ce, h('h4', { style: 'margin:1.2rem 0 .4rem' }, 'Cambiar clave'), cf));
 }
 
 iniciar().catch(e => { $app().replaceChildren(h('p', { class: 'empty' }, 'No se pudo cargar el panel: ' + e.message)); });

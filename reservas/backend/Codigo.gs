@@ -632,6 +632,19 @@ var ADMIN = {
     if (!iguales_(hashClave_(String(p.actual || ''), cur.sal), cur.claveHash)) throw err_('CREDENCIALES', 'La clave actual no es correcta');
     definirUsuario_(u.email, p.nueva); log_(u.email, 'cambio_clave', ''); return login_({ email: u.email, clave: p.nueva });
   },
+  'admin.cambiarEmail': function (p, u) {
+    var nuevo = txt_(p.email, 120).toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(nuevo)) throw err_('DATO_INVALIDO', 'Revisá el mail nuevo');
+    var cur = porId_('Usuarios', u.email);
+    if (!iguales_(hashClave_(String(p.clave || ''), cur.sal), cur.claveHash)) throw err_('CREDENCIALES', 'La clave no es correcta');
+    if (nuevo === u.email) throw err_('DATO_INVALIDO', 'Ese ya es tu mail');
+    return conLock_(function () {
+      if (porId_('Usuarios', nuevo)) throw err_('DATO_INVALIDO', 'Ese mail ya tiene acceso al panel');
+      var c = porId_('Usuarios', u.email); actualizar_('Usuarios', c._row, { email: nuevo });
+      var f = leer_('Config').filter(function (r) { return r.clave === 'emailAdmin' && String(r.valor).toLowerCase() === u.email; })[0]; if (f) actualizar_('Config', f._row, { valor: nuevo });
+      invalidar_(); log_(nuevo, 'cambio_email', u.email); return login_({ email: nuevo, clave: String(p.clave) });
+    });
+  },
   'admin.agenda': function (p) { return agenda_(p.mes, true); },
   'admin.reservas': function (p) {
     var q = txt_(p.q).toLowerCase();
