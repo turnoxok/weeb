@@ -58,7 +58,7 @@ var CFG_PUBLICA = ['nombre', 'logoUrl', 'colorPrincipal', 'whatsapp', 'direccion
                    'pagoTransferencia', 'pagoMercadoPago', 'urlReservas',
                    'pgEtiqueta', 'pgTitulo', 'pgBajada', 'pgDestacado', 'pgBotonPlan', 'pgCanjeTitulo', 'pgCanjeTexto', 'pgPromoPill', 'pgPromoTitulo', 'pgPromoTexto', 'pgPromoBoton', 'pgIncluyeTitulo', 'pgIncluyeSub',
                    'pgAdicionalesTitulo', 'pgPasosTitulo', 'pgPasosSub', 'pgFaqTitulo', 'pgCtaTexto', 'pgCtaBoton', 'pgCtaWhatsapp', 'pgNota'];
-var SECCIONES = { incluido: 1, adicionales: 1, detalle: 1, pasos: 1, faq: 1 };
+var SECCIONES = { incluido: 1, adicionales: 1, detalle: 1, pasos: 1, faq: 1, galeria: 1 };
 var CFG_MEMO = null;
 
 /* Lo que el cliente le paga a tuweeb por su sitio. Se carga en las pestañas Servicio y ServicioPagos de la hoja; en el panel el cliente solo lo ve. */

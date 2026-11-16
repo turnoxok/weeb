@@ -431,7 +431,8 @@ const BLOQUES_PG = [
   ['detalle', 'Fotos y detalle del festejo', 'Tarjetas con foto, título y texto.', ['etiqueta', 'titulo', 'texto', 'imagen']],
   ['adicionales', 'Adicionales que se pueden sumar', 'Etiquetas con lo que se puede agregar.', ['titulo']],
   ['pasos', 'Pasos para reservar', 'Los pasos que ve quien reserva.', ['titulo', 'texto']],
-  ['faq', 'Preguntas frecuentes', 'Pregunta y respuesta.', ['titulo', 'texto']]
+  ['faq', 'Preguntas frecuentes', 'Pregunta y respuesta.', ['titulo', 'texto']],
+  ['galeria', 'Galería de fotos', 'Las fotos de la página Galería: foto, título y descripción. Si no cargás ninguna, se muestran las de ejemplo.', ['titulo', 'texto', 'imagen']]
 ];
 function paginaPlanes(cfg, cont) {
   return h('div', null,
@@ -452,7 +453,7 @@ function textosPg(cfg) {
 }
 /** Foto de un bloque: se sube desde el celular o la compu (se achica sola); también se puede pegar un link. */
 function campoFoto(url0) {
-  const val = inp('imagen', { type: 'hidden', value: url0 }), prev = h('div', { class: 'fotoprev' }), foto = u => (/^https?:/i.test(u) ? u : '../' + String(u).replace(/^\.\//, ''));
+  const val = inp('imagen', { type: 'hidden', value: url0 }), prev = h('div', { class: 'fotoprev' }), foto = u => (/^(https?:|data:)/i.test(u) ? u : '../' + String(u).replace(/^\.\//, ''));
   const pintar = () => { prev.replaceChildren(val.value ? h('img', { src: foto(val.value), alt: 'Foto', style: 'max-width:100%;max-height:180px;border-radius:12px;display:block;margin-bottom:.5rem', onerror: e => e.target.replaceWith(h('span', { class: 'muted small' }, 'No se pudo mostrar la foto.')) }) : h('p', { class: 'muted small' }, 'Todavía no hay foto.')); };
   const sel = h('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp,image/*', style: 'display:none' });
   const subir = h('button', { type: 'button', class: 'btn soft sm', onclick: () => sel.click() }, val.value ? 'Cambiar foto' : 'Subir foto');
