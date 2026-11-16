@@ -74,7 +74,7 @@ const datos = form => { const o = {}; new FormData(form).forEach((v, k) => { o[k
 /* ───── arranque ───── */
 async function iniciar() {
   S.cfg = await (await fetch('config.json', { cache: 'no-store' })).json();
-  try { S.pub = await llamar('config', {}, 'get'); } catch (e) { S.pub = { nombre: 'Panel', colorPrincipal: '#8149bd', salones: [] }; }
+  try { S.pub = await llamar('config', {}, 'get'); if (window.TEMA && TEMA.nombre) S.pub.nombre = TEMA.nombre; } catch (e) { S.pub = { nombre: 'Panel', colorPrincipal: '#8149bd', salones: [] }; }
   marca();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
   window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); S.instalar = e; if (S.user && !sheetEl && S.view === 'ajustes') render(); });
@@ -85,7 +85,7 @@ function marca() {
   document.title = 'Panel · ' + (S.pub.nombre || '');
 }
 function firma() { return h('div', { class: 'firma' }, 'Hecho con ', h('a', { href: 'https://www.tuweeb.com', target: '_blank', rel: 'noopener' }, 'tuweeb')); }
-function logo(alto) { return h('img', { src: S.pub.logoUrl || 'weeb-logo.svg', alt: S.pub.nombre || 'tuweeb', style: 'max-height:' + alto + 'px', onerror: ev => { if (!ev.target.dataset.f) { ev.target.dataset.f = 1; ev.target.src = 'weeb-logo.svg'; } } }); }
+function logo(alto) { return h('img', { src: (window.TEMA && TEMA.logo) || S.pub.logoUrl || 'weeb-logo.svg', alt: S.pub.nombre || 'tuweeb', style: 'max-height:' + alto + 'px', onerror: ev => { if (!ev.target.dataset.f) { ev.target.dataset.f = 1; ev.target.src = 'weeb-logo.svg'; } } }); }
 
 const volverBtn = () => h('button', { class: 'weeb-back', onclick: () => { if (window.parent !== window) parent.postMessage('weeb-cerrar', location.origin); else location.href = '../'; } }, '← Volver al sitio');
 async function iniciarSesion(r, email) { S.token = r.token; S.user = r; localStorage.setItem('weeb_token', r.token); localStorage.setItem('weeb_email', email); await entrar(); }

@@ -26,7 +26,7 @@ const wa = (txt) => S.pub.whatsapp ? 'https://wa.me/' + S.pub.whatsapp.replace(/
 function cabecera() {
   const emb = window.parent !== window, txt = '← Volver al sitio', volver = emb ? [h('button', { class: 'weeb-back', onclick: () => parent.postMessage('weeb-cerrar', location.origin) }, txt), h('div', { style: 'height:46px' })] : S.cfg.volver ? [h('a', { class: 'weeb-back', href: S.cfg.volver }, txt), h('div', { style: 'height:46px' })] : '';
   const w = wa(`Hola! Quiero consultar por una reserva en ${S.pub.nombre}.`);
-  return h('div', null, volver, h('div', { class: 'head' }, h('img', { src: S.pub.logoUrl || 'weeb-logo.svg', alt: S.pub.nombre, onerror: ev => { if (!ev.target.dataset.f) { ev.target.dataset.f = 1; ev.target.src = 'weeb-logo.svg'; } } }), h('h1', null, S.pub.nombre), S.pub.direccion ? h('p', { class: 'muted small', style: 'margin:.3rem 0 0' }, S.pub.direccion) : ''),
+  return h('div', null, volver, h('div', { class: 'head' }, h('img', { src: (window.TEMA && TEMA.logo) || S.pub.logoUrl || 'weeb-logo.svg', alt: S.pub.nombre, onerror: ev => { if (!ev.target.dataset.f) { ev.target.dataset.f = 1; ev.target.src = 'weeb-logo.svg'; } } }), h('h1', null, S.pub.nombre), S.pub.direccion ? h('p', { class: 'muted small', style: 'margin:.3rem 0 0' }, S.pub.direccion) : ''),
     h('div', { class: 'acts' }, w ? h('a', { class: 'btn soft sm', href: w, target: '_blank', rel: 'noopener' }, 'WhatsApp') : '', S.pub.mapsUrl ? h('a', { class: 'btn soft sm', href: S.pub.mapsUrl, target: '_blank', rel: 'noopener' }, 'Cómo llegar') : '', h('button', { class: 'btn soft sm', onclick: consultar }, 'Mi reserva')));
 }
 const firma = () => h('div', { class: 'firma' }, 'Hecho con ', h('a', { href: 'https://www.tuweeb.com', target: '_blank', rel: 'noopener' }, 'tuweeb'));
@@ -36,7 +36,7 @@ const pagina = (paso, ...c) => $('#app').replaceChildren(h('div', { class: 'page
 
 async function iniciar() {
   S.cfg = await (await fetch('config.json', { cache: 'no-store' })).json();
-  try { S.pub = await llamar('config'); } catch (e) { $('#app').replaceChildren(h('div', { style: 'text-align:center;padding:26vh 1.2rem' }, h('p', { class: 'empty' }, e.message), h('button', { class: 'btn', onclick: () => location.reload() }, 'Reintentar')), window.parent !== window ? h('button', { class: 'weeb-back', onclick: () => parent.postMessage('weeb-cerrar', location.origin) }, '← Volver al sitio') : S.cfg.volver ? h('a', { class: 'weeb-back', href: S.cfg.volver }, '← Volver al sitio') : ''); return; }
+  try { S.pub = await llamar('config'); if (window.TEMA && TEMA.nombre) S.pub.nombre = TEMA.nombre; } catch (e) { $('#app').replaceChildren(h('div', { style: 'text-align:center;padding:26vh 1.2rem' }, h('p', { class: 'empty' }, e.message), h('button', { class: 'btn', onclick: () => location.reload() }, 'Reintentar')), window.parent !== window ? h('button', { class: 'weeb-back', onclick: () => parent.postMessage('weeb-cerrar', location.origin) }, '← Volver al sitio') : S.cfg.volver ? h('a', { class: 'weeb-back', href: S.cfg.volver }, '← Volver al sitio') : ''); return; }
   document.title = 'Reservar · ' + S.pub.nombre;
   const ref = refDe();
   if (ref) return estado(ref);

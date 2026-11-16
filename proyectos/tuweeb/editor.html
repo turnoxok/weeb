@@ -3560,17 +3560,8 @@ function relativeMatrix(obj, root) {
 }
 /* Color del objeto: matiz / saturación / luminosidad / tinte (se mezcla con el color original del material; con texturas el tinte multiplica la textura). */
 function gradeOf(o) { return { hue: (o && o.hue) || 0, sat: o && o.sat != null ? o.sat : 1, light: o && o.light != null ? o.light : 1, tint: (o && o.tint) || "#ffffff", tintAmt: (o && o.tintAmt) || 0 }; }
-function temaColor(c) {
-  if (!window.TEMA) return c;
-  if (!TEMA.mapHsl) return c;
-  const q = { h: 0, s: 0, l: 0 };
-  c.getHSL(q, THREE.SRGBColorSpace);
-  const r = TEMA.mapHsl(q.h * 360, q.s, q.l);
-  if (r) c.setHSL(r[0] / 360, r[1], r[2], THREE.SRGBColorSpace);
-  return c;
-}
 function gradeColor(base, g) {
-  const c = temaColor(base.clone());
+  const c = window.TEMA ? TEMA.colorear(base.clone()) : base.clone();
   if (!g || (!g.hue && g.sat === 1 && g.light === 1 && !g.tintAmt)) return c;
   const hsl = { h: 0, s: 0, l: 0 };
   c.getHSL(hsl);
@@ -3995,12 +3986,11 @@ function buildSvgExtrude(text, depthK, bevK, segK, lite, rev) {
   return { parts, aspect: W / H };
 }
 function makeSvgMat(data, base, lite) {
-  if (base) { if (base.isColor) { base = base.clone(); if (window.TEMA) { if (TEMA.mapHsl) { const q = { h: 0, s: 0, l: 0 }; base.getHSL(q, THREE.SRGBColorSpace); const r = TEMA.mapHsl(q.h * 360, q.s, q.l); if (r) base.setHSL(r[0] / 360, r[1], r[2], THREE.SRGBColorSpace); } } } }
   const pr = SVG_MATS[data.mat] || SVG_MATS.plastic;
-  const baseCol = new THREE.Color(data.matColor || pr.color || base);
+  const baseCol = (window.TEMA ? TEMA.colorear(new THREE.Color(data.matColor || pr.color || base)) : new THREE.Color(data.matColor || pr.color || base));
   const rough = data.matRough != null ? data.matRough : pr.rough;
   if (lite) {   /* liviano: sin transmisión (obliga a dibujar la escena dos veces), sin capas extra de brillo */
-    const bc = pr.tex ? (pr.useBase ? new THREE.Color("#ffffff") : (data.matColor ? new THREE.Color(data.matColor) : new THREE.Color("#ffffff"))) : new THREE.Color(data.matColor || pr.color || base);
+    const bc = pr.tex ? (pr.useBase ? new THREE.Color("#ffffff") : (data.matColor ? new THREE.Color(data.matColor) : new THREE.Color("#ffffff"))) : (window.TEMA ? TEMA.colorear(new THREE.Color(data.matColor || pr.color || base)) : new THREE.Color(data.matColor || pr.color || base));
     const oo = { roughness: pr.glass ? Math.min(rough, 0.35) : rough, metalness: pr.metal, color: bc };
     if (pr.glass) { oo.transparent = true; oo.opacity = pr.frost ? 0.62 : 0.4; }
     if (pr.iris) { oo.color = new THREE.Color("#b9b9d6"); oo.metalness = 0.85; oo.roughness = 0.2; }
@@ -8287,7 +8277,7 @@ function generateSeoPack(seoIn, dockIn, objects, sections, menuIn, fabIn) {
   }
   if (s.themeColor) head.push('<meta name="theme-color" content="' + seoEsc(s.themeColor) + '" />');
   /* Si el sitio enlaza a planes o a reservas, los datos de planes se piden en segundo plano cuando el 3D ya cargó: la página de planes abre ya lista. */
-  if (/\.\/(planes\.html|reservar\/)/.test(JSON.stringify([(menuIn && menuIn.items) || [], fabIn && fabIn.enabled ? fabIn.reservarUrl : ""]))) head.push("<" + "script>(function(){function go(){fetch('./reservar/config.json').then(function(r){return r.json()}).then(function(c){return fetch(c.api+'?action=config')}).then(function(r){return r.json()}).then(function(j){if(j&&j.ok&&j.data&&j.data.planes)localStorage.setItem('planes-cfg-v3',JSON.stringify(j.data))}).catch(function(){})}addEventListener('load',function(){(window.requestIdleCallback||function(f){setTimeout(f,3000)})(go,{timeout:8000})})})();" + "</" + "script>");
+  if (/\.\/(planes\.html|reservar\/)/.test(JSON.stringify([(menuIn && menuIn.items) || [], fabIn && fabIn.enabled ? fabIn.reservarUrl : ""]))) { head.push('<script src="./tema.js?v=1"></' + 'script>'); head.push("<" + "script>(function(){function go(){fetch('./reservar/config.json').then(function(r){return r.json()}).then(function(c){return fetch(c.api+'?action=config')}).then(function(r){return r.json()}).then(function(j){if(j&&j.ok&&j.data&&j.data.planes)localStorage.setItem('planes-cfg-v3',JSON.stringify(j.data))}).catch(function(){})}addEventListener('load',function(){(window.requestIdleCallback||function(f){setTimeout(f,3000)})(go,{timeout:8000})})})();" + "</" + "script>"); }
   head.push('<meta property="og:type" content="website" />');
   head.push('<meta property="og:locale" content="' + seoEsc(String(s.lang || "es").replace("-", "_")) + '" />');
   if (title) head.push('<meta property="og:title" content="' + seoEsc(title) + '" />');
@@ -8362,6 +8352,37 @@ function generateSeoPack(seoIn, dockIn, objects, sections, menuIn, fabIn) {
   return { head: head.join("\n"), body: bodyHtml + ns, lang: String(s.lang || "es") };
 }
 const ORDER_DAYS = [1, 2, 3, 4, 5, 6, 0];
+/* Pasa a variables de tema los colores de la interfaz (familia verde original) de un index.html ya armado.
+   - <style>: #hex -> var(--t-hex,#hex) y rgba(r,g,b,a) -> rgba(var(--t-hex-rgb,r,g,b),a)
+   - JS con claves JSON ("bg":"#hex", "accent", "color", "railColor") y valores ||"#hex" -> TEMA.hex("#hex")
+   - CSS dentro de textos JS: var(--x, #hex) -> var(--x, var(--t-hex,#hex))
+   La escena 3D no se toca acá: sus colores se cambian en los materiales (TEMA.colorear). Se puede aplicar dos veces sin problema. */
+function temaPostExport(html) {
+  const FAM = (h) => {
+    const c = [0, 2, 4].map((i) => parseInt(h.substr(i, 2), 16) / 255), M = Math.max(...c), m = Math.min(...c), l = (M + m) / 2, d = M - m;
+    if (!d) return false;
+    const s = l > 0.5 ? d / (2 - M - m) : d / (M + m);
+    let H = M === c[0] ? (c[1] - c[2]) / d + (c[1] < c[2] ? 6 : 0) : M === c[1] ? (c[2] - c[0]) / d + 2 : (c[0] - c[1]) / d + 4; H *= 60;
+    return H >= 60 && H <= 175 && s >= 0.15 && l >= 0.08 && l <= 0.97;
+  };
+  const cssFix = (css) => css
+    .replace(/(?<![\w#-])(?<!--t-[0-9a-f]{6},)#([0-9a-fA-F]{6})\b(?![\w-])/g, (m, h) => FAM(h) ? "var(--t-" + h.toLowerCase() + ",#" + h.toLowerCase() + ")" : m)
+    .replace(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)/g, (m, r, g, b, a) => {
+      const h = [r, g, b].map((v) => ("0" + (+v).toString(16)).slice(-2)).join("");
+      return FAM(h) ? "rgba(var(--t-" + h + "-rgb," + r + "," + g + "," + b + ")" + (a != null ? "," + a : "") + ")" : m;
+    });
+  const partes = html.split(/(<script\b[\s\S]*?<\/script>)/i);
+  return partes.map((p) => {
+    if (/^<script\b/i.test(p)) {
+      return p
+        .replace(/("(?:bg|accent|color|railColor)"):"(#[0-9a-fA-F]{6})"/g, (m, k, h) => FAM(h.slice(1)) ? k + ':(window.TEMA?TEMA.hex("' + h + '"):"' + h + '")' : m)
+        .replace(/\|\|"(#[0-9a-fA-F]{6})"/g, (m, h) => FAM(h.slice(1)) ? '||(window.TEMA?TEMA.hex("' + h + '"):"' + h + '")' : m)
+        .replace(/(var\(--(?!t-)[\w-]+,\s*)(#[0-9a-fA-F]{6})(\))/g, (m, a, h, c) => FAM(h.slice(1)) ? a + "var(--t-" + h.slice(1).toLowerCase() + "," + h + ")" + c : m);
+    }
+    return p.replace(/(<style\b[^>]*>)([\s\S]*?)(<\/style>)/gi, (m, a, css, c) => a + cssFix(css) + c)
+            .replace(/(\sstyle=")([^"]*)(")/g, (m, a, css, c) => a + cssFix(css) + c);
+  }).join("");
+}
 function generateRobotsTxt(url) {
   const u = String(url || "").trim().replace(/\/+$/, "");
   return "User-agent: *\nAllow: /\n" + (u ? "\nSitemap: " + u + "/sitemap.xml\n" : "");
@@ -10609,7 +10630,7 @@ function App() {
   };
 
   const downloadFullHtml = () => {
-        const html = buildFullHtml(boneCode, scenesCode, movementCode, scrollLengthCode, objectsCode, modelUrlCode, postFxCode, charTransformCode, trailCode, reflectionCode, loaderCode, loaderCss, extrasCode, seoPack, sectionsCode);
+        const html = temaPostExport(buildFullHtml(boneCode, scenesCode, movementCode, scrollLengthCode, objectsCode, modelUrlCode, postFxCode, charTransformCode, trailCode, reflectionCode, loaderCode, loaderCss, extrasCode, seoPack, sectionsCode));
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -10623,7 +10644,7 @@ function App() {
   };
 
   const copyFullHtml = () => {
-        const html = buildFullHtml(boneCode, scenesCode, movementCode, scrollLengthCode, objectsCode, modelUrlCode, postFxCode, charTransformCode, trailCode, reflectionCode, loaderCode, loaderCss, extrasCode, seoPack, sectionsCode);
+        const html = temaPostExport(buildFullHtml(boneCode, scenesCode, movementCode, scrollLengthCode, objectsCode, modelUrlCode, postFxCode, charTransformCode, trailCode, reflectionCode, loaderCode, loaderCss, extrasCode, seoPack, sectionsCode));
     copy(html, "full");
   };
 
