@@ -4278,10 +4278,10 @@ function buildSvgExtrude(text, depthK, bevK, segK, lite, rev, arc) {
 }
 function makeSvgMat(data, base, lite) {
   const pr = SVG_MATS[data.mat] || SVG_MATS.plastic;
-  const baseCol = (window.TEMA ? TEMA.colorear(new THREE.Color(data.matColor || pr.color || base)) : new THREE.Color(data.matColor || pr.color || base));
+  const baseCol = (window.TEMA ? TEMA.colorear(new THREE.Color(data.matColor || pr.color || base), data.url) : new THREE.Color(data.matColor || pr.color || base));
   const rough = data.matRough != null ? data.matRough : pr.rough;
   if (lite) {   /* liviano: sin transmisión (obliga a dibujar la escena dos veces), sin capas extra de brillo */
-    const bc = pr.tex ? (pr.useBase ? new THREE.Color("#ffffff") : (data.matColor ? new THREE.Color(data.matColor) : new THREE.Color("#ffffff"))) : (window.TEMA ? TEMA.colorear(new THREE.Color(data.matColor || pr.color || base)) : new THREE.Color(data.matColor || pr.color || base));
+    const bc = pr.tex ? (pr.useBase ? new THREE.Color("#ffffff") : (data.matColor ? new THREE.Color(data.matColor) : new THREE.Color("#ffffff"))) : (window.TEMA ? TEMA.colorear(new THREE.Color(data.matColor || pr.color || base), data.url) : new THREE.Color(data.matColor || pr.color || base));
     const oo = { roughness: pr.glass ? Math.min(rough, 0.35) : rough, metalness: pr.metal, color: bc };
     if (pr.glass) { oo.transparent = true; oo.opacity = pr.frost ? 0.62 : 0.4; }
     if (pr.alpha) { oo.transparent = true; oo.opacity = pr.alpha; oo.depthWrite = false; oo.side = THREE.DoubleSide; }
@@ -4430,7 +4430,7 @@ function BallsBody({ data, fade, hasFade, shadows }) {
     const m = mref.current;
     if (!m) return;
     const dm = new THREE.Object3D();
-    list.forEach((b, i) => { dm.position.set(b.x, b.y, b.z); dm.updateMatrix(); m.setMatrixAt(i, dm.matrix); m.setColorAt(i, b.c); });
+    list.forEach((b, i) => { dm.position.set(b.x, b.y, b.z); dm.updateMatrix(); m.setMatrixAt(i, dm.matrix); m.setColorAt(i, window.TEMA ? TEMA.colorear(b.c.clone ? b.c.clone() : b.c) : b.c); });
     m.instanceMatrix.needsUpdate = true;
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
     m.computeBoundingSphere();
@@ -9808,7 +9808,7 @@ ${kfLines}
     ],
   },`;
   }).join("\n");
-  return `const OBJECTS = [\n${objLines || "  // (sin objetos)"}\n];\nif (window.TEMA) { TEMA.listo.then(function () { TEMA.aplicarObjetos(OBJECTS); }); }`;
+  return `const OBJECTS = [\n${objLines || "  // (sin objetos)"}\n];\nif (window.TEMA) { TEMA.listo.then(function () { TEMA.aplicarObjetos(OBJECTS); if (TEMA.aplicarLoader) { TEMA.aplicarLoader(LOADER); } }); }`;
 }
 
 /* ---- SEO / indexación ----
