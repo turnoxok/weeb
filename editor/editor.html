@@ -9812,7 +9812,7 @@ ${kfLines}
     ],
   },`;
   }).join("\n");
-  return `const OBJECTS = [\n${objLines || "  // (sin objetos)"}\n];\nif (window.TEMA) { TEMA.listo.then(function () { TEMA.aplicarObjetos(OBJECTS); if (TEMA.aplicarDatos) { TEMA.aplicarDatos({ sections: typeof SECTIONS !== "undefined" ? SECTIONS : null, menu: typeof MENU !== "undefined" ? MENU : null, fab: typeof FAB !== "undefined" ? FAB : null }); } if (TEMA.aplicarLoader) { TEMA.aplicarLoader(LOADER); } }); }`;
+  return `const OBJECTS = [\n${objLines || "  // (sin objetos)"}\n];\nif (window.TEMA) { TEMA.listo.then(function () { TEMA.aplicarObjetos(OBJECTS); if(TEMA.recolorear){TEMA.recolorear([[typeof SITE2D!=="undefined"?SITE2D:null,"bg"],[typeof SITE2D!=="undefined"?SITE2D:null,"accent"],[typeof CURSOR!=="undefined"?CURSOR:null,"color"],[typeof PROGRESS_BAR!=="undefined"?PROGRESS_BAR:null,"color"],[typeof BACKTOP!=="undefined"?BACKTOP:null,"color"],[typeof MENU!=="undefined"?MENU:null,"railColor"],[typeof MUSIC!=="undefined"?MUSIC:null,"color"]]);} if (TEMA.aplicarDatos) { TEMA.aplicarDatos({ sections: typeof SECTIONS !== "undefined" ? SECTIONS : null, menu: typeof MENU !== "undefined" ? MENU : null, fab: typeof FAB !== "undefined" ? FAB : null }); } if (TEMA.aplicarLoader) { TEMA.aplicarLoader(LOADER); } }); }`;
 }
 
 /* ---- SEO / indexación ----
