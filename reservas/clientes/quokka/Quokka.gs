@@ -6,7 +6,7 @@ var QUOKKA = {
   config: {
     nombre: 'Quokka Pelotero', colorPrincipal: '#4d75ba', whatsapp: '5492994097423', direccion: 'Aguado 2280, Neuquén',
     mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Aguado%202280%2C%20Neuqu%C3%A9n',
-    mesesAnticipacion: 12, antelacionHoras: 24, descPagoTotal: 25, holdHorasTransferencia: 24, autoConfirmarSinSena: false,
+    mesesAnticipacion: 12, antelacionHoras: 24, holdHorasTransferencia: 24, autoConfirmarSinSena: false,
     juegoActivo: true, juegoCupo: 20, juegoPrecio: 20000, juegoDiasAntes: 5, juegoAuto: true, juegoDuracion: '2 horas', juegoPopup: true,
     juegoTexto: 'Los chicos juegan 2 horas en el pelotero, sin fiesta. Anotá a tus chicos y elegí el horario.',
     textoConfirmacion: '¡Gracias por elegir Quokka! Cualquier duda escribinos por WhatsApp.'
@@ -25,8 +25,13 @@ var QUOKKA = {
   ],
   /* combos de cumple de Quokka Original (flyer): precio de lista; pagando todo junto tiene 25% OFF. Selva todavía no tiene combos cargados. */
   planes: [
-    { nombre: 'Combo 1', precio: 890000, orden: 1, salonId: 'S1' }, { nombre: 'Combo 2', precio: 1000000, orden: 2, salonId: 'S1' },
-    { nombre: 'Combo 3', precio: 1300000, orden: 3, salonId: 'S1' }, { nombre: 'Combo 4', precio: 1500000, orden: 4, salonId: 'S1' }
+    { nombre: 'Combo 1', precio: 890000, orden: 1, salonId: 'S1', sena: 30, descTotal: 25 }, { nombre: 'Combo 2', precio: 1000000, orden: 2, salonId: 'S1', sena: 30, descTotal: 25 },
+    { nombre: 'Combo 3', precio: 1300000, orden: 3, salonId: 'S1', sena: 30, descTotal: 25 }, { nombre: 'Combo 4', precio: 1500000, orden: 4, salonId: 'S1', sena: 30, descTotal: 25 },
+    /* Quokka Selva (flyer dic/ene/feb): seña 50%, el otro 50% se ajusta a la fecha de pago; con el 100% se congela el precio. Sin descuento. 30 niños. Todos incluyen vajilla, atención personalizada y tarjeta virtual. */
+    { nombre: 'Combo 1', precio: 750000, orden: 1, salonId: 'S2', sena: 50, descTotal: 0, desc: '30 niños + 30 adultos · Salón a disposición (no incluye comida ni bebida: traer agua, servilletas y platitos para la torta)' },
+    { nombre: 'Combo 2', precio: 850000, orden: 2, salonId: 'S2', sena: 50, descTotal: 0, desc: '30 niños · Salón + comida y bebida solo para niños (adultos traen lo suyo) · Snacks, panchos, 2 docenas de sándwiches, frutas y verduras, 10 litros de bebida' },
+    { nombre: 'Combo 3', precio: 950000, orden: 3, salonId: 'S2', sena: 50, descTotal: 0, desc: '30 niños + 30 adultos · Salón + comida y bebida · Snacks, 3 docenas de pizzetas, 5 docenas de sándwiches, panchos para niños, 14 litros de bebida' },
+    { nombre: 'Combo 4', precio: 1150000, orden: 4, salonId: 'S2', sena: 50, descTotal: 0, desc: '30 niños + 30 adultos · Salón + comida y bebida · Snacks, 4 docenas de pizzetas, 7 docenas de sándwiches, panchos para niños, 1 kg de masas dulces, fruta y verdura, 18 litros de bebida' }
   ],
   servicio: {   // lo que Quokka le paga a tuweeb (solo lectura para ellos en el panel)
     precioTotal: 890000, cuotas: 1, valorCuota: 890000,
@@ -58,7 +63,7 @@ function cargarQuokka_() {
     var pl = leer_('Planes');
     q.planes.forEach(function (x) {
       if (pl.some(function (y) { return y.nombre === x.nombre && y.salonId === x.salonId; })) return;
-      agregar_('Planes', { id: nuevoId_('PL'), nombre: x.nombre, descripcion: 'Quokka Original', precio: x.precio, senaTipo: 'pct', senaValor: 30, orden: x.orden, activo: true, salonId: x.salonId }); n.planes++;
+      agregar_('Planes', { id: nuevoId_('PL'), nombre: x.nombre, descripcion: x.desc || 'Quokka Original', precio: x.precio, senaTipo: 'pct', senaValor: x.sena, descTotal: x.descTotal, orden: x.orden, activo: true, salonId: x.salonId }); n.planes++;
     });
     var sv = leer_('Servicio'); Object.keys(q.servicio).forEach(function (k) { var f = sv.filter(function (r) { return r.clave === k; })[0]; if (f) actualizar_('Servicio', f._row, { valor: q.servicio[k] }); else agregar_('Servicio', { clave: k, valor: q.servicio[k] }); });
     CFG_MEMO = null; invalidar_();

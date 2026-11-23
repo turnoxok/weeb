@@ -19,13 +19,14 @@ t('hora de juego: cerca de la fecha aparece en los dos salones', () => { const j
 t('lo que paga Quokka a tuweeb queda cargado', () => { assert.equal(a.run('leer_("Servicio").filter(r => r.clave === "precioTotal")[0].valor'), 890000); });
 t('los cumples sin precio no se confirman solos', () => {
   const lg = (a.run('definirUsuario_("c@q.com","clave-segura-123","Constanza","admin")'), a.post({ action: 'login', email: 'c@q.com', clave: 'clave-segura-123' })); assert(lg.ok);
-  const id = a.run('leer_("Turnos").filter(x => x.salonId === "S2")[0].id'), r = a.post({ action: 'reservar', turnoId: id, fecha: '2026-12-09', nombre: 'Ana Ruiz', telefono: '2995550000', personas: 10, metodo: 'transferencia' }); assert(r.ok, JSON.stringify(r)); assert.equal(r.data.estado, 'pendiente');
+  const id = a.run('leer_("Turnos").filter(x => x.salonId === "S1")[0].id'), pl = a.get({ action: 'config' }).data.planes.filter(x => x.salonId === 'S1')[0], r = a.post({ action: 'reservar', turnoId: id, fecha: '2026-12-09', nombre: 'Ana Ruiz', telefono: '2995550000', personas: 10, metodo: 'transferencia', planId: pl.id }); assert(r.ok, JSON.stringify(r)); assert.equal(r.data.estado, 'pendiente');
 });
-t('Original ofrece 4 combos y Selva ninguno (todavía)', () => {
-  const c = a.get({ action: 'config' }).data, p = c.planes; assert.equal(p.length, 4); assert(p.every(x => x.salonId === 'S1')); assert.equal(c.descPagoTotal, 25);
+t('cada salón ofrece solo sus 4 combos', () => {
+  const c = a.get({ action: 'config' }).data, p = c.planes; assert.equal(p.length, 8); assert.equal(p.filter(x => x.salonId === 'S1').length, 4); 
   const s2 = a.run('leer_("Turnos").filter(x => x.salonId === "S2")[0].id'), s1 = a.run('leer_("Turnos").filter(x => x.salonId === "S1")[0].id');
   assert.equal(a.post({ action: 'reservar', turnoId: s1, fecha: '2026-12-10', nombre: 'Ana Ruiz', telefono: '2995550001', personas: 10, metodo: 'transferencia' }).error, 'PLAN_INVALIDO');
-  assert(a.post({ action: 'reservar', turnoId: s2, fecha: '2026-12-10', nombre: 'Ana Ruiz', telefono: '2995550001', personas: 10, metodo: 'transferencia' }).ok);
+  assert.equal(a.post({ action: 'reservar', turnoId: s2, fecha: '2026-12-10', nombre: 'Ana Ruiz', telefono: '2995550001', personas: 10, metodo: 'transferencia' }).error, 'PLAN_INVALIDO');
+  const o = p.filter(x => x.salonId === 'S1')[0]; assert.equal(a.post({ action: 'reservar', turnoId: s2, fecha: '2026-12-10', nombre: 'Ana Ruiz', telefono: '2995550001', personas: 10, metodo: 'transferencia', planId: o.id }).error, 'PLAN_INVALIDO');   // un combo de Original no se puede usar en Selva
 });
 t('con seña: total de lista y seña 30%', () => {
   const s1 = a.run('leer_("Turnos").filter(x => x.salonId === "S1")[0].id'), p = a.get({ action: 'config' }).data.planes.filter(x => x.nombre === 'Combo 1')[0];
@@ -36,5 +37,10 @@ t('pagando todo: 25% OFF y la seña es el total', () => {
   const s1 = a.run('leer_("Turnos").filter(x => x.salonId === "S1")[0].id'), p = a.get({ action: 'config' }).data.planes.filter(x => x.nombre === 'Combo 4')[0];
   const r = a.post({ action: 'reservar', turnoId: s1, fecha: '2026-12-14', nombre: 'Cami Paz', telefono: '2995550003', personas: 30, metodo: 'transferencia', planId: p.id, pagoTotal: true }); assert(r.ok, JSON.stringify(r));
   assert.equal(r.data.total, 1125000); assert.equal(r.data.sena, 1125000); assert(/25% OFF/.test(r.data.plan));
+});
+t('Selva: seña 50% y sin descuento aunque pidan pago total', () => {
+  const s2 = a.run('leer_("Turnos").filter(x => x.salonId === "S2")[0].id'), p = a.get({ action: 'config' }).data.planes.filter(x => x.salonId === 'S2' && x.nombre === 'Combo 1')[0];
+  assert.equal(p.precio, 750000); const r = a.post({ action: 'reservar', turnoId: s2, fecha: '2026-12-15', nombre: 'Dani Paz', telefono: '2995550004', personas: 30, metodo: 'transferencia', planId: p.id, pagoTotal: true }); assert(r.ok, JSON.stringify(r));
+  assert.equal(r.data.total, 750000); assert.equal(r.data.sena, 375000);
 });
 console.log(`\n${n} pruebas ok`);

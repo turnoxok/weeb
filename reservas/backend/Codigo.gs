@@ -22,7 +22,7 @@ var TABLAS = {
   Reservas:    ['id', 'creada', 'actualizada', 'salonId', 'fecha', 'turnoId', 'inicio', 'fin', 'nombre', 'telefono', 'email', 'personas', 'nota',
                 'total', 'sena', 'pagado', 'saldo', 'estado', 'origen', 'metodo', 'venceEn', 'extRef', 'planId', 'plan',
                 'compId', 'compUrl', 'compNombre', 'compTipo', 'compFecha', 'compOrigen', 'codigo'],
-  Planes:      ['id', 'nombre', 'descripcion', 'precio', 'senaTipo', 'senaValor', 'orden', 'activo', 'salonId'],   // salonId vacío = el plan vale para todos los salones
+  Planes:      ['id', 'nombre', 'descripcion', 'precio', 'senaTipo', 'senaValor', 'orden', 'activo', 'salonId', 'descTotal'],   // salonId vacío = el plan vale para todos los salones · descTotal = % de descuento si se paga todo junto
   Contenido:   ['id', 'seccion', 'orden', 'titulo', 'texto', 'imagen', 'etiqueta', 'activo'],   // lo que muestra la página de planes: incluido, adicionales, detalle (fotos), pasos, faq
   Precios:     ['id', 'planId', 'turnoId', 'precio'],             // precio de cada plan en cada horario (si falta, vale el precio base del plan)
   Servicio:    ['clave', 'valor'],                                    // lo carga tuweeb (el cliente solo lo ve): precio del sitio, ediciones, dominio…
@@ -35,7 +35,7 @@ var TABLAS = {
   Usuarios:    ['email', 'nombre', 'rol', 'activo', 'sal', 'claveHash'],
   Log:         ['fecha', 'usuario', 'accion', 'detalle']
 };
-var NUMS = { chicos: 1, cupo: 1, capacidad: 1, orden: 1, precio: 1, senaValor: 1, personas: 1, total: 1, sena: 1, pagado: 1, saldo: 1, monto: 1 };
+var NUMS = { descTotal: 1, chicos: 1, cupo: 1, capacidad: 1, orden: 1, precio: 1, senaValor: 1, personas: 1, total: 1, sena: 1, pagado: 1, saldo: 1, monto: 1 };
 var BOOLS = { activo: 1 };
 var FECHAS = { fecha: 1, desde: 1, hasta: 1 };
 var HORAS = { inicio: 1, fin: 1 };
@@ -46,7 +46,7 @@ var CFG_DEF = {
   mesesAnticipacion: 12, antelacionHoras: 24, maxPendientesPorContacto: 3,
   pagoTransferencia: true, pagoMercadoPago: false,
   transferTitular: '', transferCbu: '', transferAlias: '', transferBanco: '', transferNota: '',
-  descPagoTotal: 0, holdHorasTransferencia: 24, holdMinutosOnline: 20, autoConfirmarSinSena: true,
+  holdHorasTransferencia: 24, holdMinutosOnline: 20, autoConfirmarSinSena: true,
   emailsActivos: true, emailAdmin: '', textoConfirmacion: '', urlReservas: '',
   /* hora de juego: apagada por defecto; se prende para los salones que la ofrecen */
   juegoActivo: false, juegoCupo: 20, juegoPrecio: 20000, juegoDiasAntes: 5, juegoAuto: true, juegoHoldHoras: 3, juegoMinutosAntes: 60,
@@ -61,7 +61,7 @@ var CFG_DEF = {
   pgCtaTexto: '¿Ya sabés la fecha? Mirá qué días hay lugar y dejá tu reserva.', pgCtaBoton: 'Ver disponibilidad', pgCtaWhatsapp: 'Escribinos por WhatsApp', pgNota: 'Consultá por fechas y promociones.'
 };
 var CFG_PUBLICA = ['nombre', 'logoUrl', 'colorPrincipal', 'whatsapp', 'direccion', 'mapsUrl', 'moneda', 'mesesAnticipacion', 'antelacionHoras',
-                   'pagoTransferencia', 'pagoMercadoPago', 'urlReservas', 'descPagoTotal',
+                   'pagoTransferencia', 'pagoMercadoPago', 'urlReservas',
                    'juegoActivo', 'juegoCupo', 'juegoPrecio', 'juegoDiasAntes', 'juegoAuto', 'juegoDuracion', 'juegoPopup', 'juegoTexto', 'juegoFlyer',
                    'pgEtiqueta', 'pgTitulo', 'pgBajada', 'pgDestacado', 'pgBotonPlan', 'pgCanjeTitulo', 'pgCanjeTexto', 'pgPromoPill', 'pgPromoTitulo', 'pgPromoTexto', 'pgPromoBoton', 'pgIncluyeTitulo', 'pgIncluyeSub',
                    'pgAdicionalesTitulo', 'pgPasosTitulo', 'pgPasosSub', 'pgFaqTitulo', 'pgCtaTexto', 'pgCtaBoton', 'pgCtaWhatsapp', 'pgNota'];
@@ -190,7 +190,7 @@ function configPublicaArmar_() {
   o.turnos = leer_('Turnos').filter(function (t) { return t.activo; }).map(function (t) { return { id: t.id, salonId: t.salonId, dias: String(t.dias), inicio: t.inicio, fin: t.fin, etiqueta: t.etiqueta, desde: t.desde, hasta: t.hasta }; });
   var pm = preciosMapa_();
   o.contenido = leer_('Contenido').filter(function (x) { return x.activo && SECCIONES[x.seccion]; }).sort(function (a, b) { return a.orden - b.orden; }).map(function (x) { return { seccion: x.seccion, titulo: x.titulo, texto: x.texto, imagen: x.imagen, etiqueta: x.etiqueta }; });
-  o.planes = planesActivos_().map(function (p) { return { id: p.id, nombre: p.nombre, descripcion: p.descripcion, salonId: p.salonId || '', precio: p.precio, sena: calcSena_(p, p.precio), senaTipo: p.senaTipo, senaValor: p.senaValor, precios: pm[p.id] || {} }; });
+  o.planes = planesActivos_().map(function (p) { return { id: p.id, nombre: p.nombre, descripcion: p.descripcion, salonId: p.salonId || '', descTotal: Number(p.descTotal) || 0, precio: p.precio, sena: calcSena_(p, p.precio), senaTipo: p.senaTipo, senaValor: p.senaValor, precios: pm[p.id] || {} }; });
   return o;
 }
 
@@ -379,8 +379,8 @@ function reservar_(p) {
       if (!plan) throw err_('PLAN_INVALIDO', 'Elegí un plan para tu fiesta');
     }
     var total = plan ? precioPlan_(plan, t.id) : t.precio, sena = calcSena_(plan || t, total), metodo = '', estado, vence = '', planNom = plan ? plan.nombre : '';
-    if (plan && cfg.descPagoTotal > 0 && (p.pagoTotal === true || p.pagoTotal === 'true' || p.pagoTotal === 1 || p.pagoTotal === '1')) {   // pagando todo junto hay descuento: el total baja y la "seña" es el total
-      total = Math.round(total * (100 - Math.min(100, cfg.descPagoTotal)) / 100); sena = total; planNom += ' · pago total ' + cfg.descPagoTotal + '% OFF';
+    if (plan && Number(plan.descTotal) > 0 && (p.pagoTotal === true || p.pagoTotal === 'true' || p.pagoTotal === 1 || p.pagoTotal === '1')) {   // pagando todo junto hay descuento: el total baja y la "seña" es el total
+      total = Math.round(total * (100 - Math.min(100, plan.descTotal)) / 100); sena = total; planNom += ' · pago total ' + plan.descTotal + '% OFF';
     }
     if (sena > 0) {
       metodo = p.metodo === 'mercadopago' ? 'mercadopago' : 'transferencia';
@@ -566,7 +566,7 @@ function validarPlan_(p) {
   var nombre = txt_(p.nombre, 60); if (!nombre) throw err_('DATO_INVALIDO', 'Falta el nombre del plan');
   var tipo = ['pct', 'monto'].indexOf(p.senaTipo) >= 0 ? p.senaTipo : 'ninguna';
   return { nombre: nombre, descripcion: txt_(p.descripcion, 400), precio: Math.max(0, num_(p.precio || 0, 'precio')), senaTipo: tipo,
-    senaValor: tipo === 'ninguna' ? 0 : Math.max(0, num_(p.senaValor || 0, 'seña')), orden: Math.round(Number(p.orden) || 0), activo: p.activo !== false, salonId: txt_(p.salonId, 40) };
+    senaValor: tipo === 'ninguna' ? 0 : Math.max(0, num_(p.senaValor || 0, 'seña')), orden: Math.round(Number(p.orden) || 0), activo: p.activo !== false, salonId: txt_(p.salonId, 40), descTotal: Math.max(0, Math.min(90, Number(p.descTotal) || 0)) };
 }
 /** Reemplaza los precios por horario de un plan. Solo valen horarios que existen y montos mayores a 0; el resto usa el precio base. */
 function guardarPrecios_(planId, precios) {

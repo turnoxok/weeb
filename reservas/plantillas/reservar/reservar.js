@@ -82,7 +82,7 @@ function formulario(error) {
     h('label', null, h('input', { type: 'radio', name: 'modo', value: 'sena', checked: !S.pagoTotal, onchange: () => { S.pagoTotal = false; act(); } }), h('div', null, h('b', { class: 'm-sena' }))),
     h('label', null, h('input', { type: 'radio', name: 'modo', value: 'total', checked: !!S.pagoTotal, onchange: () => { S.pagoTotal = true; act(); } }), h('div', null, h('b', { class: 'm-total' }))));
   const act = () => {
-    const c0 = cur(), dsc = Number(S.pub.descPagoTotal) || 0, conDesc = !!(c0 && tieneP && dsc > 0), tot = conDesc && S.pagoTotal ? Math.round(c0.precio * (100 - dsc) / 100) : null;
+    const c0 = cur(), dsc = Number(S.plan && S.plan.descTotal) || 0, conDesc = !!(c0 && tieneP && dsc > 0), tot = conDesc && S.pagoTotal ? Math.round(c0.precio * (100 - dsc) / 100) : null;
     const c = tot != null ? { ...c0, precio: tot, sena: tot } : c0;
     modoBox.hidden = !conDesc; if (conDesc) { modoBox.querySelector('.m-sena').textContent = 'Reservar con seña de ' + money(c0.sena); modoBox.querySelector('.m-total').textContent = 'Pagar todo ahora: ' + money(Math.round(c0.precio * (100 - dsc) / 100)) + ' (' + dsc + '% OFF)'; }
     totEl.textContent = c ? (tot != null ? 'Total ' + money(c.precio) + ' · ' + dsc + '% OFF por pago total (antes ' + money(c0.precio) + ')' : 'Total ' + money(c.precio) + (c.sena > 0 ? ' · Seña ' + money(c.sena) : ' · Sin seña')) : 'Elegí un plan para ver el precio';
@@ -109,7 +109,7 @@ function formulario(error) {
 async function enviar(f) {
   const b = $('#go'), x = Object.fromEntries(new FormData(f)); b.disabled = true; b.textContent = 'Reservando…';
   try {
-    const r = await llamar('reservar', { turnoId: S.slot.turnoId, fecha: S.fecha, nombre: x.nombre, telefono: x.telefono, email: x.email, personas: x.personas, nota: x.nota, metodo: x.metodo || 'transferencia', planId: S.plan ? S.plan.id : undefined, pagoTotal: S.plan && S.pagoTotal && Number(S.pub.descPagoTotal) > 0 ? true : undefined, web: x.xr_cmp }, true);
+    const r = await llamar('reservar', { turnoId: S.slot.turnoId, fecha: S.fecha, nombre: x.nombre, telefono: x.telefono, email: x.email, personas: x.personas, nota: x.nota, metodo: x.metodo || 'transferencia', planId: S.plan ? S.plan.id : undefined, pagoTotal: S.plan && S.pagoTotal && Number(S.plan.descTotal) > 0 ? true : undefined, web: x.xr_cmp }, true);
     history.replaceState(null, '', '?reserva=' + r.id); resultado(r, true);
   } catch (e) {
     if (e.codigo === 'PLAN_INVALIDO') { S.plan = null; S.pub = await llamar('config').catch(() => S.pub); return formulario(e.message); }
