@@ -40,6 +40,8 @@ var QUOKKA = {
     incluye: 'Web 3D con tu logo y tus mascotas|Reservas de cumpleaños y hora de juego|Panel desde el celular con los dos salones|Dominio .com gratis el primer año|Hosting y soporte|Tercer salón (Quokka Park): adicional de $380.000'
   }
 };
+/* Para correr a mano desde el editor: completa lo que falte (salones, horarios, planes, datos de cobro de prueba) */
+function aplicarQuokka() { cargarQuokka_(); }
 function cargarQuokka_() {
   instalar();
   var n = { config: 0, salones: 0, turnos: 0, planes: 0 };
