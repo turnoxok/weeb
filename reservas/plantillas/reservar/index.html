@@ -12,6 +12,13 @@
 </head>
 <body>
 <div id="app"><p class="muted" style="text-align:center;margin-top:30vh"><img class="tw3d" src="tuweeb-icono.svg" alt="tuweeb"></p></div>
+<script>/* arranque rápido: pide la config y los horarios del mes al mismo tiempo (antes iban uno después del otro) */
+(function(){try{if(window.TEMA)return;var d=new Date(),m=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2),P=window.__pre={mes:m};
+P.cfg=fetch('config.json',{cache:'no-cache'}).then(function(r){return r.json()});
+var u=P.cfg.then(function(c){return /PENDIENTE/.test(c.api||'')?null:c.api});
+P.pub=u.then(function(a){return a?fetch(a+'?action=config').then(function(r){return r.json()}):null}).catch(function(){return null});
+P.disp=u.then(function(a){return a?fetch(a+'?action=disponibilidad&mes='+m).then(function(r){return r.json()}):null}).catch(function(){return null});
+P.cfg.catch(function(){window.__pre=null})}catch(e){window.__pre=null}})();</script>
 <script src="reservar.js"></script>
 </body>
 </html>

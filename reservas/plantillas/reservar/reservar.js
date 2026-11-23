@@ -35,8 +35,9 @@ const setPaso = n => document.querySelectorAll('.steps i').forEach((e, i) => e.c
 const pagina = (paso, ...c) => $('#app').replaceChildren(h('div', { class: 'page' }, cabecera(), pasos(paso), ...c, firma()));
 
 async function iniciar() {
-  S.cfg = await (await fetch('config.json', { cache: 'no-store' })).json();
-  try { S.pub = await llamar('config'); if (window.TEMA && TEMA.nombre) S.pub.nombre = TEMA.nombre; } catch (e) { $('#app').replaceChildren(h('div', { style: 'text-align:center;padding:26vh 1.2rem' }, h('p', { class: 'empty' }, e.message), h('button', { class: 'btn', onclick: () => location.reload() }, 'Reintentar')), window.parent !== window ? h('button', { class: 'weeb-back', onclick: () => parent.postMessage('weeb-cerrar', location.origin) }, '← Volver al sitio') : S.cfg.volver ? h('a', { class: 'weeb-back', href: S.cfg.volver }, '← Volver al sitio') : ''); return; }
+  const P = window.__pre;
+  S.cfg = await (P ? P.cfg : fetch('config.json', { cache: 'no-store' }).then(r => r.json()));
+  try { const pj = P && P.pub ? await P.pub : null; S.pub = pj && pj.ok ? (S.cfg.demo ? Object.assign(pj.data, S.cfg.demo) : pj.data) : await llamar('config'); if (window.TEMA && TEMA.nombre) S.pub.nombre = TEMA.nombre; } catch (e) { $('#app').replaceChildren(h('div', { style: 'text-align:center;padding:26vh 1.2rem' }, h('p', { class: 'empty' }, e.message), h('button', { class: 'btn', onclick: () => location.reload() }, 'Reintentar')), window.parent !== window ? h('button', { class: 'weeb-back', onclick: () => parent.postMessage('weeb-cerrar', location.origin) }, '← Volver al sitio') : S.cfg.volver ? h('a', { class: 'weeb-back', href: S.cfg.volver }, '← Volver al sitio') : ''); return; }
   document.title = 'Reservar · ' + S.pub.nombre;
   const ref = refDe();
   if (ref) return estado(ref);
@@ -46,7 +47,7 @@ async function iniciar() {
 /* ───── 1. calendario y horarios ───── */
 async function calendario() {
   pagina(1, h('h2', { class: 't' }, 'Elegí el día'), h('p', { class: 'empty' }, h('img', { class: 'tw3d', src: 'tuweeb-icono.svg', alt: 'tuweeb' })));
-  let d; try { d = S.disp = await llamar('disponibilidad', { mes: S.mes }); } catch (e) { return pagina(1, h('div', { class: 'err' }, e.message)); }
+  let d; try { const P = window.__pre, pj = P && P.mes === S.mes && !S.usoPre && P.disp ? (S.usoPre = 1, await P.disp) : null; d = S.disp = pj && pj.ok ? pj.data : await llamar('disponibilidad', { mes: S.mes }); } catch (e) { return pagina(1, h('div', { class: 'err' }, e.message)); }
   const [y, m] = S.mes.split('-').map(Number), n = new Date(y, m, 0).getDate(), off = (new Date(y, m - 1, 1).getDay() + 6) % 7;
   const ini = d.hoy.slice(0, 7), fin = d.hasta.slice(0, 7), cel = [...['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'].map(x => h('div', { class: 'dow' }, x)), ...Array(off).fill(0).map(() => h('div', { class: 'off' }))];
   for (let i = 1; i <= n; i++) {

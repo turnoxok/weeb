@@ -1,6 +1,11 @@
 /* Quokka Pelotero — panel y reservas: oscuro violeta con vidrio, acento verde Quokka */
 :root{--brand:#03ad55;--brand-ink:#04210f;--bg:#1a0f3d;--card:rgba(255,255,255,.08);--card-solid:#2a1a63;--ink:#fffdf3;--mute:rgba(255,253,243,.68);--line:rgba(255,255,255,.14);--line2:rgba(255,255,255,.24);--ok:#7ee8a8;--warn:#fffea1;--bad:#ff8aa6;--glow:rgba(3,173,85,.38)}
-html{background:var(--bg)}
-body{background:radial-gradient(120% 55% at 50% -8%,#4b2aa8 0%,rgba(75,42,168,0) 62%),radial-gradient(90% 50% at 100% 100%,rgba(3,173,85,.22) 0%,rgba(3,173,85,0) 60%),linear-gradient(#1a0f3d,#130a2e) fixed}
+html{min-height:100%;background:radial-gradient(120% 55% at 50% -8%,#4b2aa8 0%,rgba(75,42,168,0) 62%),radial-gradient(90% 50% at 100% 100%,rgba(3,173,85,.22) 0%,rgba(3,173,85,0) 60%),linear-gradient(#1a0f3d,#130a2e) fixed #130a2e}
+body{background:transparent;min-height:100vh}
 input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(3,173,85,.28)}
 .comp .pdf{color:#03ad55}
+
+/* cargador: la cabeza de Quokka saltando (en vez del giro de tuweeb) */
+.tw3d{width:68px;height:auto;filter:drop-shadow(0 8px 14px rgba(0,0,0,.4));transform-origin:50% 100%;animation:qk-salto 1.1s ease-in-out infinite}
+@keyframes qk-salto{0%,100%{transform:translateY(0) scale(1,1)}20%{transform:translateY(0) scale(1.08,.9)}55%{transform:translateY(-16px) scale(.96,1.05)}}
+@media(prefers-reduced-motion:reduce){.tw3d{animation:none}}
