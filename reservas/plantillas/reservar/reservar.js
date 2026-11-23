@@ -62,6 +62,11 @@ async function calendario() {
 function calendario2() { setPaso(2); document.querySelectorAll('.cal button').forEach(b => b.classList.remove('sel')); document.querySelectorAll('.cal button').forEach(b => { if (b.getAttribute('aria-label') && b.getAttribute('aria-label').startsWith(flarga(S.fecha) + ' ')) b.classList.add('sel'); }); horarios(); }
 /** Precio y seña de un plan en el horario elegido (si el plan tiene precio puntual para ese horario, vale ese). */
 /** Planes que ofrece cada salón: los suyos y los que valen para todos. */
+const colorDe = id => (S.cfg.colores || {})[id] || '';
+function leyenda() {   // referencia de colores por salón (config.json: "colores" {idSalón: color} y "extras" [{nombre,color,nota}])
+  const it = [...(S.pub.salones || []).filter(x => colorDe(x.id)).map(x => ({ nombre: x.nombre, color: colorDe(x.id) })), ...(S.cfg.extras || [])];
+  return it.length < 2 ? '' : h('ul', { class: 'ley', 'aria-label': 'Referencia de colores' }, it.map(x => h('li', { style: '--sc:' + x.color }, h('i'), h('span', null, x.nombre, x.nota ? h('em', null, x.nota) : ''))));
+}
 function planesDe(salonId) { return (S.pub.planes || []).filter(p => !p.salonId || p.salonId === salonId); }
 function valePlan(p, turnoId) {
   const pr = p.precios && p.precios[turnoId] != null ? Number(p.precios[turnoId]) : p.precio;
@@ -70,7 +75,7 @@ function valePlan(p, turnoId) {
 }
 function horarios() {
   const sl = (S.disp.dias[S.fecha]) || [], multi = (S.pub.salones || []).length > 1, nom = id => ((S.pub.salones || []).find(s => s.id === id) || {}).nombre;
-  const cont = $('#horarios'); cont.replaceChildren(h('h2', { class: 't' }, 'Horarios del ' + flarga(S.fecha)), h('div', { class: 'slots' }, sl.map(s => s.estado !== 'libre' ? h('div', { class: 'slot off', 'aria-disabled': 'true' }, h('div', null, h('b', null, `${s.inicio} a ${s.fin} hs`), h('span', { class: 'muted small' }, (s.etiqueta ? s.etiqueta : '') + (multi ? ' · ' + nom(s.salonId) : ''))), h('div', { class: 'p muted' }, 'No disponible')) : h('button', { class: 'slot', onclick: () => { S.slot = s; S.plan = null; formulario(); } }, h('div', null, h('b', null, `${s.inicio} a ${s.fin} hs`), h('span', { class: 'muted small' }, (s.etiqueta ? s.etiqueta : '') + (multi ? ' · ' + nom(s.salonId) : ''))), planesDe(s.salonId).length ? h('div', { class: 'p small' }, 'Desde ' + money(Math.min(...planesDe(s.salonId).map(p => valePlan(p, s.turnoId).precio)))) : h('div', { class: 'p' }, money(s.precio), h('div', { class: 'muted small', style: 'font-weight:600' }, s.sena > 0 ? 'Seña ' + money(s.sena) : 'Sin seña'))))));
+  const cont = $('#horarios'); cont.replaceChildren(h('h2', { class: 't' }, 'Horarios del ' + flarga(S.fecha)), leyenda(), h('div', { class: 'slots' }, sl.map(s => s.estado !== 'libre' ? h('div', { class: 'slot off' + (colorDe(s.salonId) ? ' sc' : ''), style: colorDe(s.salonId) ? '--sc:' + colorDe(s.salonId) : null, 'aria-disabled': 'true' }, h('div', null, h('b', null, `${s.inicio} a ${s.fin} hs`), h('span', { class: 'muted small' }, [s.etiqueta, multi ? nom(s.salonId) : ''].filter(Boolean).join(' · '))), h('div', { class: 'p muted' }, 'No disponible')) : h('button', { class: 'slot' + (colorDe(s.salonId) ? ' sc' : ''), style: colorDe(s.salonId) ? '--sc:' + colorDe(s.salonId) : null, onclick: () => { S.slot = s; S.plan = null; formulario(); } }, h('div', null, h('b', null, `${s.inicio} a ${s.fin} hs`), h('span', { class: 'muted small' }, [s.etiqueta, multi ? nom(s.salonId) : ''].filter(Boolean).join(' · '))), planesDe(s.salonId).length ? h('div', { class: 'p small' }, 'Desde ' + money(Math.min(...planesDe(s.salonId).map(p => valePlan(p, s.turnoId).precio)))) : h('div', { class: 'p' }, money(s.precio), h('div', { class: 'muted small', style: 'font-weight:600' }, s.sena > 0 ? 'Seña ' + money(s.sena) : 'Sin seña'))))));
   cont.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 

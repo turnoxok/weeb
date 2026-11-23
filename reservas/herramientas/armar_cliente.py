@@ -7,7 +7,7 @@ AQUI = os.path.dirname(os.path.abspath(__file__)); PL = os.path.join(AQUI, '..',
 ap = argparse.ArgumentParser()
 ap.add_argument('--api', required=True); ap.add_argument('--nombre', required=True); ap.add_argument('--color', default='#8149bd')
 ap.add_argument('--volver', default='../', help='a dónde vuelve el botón "Volver a la web" de la página de reservas (default: ../)')
-ap.add_argument('--tema', help='hoja de estilos con la paleta del cliente (se copia como tema.css a panel y reservar)'); ap.add_argument('--logo', help='imagen del logo para el ícono de la app (png/jpg/svg no)'); ap.add_argument('--carga', help='imagen (png) que se muestra girando mientras cargan reservar y el panel, en lugar del isotipo de tuweeb'); ap.add_argument('--salida', required=True)
+ap.add_argument('--tema', help='hoja de estilos con la paleta del cliente (se copia como tema.css a panel y reservar)'); ap.add_argument('--logo', help='imagen del logo para el ícono de la app (png/jpg/svg no)'); ap.add_argument('--carga', help='imagen (png) que se muestra girando mientras cargan reservar y el panel, en lugar del isotipo de tuweeb'); ap.add_argument('--config-extra', help='JSON con claves extra para reservar/config.json (por ej. colores por salón)'); ap.add_argument('--salida', required=True)
 a = ap.parse_args()
 if not a.api.startswith('https://script.google.com/') or not a.api.endswith('/exec'): sys.exit('--api debe ser la URL de la aplicación web (termina en /exec)')
 
@@ -33,7 +33,7 @@ for sub in ('panel', 'reservar'):
             m = re.search(r'<link[^>]*href="(?:\./)?(?:panel|reservar)\.css[^>]*>', h)
             h = h.replace(m.group(0), m.group(0) + '\n<link rel="stylesheet" href="tema.css">', 1) if m else h.replace('</head>', '<link rel="stylesheet" href="tema.css">\n</head>', 1)
             h = h.replace('content="#2b1c44"', 'content="#1a0f3d"'); open(ix, 'w', encoding='utf8').write(h)
-    json.dump({'api': a.api, **({'volver': a.volver} if sub == 'reservar' else {})}, open(os.path.join(d, 'config.json'), 'w'), indent=1)
+    json.dump({'api': a.api, **({'volver': a.volver, **(json.loads(a.config_extra) if a.config_extra else {})} if sub == 'reservar' else {})}, open(os.path.join(d, 'config.json'), 'w'), indent=1)
 shutil.copy(os.path.join(PL, 'juego', 'juego.js'), os.path.join(a.salida, 'juego.js'))   # hora de juego: lista, reserva y aviso emergente (la usa la web)
 d = os.path.join(a.salida, 'panel')
 try:
