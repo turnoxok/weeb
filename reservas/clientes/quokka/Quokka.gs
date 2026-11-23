@@ -4,7 +4,7 @@
    (solo completa lo que falta). Los precios de los cumpleaños se cargan después desde el panel (Turnos). */
 var QUOKKA = {
   config: {
-    nombre: 'Quokka Pelotero', colorPrincipal: '#4d75ba', whatsapp: '5492994667251', direccion: 'Aguado 2280, Neuquén',
+    nombre: 'Quokka Pelotero', colorPrincipal: '#4d75ba', whatsapp: '5492994097423', direccion: 'Aguado 2280, Neuquén',
     mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Aguado%202280%2C%20Neuqu%C3%A9n',
     mesesAnticipacion: 12, antelacionHoras: 24, holdHorasTransferencia: 24, autoConfirmarSinSena: false,
     juegoActivo: true, juegoCupo: 20, juegoPrecio: 20000, juegoDiasAntes: 5, juegoAuto: true, juegoDuracion: '2 horas', juegoPopup: true,
