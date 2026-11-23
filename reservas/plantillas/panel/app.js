@@ -388,6 +388,7 @@ function pagarTuweeb(v) {
   return h('div', { class: 'card', style: 'margin-top:.8rem' }, h('b', null, 'Pagar mi web'),
     h('p', { style: 'margin:.3rem 0;font-size:1.05rem' }, 'A pagar ahora: ', h('b', null, money(monto))),
     h('a', { class: 'btn block', href: link, target: '_blank', rel: 'noopener', style: 'text-align:center', onclick: () => { try { navigator.clipboard.writeText(String(Math.round(monto))); toast('Monto copiado: pegalo en Mercado Pago', 'ok'); } catch (e) {} } }, 'Pagar con Mercado Pago'),
+    v.cuotas > 1 ? h('p', { class: 'small', style: 'margin:.3rem 0' }, `Podés abonar ${money(v.valorCuota)} ahora como seña (${Math.round(100 / v.cuotas)}%) y el resto después, o pagar todo junto (${money(v.saldo)}).`) : '',
     h('p', { class: 'small muted', style: 'margin:.4rem 0' }, `En la pantalla de Mercado Pago escribí ${money(monto)} y pagá a "tuweeb". Después tocá "Ya pagué" para avisarnos.`),
     h('a', { class: 'btn line block', href: aviso, target: '_blank', rel: 'noopener', style: 'text-align:center' }, 'Ya pagué'));
 }

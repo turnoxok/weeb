@@ -36,7 +36,7 @@ var QUOKKA = {
     { nombre: 'Combo 4', precio: 1150000, orden: 4, salonId: 'S2', sena: 50, descTotal: 0, desc: '30 niños + 30 adultos · Salón + comida y bebida · Snacks, 4 docenas de pizzetas, 7 docenas de sándwiches, panchos para niños, 1 kg de masas dulces, fruta y verdura, 18 litros de bebida' }
   ],
   servicio: {   // lo que Quokka le paga a tuweeb (solo lectura para ellos en el panel)
-    precioTotal: 890000, cuotas: 1, valorCuota: 890000,
+    precioTotal: 890000, cuotas: 2, valorCuota: 445000,   // seña del 50% y el resto después
     incluye: 'Web 3D con tu logo y tus mascotas|Reservas de cumpleaños y hora de juego|Panel desde el celular con los dos salones|Dominio .com gratis el primer año|Hosting y soporte|Tercer salón (Quokka Park): adicional de $380.000'
   }
 };
