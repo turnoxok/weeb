@@ -9,7 +9,9 @@ var QUOKKA = {
     mesesAnticipacion: 12, antelacionHoras: 24, holdHorasTransferencia: 24, autoConfirmarSinSena: false,
     juegoActivo: true, juegoCupo: 20, juegoPrecio: 20000, juegoDiasAntes: 5, juegoAuto: true, juegoDuracion: '2 horas', juegoPopup: true,
     juegoTexto: 'Los chicos juegan 2 horas en el pelotero, sin fiesta. Anotá a tus chicos y elegí el horario.',
-    textoConfirmacion: '¡Gracias por elegir Quokka! Cualquier duda escribinos por WhatsApp.'
+    textoConfirmacion: '¡Gracias por elegir Quokka! Cualquier duda escribinos por WhatsApp.',
+    /* DATOS DE PRUEBA para que se vea cómo funciona el cobro: Constanza carga los reales desde el panel */
+    transferTitular: 'Quokka Pelotero (prueba)', transferAlias: 'quokka.prueba', transferCbu: '0000003100000000000001', transferBanco: 'Banco de prueba', transferNota: 'Datos de prueba: no transfieras plata de verdad.'
   },
   salones: [
     { id: 'S1', nombre: 'Quokka Original (0 a 9 años)', orden: 1 },

@@ -381,6 +381,16 @@ function bloqueoNuevo(fecha) {
 
 /* ───── MI WEB (solo lectura: lo carga tuweeb en la hoja) ───── */
 const fanio = f => new Date(f + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
+/* pago a tuweeb: botón de Mercado Pago (el mismo link para todos los clientes) + avisar por WhatsApp */
+function pagarTuweeb(v) {
+  const monto = v.proximaCuota ? v.proximaCuota.monto : v.saldo, link = (S.cfg && S.cfg.pagoWeeb) || 'https://link.mercadopago.com.ar/x23';
+  const aviso = 'https://wa.me/5493435020970?text=' + encodeURIComponent(`Hola tuweeb! Ya pagué ${money(monto)} de mi web (${(S.pub && S.pub.nombre) || ''}). Les mando el comprobante.`);
+  return h('div', { class: 'card', style: 'margin-top:.8rem' }, h('b', null, 'Pagar mi web'),
+    h('p', { style: 'margin:.3rem 0;font-size:1.05rem' }, 'A pagar ahora: ', h('b', null, money(monto))),
+    h('a', { class: 'btn block', href: link, target: '_blank', rel: 'noopener', style: 'text-align:center', onclick: () => { try { navigator.clipboard.writeText(String(Math.round(monto))); toast('Monto copiado: pegalo en Mercado Pago', 'ok'); } catch (e) {} } }, 'Pagar con Mercado Pago'),
+    h('p', { class: 'small muted', style: 'margin:.4rem 0' }, `En la pantalla de Mercado Pago escribí ${money(monto)} y pagá a "tuweeb". Después tocá "Ya pagué" para avisarnos.`),
+    h('a', { class: 'btn line block', href: aviso, target: '_blank', rel: 'noopener', style: 'text-align:center' }, 'Ya pagué'));
+}
 async function vWeb(main) {
   cargando(main); let v; try { v = await api('admin.servicio'); } catch (e) { main.replaceChildren(h('p', { class: 'empty' }, e.message)); return; }
   const est = { pagado: ['Pagado', 'confirmada'], 'en cuotas': ['En cuotas', 'pendiente'], pendiente: ['Pendiente de pago', 'pendiente'] }[v.estado] || [v.estado, ''];
@@ -392,6 +402,7 @@ async function vWeb(main) {
     h('div', { class: 'progress' }, h('i', { style: 'width:' + pct + '%' })),
     h('p', { class: 'muted small', style: 'margin:.6rem 0 0' }, `Se paga de contado (${money(v.precioTotal)}) o hasta en ${v.cuotas} cuotas de ${money(v.valorCuota)}.`),
     v.proximaCuota ? h('div', { class: 'item static', style: 'margin-top:.8rem' }, h('div', { class: 'main' }, h('b', null, `Próximo pago: ${money(v.proximaCuota.monto)}`), h('span', { class: 'muted small' }, `Cuota ${v.proximaCuota.numero} de ${v.cuotas} · ya pagaste ${v.cuotasPagadas}`))) : '',
+    (v.proximaCuota || v.saldo > 0) ? pagarTuweeb(v) : '',
     h('h3', { class: 'sec' }, 'Qué incluye'), h('ul', { class: 'small', style: 'padding-left:1.1rem;line-height:1.7' }, v.incluye.map(x => h('li', null, x))),
     h('h3', { class: 'sec' }, 'Dominio y renovación'),
     h('dl', { class: 'kv' }, h('dt', null, 'Dominio'), h('dd', null, v.dominio || 'Se registra al recibir el primer pago'), h('dt', null, 'Inicio'), h('dd', null, v.dominioInicio ? fanio(v.dominioInicio) : '—'), h('dt', null, 'Próximo pago anual'), h('dd', null, venc), h('dt', null, 'Renovación'), h('dd', null, `USD ${v.renovacionUsd} por año`)),
