@@ -6,6 +6,7 @@ body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 .wrap{max-width:900px;margin:0 auto;padding:1.2rem 1rem}
 .tabs{position:fixed;bottom:10px;left:10px;right:10px;background:rgba(27,16,41,.7);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid var(--line2);border-radius:22px;display:flex;justify-content:space-around;padding:.25rem;margin-bottom:env(safe-area-inset-bottom);z-index:30;box-shadow:0 12px 34px rgba(0,0,0,.4)}
 .tabs button{flex:1;border:0;background:transparent;color:var(--mute);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;padding:.55rem 0 .45rem;cursor:pointer;position:relative;border-radius:16px}
+.tabs7 button{font-size:.54rem;letter-spacing:.02em}
 .tabs button svg{width:22px;height:22px;stroke-width:1.5}
 .tabs button.on{color:var(--ink);background:rgba(255,255,255,.1)}
 .tabs button.on svg{color:var(--brand)}

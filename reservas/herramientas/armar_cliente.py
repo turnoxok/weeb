@@ -28,6 +28,7 @@ for sub in ('panel', 'reservar'):
     for f in os.listdir(os.path.join(PL, sub)): shutil.copy(os.path.join(PL, sub, f), os.path.join(d, f))
     shutil.copy(os.path.join(PL, 'base.css'), os.path.join(d, 'base.css')); shutil.copy(os.path.join(PL, 'weeb-logo.svg'), os.path.join(d, 'weeb-logo.svg'))
     json.dump({'api': a.api, **({'volver': a.volver} if sub == 'reservar' else {})}, open(os.path.join(d, 'config.json'), 'w'), indent=1)
+shutil.copy(os.path.join(PL, 'juego', 'juego.js'), os.path.join(a.salida, 'juego.js'))   # hora de juego: lista, reserva y aviso emergente (la usa la web)
 d = os.path.join(a.salida, 'panel')
 try:
     for lado in (192, 512): icono(os.path.join(d, f'icon-{lado}.png'), lado)
