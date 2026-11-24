@@ -58,13 +58,14 @@ var CFG_DEF = {
   pgPromoPill: 'Promo por tiempo limitado', pgPromoTitulo: 'Congelá tu fecha', pgPromoTexto: 'Reservá con anticipación y congelá el precio de hoy con la seña. Con la promo pagás menos que en el horario más pedido.', pgPromoBoton: 'Congelá tu fecha',
   pgIncluyeTitulo: 'Todo lo que incluye tu festejo', pgIncluyeSub: 'Vos disfrutás: del resto nos ocupamos nosotros.', pgAdicionalesTitulo: 'Podés sumar',
   pgPasosTitulo: 'Reservar son tres pasos', pgPasosSub: 'Ves el calendario real, con los días que ya están ocupados. Sin esperar que alguien te conteste.', pgFaqTitulo: 'Preguntas que nos hacen todos',
-  pgCtaTexto: '¿Ya sabés la fecha? Mirá qué días hay lugar y dejá tu reserva.', pgCtaBoton: 'Ver disponibilidad', pgCtaWhatsapp: 'Escribinos por WhatsApp', pgNota: 'Consultá por fechas y promociones.'
+  pgCtaTexto: '¿Ya sabés la fecha? Mirá qué días hay lugar y dejá tu reserva.', pgCtaBoton: 'Ver disponibilidad', pgCtaWhatsapp: 'Escribinos por WhatsApp', pgNota: 'Consultá por fechas y promociones.', pgOpiniones: false, pgOpinionesTitulo: 'Lo que dicen las familias', pgOpinionesPuntaje: '', pgOpinionesCantidad: ''
 };
 var CFG_PUBLICA = ['nombre', 'logoUrl', 'colorPrincipal', 'whatsapp', 'direccion', 'mapsUrl', 'moneda', 'mesesAnticipacion', 'antelacionHoras',
                    'pagoTransferencia', 'pagoMercadoPago', 'urlReservas',
                    'juegoActivo', 'juegoCupo', 'juegoPrecio', 'juegoDiasAntes', 'juegoAuto', 'juegoDuracion', 'juegoPopup', 'juegoTexto', 'juegoFlyer',
                    'pgEtiqueta', 'pgTitulo', 'pgBajada', 'pgDestacado', 'pgBotonPlan', 'pgCanjeTitulo', 'pgCanjeTexto', 'pgPromoPill', 'pgPromoTitulo', 'pgPromoTexto', 'pgPromoBoton', 'pgIncluyeTitulo', 'pgIncluyeSub',
-                   'pgAdicionalesTitulo', 'pgPasosTitulo', 'pgPasosSub', 'pgFaqTitulo', 'pgCtaTexto', 'pgCtaBoton', 'pgCtaWhatsapp', 'pgNota'];
+                   'pgAdicionalesTitulo', 'pgPasosTitulo', 'pgPasosSub', 'pgFaqTitulo', 'pgCtaTexto', 'pgCtaBoton', 'pgCtaWhatsapp', 'pgNota',
+                   'pgOpiniones', 'pgOpinionesTitulo', 'pgOpinionesPuntaje', 'pgOpinionesCantidad'];
 var SECCIONES = { incluido: 1, adicionales: 1, detalle: 1, pasos: 1, faq: 1, galeria: 1 };
 var CFG_MEMO = null;
 
