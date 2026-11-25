@@ -12915,8 +12915,19 @@ function App() {
         const nuevo = JSON.stringify(snapRef.current()), actual = localStorage.getItem(AUTO_KEY);
         /* Red de seguridad: cada 5 minutos el guardado anterior pasa a «versión anterior», así un guardado malo no pisa todo el trabajo. */
         if (actual && actual !== nuevo && Date.now() - (window.__autoPrevAt || 0) > 300000) { window.__autoPrevAt = Date.now(); try { localStorage.setItem(AUTO_KEY + ":prev", actual); } catch (e) { /* sin espacio */ } }
-        localStorage.setItem(AUTO_KEY, nuevo);
-      } catch (e) { /* sin espacio: se ignora */ }
+        /* Si el navegador se quedó sin espacio (muchas demos abiertas guardan su copia), se libera lo que se puede volver a bajar y se reintenta; si igual no entra, se avisa una vez. */
+        const poner = () => localStorage.setItem(AUTO_KEY, nuevo);
+        try { poner(); } catch (e1) {
+          const limpiar = [
+            () => localStorage.removeItem(AUTO_KEY + ":prev"),
+            () => { Object.keys(localStorage).forEach((k) => { if (/^(tuweeb-demo-cfg-v1:|tuweeb-demo-v1:|planes-cfg-)/.test(k)) localStorage.removeItem(k); }); },
+            () => { Object.keys(localStorage).forEach((k) => { if (/^weeb-autosave/.test(k) && k !== AUTO_KEY) localStorage.removeItem(k); }); },
+          ];
+          let ok = false;
+          for (const l of limpiar) { try { l(); poner(); ok = true; break; } catch (e2) { /* sigue con lo siguiente */ } }
+          if (!ok && !window.__autoAviso) { window.__autoAviso = true; showMsg("No pude guardar automáticamente: el navegador no tiene espacio. Usá «Guardar en la ficha» seguido."); }
+        }
+      } catch (e) { /* se ignora */ }
     };
     const id = setInterval(guardarAuto, 3000);
     const oculto = () => { if (document.visibilityState === "hidden") guardarAuto(); };
