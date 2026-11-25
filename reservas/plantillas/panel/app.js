@@ -48,7 +48,8 @@ const api = (a, d) => llamar(a, d);
 
 function toast(msg, tipo) { const t = h('div', { class: 'toast ' + (tipo || '') }, msg); document.body.append(t); setTimeout(() => t.remove(), 3200); }
 async function accion(btn, fn) {
-  const txt = btn && btn.textContent; if (btn) { btn.disabled = true; }
+  document.querySelectorAll('.toast').forEach(t => t.remove());   /* un aviso viejo (ej. «Tocá Guardar») no se queda tapando mientras se guarda */
+  const txt = btn && btn.textContent; if (btn) { btn.disabled = true; if (btn.classList && btn.classList.contains('block') && /^Guardar/.test(txt)) btn.textContent = 'Guardando…'; }
   try { return await fn(); } catch (e) { toast(e.message, 'err'); } finally { if (btn) { btn.disabled = false; btn.textContent = txt; } }
 }
 
@@ -129,7 +130,7 @@ const rangoPlan = pl => { const v = [pl.precio, ...Object.values(pl.precios || {
 async function cargarBase() { [S.salones, S.turnos] = await Promise.all([api('admin.salones'), api('admin.turnos')]); }
 const salonDe = id => (S.salones.find(s => s.id === id) || {}).nombre || '';
 
-const VISTAS = { agenda: ['Agenda', vAgenda], reservas: ['Reservas', vReservas], caja: ['Caja', vCaja], juego: ['Juego', vJuego], turnos: ['Turnos', vTurnos], web: ['Mi web', vWeb], ajustes: ['Ajustes', vAjustes] };
+const VISTAS = { agenda: ['Agenda', vAgenda], reservas: ['Reservas', vReservas], caja: ['Caja', vCaja], juego: ['Juego', vJuego], turnos: ['Planes', vTurnos], web: ['Mi web', vWeb], ajustes: ['Ajustes', vAjustes] };
 function render() {
   const main = h('main', { class: 'wrap', id: 'vista' });
   const visibles = Object.entries(VISTAS).filter(([k]) => k !== 'juego' || (S.pub && S.pub.juegoActivo));
@@ -140,7 +141,7 @@ function render() {
     main, firma(), tabs);
   VISTAS[S.view][1](main);
 }
-const cargando = el => el.replaceChildren(h('p', { class: 'empty' }, h('img', { class: 'tw3d', src: 'tuweeb-icono.svg', alt: 'tuweeb' })));
+const cargando = el => { if (cargandoSilencioso) { cargandoSilencioso = false; return; } el.replaceChildren(h('p', { class: 'empty' }, h('img', { class: 'tw3d', src: 'tuweeb-icono.svg', alt: 'tuweeb' }))); };
 const fab = fn => h('button', { class: 'fab', 'aria-label': 'Nueva reserva', onclick: fn }, '+');
 
 /* ───── AGENDA ───── */
@@ -318,6 +319,13 @@ function movimientoNuevo() {
 }
 
 /* ───── TURNOS, SALONES Y BLOQUEOS ───── */
+/* Desplegables: cada sección se abre y se cierra; la pantalla recuerda cuáles quedaron abiertas al guardar. */
+const abiertos = {};
+function acc(id, titulo, resumen, ...hijos) {
+  const d = h('details', { class: 'acc', ...(abiertos[id] ? { open: true } : {}) }, h('summary', null, h('b', null, titulo), h('span', { class: 'muted small' }, resumen)), h('div', { class: 'acc-body' }, ...hijos));
+  d.addEventListener('toggle', () => { abiertos[id] = d.open; });
+  return d;
+}
 async function vTurnos(main) {
   cargando(main); let bl, cfgPg, cont = []; let pl = []; try { await cargarBase(); [bl, pl, cfgPg, cont] = await Promise.all([api('admin.bloqueos'), api('admin.planes'), api('admin.config'), api('admin.contenido')]); } catch (e) { main.replaceChildren(h('p', { class: 'empty' }, e.message)); return; }
   const sen = t => t.senaTipo === 'pct' ? t.senaValor + '% de seña' : t.senaTipo === 'monto' ? money(t.senaValor) + ' de seña' : 'Sin seña', dias = t => h('span', { class: 'small' }, [1, 2, 3, 4, 5, 6, 0].map(d => String(t.dias).split(',').includes(String(d)) ? DIAS_L[d] : '·').join(' '));
@@ -325,18 +333,21 @@ async function vTurnos(main) {
     h('div', { class: 'list' }, S.turnos.filter(t => t.salonId === s.id).map(t => h('button', { class: 'item', onclick: () => turnoForm(t) }, h('div', { class: 'when' }, t.inicio, h('small', null, 'a ' + t.fin)), h('div', { class: 'main' }, h('b', null, (t.etiqueta || 'Turno') + ' · ' + horas(t.inicio, t.fin)), h('span', { class: 'muted small' }, money(t.precio) + ' · ' + sen(t) + (t.desde || t.hasta ? ` · ${t.desde || ''}→${t.hasta || ''}` : ''))), dias(t), t.activo ? '' : h('span', { class: 'chip' }, 'pausado'))),
       S.turnos.some(t => t.salonId === s.id) ? '' : h('p', { class: 'empty' }, 'Este salón todavía no tiene turnos.'))));
   const fut = bl.filter(b => (b.hasta || b.desde) >= hoy()).sort((a, b) => (a.desde < b.desde ? -1 : 1));
-  main.replaceChildren(h('div', { class: 'bar' }, h('h2', null, 'Turnos y bloqueos'), h('button', { class: 'btn soft sm', onclick: () => salonForm({}) }, '+ Salón')), ...bloques,
-    h('div', { class: 'bar', style: 'margin:1.6rem 0 .5rem' }, h('h3', null, 'Planes'), h('button', { class: 'btn sm', onclick: () => planForm({}) }, '+ Plan')),
+  const nGal = cont.filter(x => x.seccion === 'galeria').length;
+  main.replaceChildren(h('div', { class: 'bar' }, h('h2', null, 'Planes y turnos')),
+    acc('salones', 'Salones y turnos', S.salones.length + (S.salones.length === 1 ? ' salón · ' : ' salones · ') + S.turnos.length + (S.turnos.length === 1 ? ' turno' : ' turnos'), h('div', { class: 'row', style: 'margin-bottom:.4rem' }, h('button', { class: 'btn soft sm', onclick: () => salonForm({}) }, '+ Salón')), ...bloques),
+    acc('planes', 'Planes', pl.length + (pl.length === 1 ? ' plan' : ' planes'), h('div', { class: 'row', style: 'margin-bottom:.4rem' }, h('button', { class: 'btn sm', onclick: () => planForm({}) }, '+ Plan')),
     h('p', { class: 'muted small', style: 'margin-bottom:.5rem' }, 'Opcional. Si cargás planes, quien reserva elige día y horario y después un plan: el precio y la seña salen del plan. Sin planes, rige el precio de cada turno.'),
-    pl.length ? h('div', { class: 'list' }, pl.map(p => h('button', { class: 'item', onclick: () => planForm(p) }, h('div', { class: 'main' }, h('b', null, p.nombre), h('span', { class: 'muted small' }, rangoPlan(p) + ' · ' + sen(p) + (p.descripcion ? ' · ' + p.descripcion : ''))), p.activo ? '' : h('span', { class: 'chip' }, 'pausado')))) : h('p', { class: 'empty' }, 'Todavía no hay planes. Las reservas usan el precio del turno.'),
-    paginaPlanes(cfgPg, cont),
-    h('div', { class: 'bar', style: 'margin:1.6rem 0 .5rem' }, h('h3', null, 'Días y turnos bloqueados'), h('button', { class: 'btn sm', onclick: () => bloqueoNuevo() }, '+ Bloquear')),
+    pl.length ? h('div', { class: 'list' }, pl.map(p => h('button', { class: 'item', onclick: () => planForm(p) }, h('div', { class: 'main' }, h('b', null, p.nombre), h('span', { class: 'muted small' }, rangoPlan(p) + ' · ' + sen(p) + (p.descripcion ? ' · ' + p.descripcion : ''))), p.activo ? '' : h('span', { class: 'chip' }, 'pausado')))) : h('p', { class: 'empty' }, 'Todavía no hay planes. Las reservas usan el precio del turno.')),
+    acc('pagina', 'Página de planes', 'textos, fotos y preguntas', ...paginaPlanes(cfgPg, cont)),
+    acc('galeria', 'Página de galería', nGal ? nGal + (nGal === 1 ? ' foto' : ' fotos') : 'fotos de ejemplo', ...galeriaPanel(cont)),
+    acc('bloqueos', 'Días y turnos bloqueados', fut.length ? fut.length + (fut.length === 1 ? ' bloqueo' : ' bloqueos') : 'ninguno', h('div', { class: 'row', style: 'margin-bottom:.4rem' }, h('button', { class: 'btn sm', onclick: () => bloqueoNuevo() }, '+ Bloquear')),
     fut.length ? h('div', { class: 'list' }, fut.map(b => h('div', { class: 'item static' }, h('div', { class: 'main' }, h('b', null, b.hasta && b.hasta !== b.desde ? `${fcorta(b.desde)} → ${fcorta(b.hasta)}` : flarga(b.desde)), h('span', { class: 'muted small' }, (b.salonId === '*' ? 'Todos los salones' : salonDe(b.salonId)) + (b.turnoId !== '*' ? ' · un turno' : ' · todo el día') + (b.motivo ? ' · ' + b.motivo : ''))),
-      h('button', { class: 'btn sm line', onclick: e => accion(e.target, async () => { await api('admin.desbloquear', { id: b.id }); vTurnos(main); }) }, 'Quitar')))) : h('p', { class: 'empty' }, 'No hay bloqueos cargados.'));
+      h('button', { class: 'btn sm line', onclick: e => accion(e.target, async () => { await api('admin.desbloquear', { id: b.id }); refrescar(); }) }, 'Quitar')))) : h('p', { class: 'empty' }, 'No hay bloqueos cargados.')));
 }
 function planForm(p) {
   const nuevo = !p.id;
-  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f); accion($('button.btn.block', f), async () => { await api('admin.guardarPlan', { id: p.id, nombre: x.nombre, descripcion: x.descripcion, precio: x.precio, precios: Object.fromEntries(S.turnos.filter(t => String(x['pr_' + t.id] || '').trim() !== '').map(t => [t.id, x['pr_' + t.id]])), senaTipo: x.senaTipo, senaValor: x.senaValor, orden: x.orden, activo: x.activo, salonId: x.salonId || '', descTotal: x.descTotal || 0 }); toast('Plan guardado', 'ok'); cerrar(); render(); }); } },
+  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f); accion($('button.btn.block', f), async () => { await api('admin.guardarPlan', { id: p.id, nombre: x.nombre, descripcion: x.descripcion, precio: x.precio, precios: Object.fromEntries(S.turnos.filter(t => String(x['pr_' + t.id] || '').trim() !== '').map(t => [t.id, x['pr_' + t.id]])), senaTipo: x.senaTipo, senaValor: x.senaValor, orden: x.orden, activo: x.activo, salonId: x.salonId || '', descTotal: x.descTotal || 0 }); toast('Plan guardado', 'ok'); cerrar(); refrescar(); }); } },
     campo('Nombre del plan', inp('nombre', { required: true, placeholder: 'Combo Órbita', value: p.nombre || '' })), campo('Qué incluye (opcional)', h('textarea', { name: 'descripcion', rows: 3, placeholder: '4 horas, 3 animadores, mesa dulce…' }, p.descripcion || '')),
     h('div', { class: 'grid2' }, campo('Precio $', inp('precio', { type: 'number', min: '0', required: true, value: p.precio ?? '' })), campo('Seña', h('select', { name: 'senaTipo', value: p.senaTipo || 'pct' }, h('option', { value: 'pct' }, 'Porcentaje %'), h('option', { value: 'monto' }, 'Monto fijo $'), h('option', { value: 'ninguna' }, 'Sin seña ($0)')))),
     S.salones.length > 1 ? campo('Salón donde se ofrece', h('select', { name: 'salonId', value: p.salonId || '' }, h('option', { value: '' }, 'Todos los salones'), ...S.salones.map(z => h('option', { value: z.id }, z.nombre)))) : '',
@@ -345,11 +356,11 @@ function planForm(p) {
     h('div', { class: 'grid2' }, campo('Valor de la seña (30 = 30%)', inp('senaValor', { type: 'number', min: '0', value: p.senaValor ?? 30 })), campo('Orden', inp('orden', { type: 'number', value: p.orden || '' }))),
     campo('Descuento si paga todo junto (% · vacío = sin descuento)', inp('descTotal', { type: 'number', min: '0', max: '90', value: p.descTotal || '' })),
     h('label', { class: 'row', style: 'margin-bottom:1rem' }, inp('activo', { type: 'checkbox', checked: p.activo !== false }), 'Plan activo (se puede elegir)'), h('button', { class: 'btn block' }, 'Guardar plan'),
-    nuevo ? '' : h('button', { type: 'button', class: 'btn line block', style: 'margin-top:.6rem', onclick: e => { if (!confirm('¿Borrar este plan? Las reservas ya hechas no cambian.')) return; accion(e.target, async () => { await api('admin.borrarPlan', { id: p.id }); toast('Plan borrado', 'ok'); cerrar(); render(); }); } }, 'Borrar plan'));
+    nuevo ? '' : h('button', { type: 'button', class: 'btn line block', style: 'margin-top:.6rem', onclick: e => { if (!confirm('¿Borrar este plan? Las reservas ya hechas no cambian.')) return; accion(e.target, async () => { await api('admin.borrarPlan', { id: p.id }); toast('Plan borrado', 'ok'); cerrar(); refrescar(); }); } }, 'Borrar plan'));
   sheet(nuevo ? 'Nuevo plan' : 'Editar plan', f);
 }
 function salonForm(s) {
-  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f); accion($('button', f), async () => { await api('admin.guardarSalon', { id: s.id, nombre: x.nombre, capacidad: x.capacidad, activo: x.activo, orden: x.orden }); toast('Guardado', 'ok'); cerrar(); render(); }); } },
+  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f); accion($('button', f), async () => { await api('admin.guardarSalon', { id: s.id, nombre: x.nombre, capacidad: x.capacidad, activo: x.activo, orden: x.orden }); toast('Guardado', 'ok'); cerrar(); refrescar(); }); } },
     campo('Nombre del salón', inp('nombre', { required: true, value: s.nombre || '' })), h('div', { class: 'grid2' }, campo('Capacidad (opcional)', inp('capacidad', { type: 'number', value: s.capacidad || '' })), campo('Orden', inp('orden', { type: 'number', value: s.orden || '' }))),
     h('label', { class: 'row', style: 'margin-bottom:1rem' }, inp('activo', { type: 'checkbox', checked: s.activo !== false }), 'Salón activo (se puede reservar)'), h('button', { class: 'btn block' }, 'Guardar'));
   sheet(s.id ? 'Editar salón' : 'Nuevo salón', f);
@@ -359,7 +370,7 @@ function turnoForm(t) {
   const dur = h('select', { 'aria-label': 'Duración' }, [['', 'Otra'], ['3', '3 horas'], ['3.5', '3 h 30'], ['4', '4 horas'], ['5', '5 horas']].map(([v, l]) => h('option', { value: v }, l)));
   const calc = () => { if (!dur.value || !ini.value) return; const m = (+ini.value.slice(0, 2) * 60 + +ini.value.slice(3) + dur.value * 60) % 1440; fin.value = pad(Math.floor(m / 60)) + ':' + pad(m % 60); };
   dur.addEventListener('change', calc); ini.addEventListener('change', calc);
-  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f), dd = [1, 2, 3, 4, 5, 6, 0].filter(d => x['d' + d]).join(','); accion($('button.btn.block', f), async () => { await api('admin.guardarTurno', { id: t.id, salonId: x.salonId, dias: dd, inicio: x.inicio, fin: x.fin, etiqueta: x.etiqueta, precio: x.precio, senaTipo: x.senaTipo, senaValor: x.senaValor, desde: x.desde, hasta: x.hasta, activo: x.activo }); toast('Turno guardado', 'ok'); cerrar(); render(); }); } },
+  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f), dd = [1, 2, 3, 4, 5, 6, 0].filter(d => x['d' + d]).join(','); accion($('button.btn.block', f), async () => { await api('admin.guardarTurno', { id: t.id, salonId: x.salonId, dias: dd, inicio: x.inicio, fin: x.fin, etiqueta: x.etiqueta, precio: x.precio, senaTipo: x.senaTipo, senaValor: x.senaValor, desde: x.desde, hasta: x.hasta, activo: x.activo }); toast('Turno guardado', 'ok'); cerrar(); refrescar(); }); } },
     S.salones.length > 1 ? campo('Salón', h('select', { name: 'salonId', value: t.salonId }, S.salones.map(s => h('option', { value: s.id }, s.nombre)))) : h('input', { type: 'hidden', name: 'salonId', value: t.salonId || S.salones[0].id }),
     campo('Nombre del turno (opcional)', inp('etiqueta', { placeholder: 'Tarde, Noche, Mañana…', value: t.etiqueta || '' })),
     h('span', { class: 'field' }, h('span', { style: 'display:block;font-size:.82rem;color:var(--mute);font-weight:600;margin-bottom:.25rem' }, 'Días'), h('div', { class: 'days' }, [1, 2, 3, 4, 5, 6, 0].map(d => h('label', null, inp('d' + d, { type: 'checkbox', checked: ds.includes(String(d)) }), DIAS[d])))),
@@ -368,11 +379,11 @@ function turnoForm(t) {
     campo('Valor de la seña (30 = 30% o el monto)', inp('senaValor', { type: 'number', min: '0', value: t.senaValor ?? 30 })),
     h('div', { class: 'grid2' }, campo('Vale desde (opcional)', inp('desde', { type: 'date', value: t.desde || '' })), campo('Vale hasta (opcional)', inp('hasta', { type: 'date', value: t.hasta || '' }))),
     h('label', { class: 'row', style: 'margin-bottom:1rem' }, inp('activo', { type: 'checkbox', checked: t.activo !== false }), 'Turno activo'), h('button', { class: 'btn block' }, 'Guardar turno'),
-    nuevo ? '' : h('button', { type: 'button', class: 'btn line block', style: 'margin-top:.6rem', onclick: e => { if (!confirm('¿Borrar este turno? Si tiene reservas futuras solo se pausa.')) return; accion(e.target, async () => { const r = await api('admin.borrarTurno', { id: t.id }); toast(r.desactivado ? 'Tenía reservas futuras: quedó pausado' : 'Turno borrado', 'ok'); cerrar(); render(); }); } }, 'Borrar turno'));
+    nuevo ? '' : h('button', { type: 'button', class: 'btn line block', style: 'margin-top:.6rem', onclick: e => { if (!confirm('¿Borrar este turno? Si tiene reservas futuras solo se pausa.')) return; accion(e.target, async () => { const r = await api('admin.borrarTurno', { id: t.id }); toast(r.desactivado ? 'Tenía reservas futuras: quedó pausado' : 'Turno borrado', 'ok'); cerrar(); refrescar(); }); } }, 'Borrar turno'));
   sheet(nuevo ? 'Nuevo turno' : 'Editar turno', f);
 }
 function bloqueoNuevo(fecha) {
-  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f); accion($('button', f), async () => { await api('admin.bloquear', { desde: x.desde, hasta: x.hasta || x.desde, salonId: x.salonId, turnoId: x.turnoId, motivo: x.motivo }); toast('Bloqueado', 'ok'); cerrar(); render(); }); } },
+  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f); accion($('button', f), async () => { await api('admin.bloquear', { desde: x.desde, hasta: x.hasta || x.desde, salonId: x.salonId, turnoId: x.turnoId, motivo: x.motivo }); toast('Bloqueado', 'ok'); cerrar(); refrescar(); }); } },
     h('div', { class: 'grid2' }, campo('Desde', inp('desde', { type: 'date', required: true, value: fecha || hoy() })), campo('Hasta (opcional)', inp('hasta', { type: 'date' }))),
     S.salones.length > 1 ? campo('Salón', h('select', { name: 'salonId' }, h('option', { value: '*' }, 'Todos'), S.salones.map(s => h('option', { value: s.id }, s.nombre)))) : h('input', { type: 'hidden', name: 'salonId', value: '*' }),
     campo('Turno', h('select', { name: 'turnoId' }, h('option', { value: '*' }, 'Todo el día'), S.turnos.map(t => h('option', { value: t.id }, `${t.etiqueta || 'Turno'} ${t.inicio}-${t.fin}` + (S.salones.length > 1 ? ' · ' + salonDe(t.salonId) : ''))))), campo('Motivo (opcional)', inp('motivo', { placeholder: 'Feriado, mantenimiento, evento privado…' })), h('button', { class: 'btn block' }, 'Bloquear'));
@@ -547,18 +558,27 @@ const BLOQUES_PG = [
   ['galeria', 'Galería de fotos', 'Las fotos de la página Galería: foto, título y descripción. Si no cargás ninguna, se muestran las de ejemplo.', ['titulo', 'texto', 'imagen']]
 ];
 function paginaPlanes(cfg, cont) {
-  return h('div', null,
-    h('div', { class: 'bar', style: 'margin:1.6rem 0 .5rem' }, h('h3', null, 'Página de planes'), h('a', { class: 'btn soft sm', href: '../planes.html', target: '_blank', rel: 'noopener' }, 'Ver la página')),
+  return [
+    h('div', { class: 'row', style: 'margin-bottom:.5rem' }, h('a', { class: 'btn soft sm', href: '../planes.html', target: '_blank', rel: 'noopener' }, 'Ver la página')),
     h('p', { class: 'muted small', style: 'margin-bottom:.6rem' }, 'La página de planes es la vitrina de lo que vendés y se arma sola con lo de acá: los planes y precios de arriba, más estos textos, fotos y preguntas. Cambiás algo y se ve al instante.'),
     h('button', { class: 'btn soft block', style: 'margin-bottom:.8rem', onclick: () => textosPg(cfg) }, 'Editar títulos y textos'),
-    ...BLOQUES_PG.map(([sec, tit, ayuda, campos]) => { const l = cont.filter(x => x.seccion === sec).sort((a, b) => a.orden - b.orden);
+    ...BLOQUES_PG.filter(b => b[0] !== 'galeria').map(([sec, tit, ayuda, campos]) => { const l = cont.filter(x => x.seccion === sec).sort((a, b) => a.orden - b.orden);
       return h('div', { style: 'margin-bottom:1rem' }, h('div', { class: 'bar', style: 'margin:.6rem 0 .3rem' }, h('b', null, tit), h('button', { class: 'btn sm', onclick: () => bloquePg({ seccion: sec }, tit, campos) }, '+ Agregar')),
         h('p', { class: 'muted small', style: 'margin-bottom:.4rem' }, ayuda),
         l.length ? h('div', { class: 'list' }, l.map(x => h('button', { class: 'item', onclick: () => bloquePg(x, tit, campos) }, h('div', { class: 'main' }, h('b', null, x.titulo), x.texto || x.etiqueta ? h('span', { class: 'muted small' }, [x.etiqueta, x.texto].filter(Boolean).join(' · ').slice(0, 90)) : ''), x.activo ? '' : h('span', { class: 'chip' }, 'oculto')))) : h('p', { class: 'empty' }, 'Todavía no hay nada. Esta parte no se muestra en la página.'));
-    }));
+    })];
+}
+function galeriaPanel(cont) {
+  const l = cont.filter(x => x.seccion === 'galeria').sort((a, b) => a.orden - b.orden), campos = ['titulo', 'texto', 'imagen'], tit = 'Galería de fotos';
+  const foto = u => (/^(https?:|data:)/i.test(u) ? u : '../' + String(u).replace(/^\.\//, ''));
+  return [
+    h('div', { class: 'bar', style: 'margin:0 0 .5rem' }, h('a', { class: 'btn soft sm', href: '../galeria.html', target: '_blank', rel: 'noopener' }, 'Ver la página'), h('button', { class: 'btn sm', onclick: () => bloquePg({ seccion: 'galeria' }, tit, campos) }, '+ Agregar foto')),
+    h('p', { class: 'muted small', style: 'margin-bottom:.6rem' }, 'Son las fotos de la página Galería del sitio. Tocá una foto para cambiarla, ponerle título u ocultarla. Si no cargás ninguna, la página muestra las de ejemplo.'),
+    l.length ? h('div', { class: 'ggrid' }, l.map(x => h('button', { class: 'gth' + (x.activo ? '' : ' off'), onclick: () => bloquePg(x, tit, campos), 'aria-label': 'Editar ' + (x.titulo || 'foto') },
+      x.imagen ? h('img', { src: foto(x.imagen), alt: '', loading: 'lazy' }) : h('span', { class: 'muted small', style: 'padding:1rem' }, 'Sin foto'), h('span', { class: 'gt' }, x.titulo || 'Sin título'), x.activo ? '' : h('span', { class: 'chip' }, 'oculta')))) : h('p', { class: 'empty' }, 'Todavía no cargaste fotos: la página muestra las de ejemplo.')];
 }
 function textosPg(cfg) {
-  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f), valores = {}; CAMPOS_PG.forEach(([, cs]) => cs.forEach(([k]) => { valores[k] = x[k] || ''; })); accion($('button.btn.block', f), async () => { await api('admin.guardarConfig', { valores }); toast('Textos guardados', 'ok'); cerrar(); render(); }); } },
+  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f), valores = {}; CAMPOS_PG.forEach(([, cs]) => cs.forEach(([k]) => { valores[k] = x[k] || ''; })); accion($('button.btn.block', f), async () => { await api('admin.guardarConfig', { valores }); toast('Textos guardados', 'ok'); cerrar(); refrescar(); }); } },
     ...CAMPOS_PG.map(([tit, cs]) => h('div', { style: 'margin-bottom:.4rem' }, h('h4', { style: 'margin:.8rem 0 .4rem' }, tit), ...cs.map(([k, et, area]) => campo(et, area ? h('textarea', { name: k, rows: 3, maxlength: '500' }, cfg[k] || '') : inp(k, { value: cfg[k] || '', maxlength: '500' }))))),
     h('button', { class: 'btn block' }, 'Guardar textos'));
   sheet('Textos de la página de planes', f);
@@ -566,20 +586,21 @@ function textosPg(cfg) {
 /** Foto de un bloque: se sube desde el celular o la compu (se achica sola); también se puede pegar un link. */
 function campoFoto(url0) {
   const val = inp('imagen', { type: 'hidden', value: url0 }), prev = h('div', { class: 'fotoprev' }), foto = u => (/^(https?:|data:)/i.test(u) ? u : '../' + String(u).replace(/^\.\//, ''));
-  const pintar = () => { prev.replaceChildren(val.value ? h('img', { src: foto(val.value), alt: 'Foto', style: 'max-width:100%;max-height:180px;border-radius:12px;display:block;margin-bottom:.5rem', onerror: e => e.target.replaceWith(h('span', { class: 'muted small' }, 'No se pudo mostrar la foto.')) }) : h('p', { class: 'muted small' }, 'Todavía no hay foto.')); };
+  let nuevaFoto = false;
+  const pintar = () => { prev.replaceChildren(val.value ? h('img', { src: foto(val.value), alt: 'Foto', style: 'max-width:100%;max-height:180px;border-radius:12px;display:block;margin-bottom:.5rem', onerror: e => e.target.replaceWith(h('span', { class: 'muted small' }, 'No se pudo mostrar la foto.')) }) : h('p', { class: 'muted small' }, 'Todavía no hay foto.'), nuevaFoto && val.value ? h('p', { class: 'small', style: 'font-weight:700;margin:0 0 .6rem;color:#d9f7a6' }, '✓ Foto cargada. Falta tocar «Guardar» (abajo) para publicarla.') : ''); };
   const sel = h('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp,image/*', style: 'display:none' });
   const subir = h('button', { type: 'button', class: 'btn soft sm', onclick: () => sel.click() }, val.value ? 'Cambiar foto' : 'Subir foto');
-  sel.addEventListener('change', async () => { const f = sel.files && sel.files[0]; if (!f) return; await accion(subir, async () => { const a = await leerArchivo(f); const r = await api('admin.subirFoto', a); val.value = r.url; pintar(); toast('Foto subida. Tocá Guardar para publicarla.', 'ok'); }); subir.textContent = val.value ? 'Cambiar foto' : 'Subir foto'; sel.value = ''; });
+  sel.addEventListener('change', async () => { const f = sel.files && sel.files[0]; if (!f) return; await accion(subir, async () => { const a = await leerArchivo(f); const r = await api('admin.subirFoto', a); val.value = r.url; nuevaFoto = true; pintar(); }); subir.textContent = val.value ? 'Cambiar foto' : 'Subir foto'; sel.value = ''; });
   const quitar = h('button', { type: 'button', class: 'btn line sm', onclick: () => { val.value = ''; subir.textContent = 'Subir foto'; pintar(); } }, 'Quitar foto');
   pintar();
   return h('div', { class: 'field' }, h('span', null, 'Foto'), prev, h('div', { class: 'row' }, subir, quitar), sel, val);
 }
 function bloquePg(x, tit, campos) {
   const nuevo = !x.id, ET = { titulo: x.seccion === 'faq' ? 'Pregunta' : x.seccion === 'pasos' ? 'Paso' : 'Título', texto: x.seccion === 'faq' ? 'Respuesta' : 'Texto', etiqueta: 'Etiqueta chica (arriba del título)', imagen: 'Foto (link https:// o una foto del sitio, ej. assets/galeria/galeria-01.webp)' };
-  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const d = datos(f); accion($('button.btn.block', f), async () => { await api('admin.guardarContenido', { id: x.id, seccion: x.seccion, titulo: d.titulo, texto: d.texto, etiqueta: d.etiqueta, imagen: d.imagen, orden: d.orden, activo: d.activo }); toast('Guardado', 'ok'); cerrar(); render(); }); } },
-    ...campos.map(k => k === 'imagen' ? campoFoto(x.imagen || '') : campo(ET[k], k === 'texto' ? h('textarea', { name: k, rows: 4, maxlength: '600' }, x[k] || '') : inp(k, { required: k === 'titulo', maxlength: k === 'imagen' ? '300' : '160', value: x[k] || '' }))),
+  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const d = datos(f); accion($('button.btn.block', f), async () => { await api('admin.guardarContenido', { id: x.id, seccion: x.seccion, titulo: d.titulo || (x.seccion === 'galeria' ? 'Foto' : ''), texto: d.texto, etiqueta: d.etiqueta, imagen: d.imagen, orden: d.orden, activo: d.activo }); toast('Guardado', 'ok'); cerrar(); refrescar(); }); } },
+    ...campos.map(k => k === 'imagen' ? campoFoto(x.imagen || '') : campo(ET[k], k === 'texto' ? h('textarea', { name: k, rows: 4, maxlength: '600' }, x[k] || '') : inp(k, { required: k === 'titulo' && x.seccion !== 'galeria', maxlength: k === 'imagen' ? '300' : '160', value: x[k] || '' }))),
     h('div', { class: 'grid2' }, campo('Orden (1, 2, 3…)', inp('orden', { type: 'number', value: x.orden || '' })), h('label', { class: 'row', style: 'align-self:end;margin-bottom:1rem' }, inp('activo', { type: 'checkbox', checked: x.activo !== false }), 'Se muestra')),
     h('button', { class: 'btn block' }, 'Guardar'),
-    nuevo ? '' : h('button', { type: 'button', class: 'btn line block', style: 'margin-top:.6rem', onclick: e => { if (!confirm('¿Borrar esto de la página de planes?')) return; accion(e.target, async () => { await api('admin.borrarContenido', { id: x.id }); toast('Borrado', 'ok'); cerrar(); render(); }); } }, 'Borrar'));
+    nuevo ? '' : h('button', { type: 'button', class: 'btn line block', style: 'margin-top:.6rem', onclick: e => { if (!confirm('¿Borrar esto de la página de planes?')) return; accion(e.target, async () => { await api('admin.borrarContenido', { id: x.id }); toast('Borrado', 'ok'); cerrar(); refrescar(); }); } }, 'Borrar'));
   sheet((nuevo ? 'Agregar · ' : 'Editar · ') + tit, f);
 }

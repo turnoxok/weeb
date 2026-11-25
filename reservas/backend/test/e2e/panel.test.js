@@ -29,7 +29,7 @@ require('fs').mkdirSync(OUT, { recursive: true });
   // reservas
   await p.click('.tabs button:has-text("Reservas")'); await p.waitForSelector('.item'); await p.fill('input[type=search]', 'rosa'); assert.equal(await p.locator('.list .item').count(), 1); await shot('06-reservas'); ok('lista y búsqueda de reservas');
   // turnos
-  await p.click('.tabs button:has-text("Turnos")'); await p.waitForSelector('.item'); await shot('07-turnos');
+  await p.click('.tabs button:has-text("Planes")'); await p.waitForSelector('details.acc'); await p.evaluate(() => document.querySelectorAll('details.acc').forEach(d => { d.open = true; })); await p.waitForSelector('.item'); await shot('07-turnos');
   await p.click('button:has-text("+ Bloquear")'); await p.waitForSelector('input[name=desde]'); await p.fill('input[name=desde]', '2026-11-14'); await p.fill('input[name=motivo]', 'Feriado'); await p.click('.sheet button:has-text("Bloquear")'); await p.waitForSelector('.item:has-text("Feriado")'); ok('bloquear un día');
   assert(a.get({ action: 'disponibilidad', mes: '2026-11' }).data.dias['2026-11-14'].every(x => x.estado === 'no_disponible')); ok('el bloqueo se refleja en la web pública');
   // nuevo turno de 3 horas con helper de duración

@@ -66,3 +66,21 @@ h3.sec{font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(-
 .comp img,.comp .pdf{width:76px;height:76px;object-fit:cover;border-radius:10px;flex:none;background:rgba(255,255,255,.08)}
 .comp .pdf{display:grid;place-items:center;font-weight:800;letter-spacing:.06em;color:#e8693a}
 .comp .main{display:flex;flex-direction:column;gap:.15rem;min-width:0}.comp .main b{overflow-wrap:anywhere}
+
+
+/* desplegables de «Planes» y galería de fotos */
+.acc{border:1px solid var(--line);border-radius:var(--r);background:var(--card);margin:0 0 .7rem;overflow:hidden}
+.acc>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.95rem 1.05rem;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.acc>summary::-webkit-details-marker{display:none}
+.acc>summary b{font-size:.98rem}
+.acc>summary span{margin-left:auto;text-align:right}
+.acc>summary:after{content:'+';font-size:1.3rem;font-weight:300;line-height:1;color:var(--mute);flex:none;width:1.2rem;text-align:center}
+.acc[open]>summary:after{content:'–'}
+.acc[open]>summary{border-bottom:1px solid var(--line)}
+.acc-body{padding:.9rem 1rem 1rem}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:.55rem}
+.gth{position:relative;padding:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.06);cursor:pointer;aspect-ratio:1;display:block;color:inherit;font:inherit}
+.gth img{width:100%;height:100%;object-fit:cover;display:block}
+.gth .gt{position:absolute;left:0;right:0;bottom:0;padding:1.2rem .5rem .4rem;font-size:.72rem;font-weight:600;text-align:left;background:linear-gradient(transparent,rgba(0,0,0,.72));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gth.off{opacity:.55}
+.gth .chip{position:absolute;top:.35rem;right:.35rem}
