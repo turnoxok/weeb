@@ -5371,7 +5371,17 @@ function OvlPair({ mode, shadow, children }) {
     const w = ref.current;
     if (!w) return undefined;
     const P = w.firstElementChild;
-    if (!P || P.classList.contains("ws-3d")) return undefined;
+    if (!P) return undefined;
+    if (P.classList.contains("ws-3d")) {
+      const S = w.children[1];
+      if (!S) return undefined;
+      const setF = () => w.style.setProperty("--fh", S.offsetHeight + "px");
+      setF();
+      let r2 = null;
+      if (typeof ResizeObserver !== "undefined") { r2 = new ResizeObserver(setF); r2.observe(S); }
+      window.addEventListener("resize", setF);
+      return () => { if (r2) r2.disconnect(); window.removeEventListener("resize", setF); };
+    }
     const set = () => w.style.setProperty("--oh", P.offsetHeight + "px");
     set();
     let ro = null;
@@ -6000,7 +6010,7 @@ const S2D_CSS = `
 .ovl-pair[data-m="cover"]>:nth-child(2){box-shadow:0 -28px 70px -12px rgba(0,0,0,calc(.7*var(--osh,.5)))}
 .ovl-pair[data-m="cover"]>.s2d:nth-child(2),.ovl-pair[data-m="cover"]>.pg-blk:nth-child(2) .s2d,.ovl-pair[data-m="cover"]>.ovl-pair:nth-child(2)>:first-child{border-radius:26px 26px 0 0}
 .ovl-pair>.ws-3d:first-child{height:calc(var(--sl) + 100lvh)!important}
-.ovl-pair>.ws-3d:first-child+*{margin-top:-100lvh}
+.ovl-pair>.ws-3d:first-child+*{margin-top:calc(-1*min(100lvh,var(--fh,100lvh)))}
 .s2d-eyebrow{margin:0 0 .9em;font-size:.78rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--ac)}
 .s2d-h{margin:0 0 .5em;font-family:var(--font-head,var(--font-display,inherit));font-weight:var(--w-head,700);line-height:1.08;letter-spacing:-.01em;font-size:clamp(1.7rem,5.2cqi,3rem)}
 .sec-hero .s2d-h{font-size:clamp(2.1rem,7.4cqi,4.4rem)}
