@@ -213,8 +213,11 @@ function linkReserva(r) { const b = S.pub.urlReservas || new URL('../reservar/',
 /* Mensaje con el contrato (config.json "contrato": {boton, texto con {nombre}, nota}): abre WhatsApp con el texto listo para el papá o la mamá; el archivo del contrato se adjunta a mano en el chat. Sin "contrato" no aparece. */
 function waContrato(r) {
   const C = S.cfg && S.cfg.contrato, tel = String(r.telefono || '').replace(/\D/g, ''); if (!C || !tel) return '';
-  const url = 'https://wa.me/' + (tel.length <= 10 ? '54' + tel : tel) + '?text=' + encodeURIComponent(String(C.texto || '').replace(/\{nombre\}/g, String(r.nombre || '').split(' ')[0]));
-  return h('a', { class: 'btn soft', href: url, target: '_blank', rel: 'noopener', title: C.nota || '' }, C.boton || 'Enviar contrato');
+  const num = tel.length <= 10 ? '54' + tel : tel, txt = String(C.texto || '').replace(/\{nombre\}/g, String(r.nombre || '').split(' ')[0]), q = encodeURIComponent(txt);
+  /* en el celular se abre la app de WhatsApp directo (así los emojis llegan bien); en la compu, WhatsApp Web */
+  const cel = /Android|iPhone|iPad/i.test(navigator.userAgent), url = cel ? 'whatsapp://send?phone=' + num + '&text=' + q : 'https://wa.me/' + num + '?text=' + q;
+  const copiar = e => { e.preventDefault(); const ok = () => toast('Texto copiado: pegalo en el chat', 'ok'); try { navigator.clipboard.writeText(txt).then(ok, () => toast('No se pudo copiar', 'err')); } catch (x) { toast('No se pudo copiar', 'err'); } window.open('https://wa.me/' + num, '_blank'); };
+  return [h('a', { class: 'btn soft', href: url, target: '_blank', rel: 'noopener', title: C.nota || '' }, C.boton || 'Enviar contrato'), h('a', { class: 'btn soft', href: '#', onclick: copiar }, 'Copiar texto y abrir chat')];
 }
 async function detalle(id) {
   sheet('Reserva', h('p', { class: 'empty' }, h('img', { class: 'tw3d', src: 'tuweeb-icono.svg', alt: 'tuweeb' })));
