@@ -12882,18 +12882,25 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /* Guardado automático: cada 3 segundos (aunque el visor esté ocupado cargando un modelo) y también al cerrar, recargar o cambiar de pestaña.
+     Antes se esperaban 2,5 s de quietud, y si se recargaba justo después de subir algo no llegaba a guardarse. */
+  const snapRef = useRef(null); snapRef.current = buildProjectSnapshot;
+  const recoverRef = useRef(null); recoverRef.current = recover;
   useEffect(() => {
-    if (recover) return;
-    const id = setTimeout(() => {
+    const guardarAuto = () => {
+      if (recoverRef.current || !snapRef.current) return;
       try {
-        const nuevo = JSON.stringify(buildProjectSnapshot()), actual = localStorage.getItem(AUTO_KEY);
+        const nuevo = JSON.stringify(snapRef.current()), actual = localStorage.getItem(AUTO_KEY);
         /* Red de seguridad: cada 5 minutos el guardado anterior pasa a «versión anterior», así un guardado malo no pisa todo el trabajo. */
         if (actual && actual !== nuevo && Date.now() - (window.__autoPrevAt || 0) > 300000) { window.__autoPrevAt = Date.now(); try { localStorage.setItem(AUTO_KEY + ":prev", actual); } catch (e) { /* sin espacio */ } }
         localStorage.setItem(AUTO_KEY, nuevo);
       } catch (e) { /* sin espacio: se ignora */ }
-    }, 2500);
-    return () => clearTimeout(id);
-  });
+    };
+    const id = setInterval(guardarAuto, 3000);
+    const oculto = () => { if (document.visibilityState === "hidden") guardarAuto(); };
+    window.addEventListener("pagehide", guardarAuto); window.addEventListener("beforeunload", guardarAuto); document.addEventListener("visibilitychange", oculto);
+    return () => { clearInterval(id); window.removeEventListener("pagehide", guardarAuto); window.removeEventListener("beforeunload", guardarAuto); document.removeEventListener("visibilitychange", oculto); };
+  }, []);
   const onCanvasCreated = ({ gl }) => {
     const cv = gl.domElement;
     cv.addEventListener("webglcontextlost", (e) => { e.preventDefault(); }, false);
