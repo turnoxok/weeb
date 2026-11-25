@@ -210,6 +210,12 @@ function bloqueComprobante(id, c) {
 }
 /** Link para que el cliente vea su reserva (lleva el código cargado). Usa la URL de Config si está; si no, la carpeta /reservar/ del mismo sitio. */
 function linkReserva(r) { const b = S.pub.urlReservas || new URL('../reservar/', location.href).href; return b + (b.indexOf('?') < 0 ? '?' : '&') + 'codigo=' + (r.codigo || ''); }
+/* Mensaje con el contrato (config.json "contrato": {boton, texto con {nombre}, nota}): abre WhatsApp con el texto listo para el papá o la mamá; el archivo del contrato se adjunta a mano en el chat. Sin "contrato" no aparece. */
+function waContrato(r) {
+  const C = S.cfg && S.cfg.contrato, tel = String(r.telefono || '').replace(/\D/g, ''); if (!C || !tel) return '';
+  const url = 'https://wa.me/' + (tel.length <= 10 ? '54' + tel : tel) + '?text=' + encodeURIComponent(String(C.texto || '').replace(/\{nombre\}/g, String(r.nombre || '').split(' ')[0]));
+  return h('a', { class: 'btn soft', href: url, target: '_blank', rel: 'noopener', title: C.nota || '' }, C.boton || 'Enviar contrato');
+}
 async function detalle(id) {
   sheet('Reserva', h('p', { class: 'empty' }, h('img', { class: 'tw3d', src: 'tuweeb-icono.svg', alt: 'tuweeb' })));
   let d; try { d = await api('admin.reserva', { id }); } catch (e) { cerrar(); toast(e.message, 'err'); return; }
@@ -236,7 +242,7 @@ async function detalle(id) {
     h('div', { class: 'row' },
       r.estado === 'pendiente' ? h('button', { class: 'btn', onclick: e => accion(e.target, async () => { await api('admin.actualizarReserva', { id, estado: 'confirmada' }); toast('Reserva confirmada', 'ok'); await refrescar(); detalle(id); }) }, 'Confirmar sin pago') : '',
       r.estado === 'cancelada' || r.estado === 'vencida' ? h('button', { class: 'btn', onclick: e => accion(e.target, async () => { await api('admin.actualizarReserva', { id, estado: 'confirmada' }); toast('Reserva reactivada', 'ok'); await refrescar(); detalle(id); }) }, 'Reactivar') : '',
-      h('button', { class: 'btn soft', onclick: () => editar(r) }, 'Editar / mover'), wa ? h('a', { class: 'btn soft', href: wa, target: '_blank', rel: 'noopener' }, 'Enviar link por WhatsApp') : '', h('button', { class: 'btn soft', onclick: e => { navigator.clipboard && navigator.clipboard.writeText(linkReserva(r)); e.target.textContent = '¡Link copiado!'; setTimeout(() => (e.target.textContent = 'Copiar link'), 1800); } }, 'Copiar link'),
+      h('button', { class: 'btn soft', onclick: () => editar(r) }, 'Editar / mover'), wa ? h('a', { class: 'btn soft', href: wa, target: '_blank', rel: 'noopener' }, 'Enviar link por WhatsApp') : '', waContrato(r), h('button', { class: 'btn soft', onclick: e => { navigator.clipboard && navigator.clipboard.writeText(linkReserva(r)); e.target.textContent = '¡Link copiado!'; setTimeout(() => (e.target.textContent = 'Copiar link'), 1800); } }, 'Copiar link'),
       r.estado !== 'cancelada' && r.estado !== 'vencida' ? h('button', { class: 'btn bad', onclick: e => { if (!confirm('¿Cancelar la reserva? El turno queda libre.')) return; accion(e.target, async () => { await api('admin.cancelar', { id }); toast('Reserva cancelada', 'ok'); await refrescar(); detalle(id); }); } }, 'Cancelar reserva') : ''));
   sheet('Reserva', cuerpo);
 }
