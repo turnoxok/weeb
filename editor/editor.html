@@ -3111,7 +3111,7 @@ function useHiResSvgTexture(url, targetLong) {
   return texture;
 }
 function isSvgUrl(url) {
-  return /\.svg($|\?)/i.test(url || "");
+  return /\.svg($|\?)|^data:image\/svg/i.test(url || "");
 }
 function isVideoUrl(url) {
   return /\.(mp4|webm)($|\?)/i.test(url || "");
@@ -5278,7 +5278,7 @@ function WarmUp() {
       }
       if (!done) {
         if (el > 12000) fin(); // no se espera más: lo que falte se calienta aparte apenas aparezca
-        else if ((window.__wbStarted || 0) > 0 && (window.__wbPend || 0) === 0 && el > 800) {
+        else if (((window.__wbStarted || 0) > 0 && (window.__wbPend || 0) === 0 || !(window.__wbStarted || 0) && el > 2500) && el > 800) {
           /* calentamiento repartido: de a un grupo de objetos por cuadro (antes era todo en un solo cuadro y congelaba el loader) */
           /* 1) compilar TODOS los shaders (también los de objetos ocultos o vacíos, como el confeti y la bengala), sin trabar la pantalla si el navegador lo permite */
           if (cstate === 0) {
@@ -6956,7 +6956,7 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
     if (ctl) { ctl.setDraw(0); ctl.setZoom(1, 1); }
     const fx = cfg.style === "fiesta" && fxRef.current && rootRef.current ? ldrFiesta(fxRef.current, rootRef.current, cfg, reduce) : null;
     let raf = 0, fontsOk = !!simulate, okSince = 0, finishAt = 0, exitStart = 0, shown = 0;
-    const expectSvg = typeof OBJECTS !== "undefined" && OBJECTS.some((o) => o && o.type === "image" && /\.svg/i.test(o.url || "") && (o.ext || 0) > 0);
+    const expectSvg = typeof OBJECTS !== "undefined" && OBJECTS.some((o) => o && o.type === "image" && /\.svg|^data:image\/svg/i.test(o.url || "") && (o.ext || 0) > 0);
     let sig = "", sigT = performance.now();
     let last = performance.now(), tmax = 0;
     const t0 = last;
@@ -8411,7 +8411,7 @@ function useHiResSvgTexture(url, targetLong = 3072) {
 }
 
 function isSvgUrl(url) {
-  return /\.svg($|\?)/i.test(url || "");
+  return /\.svg($|\?)|^data:image\/svg/i.test(url || "");
 }
 //@@use isVideoUrl
 function useVideoTexture(url, loop, scrub) {
@@ -9260,7 +9260,7 @@ function LoaderOverlay({ cfg, simulate, contained, onDone, onClose }) {
     if (ctl) { ctl.setDraw(0); ctl.setZoom(1, 1); }
     const fx = cfg.style === "fiesta" && fxRef.current && rootRef.current ? ldrFiesta(fxRef.current, rootRef.current, cfg, reduce) : null;
     let raf = 0, fontsOk = !!simulate, okSince = 0, finishAt = 0, exitStart = 0, shown = 0;
-    const expectSvg = typeof OBJECTS !== "undefined" && OBJECTS.some((o) => o && o.type === "image" && /\.svg/i.test(o.url || "") && (o.ext || 0) > 0);
+    const expectSvg = typeof OBJECTS !== "undefined" && OBJECTS.some((o) => o && o.type === "image" && /\.svg|^data:image\/svg/i.test(o.url || "") && (o.ext || 0) > 0);
     let sig = "", sigT = performance.now();
     let last = performance.now(), tmax = 0;
     const t0 = last;

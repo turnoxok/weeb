@@ -2948,7 +2948,7 @@ function useHiResSvgTexture(url, targetLong) {
   return texture;
 }
 function isSvgUrl(url) {
-  return /\.svg($|\?)/i.test(url || "");
+  return /\.svg($|\?)|^data:image\/svg/i.test(url || "");
 }
 function isVideoUrl(url) {
   return /\.(mp4|webm)($|\?)/i.test(url || "");
@@ -6928,7 +6928,7 @@ function useHiResSvgTexture(url, targetLong = 3072) {
 }
 
 function isSvgUrl(url) {
-  return /\.svg($|\?)/i.test(url || "");
+  return /\.svg($|\?)|^data:image\/svg/i.test(url || "");
 }
 //@@use isVideoUrl
 function useVideoTexture(url, loop, scrub) {
