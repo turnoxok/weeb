@@ -10375,6 +10375,7 @@ function App() {
 
   const buildProjectSnapshot = () => ({
     kind: "weeb-scroll-project",
+    ...(window.TEMA && window.TEMA.sinRecolor ? { tuweebPropio: true } : {}),   // un 3D propio del cliente conserva su marca al guardarlo: sin esto, al reabrirlo se le cambiaban los colores y el cartel por los de la demo
     version: 1,
     savedAt: new Date().toISOString(),
     projectName,
