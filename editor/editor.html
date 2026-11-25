@@ -11967,9 +11967,10 @@ function App() {
   /* Red de seguridad: si el navegador pierde el contexto WebGL (GPU saturada) el visor se vuelve a armar solo,
      y el proyecto se guarda automático en este navegador para poder recuperarlo si la pestaña se recarga. */
   const [canvasKey, setCanvasKey] = useState(0);
+  const AUTO_KEY = "weeb-autosave";
   const [recover, setRecover] = useState(() => {
     try {
-      const t = localStorage.getItem("weeb-autosave");
+      const t = localStorage.getItem(AUTO_KEY);
       if (!t) return null;
       const at = (JSON.parse(t).savedAt) || "";
       /* Si el editor ya trae un proyecto adentro, solo se ofrece recuperar cuando el guardado automático es más nuevo que ese proyecto. */
@@ -11979,7 +11980,9 @@ function App() {
         try { eat = JSON.parse(decodeURIComponent(escape(atob(eb)))).savedAt || ""; } catch (e) { /* sin fecha */ }
         if (!(at && at > eat)) return null;
       }
-      return { at, text: t };
+      let prev = null;
+      try { const p = localStorage.getItem(AUTO_KEY + ":prev"); if (p) prev = { at: JSON.parse(p).savedAt || "", text: p }; } catch (e) { /* sin versión anterior */ }
+      return { at, text: t, prev };
     } catch (e) { return null; }
   });
   const [exportT, setExportT] = useState(null);      // progreso fijado por el exportador de video (null = inactivo)
@@ -12904,7 +12907,12 @@ function App() {
   useEffect(() => {
     if (recover) return;
     const id = setTimeout(() => {
-      try { localStorage.setItem("weeb-autosave", JSON.stringify(buildProjectSnapshot())); } catch (e) { /* sin espacio: se ignora */ }
+      try {
+        const nuevo = JSON.stringify(buildProjectSnapshot()), actual = localStorage.getItem(AUTO_KEY);
+        /* Red de seguridad: cada 5 minutos el guardado anterior pasa a «versión anterior», así un guardado malo no pisa todo el trabajo. */
+        if (actual && actual !== nuevo && Date.now() - (window.__autoPrevAt || 0) > 300000) { window.__autoPrevAt = Date.now(); try { localStorage.setItem(AUTO_KEY + ":prev", actual); } catch (e) { /* sin espacio */ } }
+        localStorage.setItem(AUTO_KEY, nuevo);
+      } catch (e) { /* sin espacio: se ignora */ }
     }, 2500);
     return () => clearTimeout(id);
   });
@@ -13809,6 +13817,7 @@ function App() {
           <div style={{ position: "absolute", left: 12, right: 12, top: 44, zIndex: 30, background: "#2b1d4d", border: "1px solid #a78bfa", borderRadius: 10, padding: "10px 12px", color: "#fff", fontSize: 13, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <span style={{ flex: 1, minWidth: 180 }}>Hay un trabajo guardado automáticamente{recover.at ? " (" + new Date(recover.at).toLocaleString() + ")" : ""}. ¿Lo recuperás?</span>
             <span className="btn" onClick={() => { try { restoreProjectState(JSON.parse(recover.text)); setProjectLoaded(true); setTimeout(() => setProjectLoaded(false), 2500); } catch (e) { setProjectLoadError("No se pudo recuperar el guardado automático."); } setRecover(null); }}>Recuperar</span>
+            {recover.prev && <span className="btn" onClick={() => { try { restoreProjectState(JSON.parse(recover.prev.text)); setProjectLoaded(true); setTimeout(() => setProjectLoaded(false), 2500); } catch (e) { setProjectLoadError("No se pudo recuperar la versión anterior."); } setRecover(null); }}>Versión anterior{recover.prev.at ? " (" + new Date(recover.prev.at).toLocaleString() + ")" : ""}</span>}
             <span className="btn" onClick={() => setRecover(null)}>Empezar de cero</span>
           </div>
         )}
