@@ -73,16 +73,27 @@ function valePlan(p, turnoId) {
   const sena = p.senaTipo === 'pct' ? Math.round(pr * Math.min(100, Math.max(0, p.senaValor)) / 100) : p.senaTipo === 'monto' ? Math.min(pr, p.senaValor) : (p.senaTipo ? 0 : p.sena);
   return { ...p, precio: pr, sena };
 }
+/* Tipos de evento (config.json "tipos": [{clave, patron, nombre, color}]): cada horario y cada plan es de un tipo según su nombre (patron; el que no tiene patron es el tipo común).
+   Un horario solo ofrece los planes de su tipo y se pinta con el color del tipo, con una referencia arriba. Sin "tipos" no cambia nada. */
+const tipoDe = txt => { const T = S.cfg.tipos || [], m = T.find(x => x.patron && new RegExp(x.patron, 'i').test(String(txt || ''))), d = T.find(x => !x.patron); return m ? m.clave : (d ? d.clave : ''); };
+const planesDeSlot = s => { const base = planesDe(s && s.salonId); return (S.cfg.tipos || []).length ? base.filter(p => tipoDe(p.nombre) === tipoDe(s && s.etiqueta)) : base; };
+function colorearSlots(cont, sl) {
+  const T = S.cfg.tipos || []; if (!T.length) return;
+  const box = cont.querySelector('.slots'); if (!box) return;
+  const vis = T.filter(t => t.nombre && t.color); if (vis.length > 1) box.before(h('ul', { class: 'ley', 'aria-label': 'Referencia de colores' }, vis.map(t => h('li', { style: '--sc:' + t.color }, h('i'), h('span', null, t.nombre)))));
+  [...box.children].forEach((el, i) => { const t = T.find(x => x.clave === tipoDe(sl[i] && sl[i].etiqueta)); if (t && t.color) { el.classList.add('sc'); el.style.setProperty('--sc', t.color); } });
+}
 function horarios() {
   const sl = (S.disp.dias[S.fecha]) || [], multi = (S.pub.salones || []).length > 1, nom = id => ((S.pub.salones || []).find(s => s.id === id) || {}).nombre;
-  const cont = $('#horarios'); cont.replaceChildren(h('h2', { class: 't' }, 'Horarios del ' + flarga(S.fecha)), leyenda(), h('div', { class: 'slots' }, sl.map(s => s.estado !== 'libre' ? h('div', { class: 'slot off' + (colorDe(s.salonId) ? ' sc' : ''), style: colorDe(s.salonId) ? '--sc:' + colorDe(s.salonId) : null, 'aria-disabled': 'true' }, h('div', null, h('b', null, `${s.inicio} a ${s.fin} hs`), h('span', { class: 'muted small' }, [s.etiqueta, multi ? nom(s.salonId) : ''].filter(Boolean).join(' · '))), h('div', { class: 'p muted' }, 'No disponible')) : h('button', { class: 'slot' + (colorDe(s.salonId) ? ' sc' : ''), style: colorDe(s.salonId) ? '--sc:' + colorDe(s.salonId) : null, onclick: () => { S.slot = s; S.plan = null; formulario(); } }, h('div', null, h('b', null, `${s.inicio} a ${s.fin} hs`), h('span', { class: 'muted small' }, [s.etiqueta, multi ? nom(s.salonId) : ''].filter(Boolean).join(' · '))), planesDe(s.salonId).length ? h('div', { class: 'p small' }, 'Desde ' + money(Math.min(...planesDe(s.salonId).map(p => valePlan(p, s.turnoId).precio)))) : h('div', { class: 'p' }, money(s.precio), h('div', { class: 'muted small', style: 'font-weight:600' }, s.sena > 0 ? 'Seña ' + money(s.sena) : 'Sin seña'))))));
+  const cont = $('#horarios'); cont.replaceChildren(h('h2', { class: 't' }, 'Horarios del ' + flarga(S.fecha)), leyenda(), h('div', { class: 'slots' }, sl.map(s => s.estado !== 'libre' ? h('div', { class: 'slot off' + (colorDe(s.salonId) ? ' sc' : ''), style: colorDe(s.salonId) ? '--sc:' + colorDe(s.salonId) : null, 'aria-disabled': 'true' }, h('div', null, h('b', null, `${s.inicio} a ${s.fin} hs`), h('span', { class: 'muted small' }, [s.etiqueta, multi ? nom(s.salonId) : ''].filter(Boolean).join(' · '))), h('div', { class: 'p muted' }, 'No disponible')) : h('button', { class: 'slot' + (colorDe(s.salonId) ? ' sc' : ''), style: colorDe(s.salonId) ? '--sc:' + colorDe(s.salonId) : null, onclick: () => { S.slot = s; S.plan = null; formulario(); } }, h('div', null, h('b', null, `${s.inicio} a ${s.fin} hs`), h('span', { class: 'muted small' }, [s.etiqueta, multi ? nom(s.salonId) : ''].filter(Boolean).join(' · '))), planesDeSlot(s).length ? h('div', { class: 'p small' }, 'Desde ' + money(Math.min(...planesDeSlot(s).map(p => valePlan(p, s.turnoId).precio)))) : h('div', { class: 'p' }, money(s.precio), h('div', { class: 'muted small', style: 'font-weight:600' }, s.sena > 0 ? 'Seña ' + money(s.sena) : 'Sin seña'))))));
+  colorearSlots(cont, sl);
   cont.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /* ───── 2. datos y confirmación ───── */
 function formulario(error) {
   const s = S.slot, metodos = [S.pub.pagoTransferencia && ['transferencia', 'Transferencia bancaria', 'Te pasamos los datos y la reserva queda guardada para vos.'], S.pub.pagoMercadoPago && ['mercadopago', 'Mercado Pago', 'Pagás online con tarjeta o saldo.']].filter(Boolean);
-  const planes = planesDe(s.salonId).map(p => valePlan(p, s.turnoId)), tieneP = planes.length > 0, cur = () => tieneP ? (S.plan || null) : s;
+  const planes = planesDeSlot(s).map(p => valePlan(p, s.turnoId)), tieneP = planes.length > 0, cur = () => tieneP ? (S.plan || null) : s;
   const totEl = h('div', null), payBox = h('div', { class: 'pay' }), goBtn = h('button', { class: 'btn block', id: 'go' }, 'Confirmar reserva');
   const modoBox = h('div', { class: 'pay', hidden: true }, h('span', { class: 'muted small', style: 'font-weight:600' }, 'Cómo querés reservar'),
     h('label', null, h('input', { type: 'radio', name: 'modo', value: 'sena', checked: !S.pagoTotal, onchange: () => { S.pagoTotal = false; act(); } }), h('div', null, h('b', { class: 'm-sena' }))),

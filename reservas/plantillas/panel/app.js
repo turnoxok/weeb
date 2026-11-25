@@ -164,6 +164,12 @@ async function vAgenda(main) {
     h('div', { class: 'legend' }, h('span', null, h('i', { class: 'dot' }), 'Libre'), h('span', null, h('i', { class: 'dot ocup' }), 'Reservado'), h('span', null, h('i', { class: 'dot pend' }), 'Pendiente de pago'), h('span', null, h('i', { class: 'dot bloq' }), 'Bloqueado')),
     h('p', { class: 'muted small' }, `${ocup} turnos reservados este mes` + (pend ? ` · ${pend} pendientes de pago` : '')), fab(() => nuevaReserva({})));
 }
+/* Tipos de evento (config.json "tipos"): el borde de cada turno toma el color de su tipo (ej. bautismos). Sin "tipos" no cambia nada. */
+function colorearTipos(cont, sl) {
+  const T = (S.cfg && S.cfg.tipos) || []; if (!T.length) return;
+  const tipoDe = txt => { const m = T.find(x => x.patron && new RegExp(x.patron, 'i').test(String(txt || ''))), d = T.find(x => !x.patron); return m ? m.clave : (d ? d.clave : ''); };
+  [...cont.children].forEach((el, i) => { const t = T.find(x => x.clave === tipoDe(sl[i] && sl[i].etiqueta)); if (t && t.color) { el.style.borderLeft = '7px solid ' + t.color; } });
+}
 function diaSheet(f, ag) {
   const sl = ag.dias[f] || [], multi = S.salones.filter(s => s.activo).length > 1, cont = h('div', { class: 'list' });
   if (!sl.length) cont.append(h('p', { class: 'empty' }, 'No hay turnos configurados para este día.'));
@@ -174,6 +180,7 @@ function diaSheet(f, ag) {
     else cont.append(h('div', { class: 'item static' }, info, h('button', { class: 'btn sm', onclick: () => nuevaReserva({ fecha: f, turnoId: s.turnoId }) }, 'Reservar'),
       h('button', { class: 'btn sm line', onclick: e => accion(e.target, async () => { await api('admin.bloquear', { desde: f, salonId: s.salonId, turnoId: s.turnoId }); toast('Turno bloqueado', 'ok'); cerrar(); render(); }) }, 'Bloquear')));
   });
+  colorearTipos(cont, sl);
   cont.append(h('div', { class: 'row', style: 'margin-top:.8rem' }, h('button', { class: 'btn soft sm', onclick: () => nuevaReserva({ fecha: f }) }, 'Reserva a otra hora o fecha'),
     h('button', { class: 'btn line sm', onclick: e => bloqueoNuevo(f) }, 'Bloquear el día…')));
   sheet(flarga(f), cont);
