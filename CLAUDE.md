@@ -34,3 +34,10 @@ Lo que un especialista haría siempre acá:
 - Empezar a bajar lo pesado desde el primer segundo, en paralelo con el código.
 - Que el cargador muestre progreso real (nunca un contador clavado en 000).
 - Mirar los números en el celular y en la PC, en visita nueva (incógnito) y en visita repetida.
+
+## Regla: toda mejora va a la plantilla, no solo al cliente
+Nunca arreglar o mejorar algo en la web de un cliente (ej. Planeta Niños) sin llevarlo también a lo que se usa para armar las próximas: la demo (`demo-repo`), la plantilla de reservas/panel (`reservas/plantillas`, que usa `armar_cliente.py`), el editor madre (`editor/editor.html`) y la fábrica si corresponde. Si no, hay que rehacer lo mismo en cada web nueva.
+- Al terminar una mejora: preguntarse "¿dónde más vive este código?" y aplicarla ahí en el mismo trabajo (con la misma verificación).
+- Excepción: Quokka (`quokka/`) no se toca salvo que Ronaldo lo pida.
+- Webs con marca propia ya definida (colores originales, no los de la ficha): se agrega `<script>window.TUWEEB_PROPIO=true</script>` antes de `tema.js` y la web no se repinta con la paleta de la demo (tema.js v49+).
+- Lo que es solo estilo de un cliente (su fondo de invitación, su video, sus colores) queda en el cliente; todo lo demás (errores, textos, orden, guardado, botones, iconos) va a la plantilla.
