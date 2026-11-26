@@ -26,6 +26,8 @@ function iniciar(carpeta, puerto, a) {
     if (u.pathname === '/config.json') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ api: '/exec', volver: '/volver.html' })); }
     let rel = u.pathname === '/' ? 'index.html' : u.pathname.slice(1), f = path.join(PL, carpeta, rel);
     if (!fs.existsSync(f)) f = path.join(PL, rel);
+    if (!fs.existsSync(f)) f = path.join(PL, 'reservar', path.basename(rel));   // /reservar/reservar.css, /reservar/tema.css…
+    if (!fs.existsSync(f)) f = path.join(PL, path.basename(rel));   // /reservar/base.css (vive en la raíz de plantillas)
     if (!f.startsWith(PL) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); return res.end('no'); }
     res.writeHead(200, { 'Content-Type': TIPOS[path.extname(f)] || 'application/octet-stream' }); res.end(fs.readFileSync(f));
   });
