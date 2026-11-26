@@ -528,11 +528,38 @@ async function juegoDetalle(id) {
 }
 
 /* ───── AJUSTES ───── */
+/* Logo del negocio: se achica a PNG y se guarda en la ficha de tuweeb; de ahí lo toman el sitio, las reservas y este panel */
+function logoPng(archivo) {
+  return new Promise((ok, mal) => {
+    const url = URL.createObjectURL(archivo), im = new Image();
+    im.onload = () => {
+      try {
+        let lado = 600, png = '';
+        while (lado >= 120) {
+          const k = Math.min(1, lado / Math.max(im.naturalWidth || 1, im.naturalHeight || 1)), c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round((im.naturalWidth || lado) * k)); c.height = Math.max(1, Math.round((im.naturalHeight || lado) * k));
+          const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(im, 0, 0, c.width, c.height);
+          png = c.toDataURL('image/png'); if (png.length < 450000) break; lado = Math.round(lado * 0.75);
+        }
+        URL.revokeObjectURL(url); ok(png);
+      } catch (e) { mal(new Error('No pude leer esa imagen.')); }
+    };
+    im.onerror = () => { URL.revokeObjectURL(url); mal(new Error('No pude leer esa imagen. Probá con un PNG o JPG.')); };
+    im.src = url;
+  });
+}
+function logoSubir() {
+  const vista = h('img', { src: (window.TEMA && TEMA.logo) || (S.pub && S.pub.logoUrl) || '', alt: 'Tu logo', style: 'max-height:56px;max-width:140px;object-fit:contain;background:rgba(255,255,255,.08);border-radius:8px;padding:6px' });
+  const arch = h('input', { type: 'file', accept: 'image/*', style: 'display:none' }), btn = h('button', { type: 'button', class: 'btn soft sm' }, 'Cambiar logo');
+  btn.onclick = () => arch.click();
+  arch.onchange = () => { const f = arch.files[0]; if (!f) return; accion(btn, async () => { const png = await logoPng(f); await api('admin.guardarLogo', { logo: png }); vista.src = png; if (window.TEMA) TEMA.logo = png; marca && marca(); toast('Logo cambiado: ya se ve en tu web y en las reservas', 'ok'); }); };
+  return h('div', { class: 'field' }, h('span', null, 'Logo'), h('div', { class: 'row', style: 'gap:.8rem;align-items:center' }, vista, btn, arch));
+}
 async function vAjustes(main) {
   cargando(main); let c; try { c = await api('admin.config'); } catch (e) { main.replaceChildren(h('p', { class: 'empty' }, e.message)); return; }
   const t = (n, l, p) => campo(l, inp(n, { value: c[n], ...p })), chk = (n, l) => h('label', { class: 'row', style: 'margin-bottom:.7rem' }, inp(n, { type: 'checkbox', checked: c[n] }), l);
   const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f); ['mesesAnticipacion', 'antelacionHoras', 'holdHorasTransferencia', 'maxPendientesPorContacto', 'juegoCupo', 'juegoPrecio', 'juegoDiasAntes', 'juegoHoldHoras'].forEach(k => { x[k] = Number(x[k]); }); accion($('button.btn.block', f), async () => { await api('admin.guardarConfig', { valores: x }); S.pub = await llamar('config', {}, 'get'); marca(); toast('Ajustes guardados', 'ok'); render(); }); } },
-    h('h3', { class: 'sec' }, 'Tu negocio'), t('nombre', 'Nombre', { required: true }), t('logoUrl', 'Logo (dirección de la imagen)', { placeholder: 'https://…/logo.png' }), t('colorPrincipal', 'Color principal', { type: 'color' }), t('whatsapp', 'WhatsApp (con código de país, solo números)', { placeholder: '5491155551234' }), t('direccion', 'Dirección'), t('mapsUrl', 'Link de "Cómo llegar" (Google Maps)'),
+    h('h3', { class: 'sec' }, 'Tu negocio'), t('nombre', 'Nombre', { required: true }), (window.TEMA && TEMA.cliente ? logoSubir() : t('logoUrl', 'Logo (dirección de la imagen)', { placeholder: 'https://…/logo.png' })), t('colorPrincipal', 'Color principal', { type: 'color' }), t('whatsapp', 'WhatsApp (con código de país, solo números)', { placeholder: '5491155551234' }), t('direccion', 'Dirección'), t('mapsUrl', 'Link de "Cómo llegar" (Google Maps)'),
     h('h3', { class: 'sec' }, 'Opiniones de Google Maps'), h('p', { class: 'muted small' }, 'Si querés mostrar tus opiniones en la página de planes, cargá los datos y prendé el interruptor. El botón «Ver las opiniones» usa el link de Google Maps de arriba. Si no lo prendés, no se ve nada.'), chk('pgOpiniones', 'Mostrar las opiniones en mi web'),
     h('div', { class: 'grid2' }, t('pgOpinionesPuntaje', 'Puntuación', { placeholder: '4,9' }), t('pgOpinionesCantidad', 'Opiniones', { placeholder: '129' })),
     h('h3', { class: 'sec' }, 'Cobro por transferencia'), chk('pagoTransferencia', 'Aceptar reservas con pago por transferencia'), t('transferTitular', 'Titular de la cuenta'), t('transferAlias', 'Alias'), t('transferCbu', 'CBU / CVU'), t('transferBanco', 'Banco o billetera'), t('transferNota', 'Mensaje para el cliente (opcional)'),
