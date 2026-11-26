@@ -195,6 +195,12 @@ function consultar() {
   setTimeout(() => inp.focus(), 50);
 }
 function copiar(label, valor) { return h('div', { class: 'copy' }, h('div', null, h('span', null, label), h('b', null, valor)), h('button', { class: 'btn soft sm', onclick: e => { navigator.clipboard && navigator.clipboard.writeText(valor); e.target.textContent = '¡Copiado!'; setTimeout(() => (e.target.textContent = 'Copiar'), 1500); } }, 'Copiar')); }
+const extrasTxt = r => [r.ninosExtra > 0 && r.ninosExtra + (r.ninosExtra > 1 ? ' niños' : ' niño') + ' extra', r.adultosExtra > 0 && r.adultosExtra + (r.adultosExtra > 1 ? ' adultos' : ' adulto') + ' extra'].filter(Boolean).join(' y ');
+const desglose = r => {   // qué corresponde al combo y qué a los extras (y el descuento por pago total, si hubo)
+  const base = String(r.plan || '').replace(/ · pago total.*$/, ''), ex = (r.ninosExtra || 0) + (r.adultosExtra || 0), dsc = (r.planMonto || 0) + (r.extrasMonto || 0) - (r.total || 0);
+  if (!(r.planMonto > 0) || (!ex && !(dsc > 0))) return [fila('Plan', r.plan)];
+  return [fila('Combo', base + ' · ' + money(r.planMonto)), ex ? fila('Extras', extrasTxt(r) + ' · ' + money(r.extrasMonto)) : '', dsc > 0 ? fila('Descuento por pago total', '- ' + money(dsc)) : ''];
+};
 const fila = (k, v, cls) => v === '' || v == null ? '' : [h('dt', null, k), h('dd', { class: cls || '' }, v)];
 function resultado(r, nueva) {
   const fh = flarga(r.fecha) + ' · ' + r.inicio + ' a ' + r.fin + ' hs', ok = r.estado === 'confirmada' || r.estado === 'saldada', pend = r.estado === 'pendiente';
@@ -205,7 +211,7 @@ function resultado(r, nueva) {
   const volver = h('button', { class: 'btn line block', style: 'margin-top:1rem', onclick: () => { history.replaceState(null, '', location.pathname); S.fecha = ''; S.slot = null; calendario(); } }, 'Hacer otra reserva');
   const codigo = r.codigo ? h('div', { class: 'card codebox' }, h('span', { class: 'muted small' }, 'Tu código de reserva'), h('b', null, r.codigo), h('button', { class: 'btn soft sm', onclick: e => { const t = e.target; navigator.clipboard && navigator.clipboard.writeText(r.codigo); t.textContent = '¡Copiado!'; setTimeout(() => (t.textContent = 'Copiar'), 1500); } }, 'Copiar')) : '';
   if (!ok && !pend) return pagina(4, cab, codigo, volver);
-  const det = h('div', { class: 'card', style: 'margin-top:1rem' }, h('dl', { class: 'kv' }, fila('Reserva de', r.nombre), fila('Fecha', flarga(r.fecha)), fila('Horario', r.inicio + ' a ' + r.fin + ' hs'), fila('Plan', r.plan), fila('Cumpleañero/a', r.ninoNombre ? r.ninoNombre + (r.ninoEdad ? ' · cumple ' + r.ninoEdad + ' años' : '') : ''), fila('Invitados', r.personas || ''), fila('Detalles', r.nota),
+  const det = h('div', { class: 'card', style: 'margin-top:1rem' }, h('dl', { class: 'kv' }, fila('Reserva de', r.nombre), fila('Fecha', flarga(r.fecha)), fila('Horario', r.inicio + ' a ' + r.fin + ' hs'), ...desglose(r), fila('Cumpleañero/a', r.ninoNombre ? r.ninoNombre + (r.ninoEdad ? ' · cumple ' + r.ninoEdad + ' años' : '') : ''), fila('Invitados', r.personas || ''), fila('Detalles', r.nota),
     fila('Total', money(r.total)), r.sena > 0 ? fila('Seña', money(r.sena)) : '', r.pagado ? fila('Pagado', money(r.pagado)) : '', (pend && r.sena > 0 && !r.pagado && r.total > r.sena ? fila('Saldo después de la seña', money(r.total - r.sena), 'deb') : fila(r.saldo > 0 ? 'Saldo a pagar' : 'Saldo', money(Math.max(0, r.saldo)), r.saldo > 0 ? 'deb' : 'ok'))));
   const t = r.transferencia, aviso = wa(`Hola! Ya hice la transferencia de la seña. Reserva ${r.codigo || r.id}, a nombre de ${r.nombre}, ${flarga(r.fecha)} de ${r.inicio} a ${r.fin} hs.`);
   const ampliar = wa(`Hola! Quiero ampliar mi plan o sumar invitados. Reserva ${r.codigo || r.id}, a nombre de ${r.nombre}, ${flarga(r.fecha)} de ${r.inicio} a ${r.fin} hs.`);
