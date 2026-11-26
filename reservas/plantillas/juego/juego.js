@@ -144,7 +144,7 @@
   /* ── página de hs de juego ── */
   function cabecera(box, c, p) {
     const volver = c.volver ? e('a', { class: 'weeb-back', href: c.volver }, '← Volver al sitio') : '';
-    return [volver, e('div', { class: 'head' }, p.logoUrl && urlOk(p.logoUrl) ? e('img', { src: p.logoUrl, alt: p.nombre || '' }) : '', p.nombre ? e('div', { style: 'font-size:.95rem;color:var(--jmute);font-weight:600' }, p.nombre) : '')];
+    return [volver, volver ? e('div', { style: 'height:46px' }) : '', e('div', { class: 'head' }, p.logoUrl && urlOk(p.logoUrl) ? e('img', { src: p.logoUrl, alt: p.nombre || '' }) : '', p.nombre ? e('div', { style: 'font-size:.95rem;color:var(--jmute);font-weight:600' }, p.nombre) : '')];
   }
   function pagina(box) {
     box.classList.add('jg-root'); const m = /(\d+)[ ,]+(\d+)[ ,]+(\d+)/.exec(getComputedStyle(box).color || ''); if (m && (+m[1] * .299 + +m[2] * .587 + +m[3] * .114) < 128) box.classList.add('jg-claro');
