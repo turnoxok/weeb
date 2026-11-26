@@ -15,15 +15,17 @@ const money = n => (n < 0 ? '-$' : '$') + Math.abs(Math.round(n || 0)).toLocaleS
 const horas = (i, f) => { let a = +i.slice(0, 2) * 60 + +i.slice(3), b = +f.slice(0, 2) * 60 + +f.slice(3); if (b <= a) b += 1440; const h = (b - a) / 60; return (Number.isInteger(h) ? h : h.toFixed(1)) + ' hs'; };
 const $ = (s, r = document) => r.querySelector(s);
 
+/* Vocabulario del cliente (config.json "palabras": [["Planes","Combos"],…]): cambia los textos que se ven, sin tocar el resto. Sin "palabras" no hace nada. */
+const pal = s => { const P = typeof S !== 'undefined' && S.cfg && S.cfg.palabras; return P ? P.reduce((t, [a, b]) => t.replace(new RegExp('\\b' + a + '\\b', 'g'), b), s) : s; };
 function h(tag, props, ...kids) {
   const e = document.createElement(tag), post = {};
   for (const [k, v] of Object.entries(props || {})) {
     if (v == null || v === false) continue;
     if (k === 'class') e.className = v; else if (k === 'style') e.style.cssText = v;
     else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
-    else if (k === 'value' || k === 'checked') post[k] = v; else e.setAttribute(k, v === true ? '' : v);
+    else if (k === 'value' || k === 'checked') post[k] = v; else e.setAttribute(k, v === true ? '' : (k === 'placeholder' ? pal(String(v)) : v));
   }
-  kids.flat(Infinity).forEach(c => { if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(String(c))); });
+  kids.flat(Infinity).forEach(c => { if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(pal(String(c)))); });
   if ('value' in post) e.value = post.value; if ('checked' in post) e.checked = !!post.checked;
   return e;
 }
@@ -233,7 +235,7 @@ async function detalle(id) {
     h('div', { class: 'row', style: 'justify-content:space-between' }, h('h3', null, r.nombre), h('span', { class: 'chip ' + r.estado }, r.estado)),
     h('dl', { class: 'kv' }, h('dt', null, 'Fecha'), h('dd', null, flarga(r.fecha)), h('dt', null, 'Horario'), h('dd', null, `${r.inicio} a ${r.fin} (${horas(r.inicio, r.fin)})` + (S.salones.length > 1 ? ' · ' + salonDe(r.salonId) : '')),
       h('dt', null, 'Contacto'), h('dd', null, r.telefono ? h('a', { href: 'tel:' + r.telefono }, r.telefono) : '—', r.email ? [' · ', h('a', { href: 'mailto:' + r.email }, r.email)] : ''),
-      r.plan ? [h('dt', null, 'Plan'), h('dd', null, r.plan)] : '', h('dt', null, 'Invitados'), h('dd', null, r.personas || '—'), r.nota ? [h('dt', null, 'Nota'), h('dd', null, r.nota)] : '', h('dt', null, 'Origen'), h('dd', null, r.origen === 'manual' ? 'Cargada a mano' : 'Web'),
+      r.plan ? [h('dt', null, 'Plan'), h('dd', null, r.plan)] : '', r.ninoNombre ? [h('dt', null, 'Cumpleañero/a'), h('dd', null, r.ninoNombre + (r.ninoEdad ? ' · cumple ' + r.ninoEdad + ' años' : ''))] : '', h('dt', null, 'Invitados'), h('dd', null, (r.personas || '—') + ((r.ninosExtra || r.adultosExtra) ? ' (con ' + [r.ninosExtra && r.ninosExtra + ' niños extra', r.adultosExtra && r.adultosExtra + ' adultos extra'].filter(Boolean).join(' y ') + ')' : '')), r.nota ? [h('dt', null, 'Nota'), h('dd', null, r.nota)] : '', h('dt', null, 'Origen'), h('dd', null, r.origen === 'manual' ? 'Cargada a mano' : 'Web'),
       r.estado === 'pendiente' && r.venceEn ? [h('dt', null, 'Vence'), h('dd', null, new Date(r.venceEn).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }))] : '', h('dt', null, 'Código'), h('dd', null, h('b', { style: 'letter-spacing:.18em' }, r.codigo || r.id))),
     h('div', { class: 'money' }, h('div', null, h('b', null, money(r.total)), h('span', null, 'Total')), h('div', null, h('b', null, money(r.sena)), h('span', null, 'Seña')), h('div', null, h('b', null, money(r.pagado)), h('span', null, 'Pagado')), h('div', null, h('b', { class: r.saldo > 0 ? 'neg' : 'pos' }, money(r.saldo)), h('span', null, 'Saldo'))),
     h('div', { class: 'progress' }, h('i', { style: 'width:' + pct + '%' })),
