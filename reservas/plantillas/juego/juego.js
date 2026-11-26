@@ -17,8 +17,9 @@
   const cfg = () => cfgP || (cfgP = (window.JUEGO_API ? Promise.resolve({ api: window.JUEGO_API }) : fetch(BASE + 'reservar/config.json', { cache: 'no-cache' }).then(r => r.json())));
   const api = () => cfg().then(c => c.api);
   function llamar(action, data, post) {
-    return api().then(u => {
-      const req = post ? fetch(u, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action }, data || {})) }) : fetch(u + '?' + new URLSearchParams(Object.assign({ action }, data || {})));
+    return cfg().then(c => {
+      const u = c.api, cl = c.cliente ? { cl: c.cliente } : {};
+      const req = post ? fetch(u, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action }, cl, data || {})) }) : fetch(u + '?' + new URLSearchParams(Object.assign({ action }, cl, data || {})));
       return req.then(r => r.json()).then(j => { if (!j.ok) { const x = new Error(j.mensaje || 'No se pudo completar. Probá de nuevo.'); x.codigo = j.error; throw x; } return j.data; });
     });
   }

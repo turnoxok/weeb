@@ -34,5 +34,9 @@ require('fs').mkdirSync(OUT, { recursive: true });
   await p.click('.jg-sh .x');
   await p.evaluate(() => { const s = document.createElement('script'); s.src = '/juego.js'; s.setAttribute('data-popup', ''); document.body.appendChild(s); });
   await p.waitForSelector('.jg-pop', { timeout: 8000 }); assert((await p.locator('.jg-pop').innerText()).includes('hs de juego disponibles')); await p.click('.jg-pop .c'); assert.equal(await p.locator('.jg-pop').count(), 0); ok('aviso emergente que se cierra');
+  // Con la fábrica (varios clientes en un mismo sistema) cada pedido tiene que llevar de qué cliente es (cl), igual que reservar.
+  { const q = await ctx.newPage(), vistos = []; await q.route('**/config.json', r => r.fulfill({ contentType: 'application/json', body: JSON.stringify({ api: '/exec', volver: '/volver.html', cliente: 'miSalon' }) }));
+    q.on('request', r => { if (/\/exec/.test(r.url())) vistos.push(r.url() + ' ' + (r.postData() || '')); });
+    await q.goto('http://localhost:8784/hs-de-juego.html'); await q.waitForSelector('.jg-card'); assert(vistos.length && vistos.every(x => /cl=miSalon|"cl":"miSalon"/.test(x)), 'los pedidos no llevan el cliente: ' + vistos.join('|')); ok('cada pedido lleva de qué cliente es'); await q.close(); }
   assert.deepEqual(errores, []); await b.close(); srv.close(); console.log('hs de juego público OK');
 })().catch(e => { console.error(e); process.exit(1); });
