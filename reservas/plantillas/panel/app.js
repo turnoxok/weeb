@@ -176,15 +176,17 @@ function colorearTipos(cont, sl) {
   const tipoDe = txt => { const m = T.find(x => x.patron && new RegExp(x.patron, 'i').test(String(txt || ''))), d = T.find(x => !x.patron); return m ? m.clave : (d ? d.clave : ''); };
   [...cont.children].forEach((el, i) => { const t = T.find(x => x.clave === tipoDe(sl[i] && sl[i].etiqueta)); if (t && t.color) { el.style.borderLeft = '7px solid ' + t.color; } });
 }
+/** Después de bloquear o desbloquear un turno: la pantalla del día sigue abierta y ya muestra el cambio (sin cerrar ni volver a entrar). */
+async function recargarDia(f) { const ag = await api('admin.agenda', { mes: f.slice(0, 7) }); diaSheet(f, ag); refrescar(); }
 function diaSheet(f, ag) {
   const sl = ag.dias[f] || [], multi = S.salones.filter(s => s.activo).length > 1, cont = h('div', { class: 'list' });
   if (!sl.length) cont.append(h('p', { class: 'empty' }, 'No hay turnos configurados para este día.'));
   sl.forEach(s => {
     const info = h('div', { class: 'main', style: barraSalon(s.salonId) }, h('b', null, `${s.inicio} a ${s.fin}`, s.etiqueta ? ' · ' + s.etiqueta : ''), h('span', { class: 'muted small' }, (multi ? salonDe(s.salonId) + ' · ' : '') + horas(s.inicio, s.fin) + ' · ' + money(s.precio)));
     if (s.estado === 'ocupado') cont.append(h('button', { class: 'item', onclick: () => detalle(s.reservaId) }, info, h('div', null, h('div', null, s.nombre), h('span', { class: 'chip ' + s.reservaEstado }, s.reservaEstado))));
-    else if (s.estado === 'bloqueado') cont.append(h('div', { class: 'item static' }, info, h('span', { class: 'muted small' }, 'Bloqueado' + (s.motivo ? ': ' + s.motivo : '')), h('button', { class: 'btn sm line', onclick: e => accion(e.target, async () => { await api('admin.desbloquear', { id: s.bloqueoId }); toast('Desbloqueado', 'ok'); cerrar(); render(); }) }, 'Desbloquear')));
+    else if (s.estado === 'bloqueado') cont.append(h('div', { class: 'item static' }, info, h('span', { class: 'muted small' }, 'Bloqueado' + (s.motivo ? ': ' + s.motivo : '')), h('button', { class: 'btn sm line', onclick: e => accion(e.target, async () => { await api('admin.desbloquear', { id: s.bloqueoId }); toast('Desbloqueado', 'ok'); await recargarDia(f); }) }, 'Desbloquear')));
     else cont.append(h('div', { class: 'item static' }, info, h('button', { class: 'btn sm', onclick: () => nuevaReserva({ fecha: f, turnoId: s.turnoId }) }, 'Reservar'),
-      h('button', { class: 'btn sm line', onclick: e => accion(e.target, async () => { await api('admin.bloquear', { desde: f, salonId: s.salonId, turnoId: s.turnoId }); toast('Turno bloqueado', 'ok'); cerrar(); render(); }) }, 'Bloquear')));
+      h('button', { class: 'btn sm line', onclick: e => accion(e.target, async () => { await api('admin.bloquear', { desde: f, salonId: s.salonId, turnoId: s.turnoId }); toast('Turno bloqueado', 'ok'); await recargarDia(f); }) }, 'Bloquear')));
   });
   colorearTipos(cont, sl);
   cont.append(h('div', { class: 'row', style: 'margin-top:.8rem' }, h('button', { class: 'btn soft sm', onclick: () => nuevaReserva({ fecha: f }) }, 'Reserva a otra hora o fecha'),

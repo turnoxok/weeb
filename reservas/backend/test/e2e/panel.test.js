@@ -26,6 +26,12 @@ require('fs').mkdirSync(OUT, { recursive: true });
   await p.click('.sheet-head .icon'); await p.waitForTimeout(400);
   // el turno quedó ocupado en la API pública
   const disp = await (await fetch('http://localhost:8781/exec?action=disponibilidad&mes=2026-11')).json(); assert.equal(disp.data.dias['2026-11-07'][0].estado, 'ocupado'); ok('el turno quedó ocupado en el calendario público');
+  // bloquear / desbloquear un turno desde el día: la pantalla del día sigue abierta y muestra el cambio
+  await p.click('.cal .day:has(b:text-is("21"))'); await p.waitForSelector('.sheet .item'); const nT = await p.locator('.sheet .item').count();
+  await p.click('.sheet .item >> nth=0 >> button:text-is("Bloquear")'); await p.waitForSelector('.sheet .item:has-text("Bloqueado")'); assert.equal(await p.locator('.sheet').count(), 1); assert.equal(await p.locator('.sheet .item').count(), nT);
+  assert(await p.locator('.sheet button:has-text("Desbloquear")').count()); assert.equal(await p.locator('.sheet img.tw3d').count(), 0); ok('al bloquear un turno el día queda abierto y ya lo muestra bloqueado');
+  await p.click('.sheet button:has-text("Desbloquear")'); await p.waitForSelector('.sheet .item >> nth=0 >> button:text-is("Bloquear")'); assert.equal(await p.locator('.sheet:has-text("Bloqueado")').count(), 0); ok('al desbloquear también queda en el mismo día');
+  await p.click('.sheet-head .icon'); await p.waitForTimeout(300);
   // reservas
   await p.click('.tabs button:has-text("Reservas")'); await p.waitForSelector('.item'); await p.fill('input[type=search]', 'rosa'); assert.equal(await p.locator('.list .item').count(), 1); await shot('06-reservas'); ok('lista y búsqueda de reservas');
   // turnos
