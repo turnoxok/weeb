@@ -34,8 +34,6 @@ for sub in ('panel', 'reservar'):
             h = h.replace(m.group(0), m.group(0) + '\n<link rel="stylesheet" href="tema.css">', 1) if m else h.replace('</head>', '<link rel="stylesheet" href="tema.css">\n</head>', 1)
             h = h.replace('content="#2b1c44"', 'content="#1a0f3d"'); open(ix, 'w', encoding='utf8').write(h)
     json.dump({'api': a.api, **({'volver': a.volver, **(json.loads(a.config_extra) if a.config_extra else {})} if sub == 'reservar' else {})}, open(os.path.join(d, 'config.json'), 'w'), indent=1)
-shutil.copy(os.path.join(PL, 'juego', 'juego.js'), os.path.join(a.salida, 'juego.js'))   # hs de juego: lista, reserva y aviso emergente (la usa la web)
-os.makedirs(os.path.join(a.salida, 'hs-de-juego'), exist_ok=True); shutil.copy(os.path.join(PL, 'juego', 'hs-de-juego.html'), os.path.join(a.salida, 'hs-de-juego', 'index.html'))   # la página «hs de juego» (usa las hojas de estilo de reservar/)
 d = os.path.join(a.salida, 'panel')
 try:
     for lado in (192, 512): icono(os.path.join(d, f'icon-{lado}.png'), lado)

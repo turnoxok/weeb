@@ -7,8 +7,6 @@ var QUOKKA = {
     nombre: 'Quokka Pelotero', colorPrincipal: '#03ad55', logoUrl: 'https://quokka.tuweeb.com/assets/marca/icon-512.png', whatsapp: '5492994097423', direccion: 'Aguado 2280, Neuquén',
     mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Aguado%202280%2C%20Neuqu%C3%A9n',
     mesesAnticipacion: 12, antelacionHoras: 24, holdHorasTransferencia: 24, autoConfirmarSinSena: false,
-    juegoActivo: true, juegoCupo: 20, juegoPrecio: 20000, juegoDiasAntes: 5, juegoAuto: true, juegoDuracion: '2 horas', juegoPopup: true,
-    juegoTexto: 'Los chicos juegan 2 horas en el pelotero, sin fiesta. Anotá a tus chicos y elegí el horario.',
     textoConfirmacion: '¡Gracias por elegir Quokka! Cualquier duda escribinos por WhatsApp.',
     /* DATOS DE PRUEBA para que se vea cómo funciona el cobro: Constanza carga los reales desde el panel */
     transferTitular: 'Quokka Pelotero (prueba)', transferAlias: 'quokka.prueba', transferCbu: '0000003100000000000001', transferBanco: 'Banco de prueba', transferNota: 'Datos de prueba: no transfieras plata de verdad.'
@@ -37,7 +35,7 @@ var QUOKKA = {
   ],
   servicio: {   // lo que Quokka le paga a tuweeb (solo lectura para ellos en el panel)
     precioTotal: 890000, cuotas: 2, valorCuota: 445000,   // seña del 50% y el resto después
-    incluye: 'Web 3D con tu logo y tus mascotas|Reservas de cumpleaños y hora de juego|Panel desde el celular con los dos salones|Dominio .com gratis el primer año|Hosting y soporte|Tercer salón (Quokka Park): adicional de $380.000'
+    incluye: 'Web 3D con tu logo y tus mascotas|Reservas de cumpleaños|Panel desde el celular con los dos salones|Dominio .com gratis el primer año|Hosting y soporte|Tercer salón (Quokka Park): adicional de $380.000'
   }
 };
 /* Para correr a mano desde el editor: completa lo que falte (salones, horarios, planes, datos de cobro de prueba) */

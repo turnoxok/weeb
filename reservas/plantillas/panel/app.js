@@ -30,7 +30,7 @@ function h(tag, props, ...kids) {
   return e;
 }
 const svg = d => { const w = document.createElement('span'); w.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`; return w.firstChild; };
-const IC = { juego: '<circle cx="12" cy="12" r="9"/><path d="M8 14.5c1 1.6 2.4 2.4 4 2.4s3-.8 4-2.4M9 9.5h.01M15 9.5h.01"/>', agenda: '<rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/>', reservas: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>', caja: '<rect x="2" y="6" width="20" height="13" rx="3"/><circle cx="12" cy="12.5" r="3"/>', turnos: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', web: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>', ajustes: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>' };
+const IC = { agenda: '<rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/>', reservas: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>', caja: '<rect x="2" y="6" width="20" height="13" rx="3"/><circle cx="12" cy="12.5" r="3"/>', turnos: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', web: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>', ajustes: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>' };
 
 /* ───── estado y API ───── */
 const S = { cfg: null, pub: null, token: localStorage.getItem('weeb_token') || '', user: null, view: 'agenda', mes: mesDe(hoy()), reFiltro: 'prox', reQ: '', cajaMes: mesDe(hoy()), salones: [], turnos: [], instalar: null };
@@ -135,11 +135,11 @@ const salonColor = id => (S.cfg && S.cfg.colores || {})[id] || '';   /* config.j
 const barraSalon = id => salonColor(id) ? 'border-left:5px solid ' + salonColor(id) + ';padding-left:.6rem' : null;
 const salonDe = id => (S.salones.find(s => s.id === id) || {}).nombre || '';
 
-const VISTAS = { agenda: ['Agenda', vAgenda], reservas: ['Reservas', vReservas], caja: ['Caja', vCaja], juego: ['hs de juego', vJuego], turnos: ['Planes', vTurnos], web: ['Mi web', vWeb], ajustes: ['Ajustes', vAjustes] };
+const VISTAS = { agenda: ['Agenda', vAgenda], reservas: ['Reservas', vReservas], caja: ['Caja', vCaja], turnos: ['Planes', vTurnos], web: ['Mi web', vWeb], ajustes: ['Ajustes', vAjustes] };
 function render() {
   if (S.user && S.user.rol === 'encargada') return renderEncargada();
   const main = h('main', { class: 'wrap', id: 'vista' });
-  const visibles = Object.entries(VISTAS).filter(([k]) => k !== 'juego' || (S.pub && S.pub.juegoActivo));
+  const visibles = Object.entries(VISTAS);
   const tabs = h('nav', { class: 'tabs' + (visibles.length > 6 ? ' tabs7' : '') }, visibles.map(([k, [t]]) => h('button', { class: S.view === k ? 'on' : '', onclick: () => { S.view = k; render(); } }, svg(IC[k]), t)));
   $app().replaceChildren(
     volverBtn(),
@@ -182,7 +182,7 @@ function diaSheet(f, ag) {
   sl.forEach(s => {
     const info = h('div', { class: 'main', style: barraSalon(s.salonId) }, h('b', null, `${s.inicio} a ${s.fin}`, s.etiqueta ? ' · ' + s.etiqueta : ''), h('span', { class: 'muted small' }, (multi ? salonDe(s.salonId) + ' · ' : '') + horas(s.inicio, s.fin) + ' · ' + money(s.precio)));
     if (s.estado === 'ocupado') cont.append(h('button', { class: 'item', onclick: () => detalle(s.reservaId) }, info, h('div', null, h('div', null, s.nombre), h('span', { class: 'chip ' + s.reservaEstado }, s.reservaEstado))));
-    else if (s.estado === 'bloqueado') cont.append(h('div', { class: 'item static', style: 'flex-wrap:wrap;row-gap:.6rem' }, info, h('span', { class: 'muted small', style: 'flex:1 1 100%;margin-top:-.3rem' }, 'Bloqueado' + (s.motivo ? ': ' + s.motivo : '')), h('div', { class: 'row', style: 'flex:1 1 100%;flex-wrap:wrap;gap:.4rem' }, s.juego ? h('span', { class: 'chip confirmada' }, `hs de juego · ${s.juego.mesas}/${s.juego.cupo} mesas`) : '', h('button', { class: 'btn sm', onclick: () => juegoHabilitar(f, ag, s) }, s.juego ? 'Editar hs de juego' : 'Habilitar hs de juego'), h('button', { class: 'btn sm line', onclick: e => accion(e.target, async () => { await api('admin.desbloquear', { id: s.bloqueoId }); toast('Desbloqueado', 'ok'); cerrar(); render(); }) }, 'Desbloquear'))));
+    else if (s.estado === 'bloqueado') cont.append(h('div', { class: 'item static' }, info, h('span', { class: 'muted small' }, 'Bloqueado' + (s.motivo ? ': ' + s.motivo : '')), h('button', { class: 'btn sm line', onclick: e => accion(e.target, async () => { await api('admin.desbloquear', { id: s.bloqueoId }); toast('Desbloqueado', 'ok'); cerrar(); render(); }) }, 'Desbloquear')));
     else cont.append(h('div', { class: 'item static' }, info, h('button', { class: 'btn sm', onclick: () => nuevaReserva({ fecha: f, turnoId: s.turnoId }) }, 'Reservar'),
       h('button', { class: 'btn sm line', onclick: e => accion(e.target, async () => { await api('admin.bloquear', { desde: f, salonId: s.salonId, turnoId: s.turnoId }); toast('Turno bloqueado', 'ok'); cerrar(); render(); }) }, 'Bloquear')));
   });
@@ -325,7 +325,6 @@ async function vCaja(main) {
     h('div', { class: 'bar' }, h('div', { class: 'row' }, h('button', { class: 'icon', onclick: () => { S.cajaMes = sumMes(S.cajaMes, -1); vCaja(main); } }, '‹'), h('h2', null, nomMes(S.cajaMes)), h('button', { class: 'icon', onclick: () => { S.cajaMes = sumMes(S.cajaMes, 1); vCaja(main); } }, '›')),
       h('div', { class: 'row' }, h('button', { class: 'btn soft sm', onclick: () => csv(filas) }, 'Exportar'), h('button', { class: 'btn sm', onclick: () => movimientoNuevo() }, '+ Movimiento'))),
     h('div', { class: 'stats' }, st('Cobrado en reservas', c.ingresosReservas), st('Otros ingresos', c.ingresosExtra), st('Egresos', c.egresos, 'neg'), st('Balance del mes', c.balance, c.balance >= 0 ? 'pos' : 'neg'), st('Saldos por cobrar', c.porCobrar)),
-    c.pendienteJuego > 0 ? h('p', { class: 'muted small' }, `En "Saldos por cobrar" hay ${money(c.pendienteJuego)} de hs de juego anotadas que todavía no pagaron.`) : '',
     Object.keys(c.porMetodo).length ? h('p', { class: 'muted small' }, 'Por medio: ' + Object.entries(c.porMetodo).map(([k, v]) => `${k} ${money(v)}`).join(' · ')) : '',
     h('h3', { class: 'sec' }, 'Movimientos'), filas.length ? h('div', { class: 'list' }, filas.map(x => h('div', { class: 'item' + (x.id ? '' : ' static'), onclick: x.id ? () => detalle(x.id) : null }, h('div', { class: 'when' }, fcorta(x.f).split(' ').slice(1).join(' '), h('small', null, DIAS[parse(x.f).getDay()])), h('div', { class: 'main' }, h('b', null, x.t), h('span', { class: 'muted small' }, x.sub)), x.pend ? h('div', { style: 'text-align:right' }, h('b', { class: 'muted' }, money(x.m)), h('div', null, h('span', { class: 'chip pendiente' }, 'Pendiente'))) : h('b', { class: x.m < 0 ? 'neg' : 'pos' }, money(x.m)),
       x.mov ? h('button', { class: 'icon', 'aria-label': 'Eliminar', onclick: e => { e.stopPropagation(); if (!confirm('¿Eliminar este movimiento?')) return; accion(e.target, async () => { await api('admin.movimientoEliminar', { id: x.mov }); vCaja(main); }); } }, '🗑') : ''))) : h('p', { class: 'empty' }, 'Sin movimientos este mes.'));
@@ -447,119 +446,7 @@ async function vWeb(main) {
     h('h3', { class: 'sec' }, 'Pagos registrados'), v.pagos.length ? h('div', { class: 'list' }, v.pagos.map(p => h('div', { class: 'item static' }, h('div', { class: 'when' }, fcorta(p.fecha)), h('div', { class: 'main' }, h('b', null, money(p.monto)), p.nota ? h('span', { class: 'muted small' }, p.nota) : '')))) : h('p', { class: 'empty' }, 'Todavía no hay pagos registrados.'));
 }
 
-/* ───── HORA DE JUEGO ───── */
-const sumDias = (f, n) => { const d = parse(f); d.setDate(d.getDate() + n); return ymd(d); };
 const cuandoJ = r => new Date(r).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' });
-function juegoChip(s) {
-  if (s.estado === 'abierto') return h('span', { class: 'chip ' + (s.completo ? 'cancelada' : 'confirmada') }, s.completo ? 'Completo' : `${s.anotados}/${s.cupo} mesas`);
-  if (s.estado === 'cumple') return h('span', { class: 'chip pendiente' }, 'Cumple');
-  return h('span', { class: 'chip' }, { cerrado: 'Cerrado', bloqueado: 'Bloqueado', fuera: 'Sin abrir' }[s.estado] || s.estado);
-}
-async function vJuego(main) {
-  cargando(main); S.juegoDesde = S.juegoDesde || hoy();
-  let d; try { d = await api('admin.juego', { desde: S.juegoDesde, hasta: sumDias(S.juegoDesde, 6) }); } catch (e) { main.replaceChildren(h('p', { class: 'empty' }, e.message)); return; }
-  const dias = {}; d.slots.forEach(s => (dias[s.fecha] = dias[s.fecha] || []).push(s));
-  const vivas = d.reservas.filter(r => r.estado === 'pendiente' || r.estado === 'confirmada'), esperando = vivas.filter(r => r.estado === 'pendiente').length;
-  const refrescarJ = () => vJuego($('#vista'));
-  main.replaceChildren(
-    h('div', { class: 'bar' }, h('div', { class: 'row' }, h('button', { class: 'icon', 'aria-label': 'Semana anterior', onclick: () => { S.juegoDesde = sumDias(S.juegoDesde, -7); vJuego(main); } }, '‹'), h('h2', null, 'hs de juego'),
-      h('button', { class: 'icon', 'aria-label': 'Semana siguiente', onclick: () => { S.juegoDesde = sumDias(S.juegoDesde, 7); vJuego(main); } }, '›')), h('button', { class: 'btn sm', onclick: () => juegoNueva(null) }, '+ Anotar')),
-    h('p', { class: 'muted small', style: 'margin-bottom:.6rem' }, `Del ${fcorta(d.desde)} al ${fcorta(d.hasta)}. Tocá un horario para habilitarlo, cerrarlo o cambiar las mesas. Cada familia que se anota ocupa una mesa.`),
-    esperando ? h('p', { class: 'small', style: 'color:var(--warn);margin:.2rem 0 .6rem' }, esperando === 1 ? 'Hay 1 reserva esperando que confirmes el pago.' : `Hay ${esperando} reservas esperando que confirmes el pago.`) : '',
-    ...(Object.keys(dias).length ? Object.keys(dias).sort().map(f => [h('h3', { class: 'sec' }, flarga(f)), h('div', { class: 'list' }, dias[f].map(s => h('button', { class: 'item', onclick: () => juegoSlotHoja(s, d.reservas) },
-      h('div', { class: 'when' }, s.inicio), h('div', { class: 'main' }, h('b', null, `${s.inicio} a ${s.fin}`), h('span', { class: 'muted small' }, [(S.salones.length > 1 ? s.salon : ''), (s.estado === 'cumple' ? 'Cumple de ' + s.cumple : s.estado === 'abierto' ? (s.origen === 'manual' ? 'Habilitado por vos' : 'Abierto automático') + ' · ' + money(s.precio) + ' por niño' : '')].filter(Boolean).join(' · '))), juegoChip(s))))]).flat() : [h('p', { class: 'empty' }, 'No hay horarios en estas fechas.')]),
-    h('h3', { class: 'sec' }, 'Anotados'),
-    vivas.length ? h('div', { class: 'list' }, vivas.map(r => h('button', { class: 'item', onclick: () => juegoDetalle(r.id) }, h('div', { class: 'when' }, fcorta(r.fecha)), h('div', { class: 'main' }, h('b', null, r.nombre), h('span', { class: 'muted small' }, `${r.adultos || 0} ${(r.adultos || 0) === 1 ? 'adulto' : 'adultos'} y ${r.chicos} ${r.chicos === 1 ? 'niño' : 'niños'} · ${r.inicio} · ${r.salon}` + (r.compFecha && r.compNombre && r.estado === 'pendiente' ? ' · con comprobante' : ''))), h('span', { class: 'chip ' + r.estado }, r.estado === 'pendiente' ? 'Falta pago' : 'Pagado')))) : h('p', { class: 'muted small' }, 'Todavía no hay familias anotadas en estas fechas.'));
-  vJuego.refrescar = refrescarJ;
-}
-/** Al habilitar el primer horario se prende solo la parte pública (página y pestaña), así no hay que tocar nada más. */
-async function activarJuego() { if (S.pub && S.pub.juegoActivo) return; await api('admin.guardarConfig', { valores: { juegoActivo: true } }); S.pub.juegoActivo = true; }
-/** Desde un turno bloqueado: habilitarlo para hs de juego (cupo por mesas, tope por mesa, flyer). Sigue bloqueado para cumpleaños. */
-function juegoHabilitar(f, ag, s) {
-  const multi = S.salones.filter(x => x.activo).length > 1, bloq = (ag.dias[f] || []).filter(x => x.estado === 'bloqueado' || x.turnoId === s.turnoId);
-  const precio = (S.pub && S.pub.juegoPrecio) || 20000, dur = (S.pub && S.pub.juegoDuracion) || '2 horas', ya = s.juego || null, foto = campoFoto('');
-  foto.querySelector('span').textContent = 'Flyer (opcional)';
-  const marcas = bloq.map(x => h('label', { class: 'row', style: 'gap:.5rem;margin:.25rem 0' }, inp('t_' + x.turnoId, { type: 'checkbox', checked: x.turnoId === s.turnoId }), h('span', null, `${x.inicio} a ${x.fin}` + (multi ? ' · ' + salonDe(x.salonId) : '') + (x.juego ? ' (ya habilitado)' : ''))));
-  const form = h('form', { onsubmit: ev => ev.preventDefault() },
-    h('p', { class: 'muted small' }, 'Las familias se anotan online para que sus chicos jueguen en este horario. Mientras esté habilitado, no se ofrece para cumpleaños.'),
-    bloq.length > 1 ? [h('h3', { class: 'sec' }, 'Horarios a habilitar'), h('div', null, marcas)] : '',
-    h('div', { class: 'grid2' }, campo('Cantidad de mesas', inp('cupo', { type: 'number', min: '1', value: ya ? ya.cupo : ((S.pub && S.pub.juegoCupo) || 10) })), h('div', null)),
-    h('div', { class: 'grid2' }, campo('Máx. adultos por mesa', inp('adultosMax', { type: 'number', min: '0', value: ya && ya.adultosMax ? ya.adultosMax : '', placeholder: 'Sin tope' })), campo('Máx. niños por mesa', inp('ninosMax', { type: 'number', min: '0', value: ya && ya.ninosMax ? ya.ninosMax : '', placeholder: 'Sin tope' }))),
-    h('p', { class: 'small', style: 'margin:.2rem 0 .8rem' }, `Cada niño paga ${money(precio)} por ${dur}. Se completa por mesas, no por cantidad de niños.`),
-    foto, h('button', { class: 'btn block' }, 'Habilitar hs de juego'));
-  form.addEventListener('submit', () => accion($('button.btn', form), async () => {
-    const x = datos(form), ids = bloq.filter(b => form.elements['t_' + b.turnoId] ? form.elements['t_' + b.turnoId].checked : b.turnoId === s.turnoId).map(b => b.turnoId);
-    if (!ids.length) { toast('Elegí al menos un horario', 'err'); return; }
-    await api('admin.juegoSlot', { fecha: f, turnoIds: ids, estado: 'abierto', cupo: x.cupo, adultosMax: x.adultosMax, ninosMax: x.ninosMax, flyer: x.imagen }); await activarJuego();
-    toast(ids.length > 1 ? 'Horarios habilitados para hs de juego' : 'Habilitado para hs de juego', 'ok'); cerrar(); render();
-  }));
-  sheet('Habilitar hs de juego', form);
-}
-function juegoSlotHoja(s, reservas) {
-  const mias = reservas.filter(r => r.fecha === s.fecha && r.turnoId === s.turnoId && (r.estado === 'pendiente' || r.estado === 'confirmada'));
-  const f = h('form', { onsubmit: ev => ev.preventDefault() },
-    h('div', { class: 'grid2' }, campo('Mesas (cupo)', inp('cupo', { type: 'number', min: '1', value: s.cupo })), campo('Precio por niño', inp('precio', { type: 'number', min: '0', value: s.precio }))),
-    h('div', { class: 'grid2' }, campo('Máx. adultos por mesa', inp('adultosMax', { type: 'number', min: '0', value: s.adultosMax || '', placeholder: 'Sin tope' })), campo('Máx. niños por mesa', inp('ninosMax', { type: 'number', min: '0', value: s.ninosMax || '', placeholder: 'Sin tope' }))),
-    campo('Aviso para las familias (opcional)', inp('nota', { value: s.nota || '', maxlength: '200', placeholder: 'Ej: Tarde de pintura' })),
-    campo('Flyer de este horario (opcional)', inp('flyer', { value: s.flyer || '', placeholder: 'Se usa el flyer fijo si lo dejás vacío' })));
-  const fi = h('input', { type: 'file', accept: 'image/*', style: 'display:none' });
-  fi.addEventListener('change', () => { const a = fi.files && fi.files[0]; if (!a) return; accion($('.subirf', f), async () => { const x = await leerArchivo(a); const r = await api('admin.subirFoto', x); f.elements.flyer.value = r.url; toast('Flyer cargado. Tocá Guardar.', 'ok'); }); });
-  const guardar = estado => e => accion(e.currentTarget, async () => { const x = datos(f); await api('admin.juegoSlot', { fecha: s.fecha, turnoId: s.turnoId, estado, cupo: x.cupo, precio: x.precio, nota: x.nota, flyer: x.flyer, adultosMax: x.adultosMax, ninosMax: x.ninosMax }); if (estado === 'abierto') await activarJuego(); toast(estado === 'abierto' ? 'Horario habilitado' : estado === 'cerrado' ? 'Horario cerrado' : 'Horario sin habilitar', 'ok'); cerrar(); vJuego.refrescar(); });
-  const hay = s.estado === 'cumple';
-  sheet(`${fcorta(s.fecha)} · ${s.inicio} a ${s.fin}`, h('div', null,
-    h('p', { class: 'muted small' }, (S.salones.length > 1 ? s.salon + '. ' : '') + (hay ? 'Hay un cumple reservado (' + s.cumple + '): este horario no se puede abrir para hora de juego.' : s.estado === 'abierto' ? (s.origen === 'manual' ? 'Lo habilitaste vos.' : 'Se abrió solo por estar cerca de la fecha.') : s.estado === 'cerrado' ? 'Lo cerraste vos: no se ofrece.' : s.estado === 'bloqueado' ? 'Está bloqueado.' : 'Todavía no se ofrece (queda lejos de la fecha).')),
-    hay ? '' : [f, fi, h('div', { class: 'row', style: 'flex-wrap:wrap;margin:.4rem 0' },
-      h('button', { class: 'btn', onclick: guardar('abierto') }, s.estado === 'abierto' ? 'Guardar cambios' : 'Habilitar hs de juego'),
-      s.estado === 'abierto' ? h('button', { class: 'btn bad', onclick: e => { if (!confirm('¿Cerrar este horario? No se va a ofrecer, aunque esté cerca de la fecha.')) return; guardar('cerrado')(e); } }, 'Cerrar') : '',
-      h('button', { class: 'btn soft subirf', onclick: () => fi.click() }, 'Subir flyer'),
-      s.overrideId ? h('button', { class: 'btn line', onclick: guardar('auto') }, 'Quitar habilitación') : '')],
-    h('h3', { class: 'sec' }, 'Anotados en este horario'),
-    mias.length ? h('div', { class: 'list' }, mias.map(r => h('button', { class: 'item', onclick: () => juegoDetalle(r.id) }, h('div', { class: 'main' }, h('b', null, r.nombre), h('span', { class: 'muted small' }, `${r.adultos || 0} ${(r.adultos || 0) === 1 ? 'adulto' : 'adultos'} y ${r.chicos} ${r.chicos === 1 ? 'niño' : 'niños'}`)), h('span', { class: 'chip ' + r.estado }, r.estado === 'pendiente' ? 'Falta pago' : 'Pagado')))) : h('p', { class: 'muted small' }, 'Nadie todavía.'),
-    hay ? '' : h('button', { class: 'btn soft block', style: 'margin-top:.8rem', onclick: () => juegoNueva(s) }, 'Anotar una familia en este horario')));
-}
-function juegoNueva(s) {
-  const opciones = (S.turnos || []).filter(t => t.activo);
-  const f = h('form', { onsubmit: ev => ev.preventDefault() },
-    h('div', { class: 'grid2' }, campo('Fecha', inp('fecha', { type: 'date', value: s ? s.fecha : hoy(), required: true })),
-      campo('Horario', h('select', { name: 'turnoId' }, opciones.map(t => h('option', { value: t.id, selected: s && s.turnoId === t.id }, (S.salones.length > 1 ? salonDe(t.salonId) + ' · ' : '') + `${t.inicio} a ${t.fin}`))))),
-    h('div', { class: 'grid2' }, campo('Nombre del adulto', inp('nombre', { required: true })), campo('WhatsApp', inp('telefono', { type: 'tel', inputmode: 'tel' }))),
-    campo('Mail (opcional)', inp('email', { type: 'email', inputmode: 'email' })),
-    h('div', { class: 'grid2' }, campo('Adultos', inp('adultos', { type: 'number', min: '0', value: '1' })), campo('Niños', inp('chicos', { type: 'number', min: '1', value: '1', required: true }))),
-    campo('Ya pagó ($)', inp('pagado', { type: 'number', min: '0', value: '0' })),
-    campo('Cómo llegó', h('select', { name: 'origen' }, [['whatsapp', 'Por WhatsApp'], ['local', 'En el local'], ['panel', 'Otro']].map(([v, t]) => h('option', { value: v }, t)))),
-    campo('Comprobante (foto o PDF, opcional)', h('input', { type: 'file', name: 'comp', accept: 'image/*,application/pdf' })),
-    h('button', { class: 'btn block' }, 'Anotar'), h('p', { class: 'muted small' }, 'Si ya pagó, queda confirmado y el pago entra a la caja. La imagen del comprobante se borra sola a los 7 días; el dato queda.'));
-  const enviar = async forzar => { const x = datos(f), fl = f.elements.comp.files && f.elements.comp.files[0], a = fl ? await leerArchivo(fl) : {};
-    delete x.comp; try { await api('admin.juegoCrear', { ...x, ...(a.datos ? { compNombre: a.nombre, tipo: a.tipo, datos: a.datos } : {}), forzar: forzar || undefined }); toast('Anotado', 'ok'); cerrar(); vJuego.refrescar && vJuego.refrescar(); }
-    catch (e) { if (e.codigo === 'CUPO' && !forzar && confirm(e.message + '\n¿Anotar igual, con una mesa de más?')) return enviar(true); throw e; } };
-  f.addEventListener('submit', () => accion($('button.btn', f), () => enviar(false)));
-  sheet('Anotar en hs de juego', f);
-}
-async function juegoDetalle(id) {
-  sheet('hs de juego', h('p', { class: 'empty' }, h('img', { class: 'tw3d', src: 'tuweeb-icono.svg', alt: 'tuweeb' })));
-  let d; try { d = await api('admin.juegoReserva', { id }); } catch (e) { cerrar(); toast(e.message, 'err'); return; }
-  const r = d.reserva, c = d.comprobante, tel = r.telefono.replace(/\D/g, ''), wa = tel ? 'https://wa.me/' + (tel.length <= 10 ? '54' + tel : tel) + '?text=' + encodeURIComponent(`Hola ${r.nombre.split(' ')[0]}! Te escribimos de ${S.pub.nombre} por las hs de juego del ${flarga(r.fecha)} a las ${r.inicio}.`) : '';
-  const hecho = () => { vJuego.refrescar && vJuego.refrescar(); juegoDetalle(id); };
-  const fi = h('input', { type: 'file', accept: 'image/*,application/pdf', style: 'display:none' });
-  fi.addEventListener('change', () => { const a = fi.files && fi.files[0]; if (!a) return; accion($('.subir', fi.parentNode), async () => { const x = await leerArchivo(a); await api('admin.juegoComprobante', { id, ...x }); toast('Comprobante guardado', 'ok'); hecho(); }); });
-  const pf = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(pf); accion($('button', pf), async () => { await api('admin.juegoPago', { id, monto: x.monto, metodo: x.metodo }); toast('Pago confirmado y cargado en la caja', 'ok'); hecho(); }); } },
-    h('div', { class: 'grid2' }, campo('Monto recibido', inp('monto', { type: 'number', min: '0', required: true, value: r.pagado > 0 ? r.pagado : r.total })), campo('Medio', h('select', { name: 'metodo' }, ['transferencia', 'efectivo', 'mercadopago', 'otro'].map(m => h('option', { value: m }, m === 'mercadopago' ? 'Mercado Pago' : m[0].toUpperCase() + m.slice(1)))))),
-    h('button', { class: 'btn block' }, r.pagado > 0 ? 'Corregir pago' : 'Confirmar pago'));
-  sheet('hs de juego', h('div', null,
-    h('div', { class: 'row', style: 'justify-content:space-between' }, h('h3', null, r.nombre), h('span', { class: 'chip ' + r.estado }, r.estado === 'pendiente' ? 'Falta pago' : r.estado)),
-    h('dl', { class: 'kv' }, h('dt', null, 'Fecha'), h('dd', null, flarga(r.fecha)), h('dt', null, 'Horario'), h('dd', null, `${r.inicio} a ${r.fin}` + (S.salones.length > 1 ? ' · ' + d.salon : '')), h('dt', null, 'Adultos'), h('dd', null, r.adultos || 0), h('dt', null, 'Niños'), h('dd', null, r.chicos), r.email ? [h('dt', null, 'Mail'), h('dd', null, h('a', { href: 'mailto:' + r.email }, r.email))] : '',
-      h('dt', null, 'Contacto'), h('dd', null, r.telefono ? h('a', { href: 'tel:' + r.telefono }, r.telefono) : '—'), h('dt', null, 'Cómo llegó'), h('dd', null, { web: 'Web', whatsapp: 'WhatsApp', local: 'En el local', panel: 'Panel' }[r.origen] || r.origen),
-      r.estado === 'pendiente' && r.venceEn ? [h('dt', null, 'Se libera'), h('dd', null, cuandoJ(r.venceEn))] : '', r.nota ? [h('dt', null, 'Nota'), h('dd', null, r.nota)] : ''),
-    h('div', { class: 'money' }, h('div', null, h('b', null, money(r.total)), h('span', null, 'Total')), h('div', null, h('b', null, money(r.pagado)), h('span', null, 'Pagado'))),
-    h('h3', { class: 'sec' }, 'Comprobante'),
-    c && !c.borrado ? h('a', { class: 'comp', href: c.url, target: '_blank', rel: 'noopener' }, h('span', { class: 'pdf' }, c.tipo === 'pdf' ? 'PDF' : 'FOTO'), h('span', { class: 'main' }, h('b', null, c.nombre), h('span', { class: 'muted small' }, (c.origen === 'cliente' ? 'Lo subió el cliente' : 'Lo cargaste vos') + ' · ' + cuandoJ(c.fecha)), h('span', { class: 'small' }, 'Tocá para abrirlo. Se borra solo el ' + cuandoJ(c.borraEn).split(',')[0] + '.'))) :
-      h('p', { class: 'muted small' }, c ? 'La imagen se borró. El pago quedó anotado en la caja.' : 'Todavía no hay comprobante. Lo puede subir la familia al reservar, o lo cargás vos si te lo mandan por WhatsApp.'),
-    h('div', { class: 'row', style: 'margin-top:.6rem' }, h('button', { class: 'btn soft subir', onclick: () => fi.click() }, c && !c.borrado ? 'Reemplazar' : 'Subir comprobante'), fi),
-    r.estado !== 'cancelada' && r.estado !== 'vencida' ? [h('h3', { class: 'sec' }, 'Pago'), pf] : '',
-    h('h3', { class: 'sec' }, 'Acciones'),
-    h('div', { class: 'row', style: 'flex-wrap:wrap' }, wa ? h('a', { class: 'btn soft', href: wa, target: '_blank', rel: 'noopener' }, 'Escribirle por WhatsApp') : '',
-      r.estado !== 'cancelada' && r.estado !== 'vencida' ? h('button', { class: 'btn bad', onclick: e => { if (!confirm('¿Cancelar esta reserva? Los lugares quedan libres.')) return; accion(e.target, async () => { await api('admin.juegoCancelar', { id }); toast('Reserva cancelada', 'ok'); cerrar(); vJuego.refrescar && vJuego.refrescar(); }); } }, 'Cancelar reserva') : '')));
-}
 
 /* ───── AJUSTES ───── */
 /* Logo del negocio: se achica a PNG y se guarda en la ficha de tuweeb; de ahí lo toman el sitio, las reservas y este panel */
@@ -592,18 +479,13 @@ function logoSubir() {
 async function vAjustes(main) {
   cargando(main); let c; try { c = await api('admin.config'); } catch (e) { main.replaceChildren(h('p', { class: 'empty' }, e.message)); return; }
   const t = (n, l, p) => campo(l, inp(n, { value: c[n], ...p })), chk = (n, l) => h('label', { class: 'row', style: 'margin-bottom:.7rem' }, inp(n, { type: 'checkbox', checked: c[n] }), l);
-  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f); ['mesesAnticipacion', 'antelacionHoras', 'holdHorasTransferencia', 'maxPendientesPorContacto', 'juegoCupo', 'juegoPrecio', 'juegoDiasAntes', 'juegoHoldHoras'].forEach(k => { x[k] = Number(x[k]); }); accion($('button.btn.block', f), async () => { await api('admin.guardarConfig', { valores: x }); S.pub = await llamar('config', {}, 'get'); marca(); toast('Ajustes guardados', 'ok'); render(); }); } },
+  const f = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(f); ['mesesAnticipacion', 'antelacionHoras', 'holdHorasTransferencia', 'maxPendientesPorContacto'].forEach(k => { x[k] = Number(x[k]); }); accion($('button.btn.block', f), async () => { await api('admin.guardarConfig', { valores: x }); S.pub = await llamar('config', {}, 'get'); marca(); toast('Ajustes guardados', 'ok'); render(); }); } },
     h('h3', { class: 'sec' }, 'Tu negocio'), t('nombre', 'Nombre', { required: true }), (window.TEMA && TEMA.cliente ? logoSubir() : t('logoUrl', 'Logo (dirección de la imagen)', { placeholder: 'https://…/logo.png' })), t('colorPrincipal', 'Color principal', { type: 'color' }), t('whatsapp', 'WhatsApp (con código de país, solo números)', { placeholder: '5491155551234' }), t('direccion', 'Dirección'), t('mapsUrl', 'Link de "Cómo llegar" (Google Maps)'),
     h('h3', { class: 'sec' }, 'Opiniones de Google Maps'), h('p', { class: 'muted small' }, 'Si querés mostrar tus opiniones en la página de planes, cargá los datos y prendé el interruptor. El botón «Ver las opiniones» usa el link de Google Maps de arriba. Si no lo prendés, no se ve nada.'), chk('pgOpiniones', 'Mostrar las opiniones en mi web'),
     h('div', { class: 'grid2' }, t('pgOpinionesPuntaje', 'Puntuación', { placeholder: '4,9' }), t('pgOpinionesCantidad', 'Opiniones', { placeholder: '129' })),
     h('h3', { class: 'sec' }, 'Cobro por transferencia'), chk('pagoTransferencia', 'Aceptar reservas con pago por transferencia'), t('transferTitular', 'Titular de la cuenta'), t('transferAlias', 'Alias'), t('transferCbu', 'CBU / CVU'), t('transferBanco', 'Banco o billetera'), t('transferNota', 'Mensaje para el cliente (opcional)'),
     h('h3', { class: 'sec' }, 'Reglas de reserva'), h('div', { class: 'grid2' }, t('mesesAnticipacion', 'Hasta cuántos meses antes se puede reservar', { type: 'number', min: '1' }), t('antelacionHoras', 'Mínimo de horas de anticipación', { type: 'number', min: '0' })),
     h('div', { class: 'grid2' }, t('holdHorasTransferencia', 'Horas que se guarda el turno esperando la transferencia', { type: 'number', min: '1' }), t('maxPendientesPorContacto', 'Máx. reservas pendientes por persona', { type: 'number', min: '1' })), chk('autoConfirmarSinSena', 'Si el turno no tiene seña, confirmarlo automáticamente'),
-    h('h3', { class: 'sec' }, 'Hora de juego'), chk('juegoActivo', 'Ofrecer hora de juego (chicos sin fiesta, con cupo)'),
-    h('div', { class: 'grid2' }, t('juegoCupo', 'Cupo por horario (chicos)', { type: 'number', min: '1' }), t('juegoPrecio', 'Precio por chico ($)', { type: 'number', min: '0' })),
-    h('div', { class: 'grid2' }, t('juegoDiasAntes', 'Abrir solos los horarios libres desde unos días antes', { type: 'number', min: '0' }), t('juegoHoldHoras', 'Horas que se guarda el lugar esperando el pago', { type: 'number', min: '1' })),
-    chk('juegoAuto', 'Abrir solos los horarios que no tienen cumple, cerca de la fecha'), chk('juegoPopup', 'Mostrar un aviso en el inicio cuando hay hora de juego'),
-    t('juegoDuracion', 'Duración (se muestra en la web)', { placeholder: '2 horas' }), t('juegoTexto', 'Texto para las familias (opcional)'), t('juegoFlyer', 'Flyer fijo de hora de juego (dirección de la imagen)'),
     h('h3', { class: 'sec' }, 'Avisos por mail'), chk('emailsActivos', 'Mandar mails de confirmación'), t('emailAdmin', 'Mail donde recibís los avisos', { type: 'email' }), campo('Mensaje extra en el mail al cliente', h('textarea', { name: 'textoConfirmacion', rows: 2 }, c.textoConfirmacion)),
     h('button', { class: 'btn block' }, 'Guardar ajustes'));
   const cf = h('form', { onsubmit: ev => { ev.preventDefault(); const x = datos(cf); accion($('button', cf), async () => { const r = await api('admin.cambiarClave', { actual: x.actual, nueva: x.nueva }); S.token = r.token; localStorage.setItem('weeb_token', r.token); cf.reset(); toast('Clave cambiada', 'ok'); }); } },
