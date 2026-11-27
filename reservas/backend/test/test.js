@@ -449,5 +449,59 @@ t('la dueña carga lo que le llega por WhatsApp: reserva con pago y comprobante'
   assert.equal(a.adm('admin.caja', { mes: '2026-11' }).data.ingresosExtra, 60000);
 });
 
+console.log('Encargada');
+function conEncargada(a) {   // dueña + una encargada con su propia clave, una reserva pendiente y otra confirmada
+  const [t1, t2] = conTurnos(a);
+  assert(a.adm('admin.encargadaGuardar', { email: 'Enc@mail.com', nombre: 'Lu', clave: 'clave-encargada-1' }).ok);
+  const enc = a.post({ action: 'login', email: 'enc@mail.com', clave: 'clave-encargada-1' }); assert(enc.ok, JSON.stringify(enc)); assert.equal(enc.data.rol, 'encargada');
+  a.enc = (accion, p = {}) => a.post(Object.assign({ action: accion, token: enc.data.token }, p));
+  const pend = a.post(cli({ turnoId: t1 })).data, conf = a.post(cli({ turnoId: t2, nombre: 'Ana Confirmada', fecha: '2026-11-07' })).data;
+  assert(a.adm('admin.actualizarReserva', { id: conf.id, estado: 'confirmada' }).ok);
+  return { pend, conf };
+}
+t('la encargada ve solo reservas confirmadas, sin plata ni contacto', () => {
+  const a = nuevo(); const { pend, conf } = conEncargada(a); const l = a.enc('admin.encReservas');
+  assert(l.ok, JSON.stringify(l)); assert.equal(l.data.length, 1); assert.equal(l.data[0].id, conf.id); assert(!l.data.some(x => x.id === pend.id));
+  const txt = JSON.stringify(l.data); ['total', 'sena', 'pagado', 'saldo', 'telefono', 'email', 'comp', 'metodo'].forEach(k => assert(!new RegExp('"' + k, 'i').test(txt), 'filtra ' + k));
+});
+t('las reservas que ya pasaron no aparecen', () => {
+  const a = nuevo(); conEncargada(a); a.setNow(Date.parse('2026-11-09T12:00:00-03:00')); assert.equal(a.enc('admin.encReservas').data.length, 0);
+});
+t('la encargada no puede usar nada del resto del panel', () => {
+  const a = nuevo(); conEncargada(a);
+  ['admin.reservas', 'admin.caja', 'admin.config', 'admin.guardarConfig', 'admin.turnos', 'admin.pago', 'admin.cancelar', 'admin.encargadas', 'admin.encargadaGuardar', 'admin.encargadaQuitar', 'admin.reserva'].forEach(ac => assert.equal(a.enc(ac, { mes: '2026-11', id: 'x', email: 'enc@mail.com' }).error, 'NO_AUTORIZADO', ac));
+});
+t('marcar listo y desmarcar; la dueña lo ve', () => {
+  const a = nuevo(); const { conf } = conEncargada(a);
+  const r = a.enc('admin.encListo', { id: conf.id, listo: true }); assert(r.ok && r.data.listo && r.data.listoPor === 'Lu', JSON.stringify(r));
+  assert.equal(a.enc('admin.encReservas').data[0].listo, true); assert.equal(a.adm('admin.reserva', { id: conf.id }).data.reserva.listo, true);
+  a.enc('admin.encListo', { id: conf.id, listo: false }); assert.equal(a.enc('admin.encReservas').data[0].listo, false);
+});
+t('no puede marcar ni anotar una reserva pendiente', () => {
+  const a = nuevo(); const { pend } = conEncargada(a);
+  assert.equal(a.enc('admin.encListo', { id: pend.id, listo: true }).error, 'NO_ENCONTRADA'); assert.equal(a.enc('admin.notaGuardar', { reservaId: pend.id, texto: 'hola' }).error, 'NO_ENCONTRADA');
+  assert(a.adm('admin.notaGuardar', { reservaId: pend.id, texto: 'la dueña sí puede' }).ok);
+});
+t('anotaciones: las dejan la dueña y la encargada, se editan y se borran', () => {
+  const a = nuevo(); const { conf } = conEncargada(a);
+  let l = a.adm('admin.notaGuardar', { reservaId: conf.id, texto: 'Traer 2 torres de vasos' }).data; assert.equal(l.length, 1);
+  l = a.enc('admin.notaGuardar', { reservaId: conf.id, texto: 'Ya están en la heladera' }).data; assert.equal(l.length, 2); assert.equal(l[1].rol, 'encargada'); assert.equal(l[0].rol, 'admin');
+  l = a.enc('admin.notaGuardar', { reservaId: conf.id, id: l[0].id, texto: 'Traer 3 torres de vasos' }).data; assert.equal(l[0].texto, 'Traer 3 torres de vasos'); assert(l[0].editada);
+  assert.equal(a.enc('admin.encReservas').data[0].notas.length, 2); assert.equal(a.adm('admin.reserva', { id: conf.id }).data.notas.length, 2);
+  l = a.adm('admin.notaBorrar', { id: l[1].id }).data; assert.equal(l.length, 1); l = a.enc('admin.notaBorrar', { id: l[0].id }).data; assert.equal(l.length, 0);
+  assert.equal(a.adm('admin.notaGuardar', { reservaId: conf.id, texto: '   ' }).error, 'DATO_INVALIDO');
+});
+t('crear encargada: clave corta o mail de otro usuario se rechazan; quitarla corta el acceso', () => {
+  const a = nuevo(); assert.equal(a.adm('admin.encargadaGuardar', { email: 'e@mail.com', nombre: 'X', clave: 'corta' }).error, 'DATO_INVALIDO');
+  assert.equal(a.adm('admin.encargadaGuardar', { email: 'dueno@mail.com', nombre: 'X', clave: 'otra-clave-larga' }).error, 'DATO_INVALIDO');
+  conEncargada(a); assert.equal(a.adm('admin.encargadas').data.length, 1); assert(a.adm('admin.encargadaQuitar', { email: 'enc@mail.com' }).ok);
+  assert.equal(a.enc('admin.encReservas').error, 'NO_AUTORIZADO'); assert.equal(a.post({ action: 'login', email: 'enc@mail.com', clave: 'clave-encargada-1' }).error, 'CREDENCIALES');
+  assert.equal(a.adm('admin.encargadaQuitar', { email: 'dueno@mail.com' }).error, 'NO_ENCONTRADA');
+});
+t('cambiar la clave de la encargada desde el panel: la anterior deja de servir', () => {
+  const a = nuevo(); conEncargada(a); assert(a.adm('admin.encargadaGuardar', { email: 'enc@mail.com', nombre: 'Lu', clave: 'clave-nueva-123' }).ok);
+  assert.equal(a.post({ action: 'login', email: 'enc@mail.com', clave: 'clave-encargada-1' }).error, 'CREDENCIALES'); assert(a.post({ action: 'login', email: 'enc@mail.com', clave: 'clave-nueva-123' }).ok);
+});
+
 console.log(`\n${n} pruebas ok, ${fallos} con fallas`);
 process.exit(fallos ? 1 : 0);

@@ -21,7 +21,7 @@ var TABLAS = {
   Bloqueos:    ['id', 'desde', 'hasta', 'salonId', 'turnoId', 'motivo', 'creado'],
   Reservas:    ['id', 'creada', 'actualizada', 'salonId', 'fecha', 'turnoId', 'inicio', 'fin', 'nombre', 'telefono', 'email', 'personas', 'nota',
                 'total', 'sena', 'pagado', 'saldo', 'estado', 'origen', 'metodo', 'venceEn', 'extRef', 'planId', 'plan',
-                'compId', 'compUrl', 'compNombre', 'compTipo', 'compFecha', 'compOrigen', 'codigo'],
+                'compId', 'compUrl', 'compNombre', 'compTipo', 'compFecha', 'compOrigen', 'codigo', 'listo', 'listoPor', 'listoEn'],
   Planes:      ['id', 'nombre', 'descripcion', 'precio', 'senaTipo', 'senaValor', 'orden', 'activo', 'salonId', 'descTotal'],   // salonId vacío = el plan vale para todos los salones · descTotal = % de descuento si se paga todo junto
   Contenido:   ['id', 'seccion', 'orden', 'titulo', 'texto', 'imagen', 'etiqueta', 'activo'],   // lo que muestra la página de planes: incluido, adicionales, detalle (fotos), pasos, faq
   Precios:     ['id', 'planId', 'turnoId', 'precio'],             // precio de cada plan en cada horario (si falta, vale el precio base del plan)
@@ -32,11 +32,12 @@ var TABLAS = {
   Juego:       ['id', 'fecha', 'salonId', 'turnoId', 'estado', 'cupo', 'precio', 'nota', 'flyer', 'creado', 'adultosMax', 'ninosMax'],   // lo que la dueña abre o cierra a mano para hs de juego · cupo = mesas · adultosMax/ninosMax = tope por mesa (0 = sin tope)
   JuegoReservas: ['id', 'creada', 'actualizada', 'fecha', 'salonId', 'turnoId', 'inicio', 'fin', 'nombre', 'telefono', 'chicos', 'total', 'pagado', 'estado', 'origen', 'metodo', 'venceEn', 'nota', 'codigo',
                 'compId', 'compUrl', 'compNombre', 'compTipo', 'compFecha', 'compOrigen', 'compBorrarEn', 'adultos', 'email'],   // cada reserva de hs de juego ocupa una mesa
+  Anotaciones: ['id', 'reservaId', 'texto', 'autor', 'autorNombre', 'rol', 'creada', 'editada'],   // anotaciones de cada reserva (las dejan la dueña o la encargada)
   Usuarios:    ['email', 'nombre', 'rol', 'activo', 'sal', 'claveHash'],
   Log:         ['fecha', 'usuario', 'accion', 'detalle']
 };
 var NUMS = { descTotal: 1, chicos: 1, cupo: 1, adultosMax: 1, ninosMax: 1, capacidad: 1, orden: 1, precio: 1, senaValor: 1, personas: 1, total: 1, sena: 1, pagado: 1, saldo: 1, monto: 1 };
-var BOOLS = { activo: 1 };
+var BOOLS = { activo: 1, listo: 1 };
 var FECHAS = { fecha: 1, desde: 1, hasta: 1 };
 var HORAS = { inicio: 1, fin: 1 };
 var OCUPAN = { pendiente: 1, confirmada: 1, saldada: 1 };         // estados que ocupan el turno
@@ -550,7 +551,7 @@ function autenticar_(token) {
   if (d.x < ahora_()) throw err_('NO_AUTORIZADO', 'La sesión venció. Volvé a entrar.');
   var u = porId_('Usuarios', d.e);
   if (!u || !u.activo || u.claveHash.slice(0, 8) !== d.v) throw err_('NO_AUTORIZADO', 'Sesión inválida');
-  return { email: u.email, rol: u.rol || 'admin' };
+  return { email: u.email, nombre: u.nombre || '', rol: u.rol || 'admin' };
 }
 
 /* ───────────────────────── panel (ADMIN) ───────────────────────── */
@@ -625,7 +626,8 @@ function adminCrearReserva_(p, u) {
 }
 function reservaCompleta_(id) {
   var r = porId_('Reservas', id); if (!r) throw err_('NO_ENCONTRADA', 'Reserva no encontrada'); asegurarCodigo_(r);
-  return { reserva: limpio_(r), comprobante: compAdmin_(r), pagos: leer_('Pagos').filter(function (x) { return x.reservaId === id; }).map(limpio_) };
+  var _i = {}; _i[id] = 1;
+  return { reserva: limpio_(r), notas: notasDe_(_i)[id] || [], comprobante: compAdmin_(r), pagos: leer_('Pagos').filter(function (x) { return x.reservaId === id; }).map(limpio_) };
 }
 function adminPagoInterno_(id, p, u) {
   if (!porId_('Reservas', id)) throw err_('NO_ENCONTRADA', 'Reserva no encontrada');
@@ -647,8 +649,64 @@ function caja_(mes) {
     pagos: pagos.map(limpio_), movimientos: movs.map(limpio_) };
 }
 
+/* ───────────────────────── encargada: ve solo los cumples confirmados que vienen, sin plata ───────────────────────── */
+var ENC_OK = { 'admin.ping': 1, 'admin.cambiarClave': 1, 'admin.encReservas': 1, 'admin.encListo': 1, 'admin.notaGuardar': 1, 'admin.notaBorrar': 1 };   // lo único que puede hacer un usuario «encargada»
+function encVisible_(r) { return !!r && (r.estado === 'confirmada' || r.estado === 'saldada') && r.fecha >= hoy_(); }
+function notasDe_(ids) {
+  var m = {}; leer_('Anotaciones').forEach(function (n) { if (ids[n.reservaId]) (m[n.reservaId] = m[n.reservaId] || []).push(limpio_(n)); });
+  Object.keys(m).forEach(function (k) { m[k].sort(function (a, b) { return a.creada < b.creada ? -1 : a.creada > b.creada ? 1 : 0; }); });
+  return m;
+}
+function reservaParaNotas_(id, u) { var r = porId_('Reservas', txt_(id)); if (!r || (u.rol !== 'admin' && !encVisible_(r))) throw err_('NO_ENCONTRADA', 'Reserva no encontrada'); return r; }
+function usuarioEncargada_(email) { var c = porId_('Usuarios', txt_(email, 120).toLowerCase()); if (!c || c.rol !== 'encargada') throw err_('NO_ENCONTRADA', 'No hay una encargada con ese mail'); return c; }
+
 var ADMIN = {
-  'admin.ping': function (p, u) { return { email: u.email, rol: u.rol }; },
+  'admin.encReservas': function () {
+    var salones = {}, planes = {}; leer_('Salones').forEach(function (s) { salones[s.id] = s.nombre; }); leer_('Planes').forEach(function (x) { planes[x.id] = x; });
+    var rs = leer_('Reservas').filter(encVisible_).sort(function (a, b) { return (a.fecha + a.inicio) < (b.fecha + b.inicio) ? -1 : 1; }), ids = {}; rs.forEach(function (r) { ids[r.id] = 1; });
+    var nm = notasDe_(ids);
+    return rs.map(function (r) {
+      var pl = planes[r.planId] || {};
+      return { id: r.id, fecha: r.fecha, inicio: r.inicio, fin: r.fin, salonId: r.salonId, salon: salones[r.salonId] || '', cliente: r.nombre, plan: String(r.plan || '').replace(/ · pago total.*$/, ''), planDetalle: pl.descripcion || '', planNinos: pl.ninos || 0, planAdultos: pl.adultos || 0,
+        ninoNombre: r.ninoNombre || '', ninoEdad: r.ninoEdad || 0, personas: r.personas || 0, ninosExtra: r.ninosExtra || 0, adultosExtra: r.adultosExtra || 0, nota: r.nota || '', listo: !!r.listo, listoPor: r.listoPor || '', listoEn: r.listoEn || '', notas: nm[r.id] || [] };
+    });
+  },
+  'admin.encListo': function (p, u) {
+    return conLock_(function () {
+      var r = reservaParaNotas_(p.id, u), si = p.listo === true || p.listo === 'true';
+      actualizar_('Reservas', r._row, { listo: si, listoPor: si ? (u.nombre || u.email) : '', listoEn: si ? new Date(ahora_()).toISOString() : '' });
+      log_(u.email, si ? 'listo' : 'no_listo', r.id); return { id: r.id, listo: si, listoPor: si ? (u.nombre || u.email) : '' };
+    });
+  },
+  'admin.notaGuardar': function (p, u) {
+    var texto = txt_(p.texto, 600); if (!texto) throw err_('DATO_INVALIDO', 'Escribí la anotación');
+    return conLock_(function () {
+      var r = reservaParaNotas_(p.reservaId, u), ahoraIso = new Date(ahora_()).toISOString();
+      if (p.id) { var n = porId_('Anotaciones', txt_(p.id)); if (!n || n.reservaId !== r.id) throw err_('NO_ENCONTRADA', 'Anotación no encontrada'); actualizar_('Anotaciones', n._row, { texto: texto, editada: ahoraIso }); }
+      else agregar_('Anotaciones', { id: nuevoId_('N'), reservaId: r.id, texto: texto, autor: u.email, autorNombre: u.nombre || '', rol: u.rol, creada: ahoraIso, editada: '' });
+      log_(u.email, 'nota', r.id); var ids = {}; ids[r.id] = 1; return notasDe_(ids)[r.id] || [];
+    });
+  },
+  'admin.notaBorrar': function (p, u) {
+    return conLock_(function () {
+      var n = porId_('Anotaciones', txt_(p.id)); if (!n) throw err_('NO_ENCONTRADA', 'Anotación no encontrada');
+      var r = reservaParaNotas_(n.reservaId, u); borrar_('Anotaciones', n._row); log_(u.email, 'nota_borrada', r.id); var ids = {}; ids[r.id] = 1; return notasDe_(ids)[r.id] || [];
+    });
+  },
+  'admin.encargadas': function () { return leer_('Usuarios').filter(function (x) { return x.rol === 'encargada'; }).map(function (x) { return { email: x.email, nombre: x.nombre }; }); },
+  'admin.encargadaGuardar': function (p, u) {
+    var email = txt_(p.email, 120).toLowerCase(), nombre = txt_(p.nombre, 60), clave = String(p.clave || '');
+    return conLock_(function () {
+      var cur = porId_('Usuarios', email);
+      if (cur && cur.rol !== 'encargada') throw err_('DATO_INVALIDO', 'Ese mail ya tiene otro acceso al panel. Usá otro mail.');
+      if (!cur && !clave) throw err_('DATO_INVALIDO', 'Falta la clave');
+      if (clave) definirUsuario_(email, clave, nombre || 'Encargada', 'encargada');
+      else actualizar_('Usuarios', cur._row, { nombre: nombre || cur.nombre || 'Encargada', activo: true });
+      log_(u.email, 'encargada_guardada', email); return { email: email, nombre: nombre || 'Encargada' };
+    });
+  },
+  'admin.encargadaQuitar': function (p, u) { return conLock_(function () { var c = usuarioEncargada_(p.email); borrar_('Usuarios', c._row); log_(u.email, 'encargada_quitada', c.email); return { ok: true }; }); },
+  'admin.ping': function (p, u) { return { email: u.email, nombre: u.nombre || '', rol: u.rol }; },
   'admin.cambiarClave': function (p, u) {
     var cur = porId_('Usuarios', u.email);
     if (!iguales_(hashClave_(String(p.actual || ''), cur.sal), cur.claveHash)) throw err_('CREDENCIALES', 'La clave actual no es correcta');
@@ -836,6 +894,7 @@ function despachar_(p, esPost) {
     if (!esPost) throw err_('METODO', 'Usá POST');
     if (!ADMIN[a]) throw err_('ACCION_DESCONOCIDA', 'Acción desconocida');
     var u = autenticar_(txt_(p.token, 1000));
+    if (u.rol !== 'admin' && !ENC_OK[a]) throw err_('NO_AUTORIZADO', 'Tu usuario no puede hacer esto');   // la encargada solo ve cumples y anota
     return ADMIN[a](p, u);
   }
   throw err_('ACCION_DESCONOCIDA', 'Acción desconocida');

@@ -124,6 +124,7 @@ function pantallaLogin() {
 function salir(vencida) { S.token = ''; S.user = null; localStorage.removeItem('weeb_token'); cerrar(true); if (vencida) toast('La sesión venció. Volvé a entrar.', 'err'); pantallaLogin(); }
 
 async function entrar() {
+  if (S.user && S.user.rol === 'encargada') { renderEncargada(); return; }   // la encargada no usa el resto del panel
   await cargarBase(); render();
 }
 /** Lo que vale un plan en un horario: el precio puntual si está cargado, si no el precio base. */
@@ -136,6 +137,7 @@ const salonDe = id => (S.salones.find(s => s.id === id) || {}).nombre || '';
 
 const VISTAS = { agenda: ['Agenda', vAgenda], reservas: ['Reservas', vReservas], caja: ['Caja', vCaja], juego: ['hs de juego', vJuego], turnos: ['Planes', vTurnos], web: ['Mi web', vWeb], ajustes: ['Ajustes', vAjustes] };
 function render() {
+  if (S.user && S.user.rol === 'encargada') return renderEncargada();
   const main = h('main', { class: 'wrap', id: 'vista' });
   const visibles = Object.entries(VISTAS).filter(([k]) => k !== 'juego' || (S.pub && S.pub.juegoActivo));
   const tabs = h('nav', { class: 'tabs' + (visibles.length > 6 ? ' tabs7' : '') }, visibles.map(([k, [t]]) => h('button', { class: S.view === k ? 'on' : '', onclick: () => { S.view = k; render(); } }, svg(IC[k]), t)));
@@ -245,6 +247,7 @@ async function detalle(id) {
     h('h3', { class: 'sec' }, 'Pagos'), d.pagos.length ? h('div', { class: 'list' }, d.pagos.map(p => h('div', { class: 'item static' }, h('div', { class: 'when' }, fcorta(p.fecha)), h('div', { class: 'main' }, h('b', null, money(p.monto)), h('span', { class: 'muted small' }, p.metodo + (p.nota ? ' · ' + p.nota : ''))),
       h('button', { class: 'icon', 'aria-label': 'Eliminar pago', onclick: e => { if (!confirm('¿Eliminar este pago?')) return; accion(e.target, async () => { await api('admin.pagoEliminar', { pagoId: p.id }); await refrescar(); detalle(id); }); } }, '🗑')))) : h('p', { class: 'muted small' }, 'Todavía no hay pagos.'),
     r.estado !== 'cancelada' && r.estado !== 'vencida' ? [h('h3', { class: 'sec' }, 'Registrar pago'), pf] : '',
+    r.estado !== 'cancelada' && r.estado !== 'vencida' ? [h('h3', { class: 'sec' }, 'Preparación del cumple'), h('p', { class: 'muted small', style: 'margin-top:0' }, 'La encargada ve el cumple solo cuando está confirmado, y puede marcarlo listo y anotar. Vos también.'), botonListo(r), bloqueNotas(id, d.notas)] : '',
     h('h3', { class: 'sec' }, 'Acciones'),
     h('div', { class: 'row' },
       r.estado === 'pendiente' ? h('button', { class: 'btn', onclick: e => accion(e.target, async () => { await api('admin.actualizarReserva', { id, estado: 'confirmada' }); toast('Reserva confirmada', 'ok'); await refrescar(); detalle(id); }) }, 'Confirmar sin pago') : '',
@@ -304,7 +307,7 @@ async function vReservas(main) {
     if (S.reFiltro === 'pas' || S.reFiltro === 'canc' || S.reFiltro === 'todas') filas.reverse();
     lst.replaceChildren(...(filas.length ? filas.map(r => h('button', { class: 'item', onclick: () => detalle(r.id) }, h('div', { class: 'when' }, fcorta(r.fecha).split(' ').slice(1).join(' '), h('small', null, DIAS[parse(r.fecha).getDay()] + ' ' + r.inicio)),
       h('div', { class: 'main', style: barraSalon(r.salonId) }, h('b', null, r.nombre), h('span', { class: 'muted small' }, (S.salones.length > 1 ? salonDe(r.salonId) + ' · ' : '') + (r.personas ? r.personas + ' invitados' : '') + (r.origen === 'manual' ? ' · a mano' : ''))),
-      h('div', { style: 'text-align:right' }, h('span', { class: 'chip ' + r.estado }, r.estado), r.saldo > 0 && r.estado !== 'cancelada' && r.estado !== 'vencida' ? h('div', { class: 'small neg' }, 'Saldo ' + money(r.saldo)) : ''))) : [h('p', { class: 'empty' }, 'No hay reservas en esta vista.')]));
+      h('div', { style: 'text-align:right' }, h('span', { class: 'chip ' + r.estado }, r.estado), r.listo ? h('div', { class: 'small pos' }, '✓ Listo') : '', r.saldo > 0 && r.estado !== 'cancelada' && r.estado !== 'vencida' ? h('div', { class: 'small neg' }, 'Saldo ' + money(r.saldo)) : ''))) : [h('p', { class: 'empty' }, 'No hay reservas en esta vista.')]));
   };
   const seg = h('div', { class: 'seg' }, Object.entries(filtros).map(([k, [t]]) => h('button', { class: S.reFiltro === k ? 'on' : '', onclick: e => { S.reFiltro = k; seg.querySelectorAll('button').forEach(b => b.classList.remove('on')); e.target.classList.add('on'); pintar(); } }, t)));
   main.replaceChildren(h('div', { class: 'bar' }, h('h2', null, 'Reservas')), h('input', { type: 'search', placeholder: 'Buscar por nombre, teléfono o código', value: S.reQ, style: 'margin-bottom:.7rem', oninput: e => { S.reQ = e.target.value; pintar(); } }), seg, lst, fab(() => nuevaReserva({}))); pintar();
@@ -609,10 +612,98 @@ async function vAjustes(main) {
     campo('Mail nuevo (es tu usuario para entrar)', inp('email', { type: 'email', required: true, autocomplete: 'email' })), campo('Tu clave actual', inp('clave', { type: 'password', required: true, autocomplete: 'current-password' })), h('button', { class: 'btn line' }, 'Cambiar mi mail'));
   const ios = /iphone|ipad/i.test(navigator.userAgent) && !navigator.standalone;
   const app = S.instalar ? h('button', { class: 'btn soft', onclick: async () => { S.instalar.prompt(); await S.instalar.userChoice; S.instalar = null; render(); } }, '📲 Instalar como app') : ios ? h('p', { class: 'muted small' }, '📲 Para instalar en iPhone: tocá el botón Compartir de Safari y elegí "Agregar a inicio".') : h('p', { class: 'muted small' }, 'Si tu navegador lo permite, vas a ver acá el botón para instalar el panel como app.');
-  main.replaceChildren(h('div', { class: 'bar' }, h('h2', null, 'Ajustes')), h('div', { class: 'card' }, app), f, h('h3', { class: 'sec' }, 'Seguridad'), h('div', { class: 'card' }, h('p', { class: 'muted small' }, 'Tu usuario es tu mail: ' + S.user.email + '. Para cambiarlo alcanza con tu clave actual.'), ce, h('h4', { style: 'margin:1.2rem 0 .4rem' }, 'Cambiar clave'), cf));
+  main.replaceChildren(h('div', { class: 'bar' }, h('h2', null, 'Ajustes')), h('div', { class: 'card' }, app), f, h('h3', { class: 'sec' }, 'Encargada'), bloqueEncargada(), h('h3', { class: 'sec' }, 'Seguridad'), h('div', { class: 'card' }, h('p', { class: 'muted small' }, 'Tu usuario es tu mail: ' + S.user.email + '. Para cambiarlo alcanza con tu clave actual.'), ce, h('h4', { style: 'margin:1.2rem 0 .4rem' }, 'Cambiar clave'), cf));
 }
 
 iniciar().catch(e => { $app().replaceChildren(h('p', { class: 'empty' }, 'No se pudo cargar el panel: ' + e.message)); });
+
+/* ───── ENCARGADA: usuario que solo ve los cumples confirmados que vienen (sin plata ni teléfonos), los deja listos y anota ───── */
+const quienNota = n => n.autorNombre || (n.rol === 'encargada' ? 'Encargada' : 'Administración');
+/** Anotaciones de una reserva: las ven y las editan la dueña y la encargada. */
+function bloqueNotas(reservaId, notas0, alCambiar) {
+  const cont = h('div', { class: 'notas' }); let ls = notas0 || [];
+  const nueva = h('form', { class: 'nota-nueva', onsubmit: ev => { ev.preventDefault(); const t = nueva.elements.texto; if (!t.value.trim()) return; accion($('button', nueva), async () => { ls = await api('admin.notaGuardar', { reservaId, texto: t.value }); t.value = ''; pintar(); if (alCambiar) alCambiar(ls); }); } },
+    h('textarea', { name: 'texto', rows: '2', maxlength: '600', placeholder: 'Escribí una anotación…' }), h('button', { class: 'btn sm' }, 'Agregar'));
+  const fila = n => {
+    const box = h('div', { class: 'nota' });
+    const ver = () => box.replaceChildren(h('div', { class: 'nota-t' }, n.texto),
+      h('div', { class: 'nota-p' }, h('span', { class: 'muted small' }, quienNota(n) + ' · ' + cuandoJ(n.creada) + (n.editada ? ' · editada' : '')),
+        h('span', { class: 'nota-b' }, h('button', { class: 'icon', type: 'button', 'aria-label': 'Editar anotación', onclick: () => editar() }, '✎'),
+          h('button', { class: 'icon', type: 'button', 'aria-label': 'Borrar anotación', onclick: e => { if (!confirm('¿Borrar esta anotación?')) return; accion(e.currentTarget, async () => { ls = await api('admin.notaBorrar', { id: n.id }); pintar(); if (alCambiar) alCambiar(ls); }); } }, '🗑'))));
+    const editar = () => {
+      const ta = h('textarea', { rows: '3', maxlength: '600' }); ta.value = n.texto;
+      box.replaceChildren(ta, h('div', { class: 'row', style: 'margin-top:.5rem' }, h('button', { class: 'btn sm', type: 'button', onclick: e => { if (!ta.value.trim()) return; accion(e.currentTarget, async () => { ls = await api('admin.notaGuardar', { reservaId, id: n.id, texto: ta.value }); pintar(); if (alCambiar) alCambiar(ls); }); } }, 'Guardar'), h('button', { class: 'btn sm soft', type: 'button', onclick: ver }, 'Cancelar'))); ta.focus();
+    };
+    ver(); return box;
+  };
+  const pintar = () => cont.replaceChildren(...(ls.length ? ls.map(fila) : [h('p', { class: 'muted small', style: 'margin:.2rem 0 .7rem' }, 'Todavía no hay anotaciones.')]), nueva);
+  pintar(); return cont;
+}
+/** Botón grande «Marcar como listo» / «✓ Listo» (lo usan la encargada y la dueña). */
+function botonListo(r, alCambiar) {
+  const b = h('button', { type: 'button', class: 'btn block listo' });
+  const pintar = () => { b.classList.toggle('on', !!r.listo); b.textContent = r.listo ? '✓ Listo' + (r.listoPor ? ' · ' + r.listoPor : '') + ' · tocá para desmarcar' : 'Marcar como listo'; };
+  b.onclick = async () => { b.disabled = true; try { const x = await api('admin.encListo', { id: r.id, listo: !r.listo }); r.listo = x.listo; r.listoPor = x.listoPor; pintar(); if (alCambiar) alCambiar(); } catch (e) { toast(e.message, 'err'); } finally { b.disabled = false; } };
+  pintar(); return b;
+}
+function renderEncargada() {
+  const main = h('main', { class: 'wrap', id: 'vista' });
+  $app().replaceChildren(volverBtn(), h('header', { class: 'top' }, h('span', { class: 'back-sp' }), h('div', { class: 'name' }, S.pub.nombre), h('button', { class: 'icon', title: 'Salir', 'aria-label': 'Salir', onclick: () => salir() }, '⎋')), main, firma());
+  vEncargada(main);
+  if (!window.__encVis) { window.__encVis = true; document.addEventListener('visibilitychange', () => { const m = $('#vista'); if (document.visibilityState === 'visible' && S.user && S.user.rol === 'encargada' && m && !sheetEl && ![...m.querySelectorAll('textarea')].some(t => t.value.trim())) { cargandoSilencioso = true; vEncargada(m); } }); }   // al volver a abrir la app se actualiza sola, sin pisar lo que está escribiendo
+}
+async function vEncargada(main) {
+  cargando(main); let ls; try { ls = await api('admin.encReservas'); } catch (e) { if (e.codigo === 'NO_AUTORIZADO') return salir(true); main.replaceChildren(h('p', { class: 'empty' }, e.message)); return; }
+  S.encFiltro = S.encFiltro || 'prep';
+  const filtros = { prep: ['Por preparar', r => !r.listo], listo: ['Listos', r => r.listo], todos: ['Todos', () => true] }, lst = h('div');
+  const tarjeta = r => {
+    const chip = h('span', { class: 'chip confirmada' }, 'Listo'), marca = () => { chip.style.display = r.listo ? '' : 'none'; };
+    const pl = (n, s, p) => n > 0 ? n + ' ' + (n > 1 ? p : s) : '';
+    const incl = [pl(r.planNinos, 'niño', 'niños'), pl(r.planAdultos, 'adulto', 'adultos')].filter(Boolean).join(' y '), extras = [pl(r.ninosExtra, 'niño extra', 'niños extra'), pl(r.adultosExtra, 'adulto extra', 'adultos extra')].filter(Boolean).join(' · ');
+    const fila = (t, v) => v ? [h('dt', null, t), h('dd', null, v)] : [];
+    const card = h('div', { class: 'card enc', style: barraSalon(r.salonId) },
+      h('div', { class: 'row', style: 'justify-content:space-between;align-items:flex-start' }, h('div', null, h('b', { class: 'enc-h' }, r.inicio + ' a ' + r.fin + ' hs'), h('div', { class: 'muted small' }, r.salon)), chip),
+      h('dl', { class: 'kv' }, ...fila('Cumpleañero', r.ninoNombre ? r.ninoNombre + (r.ninoEdad ? ' · ' + r.ninoEdad + (r.ninoEdad > 1 ? ' años' : ' año') : '') : ''), ...fila('Familia', r.cliente), ...fila('Combo', r.plan), ...fila('Incluye', incl), ...fila('Extras', extras), ...fila('Invitados', r.personas ? String(r.personas) : ''), ...fila('Nota del cliente', r.nota)),
+      r.planDetalle ? h('p', { class: 'muted small', style: 'margin:0 0 .8rem' }, r.planDetalle) : '',
+      botonListo(r, marca), h('h4', { class: 'enc-sub' }, 'Anotaciones'), bloqueNotas(r.id, r.notas));
+    marca(); return card;
+  };
+  const pintar = () => {
+    const filas = ls.filter(filtros[S.encFiltro][1]), dias = {}; filas.forEach(r => { (dias[r.fecha] = dias[r.fecha] || []).push(r); });
+    lst.replaceChildren(...(filas.length ? Object.keys(dias).sort().map(f => [h('h3', { class: 'sec' }, flarga(f) + (f === hoy() ? ' · hoy' : '')), ...dias[f].map(tarjeta)]).flat()
+      : [h('p', { class: 'empty' }, ls.length ? (S.encFiltro === 'prep' ? 'No queda nada por preparar. ¡Todo listo!' : 'No hay cumples en esta vista.') : 'Todavía no hay cumples confirmados por venir.')]));
+  };
+  const seg = h('div', { class: 'seg' }, Object.entries(filtros).map(([k, [t]]) => h('button', { class: S.encFiltro === k ? 'on' : '', onclick: e => { S.encFiltro = k; seg.querySelectorAll('button').forEach(b => b.classList.remove('on')); e.target.classList.add('on'); pintar(); } }, t)));
+  main.replaceChildren(h('div', { class: 'bar' }, h('h2', null, 'Cumples que vienen'), h('button', { class: 'btn sm soft', onclick: e => accion(e.currentTarget, () => vEncargada(main)) }, 'Actualizar')),
+    h('p', { class: 'muted small', style: 'margin:0 0 .8rem' }, 'Ves los cumples confirmados que todavía no pasaron. Marcá «listo» cuando esté todo preparado y dejá anotaciones.'), seg, lst); pintar();
+}
+/** En Ajustes (dueña): crear el acceso de la encargada, cambiarle la clave o quitárselo. */
+const claveNueva = () => { const A = 'abcdefghjkmnpqrstuvwxyz23456789', r = crypto.getRandomValues(new Uint32Array(10)); return [...r].map(n => A[n % A.length]).join(''); };
+function bloqueEncargada() {
+  const cont = h('div', { class: 'card' }, h('p', { class: 'muted small' }, 'Cargando…'));
+  const pintar = async () => {
+    let ls; try { ls = await api('admin.encargadas'); } catch (e) { cont.replaceChildren(h('p', { class: 'muted small' }, e.message)); return; }
+    cont.replaceChildren(h('p', { class: 'muted small', style: 'margin-top:0' }, 'La encargada entra con su mail y su clave. Ve solo los cumples confirmados que todavía no pasaron (sin precios ni teléfonos), los marca como listos y deja anotaciones.'),
+      ...ls.map(x => h('div', { class: 'item static', style: 'flex-wrap:wrap;row-gap:.6rem;margin-bottom:.6rem' }, h('div', { class: 'main', style: 'flex:1 1 100%' }, h('b', null, x.nombre || 'Encargada'), h('span', { class: 'muted small' }, x.email)),
+        h('button', { class: 'btn sm soft', onclick: () => formEnc(x) }, 'Cambiar clave'),
+        h('button', { class: 'btn sm bad', onclick: e => { if (!confirm('¿Sacarle el acceso a ' + (x.nombre || x.email) + '?')) return; accion(e.currentTarget, async () => { await api('admin.encargadaQuitar', { email: x.email }); toast('Acceso eliminado', 'ok'); pintar(); }); } }, 'Quitar acceso'))),
+      h('button', { class: 'btn soft block', onclick: () => formEnc(null) }, ls.length ? '+ Agregar otra encargada' : '+ Crear acceso para la encargada'));
+  };
+  const formEnc = x => {
+    const f = h('form', { onsubmit: ev => { ev.preventDefault(); const d = datos(f); accion($('button.block', f), async () => { const email = x ? x.email : d.email, nombre = x ? x.nombre : d.nombre; await api('admin.encargadaGuardar', { email, nombre, clave: d.clave }); pintar(); datosEnc(email, nombre, d.clave); }); } },
+      x ? h('p', { class: 'muted small' }, 'Acceso de ' + (x.nombre || x.email) + ' (' + x.email + '). Elegí una clave nueva; la anterior deja de servir.') : [campo('Nombre', inp('nombre', { required: true, placeholder: 'Ej: Lucía', maxlength: '60' })), campo('Mail (es su usuario para entrar)', inp('email', { type: 'email', required: true, autocomplete: 'off' }))],
+      campo('Clave (mínimo 8 caracteres)', h('div', { class: 'row' }, inp('clave', { required: true, minlength: '8', value: claveNueva(), autocomplete: 'off', style: 'flex:1' }), h('button', { type: 'button', class: 'btn sm soft', onclick: () => { f.elements.clave.value = claveNueva(); } }, 'Otra'))),
+      h('button', { class: 'btn block' }, x ? 'Guardar clave nueva' : 'Crear acceso'));
+    sheet(x ? 'Cambiar clave' : 'Acceso de la encargada', f);
+  };
+  const datosEnc = (email, nombre, clave) => {
+    const link = location.href.split('?')[0].split('#')[0], txt = 'Hola' + (nombre ? ' ' + nombre : '') + '! Tu acceso para ver los cumples de ' + S.pub.nombre + ':\nLink: ' + link + '\nMail: ' + email + '\nClave: ' + clave;
+    sheet('Acceso listo', h('div', null, h('p', null, 'Pasale estos datos a la encargada. La clave no se vuelve a mostrar: si se pierde, generás una nueva.'),
+      h('dl', { class: 'kv' }, h('dt', null, 'Link'), h('dd', { style: 'word-break:break-all' }, link), h('dt', null, 'Mail'), h('dd', null, email), h('dt', null, 'Clave'), h('dd', null, h('b', { style: 'letter-spacing:.08em' }, clave))),
+      h('div', { class: 'row' }, h('button', { class: 'btn', onclick: () => { try { navigator.clipboard.writeText(txt); toast('Copiado', 'ok'); } catch (e) { toast('No se pudo copiar', 'err'); } } }, 'Copiar datos'), h('a', { class: 'btn soft', href: 'https://wa.me/?text=' + encodeURIComponent(txt), target: '_blank', rel: 'noopener' }, 'Mandar por WhatsApp'))));
+  };
+  pintar(); return cont;
+}
 
 /* ───── Página de planes: todo lo que ve el cliente se edita acá ───── */
 const CAMPOS_PG = [
