@@ -6681,7 +6681,8 @@ function PageOverlay() {
     if (!cur) return undefined;
     const l = window.__lenis; if (l && l.stop) l.stop();
     const prev = document.documentElement.style.overflow; document.documentElement.style.overflow = "hidden";
-    return () => { document.documentElement.style.overflow = prev; if (l && l.start) l.start(); };
+    try { window.dispatchEvent(new CustomEvent("wb-pausa-pagina", { detail: true })); } catch (_) {}
+    return () => { document.documentElement.style.overflow = prev; if (l && l.start) l.start(); try { window.dispatchEvent(new CustomEvent("wb-pausa-pagina", { detail: false })); } catch (_) {} };
   }, [cur]);
   return pages.map((h) => (
     <div key={h} className={"resv" + (h === cur ? " on" : "")} aria-hidden={h !== cur}><iframe src={h + (h.indexOf("?") >= 0 ? "&" : "?") + "embed=1"} title="Página del sitio" /></div>
@@ -7509,10 +7510,13 @@ function FrameGate({ active }) {
   const setFrameloop = useThree((st) => st.setFrameloop);
   const invalidate = useThree((st) => st.invalidate);
   const pausa = useRef(false);
-  const aplicar = () => { try { const on = active && !pausa.current; setFrameloop(on ? "always" : "never"); if (on) invalidate(); } catch (e) { /* sin R3F */ } };
+  const pagina = useRef(false);
+  const aplicar = () => { try { const on = active && !pausa.current && !pagina.current; setFrameloop(on ? "always" : "never"); if (on) invalidate(); } catch (e) { /* sin R3F */ } };
   useEffect(() => { aplicar(); }, [active]);
   /* el menú de iconos pausa el 3D mientras se usa: el celular queda libre para moverlo suave */
   useEffect(() => { const h = (e) => { pausa.current = !!(e && e.detail); aplicar(); }; window.addEventListener("wb-pausa-3d", h); return () => window.removeEventListener("wb-pausa-3d", h); }, [active]);
+  /* una página abierta encima (Reservar) pausa el 3D de abajo: no se ve y solo gasta batería y trabaja de más */
+  useEffect(() => { const h = (e) => { pagina.current = !!(e && e.detail); aplicar(); }; window.addEventListener("wb-pausa-pagina", h); return () => window.removeEventListener("wb-pausa-pagina", h); }, [active]);
   return null;
 }
 

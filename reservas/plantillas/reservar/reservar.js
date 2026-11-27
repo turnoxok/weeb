@@ -4,7 +4,7 @@ const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', '
 const pad = n => String(n).padStart(2, '0'), $ = (s, r = document) => r.querySelector(s);
 const parse = f => { const [y, m, d] = f.split('-').map(Number); return new Date(y, m - 1, d); };
 const flarga = f => { const d = parse(f); return `${DSEM[d.getDay()]} ${d.getDate()} de ${MESES[d.getMonth()]}`; };
-const mesDe = f => f.slice(0, 7), nomMes = m => { const [y, mm] = m.split('-').map(Number); return `${MESES[mm - 1]} ${y}`; };
+const mesDe = f => f.slice(0, 7), nomMes = m => { const [y, mm] = m.split('-').map(Number); return `${MESES[mm - 1]} ${y}`; }, mesCorto = m => { const n = MESES[Number(m.split('-')[1]) - 1]; return n.charAt(0).toUpperCase() + n.slice(1); };
 const sumMes = (m, n) => { const [y, mm] = m.split('-').map(Number), d = new Date(y, mm - 1 + n, 1); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; };
 const money = n => '$' + Math.round(n || 0).toLocaleString('es-AR');
 /* Vocabulario del cliente (config.json "palabras": [["Planes","Combos"],…]). Sin "palabras" no cambia nada. */
@@ -15,7 +15,9 @@ function h(tag, props, ...kids) {
   kids.flat(Infinity).forEach(c => { if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(pal(String(c)))); });
   if ('value' in post) e.value = post.value; if ('checked' in post) e.checked = !!post.checked; return e;
 }
-const S = { cfg: null, pub: null, mes: '', disp: null, fecha: '', slot: null };
+const S = { cfg: null, pub: null, mes: '', disp: null, fecha: '', slot: null, cache: {} };
+/* Disponibilidad por mes: se guarda 60 s y se pide en segundo plano el mes de al lado, así cambiar de mes es instantáneo. */
+function dispMes(mes) { const c = S.cache[mes]; if (c && Date.now() - c.t < 60000) return c.p; const p = llamar('disponibilidad', { mes }); S.cache[mes] = { t: Date.now(), p }; p.catch(() => { if (S.cache[mes] && S.cache[mes].p === p) delete S.cache[mes]; }); return p; }
 async function fetchSeguro(url, opts) { if (window.TEMA && TEMA.demoId) { if (!window.DEMO_BACKEND) throw new Error('No se pudo iniciar la demo. Recargá la página.'); return DEMO_BACKEND.fetch(url, opts); } const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 45000); try { return await fetch(url, { ...(opts || {}), signal: ctl.signal }); } catch (e) { throw new Error(e && e.name === 'AbortError' ? 'Está tardando demasiado. Probá de nuevo en un momento.' : 'No hay conexión. Revisá tu internet y probá de nuevo.'); } finally { clearTimeout(tm); } }
 async function llamar(action, data, post) {
   if (/PENDIENTE/.test(S.cfg.api || '')) throw new Error((S.cfg.demoAviso) || 'Demostración: las reservas se activan cuando se conecta la hoja de cálculo del salón.');
@@ -49,7 +51,7 @@ async function iniciar() {
 /* ───── 1. calendario y horarios ───── */
 async function calendario() {
   pagina(1, h('h2', { class: 't' }, 'Elegí el día'), h('p', { class: 'empty' }, h('img', { class: 'tw3d', src: 'tuweeb-icono.svg', alt: 'tuweeb' })));
-  let d; try { const P = window.__pre, pj = P && P.mes === S.mes && !S.usoPre && P.disp ? (S.usoPre = 1, await P.disp) : null; d = S.disp = pj && pj.ok ? pj.data : await llamar('disponibilidad', { mes: S.mes }); } catch (e) { return pagina(1, h('div', { class: 'err' }, e.message)); }
+  let d; try { const P = window.__pre, pj = P && P.mes === S.mes && !S.usoPre && P.disp ? (S.usoPre = 1, await P.disp) : null; d = S.disp = pj && pj.ok ? pj.data : await dispMes(S.mes); } catch (e) { return pagina(1, h('div', { class: 'err' }, e.message)); }
   const [y, m] = S.mes.split('-').map(Number), n = new Date(y, m, 0).getDate(), off = (new Date(y, m - 1, 1).getDay() + 6) % 7;
   const ini = d.hoy.slice(0, 7), fin = d.hasta.slice(0, 7), cel = [...['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'].map(x => h('div', { class: 'dow' }, x)), ...Array(off).fill(0).map(() => h('div', { class: 'off' }))];
   for (let i = 1; i <= n; i++) {
@@ -57,8 +59,9 @@ async function calendario() {
     cel.push(h('button', { class: (libres ? 'libre' : sl.some(s => s.estado === 'ocupado') ? 'lleno' : '') + (f === S.fecha ? ' sel' : ''), disabled: !mostrable, 'aria-label': flarga(f) + (libres ? ' disponible' : ' no disponible'), onclick: () => { S.fecha = f; calendario2(); } }, i));
   }
   const cont = h('div', { id: 'horarios' }), hayLugar = Object.keys(d.dias).some(k => k.startsWith(S.mes) && d.dias[k].some(x => x.estado === 'libre')), wsp = wa(`Hola! Quiero consultar fechas para una fiesta en ${S.pub.nombre}.`);
-  pagina(S.fecha && mesDe(S.fecha) === S.mes ? 2 : 1, h('h2', { class: 't' }, 'Elegí el día'), h('div', { class: 'nav' }, h('button', { class: 'icon', 'aria-label': 'Mes anterior', disabled: S.mes <= ini, onclick: () => { S.mes = sumMes(S.mes, -1); S.fecha = ''; calendario(); } }, '‹'), h('h3', null, nomMes(S.mes)), h('button', { class: 'icon', 'aria-label': 'Mes siguiente', disabled: S.mes >= fin, onclick: () => { S.mes = sumMes(S.mes, 1); S.fecha = ''; calendario(); } }, '›')),
+  pagina(S.fecha && mesDe(S.fecha) === S.mes ? 2 : 1, h('h2', { class: 't' }, 'Elegí el día'), h('div', { class: 'nav' }, S.mes > ini ? h('button', { class: 'mes', type: 'button', 'aria-label': 'Ir a ' + nomMes(sumMes(S.mes, -1)), onclick: () => { S.mes = sumMes(S.mes, -1); S.fecha = ''; calendario(); } }, h('span', { class: 'ar' }, '‹'), h('span', null, mesCorto(sumMes(S.mes, -1)))) : h('span'), h('h3', null, nomMes(S.mes)), S.mes < fin ? h('button', { class: 'mes', type: 'button', 'aria-label': 'Ir a ' + nomMes(sumMes(S.mes, 1)), onclick: () => { S.mes = sumMes(S.mes, 1); S.fecha = ''; calendario(); } }, h('span', null, mesCorto(sumMes(S.mes, 1))), h('span', { class: 'ar' }, '›')) : h('span')),
     h('div', { class: 'cal' }, cel), hayLugar ? h('p', { class: 'muted small', style: 'margin:.6rem 0' }, 'Los días con borde de color tienen lugar. Podés reservar hasta ' + nomMes(fin) + '.') : h('div', { class: 'card', style: 'margin:.8rem 0' }, h('b', null, 'Todavía no hay horarios disponibles en ' + nomMes(S.mes) + '.'), h('p', { class: 'muted small', style: 'margin:.3rem 0 .7rem' }, S.mes < fin ? 'Probá con el mes siguiente' + (wsp ? ' o escribinos y te ayudamos a encontrar fecha.' : '.') : 'Escribinos y te ayudamos a encontrar fecha.'), wsp ? h('a', { class: 'btn soft sm', href: wsp, target: '_blank', rel: 'noopener' }, 'Escribinos por WhatsApp') : ''), cont);
+  if (S.mes < fin) dispMes(sumMes(S.mes, 1)).catch(() => {}); if (S.mes > ini) dispMes(sumMes(S.mes, -1)).catch(() => {});
   if (S.fecha && mesDe(S.fecha) === S.mes) horarios();
 }
 function calendario2() { setPaso(2); document.querySelectorAll('.cal button').forEach(b => b.classList.remove('sel')); document.querySelectorAll('.cal button').forEach(b => { if (b.getAttribute('aria-label') && b.getAttribute('aria-label').startsWith(flarga(S.fecha) + ' ')) b.classList.add('sel'); }); horarios(); }
@@ -129,7 +132,7 @@ function formulario(error) {
     h('div', { class: 'hp', 'aria-hidden': 'true' }, h('input', { name: 'xr_cmp', type: 'text', tabindex: '-1', autocomplete: 'off', 'data-lpignore': 'true', 'data-1p-ignore': 'true' })),
     error ? h('div', { class: 'err' }, error) : '', goBtn,
     h('button', { type: 'button', class: 'btn line block', style: 'margin-top:.6rem', onclick: () => calendario() }, 'Volver'));
-  pagina(3, h('h2', { class: 't' }, 'Tus datos'), h('div', { class: 'resumen' }, h('b', null, flarga(S.fecha)), `${s.inicio} a ${s.fin} hs` + (s.etiqueta ? ' · ' + s.etiqueta : ''), totEl), f);
+  pagina(3, h('button', { type: 'button', class: 'atras', onclick: () => calendario() }, h('span', { class: 'ar' }, '‹'), 'Cambiar día u horario'), h('h2', { class: 't' }, 'Tus datos'), h('div', { class: 'resumen' }, h('b', null, flarga(S.fecha)), `${s.inicio} a ${s.fin} hs` + (s.etiqueta ? ' · ' + s.etiqueta : ''), totEl), f);
   act();
   window.scrollTo(0, 0);
 }
@@ -140,7 +143,7 @@ async function enviar(f) {
     history.replaceState(null, '', '?reserva=' + r.id); resultado(r, true);
   } catch (e) {
     if (e.codigo === 'PLAN_INVALIDO') { S.plan = null; S.pub = await llamar('config').catch(() => S.pub); return formulario(e.message); }
-    if (e.codigo === 'OCUPADO') { S.fecha = ''; await calendario(); const c = $('#horarios'); if (c) c.before(h('div', { class: 'err' }, 'Ese horario se acaba de ocupar. Elegí otro, por favor.')); return; }
+    if (e.codigo === 'OCUPADO') { S.cache = {}; S.fecha = ''; await calendario(); const c = $('#horarios'); if (c) c.before(h('div', { class: 'err' }, 'Ese horario se acaba de ocupar. Elegí otro, por favor.')); return; }
     const v = $('form'); if (v) { b.disabled = false; b.textContent = 'Reservar'; const old = $('.err', v); if (old) old.remove(); b.before(h('div', { class: 'err' }, e.message)); }
   }
 }
@@ -151,7 +154,7 @@ function leerArchivo(f) {
     const fin = (blob, tipo) => { const fr = new FileReader(); fr.onload = () => ok({ nombre: f.name, tipo, datos: String(fr.result).split(',')[1] || '' }); fr.onerror = () => mal(new Error('No pudimos leer el archivo')); fr.readAsDataURL(blob); };
     if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { if (f.size > 4.5 * 1048576) return mal(new Error('El archivo pesa demasiado (máximo 4 MB)')); return fin(f, f.type); }
     const img = new Image(), url = URL.createObjectURL(f);
-    img.onload = () => { const k = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); c.toBlob(b => b ? fin(b, 'image/jpeg') : mal(new Error('No pudimos preparar la foto')), 'image/jpeg', 0.82); };
+    img.onload = () => { const k = Math.min(1, 1400 / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); c.toBlob(b => b ? fin(b, 'image/jpeg') : mal(new Error('No pudimos preparar la foto')), 'image/jpeg', 0.78); };
     img.onerror = () => { URL.revokeObjectURL(url); mal(new Error('No pudimos abrir esa imagen. Probá con otra foto o un PDF.')); };
     img.src = url;
   });
@@ -162,7 +165,7 @@ function bloqueComprobante(r) {
   inp.addEventListener('change', async () => {
     const f = inp.files && inp.files[0]; if (!f) return;
     S.subiendo = true; btn.disabled = true; btn.textContent = 'Enviando…'; msg.className = 'small muted'; msg.textContent = 'Subiendo el archivo, no cierres esta página.';
-    try { const a = await leerArchivo(f); r = await llamar('comprobante', { id: r.id, ...a }, true); S.subiendo = false; resultado(r, false); }
+    try { const a = await leerArchivo(f), t0 = Date.now(), tk = setInterval(() => { msg.textContent = 'Subiendo el archivo… ' + Math.round((Date.now() - t0) / 1000) + ' s. No cierres esta página.'; }, 1000); try { try { r = await llamar('comprobante', { id: r.id, ...a }, true); } catch (e1) { if (e1.codigo) throw e1; msg.textContent = 'Reintentando…'; r = await llamar('comprobante', { id: r.id, ...a }, true); } } finally { clearInterval(tk); } S.subiendo = false; resultado(r, false); }
     catch (e) { S.subiendo = false; btn.disabled = false; btn.textContent = c ? 'Cambiar comprobante' : 'Subir comprobante de la transferencia'; msg.className = 'small err'; msg.textContent = e.message + ' Podés mandarlo por WhatsApp.'; inp.value = ''; }
   });
   return h('div', { class: 'card', style: 'margin-top:1rem' }, h('h3', { style: 'margin-bottom:.3rem' }, c ? '✓ Comprobante recibido' : 'Mandanos el comprobante'),
