@@ -41,3 +41,9 @@ Nunca arreglar o mejorar algo en la web de un cliente (ej. Planeta Niños) sin l
 - Excepción: Quokka (`quokka/`) no se toca salvo que Ronaldo lo pida.
 - Webs con marca propia ya definida (colores originales, no los de la ficha): se agrega `<script>window.TUWEEB_PROPIO=true</script>` antes de `tema.js` y la web no se repinta con la paleta de la demo (tema.js v49+).
 - Lo que es solo estilo de un cliente (su fondo de invitación, su video, sus colores) queda en el cliente; todo lo demás (errores, textos, orden, guardado, botones, iconos) va a la plantilla.
+
+## Regla: nada en modo prueba sobre el admin, las demos ni las webs de clientes
+Está prohibido publicar o desplegar experimentos, pruebas o ideas a medio terminar en el admin, en las demos (`demo-repo`, la fábrica, `demo.tuweeb.com`) ni en las webs de clientes (lo que ve un cliente o un salón). Lo que se publica ahí tiene que estar probado y ser algo que Ronaldo ya pidió dejar funcionando.
+- Probar siempre aparte: en local, con una copia o en una rama que no se publica. Nunca en `main` ni en el sistema (Apps Script) que usan las demos y los clientes.
+- Si una idea necesita verse en vivo, se pide permiso antes de publicarla y se deja apagada por defecto.
+- Si algo de prueba llegó a publicarse, sacarlo enseguida y avisarle a Ronaldo.
